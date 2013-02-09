@@ -14,6 +14,7 @@
 class ZString {
 public:
     ZString();
+    ZString(ZArray<char>);
 
     char &operator[](long num){ return data[num]; }
 

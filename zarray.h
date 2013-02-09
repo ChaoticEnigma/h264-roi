@@ -22,13 +22,19 @@ public:
         data[datlen-1] = val;
     }
 
-    void concat(ZArray<T> in){
+    ZArray<T> concat(ZArray<T> in){
         for(unsigned long i = 0; i < in.size(); ++i){
             push_back(in[i]);
         }
+        return this;
     }
 
     T &operator[](long num){ return data[num]; }
+
+    void operator=(ZArray<T> in){
+        clear();
+        concat(in);
+    }
 
     bool operator==(ZArray<T> in){
         if(in.size() != size())

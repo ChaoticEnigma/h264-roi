@@ -4,6 +4,10 @@ ZString::ZString(){
     data = ZArray<char>();
 }
 
+ZString::ZString(ZArray<char> str){
+    data = str;
+}
+
 ZString &ZString::operator=(ZString str){
     data.clear();
     for(unsigned i = 0; i < str.size(); ++i)
@@ -21,10 +25,10 @@ bool ZString::operator!=(ZString str){
     return true;
 }
 ZString ZString::operator+(ZString str){
-    return ZString(data.concat(str.str()));
+    return ZString(data.concat(str.ZAc()));
 }
 ZString &ZString::operator+=(ZString str){
-    data = data.concat(str.str());
+    data.concat(str.ZAc());
     return *this;
 }
 ZString &ZString::operator<<(ZString str){
