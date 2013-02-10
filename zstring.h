@@ -22,6 +22,7 @@ public:
     bool operator==(ZString);
     bool operator!=(ZString);
     ZString operator+(ZString);
+    ZString &append(ZString);
     ZString &operator+=(ZString);
     ZString &operator<<(ZString);
 
@@ -34,7 +35,7 @@ public:
     ZString operator+(const std::string str){ return operator+(ZString(str)); }
     ZString &operator+=(const std::string str){ return operator+=(ZString(str)); }
     ZString &operator<<(const std::string str){ return operator<<(ZString(str)); }
-    std::string &str();
+    std::string str();
 
 #ifdef ZSTRING_USE_QT
     ZString(QString);
@@ -85,14 +86,14 @@ public:
     ZString(int);
     int tint();
 
-    int size();
-    int length();
-    int count(std::string);
+    long size(){ return data.size(); }
+    long length(){ return size(); }
 
-    ZString replace(std::string before, std::string after, bool modify = true);
+    int count(ZString);
+
+    ZString replace(ZString before, ZString after, bool modify = true);
     ZString label(std::string label, ZString value, bool modify = true);
     ZString strip(char target, bool modify = true);
-    ZString substr(int, bool modify = true);
     ZString substr(int, int, bool modify = true);
     ZString invert(bool modify = true);
     ZString toLower(bool modify = true);

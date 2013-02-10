@@ -27,19 +27,26 @@ bool ZString::operator!=(ZString str){
 ZString ZString::operator+(ZString str){
     return ZString(data.concat(str.ZAc()));
 }
-ZString &ZString::operator+=(ZString str){
+ZString &ZString::append(ZString str){
     data.concat(str.ZAc());
     return *this;
 }
+ZString &ZString::operator+=(ZString str){
+    return append(str);
+}
 ZString &ZString::operator<<(ZString str){
-    return operator+=(str);
+    return append(str);
 }
 
 ZString::ZString(std::string str){
-    operator=(str);
+    data = ZArray<char>(str.c_str());
 }
-std::string &ZString::str(){
-    return data;
+std::string ZString::str(){
+    std::string tmp;
+    tmp.clear();
+    for(long i = 0; i < data.size(); ++i)
+        tmp[i] = data[i];
+    return tmp;
 }
 
 #ifdef ZSTRING_USE_QT
@@ -59,22 +66,24 @@ QByteArray ZString::QBA(){
 #endif
 
 ZString::ZString(char *str){
-    operator=(str);
+    data = ZArray<char>(str);
 }
-char* ZString::c(){
-    char str[size()];
-    return strcpy(str, data.c_str());
+char *ZString::c(){
+    return data.c_style();
 }
 
 ZString::ZString(const char *str){
-    operator=(str);
+    std::cout << str << std::endl;
+    data = ZArray<char>(str);
+    return;
 }
 const char* ZString::cc(){
-    return data.c_str();
+    return (const char *)c();
 }
 
-ZString::ZString(char str){
-    operator=(str);
+ZString::ZString(char ch){
+    data = ZArray<char>();
+    data.push_back(ch);
 }
 
 #ifdef ZSTRING_USE_QT
@@ -87,29 +96,21 @@ ZString::ZString(qint64 num){
 #endif
 
 ZString::ZString(int num){
-    std::stringstream ss; std::string out;
-    ss << num; ss >> out;
-    data = out;
+    char *tmp;
+    itoa(num, tmp, 10);
+    data = ZArray<char>();
 }
 int ZString::tint(){
-    const char *str = data.c_str();
-    return atoi(str);
+    return atoi(data.c_style());
 }
 
-int ZString::size(){
-    return data.size();
-}
-int ZString::length(){
-    return data.length();
-}
-
-int ZString::count(std::string needle){
-    std::string haystack = data;
+int ZString::count(ZString needle){
+    ZString haystack = data.c_style();
     int count = 0;
     for(unsigned i = 0; i < haystack.length(); ++i){
         if(haystack[i] == needle[0]){
             bool good = true;
-            for(unsigned g = i, j = 0; j < needle.length(); ++g, ++j){
+            for(unsigned g = i, j = 0; j < needle.size(); ++g, ++j){
                 if(haystack[g] != needle[j]){
                     good = false;
                     break;
@@ -122,10 +123,10 @@ int ZString::count(std::string needle){
     return count;
 }
 
-ZString ZString::replace(std::string before, std::string after, bool modify){
-    std::string tmpdata = data;
-    std::string tmp = "";
-    for(unsigned i = 0; i < tmpdata.length(); ++i){
+ZString ZString::replace(ZString before, ZString after, bool modify){
+    ZString tmpdata = data;
+    ZString tmp = "";
+    for(unsigned i = 0; i < tmpdata.size(); ++i){
         if(tmpdata[i] == before[0]){
             bool match = true;
             int last = 0;
@@ -137,8 +138,8 @@ ZString ZString::replace(std::string before, std::string after, bool modify){
                 last = i + j;
             }
             if(match){
-                std::string pre = tmpdata.substr(0, i);
-                std::string suff = tmpdata.substr(last+1);
+                ZString pre = tmpdata.substr(0, i);
+                ZString suff = tmpdata.substr(last+1, tmpdata.size());
                 tmp = tmp.append(pre).append(after);
                 tmpdata = suff;
                 i = -1;
@@ -148,7 +149,7 @@ ZString ZString::replace(std::string before, std::string after, bool modify){
     tmp = tmp.append(tmpdata);
 
     if(modify){
-        data = tmp;
+        data = tmp.ZAc();
         return ZString(data);
     } else {
         return ZString(tmp);
@@ -160,74 +161,24 @@ ZString ZString::label(std::string labeltxt, ZString value, bool modify){
     return replace(label, value.str(), modify);
 }
 
-AsArZ ZString::explode(char delim){
-    AsArZ out;
-    std::string str = data;
-    for(unsigned i = 0; i < str.length(); ++i){
-        if(str[i] == '"'){
-            for(unsigned j = i; j < str.length(); ++j){
-                if(str[j] == '"'){
-                    out.push(str.substr(0, j));
-                    str = str.substr(j+1, str.length());
-                    i = -1;
-                }
-            }
-        } else if(str[i] == delim){
-            out.push(str.substr(0, i));
-            str = str.substr(i+1, str.length());
-            i = -1;
-        }
-    }
-    out.push(str);
-    return out;
-}
-AsArZ ZString::strict_explode(char delim){
-    AsArZ out;
-    std::string str = data;
-    for(unsigned i = 0; i < str.length(); ++i){
-        if(str[i] == delim && str[i-1] != '\\'){
-            string substr = str.substr(0, i);
-            if(substr != ""){
-                out.push(substr);
-            }
-            str = str.substr(i+1, str.length());
-            i = -1;
-        }
-    }
-    out.push(str);
-    return out;
-}
-
 ZString ZString::strip(char target, bool modify){
-    ZString tmp = data;
-    for(unsigned i = 0; i < data.length(); ++i){
+    ZArray<char> tmp = data;
+    for(unsigned i = 0; i < data.size(); ++i){
         if(data[i] == target){
-            tmp = data.substr(i+1, data.length());
+            tmp = data.subarr(i+1, data.size());
         } else {
             break;
         }
     }
-    data = tmp.str();
-    for(unsigned i = 0; i < data.length(); ++i){
-        int curr = data.length() - 1 - i;
+    data = tmp;
+    for(unsigned i = 0; i < data.size(); ++i){
+        int curr = data.size() - 1 - i;
         if(data[curr] == target){
-            tmp = data.substr(0, curr);
+            tmp = data.subarr(0, curr);
         } else {
             break;
         }
     }
-
-    if(modify){
-        data = tmp.str();
-        return ZString(data);
-    } else {
-        return tmp;
-    }
-}
-
-ZString ZString::substr(int pos, bool modify){
-    std::string tmp = data;
-    tmp.substr(pos);
 
     if(modify){
         data = tmp;
@@ -238,8 +189,7 @@ ZString ZString::substr(int pos, bool modify){
 }
 
 ZString ZString::substr(int pos, int npos, bool modify){
-    std::string tmp = data;
-    tmp.substr(pos, npos);
+    ZArray<char> tmp = data.subarr(pos, npos);
 
     if(modify){
         data = tmp;
@@ -250,9 +200,9 @@ ZString ZString::substr(int pos, int npos, bool modify){
 }
 
 ZString ZString::invert(bool modify){
-    std::string buff;
-    for(unsigned i = data.length(); i > 0; --i){
-        buff += data[i];
+    ZArray<char> buff;
+    for(unsigned i = data.size(); i > 0; --i){
+        buff.push_back(data[i]);
     }
 
     if(modify){
@@ -264,11 +214,8 @@ ZString ZString::invert(bool modify){
 }
 
 ZString ZString::toLower(bool modify){
-    std::string tmp = data;
+    ZArray<char> tmp = data;
     for(unsigned i = 0; i < data.size(); ++i){
-        // Custom tolower()
-        //if((int)tmp[i] >= 65 && (int)tmp[i] <= 90)
-        //    tmp[i] = (char)((int)tmp[i] + 32);
         tmp[i] = tolower(tmp[i]);
     }
     if(modify){
@@ -279,7 +226,7 @@ ZString ZString::toLower(bool modify){
     }
 }
 
-ostream &operator<<(ostream& lhs, ZString rhs){
-    lhs << rhs.str();
+std::ostream &operator<<(std::ostream& lhs, ZString rhs){
+    lhs << rhs.c();
     return lhs;
 }

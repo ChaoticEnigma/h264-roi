@@ -9,7 +9,8 @@ int main(){
     cout << tst[0];
     tst.push_back('c');
     cout << tst[1] << endl;
-    ZString test = "heresdf";
+    cout << tst.c_style() << endl;
+    ZString test = "hereisme";
     cout << test << endl;
     return 0;
 }
