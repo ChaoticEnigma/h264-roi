@@ -1,13 +1,5 @@
 #include "zstring.h"
 
-ZString::ZString(){
-    data = ZArray<char>();
-}
-
-ZString::ZString(ZArray<char> str){
-    data = str;
-}
-
 ZString &ZString::operator=(ZString str){
     data.clear();
     for(unsigned i = 0; i < str.size(); ++i)
@@ -38,9 +30,8 @@ ZString &ZString::operator<<(ZString str){
     return append(str);
 }
 
-ZString::ZString(std::string str){
-    data = ZArray<char>(str.c_str());
-}
+//ZString::ZString(std::string str): data(str.c_str(), str.size()){}
+
 std::string ZString::str(){
     std::string tmp;
     tmp.clear();
@@ -65,26 +56,23 @@ QByteArray ZString::QBA(){
 }
 #endif
 
-ZString::ZString(char *str){
-    data = ZArray<char>(str);
-}
+//ZString::ZString(char *str) : data(str, sizeof(str)){}
+
 char *ZString::c(){
+    //ZArray<char> tmp = data;
+    //tmp.push_back('\0');
     return data.c_style();
 }
 
-ZString::ZString(const char *str){
-    std::cout << str << std::endl;
-    data = ZArray<char>(str);
-    return;
-}
+//ZString::ZString(const char *str) : data(str, sizeof(str)){}
+
 const char* ZString::cc(){
     return (const char *)c();
 }
 
-ZString::ZString(char ch){
-    data = ZArray<char>();
-    data.push_back(ch);
-}
+//ZString::ZString(char ch) : data(){
+//    data.push_back(ch);
+//}
 
 #ifdef ZSTRING_USE_QT
 ZString::ZString(qint64 num){
@@ -95,10 +83,10 @@ ZString::ZString(qint64 num){
 }
 #endif
 
-ZString::ZString(int num){
+ZString::ZString(int num) : data(){
     char *tmp;
-    itoa(num, tmp, 10);
-    data = ZArray<char>();
+    sprintf(tmp, "%d", num);
+    data = ZArray<char>(tmp, sizeof(tmp));
 }
 int ZString::tint(){
     return atoi(data.c_style());
@@ -227,6 +215,7 @@ ZString ZString::toLower(bool modify){
 }
 
 std::ostream &operator<<(std::ostream& lhs, ZString rhs){
-    lhs << rhs.c();
+    for(long i = 0; i < rhs.size(); ++i)
+        lhs << rhs[i];
     return lhs;
 }

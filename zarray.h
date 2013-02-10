@@ -12,22 +12,22 @@ public:
         data = (T *) malloc(0 * sizeof(T));
         datlen = 0;
     }
-    ZArray(T *in){
+    ZArray(ZArray<T> &arr){
+        data = (T *) malloc(arr.size() * sizeof(T));
+        datlen = arr.size();
+        data = arr.c_style();
+    }
+    ZArray(T *in, unsigned long length){
         data = (T *) malloc(0 * sizeof(T));
         datlen = 0;
-        for(long i = 0; i < (sizeof(in)/sizeof(T)); ++i)
+        for(unsigned long i = 0; i < length; ++i)
             push_back(in[i]);
     }
-    ZArray(const T *in){
+    ZArray(const T *in, unsigned long length){
         data = (T *) malloc(0 * sizeof(T));
         datlen = 0;
-        int len = sizeof(in);
-        std::cout << len << " " << in << std::endl;
-        for(long i = 0; i < len; ++i){
-            std::cout << in[i] << std::endl;
+        for(unsigned long i = 0; i < length; ++i)
             push_back(in[i]);
-        }
-        return;
     }
 
     ~ZArray(){
@@ -75,17 +75,12 @@ public:
         return true;
     }
 
-    const T *c_style(){
-        T tmp[datlen+1];
-        for(unsigned long i = 0; i < datlen; ++i)
-            tmp[i] = data[i];
-        tmp[datlen] = '\0';
-        return (const T *)tmp;
+    T *c_style(){
+        return data;
     }
 
     void clear(){
-        free(data);
-        data = (T *) malloc(0 * sizeof(T));
+        data = (T *) realloc(data, 0 * sizeof(T));
     }
 
     unsigned long size(){ return datlen; }

@@ -2,8 +2,7 @@
 #define ZSTRING_H
 
 #include <string>
-#include <sstream>
-#include <cstring>
+#include <cstdio>
 #ifdef ZSTRING_USE_QT
     #include <QString>
     #include <QByteArray>
@@ -13,8 +12,11 @@
 
 class ZString {
 public:
-    ZString();
-    ZString(ZArray<char>);
+    ZString() : data(){}
+    ZString(ZString &str) : data(str.ZAc()){}
+    ~ZString(){}
+
+    ZString(ZArray<char> arr) : data(){ data = arr; }
 
     char &operator[](long num){ return data[num]; }
 
@@ -26,9 +28,9 @@ public:
     ZString &operator+=(ZString);
     ZString &operator<<(ZString);
 
-    ZArray<char> ZAc(){ return data; }
+    ZArray<char> &ZAc(){ return data; }
 
-    ZString(std::string);
+    ZString(std::string str) : data(str.c_str(), str.size()){}
     ZString &operator=(const std::string str){ return operator=(ZString(str)); }
     bool operator==(const std::string str){ return operator==(ZString(str)); }
     bool operator!=(const std::string str){ return operator!=(ZString(str)); }
@@ -55,7 +57,7 @@ public:
     QByteArray QBA();
 #endif
 
-    ZString(char*);
+    ZString(char *str) : data(str, sizeof(str)){}
     ZString &operator=(char *str){ return operator=(ZString(str)); }
     bool operator==(char *str){ return operator==(ZString(str)); }
     bool operator!=(char *str){ return operator!=(ZString(str)); }
@@ -64,7 +66,7 @@ public:
     ZString &operator<<(char *str){ return operator<<(ZString(str)); }
     char *c();
 
-    ZString(const char*);
+    ZString(const char *str) : data(str, sizeof(str)){}
     ZString &operator=(const char *str){ return operator=(ZString(str)); }
     bool operator==(const char *str){ return operator==(ZString(str)); }
     bool operator!=(const char *str){ return operator!=(ZString(str)); }
@@ -73,7 +75,7 @@ public:
     ZString &operator<<(const char *str){ return operator<<(ZString(str)); }
     const char *cc();
 
-    ZString(char);
+    ZString(char ch) : data(){ data.push_back(ch); }
     ZString &operator=(char str){ return operator=(ZString(str)); }
     ZString operator+(char str){ return operator+(ZString(str)); }
     ZString &operator+=(char str){ return operator+=(ZString(str)); }
