@@ -12,7 +12,7 @@ public:
         data = (T *) malloc(0 * sizeof(T));
         datlen = 0;
     }
-    ZArray(ZArray<T> &arr){
+    ZArray(const ZArray<T> &arr){
         data = (T *) malloc(arr.size() * sizeof(T));
         datlen = arr.size();
         data = arr.c_style();
@@ -75,7 +75,7 @@ public:
         return true;
     }
 
-    T *c_style(){
+    T *c_style() const {
         return data;
     }
 
@@ -83,7 +83,8 @@ public:
         data = (T *) realloc(data, 0 * sizeof(T));
     }
 
-    unsigned long size(){ return datlen; }
+    unsigned long size() const { return datlen; }
+
 private:
     struct Data {
         T value;

@@ -13,7 +13,7 @@
 class ZString {
 public:
     ZString() : data(){}
-    ZString(ZString &str) : data(str.ZAc()){}
+    //ZString(ZString &str) : data(str.ZAc()){}
     ~ZString(){}
 
     ZString(ZArray<char> arr) : data(){ data = arr; }
