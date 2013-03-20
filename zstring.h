@@ -9,11 +9,12 @@
 #endif
 #include "zarray.h"
 #include <cstdlib>
+#include <cstring>
 
 class ZString {
 public:
     ZString() : data(){}
-    //ZString(ZString &str) : data(str.ZAc()){}
+    //ZString(const ZString &str) : data(){for(unsigned long i = 0; i < str.size(); ++i){data.push_back(str.ZAc()[i]);}}
     ~ZString(){}
 
     ZString(ZArray<char> arr) : data(){ data = arr; }
@@ -57,7 +58,7 @@ public:
     QByteArray QBA();
 #endif
 
-    ZString(char *str) : data(str, sizeof(str)){}
+    ZString(char *str) : data(str, strlen(str)){}
     ZString &operator=(char *str){ return operator=(ZString(str)); }
     bool operator==(char *str){ return operator==(ZString(str)); }
     bool operator!=(char *str){ return operator!=(ZString(str)); }
@@ -66,7 +67,7 @@ public:
     ZString &operator<<(char *str){ return operator<<(ZString(str)); }
     char *c();
 
-    ZString(const char *str) : data(str, sizeof(str)){}
+    ZString(const char *str) : data(str, strlen(str)){}
     ZString &operator=(const char *str){ return operator=(ZString(str)); }
     bool operator==(const char *str){ return operator==(ZString(str)); }
     bool operator!=(const char *str){ return operator!=(ZString(str)); }

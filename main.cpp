@@ -9,11 +9,17 @@ int main(){
     tst.push_back('c');
     cout << tst[1] << tst[0] << " " << tst.size() << endl;
     cout << tst.c_style() << endl;
+    tst.push_back(NULL);
+    cout << tst.c_style() << endl;
 
     ZArray<char> tst2("thishere", 8);
+    tst2.push_back(NULL);
     cout << tst2[0] << " " << tst2.size() << " " << tst2.c_style() << endl;
 
     ZString test("hereisme");
+    cout << test << endl;
+
+    ZString t2 = test;
     cout << test << endl;
     return 0;
 }
