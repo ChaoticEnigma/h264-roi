@@ -15,7 +15,8 @@ public:
     ZArray(const ZArray<T> &arr){
         data = (T *) malloc(arr.size() * sizeof(T));
         datlen = arr.size();
-        data = arr.c_style();
+        //data = arr.c_style();
+        memcpy(data, arr.c_style(), datlen);
     }
     ZArray(T *in, unsigned long length){
         data = (T *) malloc(0 * sizeof(T));
@@ -34,17 +35,17 @@ public:
         free(data);
     }
 
-    void push_back(T val){
+    void push_back(T val){ // Note: Modifies Current Contxt
         datlen++;
         data = (T *) realloc(data, datlen * sizeof(T));
         data[datlen-1] = val;
     }
-    void drop_back(){
+    void drop_back(){ // Note: Modifies Current Contxt
         datlen--;
         data = (T *) realloc(data, datlen * sizeof(T));
     }
 
-    ZArray<T> concat(ZArray<T> in){
+    ZArray<T> concat(ZArray<T> in){ // Note: Modifies Current Contxt
         for(unsigned long i = 0; i < in.size(); ++i){
             push_back(in[i]);
         }
@@ -75,12 +76,19 @@ public:
         return true;
     }
 
+    bool operator!=(ZArray<T> in){
+        if(operator==(in))
+            return false;
+        return true;
+    }
+
     T *c_style() const {
         return data;
     }
 
-    void clear(){
-        data = (T *) realloc(data, 0 * sizeof(T));
+    void clear(){ // Note: Modifies Current Contxt
+        data = (T *) realloc(data, 0);
+        datlen = 0;
     }
 
     unsigned long size() const { return datlen; }

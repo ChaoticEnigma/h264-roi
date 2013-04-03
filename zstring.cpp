@@ -17,76 +17,19 @@ bool ZString::operator!=(ZString str){
     return true;
 }
 ZString ZString::operator+(ZString str){
-    return ZString(data.concat(str.ZAc()));
+    ZArray<char> tmp = data;
+    tmp.concat(str.ZAc());
+    return ZString(tmp);
 }
 ZString &ZString::append(ZString str){
     data.concat(str.ZAc());
     return *this;
 }
-ZString &ZString::operator+=(ZString str){
-    return append(str);
-}
-ZString &ZString::operator<<(ZString str){
-    return append(str);
-}
-
-//ZString::ZString(std::string str): data(str.c_str(), str.size()){}
-
-std::string ZString::str(){
-    std::string tmp;
-    tmp.clear();
-    for(long i = 0; i < data.size(); ++i)
-        tmp[i] = data[i];
-    return tmp;
-}
-
-#ifdef ZSTRING_USE_QT
-ZString::ZString(QString str){
-    operator=(str);
-}
-QString ZString::QS(){
-    return QString::fromStdString(data);
-}
-
-ZString::ZString(QByteArray str){
-    operator=(str);
-}
-QByteArray ZString::QBA(){
-    return QByteArray(data.c_str());
-}
-#endif
-
-//ZString::ZString(char *str) : data(str, sizeof(str)){}
-
-char *ZString::c(){
-    //ZArray<char> tmp = data;
-    //tmp.push_back('\0');
-    return data.c_style();
-}
-
-//ZString::ZString(const char *str) : data(str, sizeof(str)){}
-
-const char* ZString::cc(){
-    return (const char *)c();
-}
-
-//ZString::ZString(char ch) : data(){
-//    data.push_back(ch);
-//}
-
-#ifdef ZSTRING_USE_QT
-ZString::ZString(qint64 num){
-    const char *str = reinterpret_cast<const char *>(&num);
-    //std::stringstream ss; std::string out;
-    //ss << num; ss >> out;
-    data = str;
-}
-#endif
 
 ZString::ZString(int num) : data(){
     char *tmp;
     sprintf(tmp, "%d", num);
-    data = ZArray<char>(tmp, sizeof(tmp));
+    data = ZArray<char>(tmp, strlen(tmp));
 }
 int ZString::tint(){
     return atoi(data.c_style());
@@ -111,7 +54,60 @@ int ZString::count(ZString needle){
     return count;
 }
 
-ZString ZString::replace(ZString before, ZString after, bool modify){
+/*ZArray<ZString::SubZStr> ZString::findAll(ZString target){
+    ZArray<SubZStr> out;
+    bool candidate = false;
+    unsigned long startbuf = 0;
+    for(unsigned long i = 0; i < size(); ++i){
+        if(candidate){
+            if(data[i] == target[i - startbuf]){
+                if(target[i - startbuf] == target.size() - 1){
+                    SubZStr sub;
+                    sub.start = startbuf;
+                    sub.end = i;
+                    out.push_back(sub);
+                    candidate = false;
+                }
+            } else {
+                candidate = false;
+            }
+        } else {
+            if(data[i] == target[0]){
+                candidate = true;
+                startbuf = i;
+            }
+        }
+    }
+    return out;
+}*/
+
+ZArray<ZString::SubZStr> ZString::findAll(ZString target){
+    ZArray<SubZStr> out;
+    unsigned long ti = 0;
+    unsigned long startbuf = 0;
+    for(unsigned long i = 0; i < size(); ++i){
+        if(data[i] == target[ti]){
+            ++ti;
+            if(startbuf == 0)
+                startbuf = i;
+            if(ti == target.size()-1){
+                SubZStr sub;
+                sub.start = startbuf;
+                sub.end = i;
+                out.push_back(sub);
+                ti = 0;
+                startbuf = 0;
+            }
+        } else {
+            ti = 0;
+            startbuf = 0;
+        }
+    }
+    return out;
+}
+
+// Replace v1
+/*ZString ZString::replace(ZString before, ZString after, bool modify){
     ZString tmpdata = data;
     ZString tmp = "";
     for(unsigned i = 0; i < tmpdata.size(); ++i){
@@ -142,6 +138,17 @@ ZString ZString::replace(ZString before, ZString after, bool modify){
     } else {
         return ZString(tmp);
     }
+}*/
+
+// Replace v2
+ZString ZString::replace(ZString before, ZString after, bool modify){
+    ZString tmpdata = data;
+    ZString tmp;
+    ZArray<SubZStr> locs = findAll(before);
+    for(unsigned long i = 0; i < locs.size(); ++i){
+
+    }
+    return tmp;
 }
 
 ZString ZString::label(std::string labeltxt, ZString value, bool modify){

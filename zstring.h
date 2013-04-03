@@ -3,10 +3,6 @@
 
 #include <string>
 #include <cstdio>
-#ifdef ZSTRING_USE_QT
-    #include <QString>
-    #include <QByteArray>
-#endif
 #include "zarray.h"
 #include <cstdlib>
 #include <cstring>
@@ -17,19 +13,16 @@ public:
     //ZString(const ZString &str) : data(){for(unsigned long i = 0; i < str.size(); ++i){data.push_back(str.ZAc()[i]);}}
     ~ZString(){}
 
-    ZString(ZArray<char> arr) : data(){ data = arr; }
-
-    char &operator[](long num){ return data[num]; }
-
     ZString &operator=(ZString);
     bool operator==(ZString);
     bool operator!=(ZString);
     ZString operator+(ZString);
     ZString &append(ZString);
-    ZString &operator+=(ZString);
-    ZString &operator<<(ZString);
+    ZString &operator+=(ZString str){ return append(str); }
+    ZString &operator<<(ZString str){ return append(str); }
 
-    ZArray<char> &ZAc(){ return data; }
+    ZString(ZArray<char> arr) : data(){ data = arr; }
+    ZArray<char> ZAc(){ return data; }
 
     ZString(std::string str) : data(str.c_str(), str.size()){}
     ZString &operator=(const std::string str){ return operator=(ZString(str)); }
@@ -38,25 +31,7 @@ public:
     ZString operator+(const std::string str){ return operator+(ZString(str)); }
     ZString &operator+=(const std::string str){ return operator+=(ZString(str)); }
     ZString &operator<<(const std::string str){ return operator<<(ZString(str)); }
-    std::string str();
-
-#ifdef ZSTRING_USE_QT
-    ZString(QString);
-    ZString &operator=(QString);
-    inline bool operator==(const QString);
-    ZString operator+(QString);
-    ZString &operator+=(QString);
-    ZString &operator<<(QString);
-    QString QS();
-
-    ZString(QByteArray);
-    ZString &operator=(QByteArray);
-    inline bool operator==(const QByteArray);
-    ZString operator+(QByteArray);
-    ZString &operator+=(QByteArray);
-    ZString &operator<<(QByteArray);
-    QByteArray QBA();
-#endif
+    std::string str(){ return std::string(cc()); }
 
     ZString(char *str) : data(str, strlen(str)){}
     ZString &operator=(char *str){ return operator=(ZString(str)); }
@@ -65,7 +40,7 @@ public:
     ZString operator+(char *str){ return operator+(ZString(str)); }
     ZString &operator+=(char *str){ return operator+=(ZString(str)); }
     ZString &operator<<(char *str){ return operator<<(ZString(str)); }
-    char *c();
+    char *c(){ ZArray<char> tmp = ZAc(); tmp.push_back(NULL); return tmp.c_style(); }
 
     ZString(const char *str) : data(str, strlen(str)){}
     ZString &operator=(const char *str){ return operator=(ZString(str)); }
@@ -74,7 +49,7 @@ public:
     ZString operator+(const char *str){ return operator+(ZString(str)); }
     ZString &operator+=(const char *str){ return operator+=(ZString(str)); }
     ZString &operator<<(const char *str){ return operator<<(ZString(str)); }
-    const char *cc();
+    const char *cc(){ return (const char *)c(); }
 
     ZString(char ch) : data(){ data.push_back(ch); }
     ZString &operator=(char str){ return operator=(ZString(str)); }
@@ -82,18 +57,22 @@ public:
     ZString &operator+=(char str){ return operator+=(ZString(str)); }
     ZString &operator<<(char str){ return operator<<(ZString(str)); }
 
-#ifdef ZSTRING_USE_QT
-    ZString(qint64);
-#endif
-
     ZString(int);
     int tint();
 
-    long size(){ return data.size(); }
-    long length(){ return size(); }
+    char &operator[](unsigned long num){ return data[num]; }
+
+    unsigned long size(){ return data.size(); }
+    unsigned long length(){ return size(); }
 
     int count(ZString);
 
+    struct SubZStr {
+        unsigned long start;
+        unsigned long end;
+    };
+
+    ZArray<SubZStr> findAll(ZString target);
     ZString replace(ZString before, ZString after, bool modify = true);
     ZString label(std::string label, ZString value, bool modify = true);
     ZString strip(char target, bool modify = true);
