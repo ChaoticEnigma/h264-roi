@@ -35,7 +35,7 @@ int ZString::tint(){
     return atoi(data.c_style());
 }
 
-uint64_t ZString::count(ZString needle){
+int ZString::count(ZString needle){
     ZString haystack = data.c_style();
     int count = 0;
     for(unsigned i = 0; i < haystack.length(); ++i){

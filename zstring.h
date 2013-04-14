@@ -7,8 +7,6 @@
 #include <cstdlib>
 #include <cstring>
 
-typedef
-
 class ZString {
 public:
     ZString() : data(){}
