@@ -35,7 +35,7 @@ int ZString::tint(){
     return atoi(data.c_style());
 }
 
-int ZString::count(ZString needle){
+uint64_t ZString::count(ZString needle){
     ZString haystack = data.c_style();
     int count = 0;
     for(unsigned i = 0; i < haystack.length(); ++i){
@@ -52,6 +52,17 @@ int ZString::count(ZString needle){
         }
     }
     return count;
+}
+
+ZString ZString::substr(int pos, int npos, bool modify){
+    ZArray<char> tmp = data.subarr(pos, npos);
+
+    if(modify){
+        data = tmp;
+        return ZString(data);
+    } else {
+        return ZString(tmp);
+    }
 }
 
 /*ZArray<ZString::SubZStr> ZString::findAll(ZString target){
@@ -93,7 +104,7 @@ ZArray<ZString::SubZStr> ZString::findAll(ZString target){
             if(ti == target.size()-1){
                 SubZStr sub;
                 sub.start = startbuf;
-                sub.end = i;
+                sub.end = i+1;
                 out.push_back(sub);
                 ti = 0;
                 startbuf = 0;
@@ -145,7 +156,7 @@ ZString ZString::replace(ZString before, ZString after, bool modify){
     ZString tmpdata = data;
     ZString tmp;
     ZArray<SubZStr> locs = findAll(before);
-    for(unsigned long i = 0; i < locs.size(); ++i){
+    for(unsigned long i = locs.size()-1; i >= 0; --i){
 
     }
     return tmp;
@@ -174,17 +185,6 @@ ZString ZString::strip(char target, bool modify){
             break;
         }
     }
-
-    if(modify){
-        data = tmp;
-        return ZString(data);
-    } else {
-        return ZString(tmp);
-    }
-}
-
-ZString ZString::substr(int pos, int npos, bool modify){
-    ZArray<char> tmp = data.subarr(pos, npos);
 
     if(modify){
         data = tmp;

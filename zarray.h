@@ -6,7 +6,7 @@
 
 // ZArray v0.1 //
 
-template <class T> class ZArray {
+template <class T, class Tsize = int> class ZArray {
 public:
     ZArray(){
         data = (T *) malloc(0 * sizeof(T));
@@ -18,16 +18,16 @@ public:
         //data = arr.c_style();
         memcpy(data, arr.c_style(), datlen);
     }
-    ZArray(T *in, unsigned long length){
+    ZArray(T *in, Tsize length){
         data = (T *) malloc(0 * sizeof(T));
         datlen = 0;
-        for(unsigned long i = 0; i < length; ++i)
+        for(Tsize i = 0; i < length; ++i)
             push_back(in[i]);
     }
-    ZArray(const T *in, unsigned long length){
+    ZArray(const T *in, Tsize length){
         data = (T *) malloc(0 * sizeof(T));
         datlen = 0;
-        for(unsigned long i = 0; i < length; ++i)
+        for(Tsize i = 0; i < length; ++i)
             push_back(in[i]);
     }
 
@@ -35,31 +35,31 @@ public:
         free(data);
     }
 
-    void push_back(T val){ // Note: Modifies Current Contxt
+    void push_back(T val){ // Note: Modifies Current Context
         datlen++;
         data = (T *) realloc(data, datlen * sizeof(T));
         data[datlen-1] = val;
     }
-    void drop_back(){ // Note: Modifies Current Contxt
+    void drop_back(){ // Note: Modifies Current Context
         datlen--;
         data = (T *) realloc(data, datlen * sizeof(T));
     }
 
-    ZArray<T> concat(ZArray<T> in){ // Note: Modifies Current Contxt
-        for(unsigned long i = 0; i < in.size(); ++i){
+    ZArray<T> concat(ZArray<T> in){ // Note: Modifies Current Context
+        for(Tsize i = 0; i < in.size(); ++i){
             push_back(in[i]);
         }
         return *this;
     }
 
-    ZArray<T> subarr(long pos, long len){
+    ZArray<T> subarr(Tsize pos, Tsize len){
         ZArray<T> tmp;
-        for(long i = 0; i < len && pos+i < size(); ++i)
+        for(Tsize i = 0; i < len && pos+i < size(); ++i)
             tmp.push_back(data[pos+i]);
         return tmp;
     }
 
-    T &operator[](long num){ return data[num]; }
+    T &operator[](Tsize num){ return data[num]; }
 
     void operator=(ZArray<T> in){
         clear();
@@ -69,7 +69,7 @@ public:
     bool operator==(ZArray<T> in){
         if(in.size() != size())
             return false;
-        for(unsigned long i = 0; i < in.size(); ++i){
+        for(Tsize i = 0; i < in.size(); ++i){
             if(in[i] != data[i])
                 return false;
         }
@@ -86,19 +86,19 @@ public:
         return data;
     }
 
-    void clear(){ // Note: Modifies Current Contxt
+    void clear(){ // Note: Modifies Current Context
         data = (T *) realloc(data, 0);
         datlen = 0;
     }
 
-    unsigned long size() const { return datlen; }
+    Tsize size() const { return datlen; }
 
 private:
     struct Data {
         T value;
     };
     T *data;
-    unsigned long datlen;
+    Tsize datlen;
 };
 
 //#include "zarray.tpp"

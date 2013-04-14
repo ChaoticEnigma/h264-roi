@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <cstring>
 
+typedef
+
 class ZString {
 public:
     ZString() : data(){}
@@ -72,11 +74,13 @@ public:
         unsigned long end;
     };
 
+    ZString substr(int, int, bool modify = true);
+    ZString substrpos(int, int, bool modify = true);
     ZArray<SubZStr> findAll(ZString target);
     ZString replace(ZString before, ZString after, bool modify = true);
     ZString label(std::string label, ZString value, bool modify = true);
     ZString strip(char target, bool modify = true);
-    ZString substr(int, int, bool modify = true);
+
     ZString invert(bool modify = true);
     ZString toLower(bool modify = true);
 

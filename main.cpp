@@ -27,7 +27,7 @@ int main(){
     cout << t3.size() << " " << t3 << endl;
     t3.append(", and this is appended");
     cout << t3.size() << " " << t3 << endl;
-    cout << t3.count("is") << endl;
+    cout << t3.count(" is ") << endl;
 
     ZArray<ZString::SubZStr> pos = t3.findAll(" is ");
     for(unsigned i = 0; i < pos.size(); ++i)
