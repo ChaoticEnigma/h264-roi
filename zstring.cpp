@@ -1,47 +1,205 @@
 #include "zstring.h"
 
-ZString &ZString::operator=(ZString str){
+namespace LibChaos {
+
+ZString::ZString(){
     data.clear();
-    for(unsigned i = 0; i < str.size(); ++i)
-        data.push_back(str[i]);
+}
+ZString::~ZString(){
+    data.clear();
+}
+
+ZString &ZString::operator=(ZString str){
+    data = str.str();
     return *this;
 }
 bool ZString::operator==(ZString str){
-    if(str.ZAc() == data)
-        return true;
-    return false;
+    return data == str.str();
 }
 bool ZString::operator!=(ZString str){
-    if(str.ZAc() == data)
-        return false;
-    return true;
+    return data != str.str();
 }
-ZString ZString::operator+(ZString str){
-    ZArray<char> tmp = data;
-    tmp.concat(str.ZAc());
+ZString ZString::concat(ZString str){
+    std::string tmp = data;
+    tmp.append(str.str());
     return ZString(tmp);
 }
+ZString ZString::operator+(ZString str){
+    return concat(str);
+}
 ZString &ZString::append(ZString str){
-    data.concat(str.ZAc());
+    data = data.append(str.str());
     return *this;
 }
+ZString &ZString::operator+=(ZString str){
+    return append(str);
+}
+ZString &ZString::operator<<(ZString str){
+    return append(str);
+}
 
-ZString::ZString(int num) : data(){
-    char *tmp;
-    sprintf(tmp, "%d", num);
-    data = ZArray<char>(tmp, strlen(tmp));
+ZString::ZString(std::string str){
+    data = str;
+}
+//ZString &ZString::operator=(std::string str){
+//    data = str;
+//    return *this;
+//}
+//bool ZString::operator==(const std::string rhs){
+//    if(data == rhs)
+//        return true;
+//    return false;
+//}
+//bool ZString::operator!=(const std::string rhs){
+//    if(data != rhs)
+//        return true;
+//    return false;
+//}
+//ZString ZString::operator+(std::string str){
+//    return ZString(data.append(str));
+//}
+//ZString &ZString::operator+=(std::string str){
+//    data = data.append(str);
+//    return *this;
+//}
+//ZString &ZString::operator<<(std::string str){
+//    return operator+=(str);
+//}
+std::string &ZString::str(){
+    return data;
+}
+
+ZString::ZString(char *str){
+    if(str){
+        data = std::string(str, strlen(str));
+    } else {
+        data = std::string();
+    }
+}
+//ZString &ZString::operator=(char *str){
+//    data = str;
+//    return *this;
+//}
+//bool ZString::operator==(char *rhs){
+//    ZString comp = rhs;
+//    if(data == comp.str())
+//        return true;
+//    return false;
+//}
+//bool ZString::operator!=(char *rhs){
+//    ZString comp = rhs;
+//    if(data != comp.str())
+//        return true;
+//    return false;
+//}
+//ZString ZString::operator+(char *str){
+//    return ZString(data.append(ZString(str).str()));
+//}
+//ZString &ZString::operator+=(char *str){
+//    data = data.append(ZString(str).str());
+//    return *this;
+//}
+//ZString &ZString::operator<<(char *str){
+//    return operator+=(str);
+//}
+char* ZString::c(){
+    char str[size()];
+    return strcpy(str, data.c_str());
+}
+
+ZString::ZString(const char *str){
+    if(str){
+        data = std::string(str, strlen(str));
+    } else {
+        data = std::string();
+    }
+}
+//ZString &ZString::operator=(const char *str){
+//    data = str;
+//    return *this;
+//}
+//bool ZString::operator==(const char *rhs){
+//    ZString comp = rhs;
+//    if(data == comp.str())
+//        return true;
+//    return false;
+//}
+//bool ZString::operator!=(const char *rhs){
+//    ZString comp = rhs;
+//    if(data != comp.str())
+//        return true;
+//    return false;
+//}
+//ZString ZString::operator+(const char *str){
+//    return ZString(data.append(ZString(str).str()));
+//}
+//ZString &ZString::operator+=(const char *str){
+//    data = data.append(ZString(str).str());
+//    return *this;
+//}
+//ZString &ZString::operator<<(const char *str){
+//    return operator+=(str);
+//}
+const char* ZString::cc(){
+    return data.c_str();
+}
+
+ZString::ZString(char ch){
+    data = std::string(1, ch);
+}
+//ZString &ZString::operator=(char str){
+//    data.clear();
+//    data += str;
+//    return *this;
+//}
+//ZString ZString::operator+(char str){
+//    return ZString(data.append(ZString(str).str()));
+//}
+//ZString &ZString::operator+=(char str){
+//    data += str;
+//    return *this;
+//}
+//ZString &ZString::operator<<(char str){
+//    return operator+=(str);
+//}
+
+std::string ZString::ItoS(long int value, int base) {
+    std::string buf;
+    if (base < 2 || base > 16) return buf;
+    enum { kMaxDigits = 35 };
+    buf.reserve( kMaxDigits );
+    long int quotient = value;
+    do {
+        buf += "0123456789abcdef"[ std::labs( quotient % base ) ];
+        quotient /= base;
+    } while ( quotient );
+    if ( value < 0) buf += '-';
+    std::reverse( buf.begin(), buf.end() );
+    return buf;
+}
+
+ZString::ZString(int num){
+    data = ItoS(num, 10);
 }
 int ZString::tint(){
-    return atoi(data.c_style());
+    const char *str = data.c_str();
+    return atoi(str);
 }
 
-int ZString::count(ZString needle){
-    ZString haystack = data.c_style();
+int ZString::size(){
+    return data.size();
+}
+int ZString::length(){
+    return data.length();
+}
+
+int ZString::count(std::string needle){
+    std::string haystack = data;
     int count = 0;
     for(unsigned i = 0; i < haystack.length(); ++i){
         if(haystack[i] == needle[0]){
             bool good = true;
-            for(unsigned g = i, j = 0; j < needle.size(); ++g, ++j){
+            for(unsigned g = i, j = 0; j < needle.length(); ++g, ++j){
                 if(haystack[g] != needle[j]){
                     good = false;
                     break;
@@ -54,74 +212,53 @@ int ZString::count(ZString needle){
     return count;
 }
 
-ZString ZString::substr(int pos, int npos, bool modify){
-    ZArray<char> tmp = data.subarr(pos, npos);
-
-    if(modify){
-        data = tmp;
-        return ZString(data);
-    } else {
-        return ZString(tmp);
-    }
+void ZString::clear(){
+    data.clear();
+}
+bool ZString::isEmpty(){
+    return data.empty();
 }
 
-/*ZArray<ZString::SubZStr> ZString::findAll(ZString target){
-    ZArray<SubZStr> out;
-    bool candidate = false;
-    unsigned long startbuf = 0;
-    for(unsigned long i = 0; i < size(); ++i){
-        if(candidate){
-            if(data[i] == target[i - startbuf]){
-                if(target[i - startbuf] == target.size() - 1){
-                    SubZStr sub;
-                    sub.start = startbuf;
-                    sub.end = i;
-                    out.push_back(sub);
-                    candidate = false;
-                }
-            } else {
-                candidate = false;
-            }
+bool ZString::startsWith(ZString test, bool ignorews){
+    std::string start = test.str();
+    bool started;
+    if(ignorews)
+        started = false;
+    else
+        started = true;
+    unsigned j = 0;
+    for(unsigned i = 0; i < data.size(); ++i){
+        if(data[i] == start[j]){
+            if(j == test.size()-1)
+                return true;
+            started = true;
+            ++j;
+        } else if(data[i] == ' ' || data[i] == '\t'){
+            if(started)
+                return false;
         } else {
-            if(data[i] == target[0]){
-                candidate = true;
-                startbuf = i;
-            }
+            return false;
         }
     }
-    return out;
-}*/
-
-ZArray<ZString::SubZStr> ZString::findAll(ZString target){
-    ZArray<SubZStr> out;
-    unsigned long ti = 0;
-    unsigned long startbuf = 0;
-    for(unsigned long i = 0; i < size(); ++i){
-        if(data[i] == target[ti]){
-            ++ti;
-            if(startbuf == 0)
-                startbuf = i;
-            if(ti == target.size()-1){
-                SubZStr sub;
-                sub.start = startbuf;
-                sub.end = i+1;
-                out.push_back(sub);
-                ti = 0;
-                startbuf = 0;
-            }
-        } else {
-            ti = 0;
-            startbuf = 0;
-        }
-    }
-    return out;
+    return true;
+}
+bool ZString::beginsWith(ZString str){
+    return startsWith(str, false);
 }
 
-// Replace v1
-/*ZString ZString::replace(ZString before, ZString after, bool modify){
-    ZString tmpdata = data;
-    ZString tmp = "";
-    for(unsigned i = 0; i < tmpdata.size(); ++i){
+bool ZString::endsWith(ZString test){
+    if(test.size() > size())
+        return false;
+    std::string end = data.substr(data.size()-test.size(), test.size());
+    return test.str() == end;
+}
+
+ZString ZString::replace(ZString zbefore, ZString zafter, bool modify){
+    std::string before = zbefore.str();
+    std::string after = zafter.str();
+    std::string tmpdata = data;
+    std::string tmp = "";
+    for(unsigned i = 0; i < tmpdata.length(); ++i){
         if(tmpdata[i] == before[0]){
             bool match = true;
             int last = 0;
@@ -133,8 +270,8 @@ ZArray<ZString::SubZStr> ZString::findAll(ZString target){
                 last = i + j;
             }
             if(match){
-                ZString pre = tmpdata.substr(0, i);
-                ZString suff = tmpdata.substr(last+1, tmpdata.size());
+                std::string pre = tmpdata.substr(0, i);
+                std::string suff = tmpdata.substr(last+1);
                 tmp = tmp.append(pre).append(after);
                 tmpdata = suff;
                 i = -1;
@@ -144,47 +281,235 @@ ZArray<ZString::SubZStr> ZString::findAll(ZString target){
     tmp = tmp.append(tmpdata);
 
     if(modify){
-        data = tmp.ZAc();
+        data = tmp;
         return ZString(data);
     } else {
         return ZString(tmp);
     }
-}*/
+}
 
-// Replace v2
-ZString ZString::replace(ZString before, ZString after, bool modify){
-    ZString tmpdata = data;
-    ZString tmp;
-    ZArray<SubZStr> locs = findAll(before);
-    for(unsigned long i = locs.size()-1; i >= 0; --i){
-
+ZString ZString::findFirstBetween(ZString opening_string, ZString closing_string){
+    std::string pre = opening_string.str();
+    std::string post = closing_string.str();
+    if(pre.size() <= 0 || post.size() <= 0)
+        return ZString();
+    std::string tmp = data;
+    ZString found;
+    enum pos_type {
+        outside, sopen, eopen, inside, sclose, eclose
+    } pos = outside;
+    unsigned j = 0;
+    unsigned jl = 0;
+    unsigned k = 0;
+    unsigned kl = 0;
+    ZString tmpbuff;
+    for(unsigned i = 0; i < tmp.size(); ++i){
+        char c = tmp[i];
+        switch(pos){
+        case outside:
+            if(c == pre[pre.size()-1] && jl == pre.size()-1){
+                pos = eopen;
+            } else if(c == pre[0]){
+                j = 1;
+                jl = 1;
+                pos = sopen;
+            }
+            break;
+        case sopen:
+            if(c == pre[pre.size()-1] && jl == pre.size()-1){
+                pos = eopen;
+            } else if(c == pre[j]){
+                ++j;
+                ++jl;
+                pos = sopen;
+            } else if(c == pre[0]){
+                j = 1;
+                jl = 1;
+                pos = sopen;
+            } else {
+                j = 0;
+                jl = 0;
+                pos = outside;
+            }
+            break;
+        case eopen:
+            if(c == post[post.size()-1] && kl == post.size()-1){
+                return found;
+            } else if(c == post[0]){
+                tmpbuff << c;
+                k = 1;
+                kl = 1;
+                pos = sclose;
+            } else {
+                found << c;
+            }
+            break;
+        case inside:
+            break;
+        case sclose:
+            if(c == post[post.size()-1] && kl == post.size()-1){
+                return found;
+            } else if(c == post[k]){
+                tmpbuff << c;
+                ++k;
+                ++kl;
+                pos = sclose;
+            } else if(c == post[0]){
+                found << tmpbuff;
+                tmpbuff.clear();
+                tmpbuff << c;
+                k = 1;
+                kl = 1;
+                pos = sclose;
+            } else {
+                found << tmpbuff;
+                tmpbuff.clear();
+                found << c;
+                k = 0;
+                kl = 0;
+                pos = eopen;
+            }
+            break;
+        case eclose:
+            break;
+        default:
+            // Bad, Probable Memory Corruption
+            break;
+        }
     }
+    found << tmpbuff;
+    return found;
+}
+
+ZString ZString::replaceBetween(ZString opening_string, ZString closing_string, ZString after_string){
+    ZString tmp = data;
+    bool done = false;
+    while(!done){
+        ZString inside = tmp.findFirstBetween(opening_string, closing_string);
+        if(inside.isEmpty()){
+            done = true;
+            break;
+        }
+        ZString old = opening_string;
+        old << inside << closing_string;
+        tmp.replace(old, after_string);
+    }
+    data = tmp.str();
     return tmp;
 }
 
+ZString ZString::findFirstXmlTagCont(ZString tag){
+    ZString open;
+    open << "<" << tag << ">";
+    ZString close;
+    close << "</" << tag << ">";
+    return findFirstBetween(open, close);
+}
+ZString ZString::replaceXmlTagCont(ZString tag, ZString after){
+    ZString open;
+    open << "<" << tag << ">";
+    ZString close;
+    close << "</" << tag << ">";
+    return replaceBetween(open, close, after);
+}
+
+ZString ZString::label(AsArZ values, bool modify){
+    for(unsigned i = 0; i < values.size(); ++i)
+        label(values.getIndex(i), values[i], modify);
+    return ZString(data);
+}
 ZString ZString::label(std::string labeltxt, ZString value, bool modify){
     std::string label = std::string("<?").append(labeltxt).append("?>");
     return replace(label, value.str(), modify);
 }
 
+AsArZ ZString::explode(char delim){
+    AsArZ out;
+    std::string str = data;
+    for(unsigned i = 0; i < str.length(); ++i){
+        if(str[i] == '"'){
+            for(unsigned j = i; j < str.length(); ++j){
+                if(str[j] == '"'){
+                    out.push(str.substr(0, j));
+                    str = str.substr(j+1, str.length());
+                    i = -1;
+                }
+            }
+        } else if(str[i] == delim){
+            out.push(str.substr(0, i));
+            str = str.substr(i+1, str.length());
+            i = -1;
+        }
+    }
+    out.push(str);
+    return out;
+}
+AsArZ ZString::strict_explode(char delim){
+    AsArZ out;
+    std::string str = data;
+    for(unsigned i = 0; i < str.length(); ++i){
+        if(str[i] == delim && str[i-1] != '\\'){
+            std::string substr = str.substr(0, i);
+            if(substr != ""){
+                out.push(substr);
+            }
+            str = str.substr(i+1, str.length());
+            i = -1;
+        }
+    }
+    out.push(str);
+    return out;
+}
+
 ZString ZString::strip(char target, bool modify){
-    ZArray<char> tmp = data;
-    for(unsigned i = 0; i < data.size(); ++i){
+    ZString tmp = data;
+    for(unsigned i = 0; i < data.length(); ++i){
         if(data[i] == target){
-            tmp = data.subarr(i+1, data.size());
+            tmp = data.substr(i+1, data.length());
         } else {
             break;
         }
     }
-    data = tmp;
-    for(unsigned i = 0; i < data.size(); ++i){
-        int curr = data.size() - 1 - i;
+    data = tmp.str();
+    for(unsigned i = 0; i < data.length(); ++i){
+        int curr = data.length() - 1 - i;
         if(data[curr] == target){
-            tmp = data.subarr(0, curr);
+            tmp = data.substr(0, curr);
         } else {
             break;
         }
     }
+
+    if(modify){
+        data = tmp.str();
+        return ZString(data);
+    } else {
+        return tmp;
+    }
+}
+
+ZString ZString::removeWhitespace(){
+    replace("  ", "");
+    replace("\n", "");
+    replace("\r", "");
+    return *this;
+}
+
+ZString ZString::substr(int pos, bool modify){
+    std::string tmp = data;
+    tmp = tmp.substr(pos);
+
+    if(modify){
+        data = tmp;
+        return ZString(data);
+    } else {
+        return ZString(tmp);
+    }
+}
+
+ZString ZString::substr(int pos, int npos, bool modify){
+    std::string tmp = data;
+    tmp = tmp.substr(pos, npos);
 
     if(modify){
         data = tmp;
@@ -195,9 +520,9 @@ ZString ZString::strip(char target, bool modify){
 }
 
 ZString ZString::invert(bool modify){
-    ZArray<char> buff;
-    for(unsigned i = data.size(); i > 0; --i){
-        buff.push_back(data[i]);
+    std::string buff;
+    for(unsigned i = data.length(); i > 0; --i){
+        buff += data[i];
     }
 
     if(modify){
@@ -209,8 +534,11 @@ ZString ZString::invert(bool modify){
 }
 
 ZString ZString::toLower(bool modify){
-    ZArray<char> tmp = data;
+    std::string tmp = data;
     for(unsigned i = 0; i < data.size(); ++i){
+        // Custom tolower()
+        //if((int)tmp[i] >= 65 && (int)tmp[i] <= 90)
+        //    tmp[i] = (char)((int)tmp[i] + 32);
         tmp[i] = tolower(tmp[i]);
     }
     if(modify){
@@ -221,8 +549,182 @@ ZString ZString::toLower(bool modify){
     }
 }
 
+ZString ZString::duplicate(unsigned iter, bool modify){
+    ZString tmp;
+    for(unsigned i = 0; i < iter; ++i){
+        tmp << data;
+    }
+    if(modify){
+        data = tmp.str();
+        return ZString(data);
+    } else {
+        return tmp;
+    }
+}
+
+ZString ZString::popLast(bool modify){
+    return substr(0, size()-1, modify);
+}
+
+ZString ZString::toJSON(AsArZ arr, bool modify){
+    ZString tmp;
+    tmp << "{\"" << ZString(arr.getIndex(0)).replace("\"", "\\\"").str() << "\":\"" << arr[0].replace("\"", "\\\"") << "\"";
+    for(unsigned i = 1; i < arr.size(); ++i)
+        tmp << ",\"" << ZString(arr.getIndex(i)).replace("\"", "\\\"").str() << "\":\"" << arr[i].replace("\"", "\\\"") << "\"";
+    tmp << "}";
+    if(modify)
+        data = tmp.str();
+    return tmp;
+}
+
+bool ZString::validJSON(){
+    // JSON validation function and partner fromJSON()
+    // All values must have keys: "":"", NOT "",
+    // You can have as many spaces or newlines as you want between keys and values or keys or opening or closing brackets
+    std::string s = data;
+    // loc is chnaged when specified character is hit under specific conditions
+    enum Locat {
+        start,
+        firstc, // {
+        skey, // "
+        key, // any char but "
+        ekey, // "
+        colon, // :
+        svalue, // "
+        value, // any char but "
+        evalue // "
+        // JSON is valid if } is hit without errors earlier
+    } loc = start;
+    unsigned last = 0;
+    unsigned size = s.size();
+    for(unsigned i = 0; i < s.size(); ++i){
+        char c = s[i];
+        switch(loc){
+        case start:
+            if(c != '{')
+                return false;
+            loc = firstc;
+            break;
+        case firstc:
+            if(c == '"')
+                loc = skey;
+            else if(c != ' ' && c != '\n')
+                return false;
+            break;
+        case skey:
+            if(c == '"')
+                return false;
+            loc = key;
+            break;
+        case key:
+            if(c == '"' && s[i-1] != '\\')
+                loc = ekey;
+            break;
+        case ekey:
+            if(c == ':')
+                loc = colon;
+            else if(c != ' ' && c != '\n')
+                return false;
+            break;
+        case colon:
+            if(c == '"')
+                loc = svalue;
+            else if(c != ' ' && c != '\n')
+                return false;
+            break;
+        case svalue:
+            if(c == '"' && s[i-1] != '\\')
+                loc = evalue;
+            else
+                loc = value;
+            break;
+        case value:
+            if(c == '"' && s[i-1] != '\\')
+                loc = evalue;
+            break;
+        case evalue:
+            if(c == ',')
+                loc = firstc;
+            else if(c == '}')
+                return true;
+            else if(c != ' ' && c != '\n')
+                return false;
+            break;
+        default:
+            // Not Good. Likely Memory Corruption.
+            return false;
+            break;
+        }
+        last = i;
+    }
+    return false;
+}
+
+AsArZ ZString::fromJSON(){
+    if(!validJSON())
+        return AsArZ();
+    std::string s = data;
+    enum Locat {
+        firstc,
+        key,
+        ekey,
+        value,
+        evalue
+    } loc = firstc;
+    AsArZ final;
+    ZString kbuff;
+    ZString vbuff;
+    for(unsigned i = 0; i < s.size(); ++i){
+        char c = s[i];
+        switch(loc){
+        case firstc:
+            if(c == '"')
+                loc = key;
+            break;
+        case key:
+            if(c == '"' && s[i-1] != '\\')
+                loc = ekey;
+            else
+                kbuff << c;
+            break;
+        case ekey:
+            if(c == '"')
+                loc = value;
+            break;
+        case value:
+            if(c == '"' && s[i-1] != '\\')
+                loc = evalue;
+            else
+                vbuff << c;
+            break;
+        case evalue:
+            {
+                ZString kp = kbuff;
+                kp.replace("\\\"", "\"");
+                ZString vp = vbuff;
+                vp.replace("\\\"", "\"");
+                final[final.size()] = vp;
+                final.I(final.size()-1) = kp.str();
+                kbuff.clear();
+                vbuff.clear();
+                if(c == ',')
+                    loc = firstc;
+                else if(c == '}')
+                    return final;
+            }
+            break;
+        default:
+            // Not Good.
+            break;
+        }
+    }
+    // This should not happen.
+    return final;
+}
+
 std::ostream &operator<<(std::ostream& lhs, ZString rhs){
-    for(long i = 0; i < rhs.size(); ++i)
-        lhs << rhs[i];
+    lhs << rhs.str();
     return lhs;
+}
+
 }

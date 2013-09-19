@@ -2,89 +2,114 @@
 #define ZSTRING_H
 
 #include <string>
-#include <cstdio>
-#include "zarray.h"
-#include <cstdlib>
+#include <sstream>
 #include <cstring>
+#include "asar.h"
+#include <cstdlib>
+#include <algorithm>
+//#include <cmath>
+
+namespace LibChaos {
+
+class ZString;
+typedef AssocArray<ZString> AsArZ;
 
 class ZString {
 public:
-    ZString() : data(){}
-    //ZString(const ZString &str) : data(){for(unsigned long i = 0; i < str.size(); ++i){data.push_back(str.ZAc()[i]);}}
-    ~ZString(){}
+    ZString();
+    ~ZString();
 
     ZString &operator=(ZString);
     bool operator==(ZString);
     bool operator!=(ZString);
+    ZString concat(ZString);
     ZString operator+(ZString);
     ZString &append(ZString);
-    ZString &operator+=(ZString str){ return append(str); }
-    ZString &operator<<(ZString str){ return append(str); }
+    ZString &operator+=(ZString);
+    ZString &operator<<(ZString);
 
-    ZString(ZArray<char> arr) : data(){ data = arr; }
-    ZArray<char> ZAc(){ return data; }
+    ZString(std::string);
+//    ZString &operator=(std::string);
+//    bool operator==(const std::string);
+//    bool operator!=(const std::string);
+//    ZString operator+(std::string);
+//    ZString &operator+=(std::string);
+//    ZString &operator<<(std::string);
+    std::string &str();
 
-    ZString(std::string str) : data(str.c_str(), str.size()){}
-    ZString &operator=(const std::string str){ return operator=(ZString(str)); }
-    bool operator==(const std::string str){ return operator==(ZString(str)); }
-    bool operator!=(const std::string str){ return operator!=(ZString(str)); }
-    ZString operator+(const std::string str){ return operator+(ZString(str)); }
-    ZString &operator+=(const std::string str){ return operator+=(ZString(str)); }
-    ZString &operator<<(const std::string str){ return operator<<(ZString(str)); }
-    std::string str(){ return std::string(cc()); }
+    ZString(char*);
+//    ZString &operator=(char*);
+//    bool operator==(char*);
+//    bool operator!=(char*);
+//    ZString operator+(char*);
+//    ZString &operator+=(char*);
+//    ZString &operator<<(char*);
+    char *c();
 
-    ZString(char *str) : data(str, strlen(str)){}
-    ZString &operator=(char *str){ return operator=(ZString(str)); }
-    bool operator==(char *str){ return operator==(ZString(str)); }
-    bool operator!=(char *str){ return operator!=(ZString(str)); }
-    ZString operator+(char *str){ return operator+(ZString(str)); }
-    ZString &operator+=(char *str){ return operator+=(ZString(str)); }
-    ZString &operator<<(char *str){ return operator<<(ZString(str)); }
-    char *c(){ ZArray<char> tmp = ZAc(); tmp.push_back(NULL); return tmp.c_style(); }
+    ZString(const char*);
+//    ZString &operator=(const char*);
+//    bool operator==(const char*);
+//    bool operator!=(const char*);
+//    ZString operator+(const char*);
+//    ZString &operator+=(const char*);
+//    ZString &operator<<(const char*);
+    const char *cc();
 
-    ZString(const char *str) : data(str, strlen(str)){}
-    ZString &operator=(const char *str){ return operator=(ZString(str)); }
-    bool operator==(const char *str){ return operator==(ZString(str)); }
-    bool operator!=(const char *str){ return operator!=(ZString(str)); }
-    ZString operator+(const char *str){ return operator+(ZString(str)); }
-    ZString &operator+=(const char *str){ return operator+=(ZString(str)); }
-    ZString &operator<<(const char *str){ return operator<<(ZString(str)); }
-    const char *cc(){ return (const char *)c(); }
+    ZString(char);
+//    ZString &operator=(char);
+//    ZString operator+(char);
+//    ZString &operator+=(char);
+//    ZString &operator<<(char);
 
-    ZString(char ch) : data(){ data.push_back(ch); }
-    ZString &operator=(char str){ return operator=(ZString(str)); }
-    ZString operator+(char str){ return operator+(ZString(str)); }
-    ZString &operator+=(char str){ return operator+=(ZString(str)); }
-    ZString &operator<<(char str){ return operator<<(ZString(str)); }
-
+    static std::string ItoS(long int num, int base = 10);
     ZString(int);
     int tint();
 
-    char &operator[](unsigned long num){ return data[num]; }
+    char &operator[](unsigned int index){return data[index]; }
 
-    unsigned long size(){ return data.size(); }
-    unsigned long length(){ return size(); }
+    int size();
+    int length();
+    int count(std::string);
 
-    int count(ZString);
+    char first(){ return data[0]; }
+    char last(){ return data[size()-1]; }
 
-    struct SubZStr {
-        unsigned long start;
-        unsigned long end;
-    };
+    void clear();
+    bool isEmpty();
 
-    ZString substr(int, int, bool modify = true);
-    ZString substrpos(int, int, bool modify = true);
-    ZArray<SubZStr> findAll(ZString target);
+    bool startsWith(ZString test_str, bool ignore_whitespace = true);
+    bool beginsWith(ZString test);
+    bool endsWith(ZString test);
+
     ZString replace(ZString before, ZString after, bool modify = true);
+    ZString findFirstBetween(ZString, ZString);
+    ZString replaceBetween(ZString start, ZString end, ZString after);
+    ZString findFirstXmlTagCont(ZString tag);
+    ZString replaceXmlTagCont(ZString tag, ZString after);
     ZString label(std::string label, ZString value, bool modify = true);
+    ZString label(AsArZ, bool modify = true);
     ZString strip(char target, bool modify = true);
-
+    ZString removeWhitespace();
+    ZString substr(int, bool modify = true);
+    ZString substr(int, int, bool modify = true);
     ZString invert(bool modify = true);
     ZString toLower(bool modify = true);
+    ZString duplicate(unsigned iterate, bool modify = true);
+    ZString popLast(bool modify = true);
+
+    AsArZ explode(char delim);
+    AsArZ strict_explode(char delim);
+    AsArZ explode();
+
+    ZString toJSON(AsArZ, bool modify = true);
+    bool validJSON();
+    AsArZ fromJSON();
 
     friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
 private:
-    ZArray<char> data;
+    std::string data;
 };
+
+} // namespace LibChaos
 
 #endif // ZSTRING_H
