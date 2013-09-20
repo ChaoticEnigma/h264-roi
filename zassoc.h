@@ -57,9 +57,10 @@ public:
     ZAssoc<K, T> &push(K key, T value){
         data.push(Data(key, value));
         //data.push({ key, value });
+        return *this;
     }
     ZAssoc<K, T> &push(T value){
-        push(K(), value);
+        return push(K(), value);
     }
     ZAssoc<K, T> &pushFront(K key, T value){
         data.pushFront(Data(key, value));
@@ -67,8 +68,7 @@ public:
         return *this;
     }
     ZAssoc<K, T> &pushFront(T value){
-        pushFront(K(), value);
-        return *this;
+        return pushFront(K(), value);
     }
 
     ZAssoc<K, T> &pop(unsigned index){

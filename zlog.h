@@ -8,7 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include "zstring.h"
-#include "asar.h"
+//#include "asar.h"
 #include "zthread.h"
 #include "zmutex.h"
 #include "zpath.h"

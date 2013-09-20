@@ -7,12 +7,12 @@
 #include <stdio.h>
 #define SQLITE_CUSTOM
 #include "sqlite3.h"
-#include "asar.h"
+//#include "asar.h"
 #include "zstring.h"
 
 namespace LibChaos {
 
-typedef AssocArray< AsArZ > SqlRows;
+typedef ZAssoc<ZString, AsArZ> SqlRows;
 
 class Database {
 public:

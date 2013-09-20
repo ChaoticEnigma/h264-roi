@@ -14,6 +14,7 @@ public:
     ZPath();
     ZPath(ZString);
     ZPath(ZString, bool);
+    ZPath(const char *);
     ZPath &operator=(ZPath);
     ZPath &operator=(ZString);
     ZPath &operator=(ArZ);

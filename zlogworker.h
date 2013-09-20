@@ -18,11 +18,11 @@ namespace LibChaos {
 struct ZlogFormat {
     ZlogFormat() : _init(false){}
     ZlogFormat(bool en, bool pr, int tm, bool th) : _init(true), enable(en), prefix(pr), time(tm), thread(th){}
+    bool _init; // does not need to be changed
     bool enable;
     bool prefix;
     int time;
     bool thread;
-    bool _init; // does not need to be changed
 };
 
 struct LogJob {
