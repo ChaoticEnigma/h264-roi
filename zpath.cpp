@@ -34,7 +34,7 @@ ZPath &ZPath::operator=(ZString str){
     return *this;
 }
 
-ZPath &ZPath::operator=(AsArZ arr){
+ZPath &ZPath::operator=(ArZ arr){
     absolute = false;
     data = arr;
 }
@@ -90,12 +90,12 @@ ZPath &ZPath::relTo(ZPath path){
         }
         match_len = i + 1;
     }
-    data.popCount(match_len);
-    path.dat().popCount(match_len);
+    data.popFrontCount(match_len);
+    path.dat().popFrontCount(match_len);
     ZString up = "../";
     up.duplicate(path.depth());
     ZPath tmp = up;
-    tmp.dat().append(data);
+    tmp.dat().concat(data);
     operator=(tmp);
     return *this;
 }
@@ -130,8 +130,8 @@ ZPath &ZPath::sanitize(){
     // /some/../../../path
     // ../../path
 
-    AsArZ tmp = data;
-    AsArZ tmp2;
+    ArZ tmp = data;
+    ArZ tmp2;
     bool prevup = false;
     for(unsigned i = 0; i < tmp.size(); ++i){
         ZString pth = tmp[i];
@@ -172,7 +172,7 @@ ZPath ZPath::getAbs(ZPath path){
 }
 
 ZPath &ZPath::concat(ZPath path){
-    data.append(path.dat());
+    data.concat(path.dat());
     return *this;
 }
 
@@ -243,7 +243,7 @@ unsigned ZPath::size(){
     return depth();
 }
 
-AsArZ &ZPath::dat(){
+ArZ &ZPath::dat(){
     return data;
 }
 

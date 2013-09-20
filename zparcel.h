@@ -5,6 +5,8 @@
 #include "zpath.h"
 #include "zlog.h"
 #include "zfile.h"
+#include "zassoc.h"
+#include "zjson.h"
 
 namespace LibChaos {
 
@@ -16,10 +18,10 @@ public:
         unsigned long pos;
         unsigned long len;
     };
-    typedef AssocArray<ParcelSection> ParcelSectionList;
+    typedef ZAssoc<ZString, ParcelSection> ParcelSectionList;
 
     ZParcel(ZPath);
-    static bool makeParcel(ZPath out, AssocArray<ZPath> in);
+    static bool makeParcel(ZPath out, ZAssoc<ZString, ZPath> in);
     static ParcelSectionList readIndex(ZPath);
     ParcelSectionList getIndex();
     ZString getSection(ParcelSection);

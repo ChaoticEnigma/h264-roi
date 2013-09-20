@@ -3,7 +3,8 @@
 
 #include <unistd.h>
 #include <sys/stat.h>
-#include "asar.h"
+//#include "asar.h"
+#include "zarray.h"
 #include "zstring.h"
 
 namespace LibChaos {
@@ -15,7 +16,7 @@ public:
     ZPath(ZString, bool);
     ZPath &operator=(ZPath);
     ZPath &operator=(ZString);
-    ZPath &operator=(AsArZ);
+    ZPath &operator=(ArZ);
     bool operator==(ZPath);
     ZPath operator+(ZPath);
     ZPath &operator<<(ZPath);
@@ -39,9 +40,9 @@ public:
     bool &abs();
     unsigned depth();
     unsigned size();
-    AsArZ &dat();
+    ArZ &dat();
 private:
-    AsArZ data;
+    ArZ data;
     bool absolute;
 };
 

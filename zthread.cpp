@@ -40,7 +40,7 @@ bool ZThread::run(funcType func, void *argptr){
     param->zarg->_stop = sptr;
 
     ret = pthread_create(&thread, NULL, entry, param);
-    std::cout << "create " << ret << std::endl;
+    //std::cout << "create " << ret << std::endl;
     if(ret != 0)
         return false;
     _run = true;
@@ -50,7 +50,7 @@ bool ZThread::run(funcType func, void *argptr){
 void *ZThread::join(){
     void *retval = NULL;
     ret = pthread_join(thread, &retval);
-    std::cout << "join " << ret << std::endl;
+    //std::cout << "join " << ret << std::endl;
     _run = false;
     return retval;
 }
@@ -58,7 +58,7 @@ void *ZThread::join(){
 void ZThread::kill(){
     //if(_run){
         ret = pthread_cancel(thread);
-        std::cout << "cancel " << ret << std::endl;
+        //std::cout << "cancel " << ret << std::endl;
     //}
     _run = false;
     //pthread_exit(thread);
@@ -68,12 +68,12 @@ void ZThread::stop(){
     //ret = pthread_kill(thread, SIGINT);
     _stop = true;
     _run = false;
-    std::cout << "stop" << std::endl;
+    //std::cout << "stop" << std::endl;
 }
 
 void ZThread::detach(){
     ret = pthread_detach(thread);
-    std::cout << "detach " << ret << std::endl;
+    //std::cout << "detach " << ret << std::endl;
 }
 
 ztid ZThread::tid(){

@@ -4,6 +4,9 @@
 #include "zlog.h"
 #include "zpath.h"
 #include "zthread.h"
+#include "zarray.h"
+#include "zassoc.h"
+
 //using namespace std;
 using namespace LibChaos;
 
@@ -107,6 +110,24 @@ void file_block(){
     LOG(far.createDirsTo());
 }
 
+void array_block(){
+    ZArray<int> tst;
+    tst.push(10);
+    tst.pushFront(45);
+    tst.push(567);
+    for(unsigned i = 0; i < tst.size(); ++i){
+        LOG(tst[i]);
+    }
+
+    ZAssoc<ZString, ZString> zarr;
+    zarr["here"] = "there";
+    zarr.pushFront("this", "that");
+    zarr.push("where?");
+    for(unsigned i = 0; i < zarr.size(); ++i){
+        LOG(zarr.key(i) << " " << zarr[i]);
+    }
+}
+
 int main(){
     ZLog::formatStdout(ZlogFormat(true, true, 1, true), ZlogFormat(false, true, 0, true), ZlogFormat(true, true, 0, true));
     ZLog::addLogFile(ZString("logs") + ZLog::genLogFileName("libchaos_"), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 0, true));
@@ -114,8 +135,9 @@ int main(){
 
     //string_block();
     //path_block();
-    thread_block();
+    //thread_block();
     //file_block();
+    array_block();
 
     return 0;
 }

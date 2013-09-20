@@ -7,7 +7,7 @@ ZParcel::ZParcel(ZPath file) : parcel(file), ready(false){
     ready = true;
 }
 
-bool ZParcel::makeParcel(ZPath out, AssocArray<ZPath> in){
+bool ZParcel::makeParcel(ZPath out, ZAssoc<ZString, ZPath> in){
     ZPath tmppath = out;
     tmppath.last() << ".tmp";
     LOG(tmppath);
@@ -20,7 +20,7 @@ bool ZParcel::makeParcel(ZPath out, AssocArray<ZPath> in){
     if(!tmpfile.is_open())
         return false;
 
-    AsArZ inx;
+    ZJSON inx;
     unsigned long currpos = 0;
     for(unsigned i = 0; i < in.size(); ++i){
         bool ok;
@@ -43,7 +43,7 @@ bool ZParcel::makeParcel(ZPath out, AssocArray<ZPath> in){
     if(!bffile.is_open())
         return false;
 
-    ZString head = head.toJSON(inx, false) + ";";
+    ZString head = inx.toJSON() + ";";
     ZFile::remove(out);
     std::ofstream outfile(out.str().cc(), std::fstream::binary | std::fstream::app);
     if(!outfile.is_open())
@@ -76,17 +76,18 @@ ZParcel::ParcelSectionList ZParcel::readIndex(ZPath file){
         c = in.get();
     }
     unsigned long offset = indexstr.size() + 1;
-    if(!indexstr.validJSON())
+    if(!ZJSON::validJSON(indexstr))
         return ZParcel::ParcelSectionList();
     ParcelSectionList inxbuff;
-    AsArZ tmpindex = indexstr.fromJSON();
+    ZJSON tmpindex;
+    tmpindex.fromJSON(indexstr);
     for(unsigned i = 0; i < tmpindex.size(); ++i){
         ZString tmp = tmpindex[i];
-        AsArZ tmp2 = tmp.explode(',');
+        ArZ tmp2 = tmp.explode(',');
         if(tmp2.size() != 2)
             return ZParcel::ParcelSectionList();
         ParcelSection pcl(tmp2[0].tint() + offset, tmp2[1].tint());
-        inxbuff[tmpindex.I(i)] = pcl;
+        inxbuff[tmpindex.key(i)] = pcl;
     }
 
     in.close();

@@ -8,7 +8,10 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     asar.h
     database.h
     sqlite3.h
+    zarray.h
+    zassoc.h
     zfile.h
+    zjson.h
     zlog.h
     zlogworker.h
     zmutex.h
@@ -22,6 +25,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     database.cpp
     sqlite3.c
     zfile.cpp
+    zjson.cpp
     zlog.cpp
     zlogworker.cpp
     zparcel.cpp

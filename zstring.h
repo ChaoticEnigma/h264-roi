@@ -4,7 +4,8 @@
 #include <string>
 #include <sstream>
 #include <cstring>
-#include "asar.h"
+//#include "asar.h"
+#include "zassoc.h"
 #include <cstdlib>
 #include <algorithm>
 //#include <cmath>
@@ -12,7 +13,9 @@
 namespace LibChaos {
 
 class ZString;
-typedef AssocArray<ZString> AsArZ;
+//typedef AssocArray<ZString> AsArZ;
+typedef ZAssoc<ZString, ZString> AsArZ;
+typedef ZArray<ZString> ArZ;
 
 class ZString {
 public:
@@ -86,7 +89,7 @@ public:
     ZString replaceBetween(ZString start, ZString end, ZString after);
     ZString findFirstXmlTagCont(ZString tag);
     ZString replaceXmlTagCont(ZString tag, ZString after);
-    ZString label(std::string label, ZString value, bool modify = true);
+    ZString label(ZString label, ZString value, bool modify = true);
     ZString label(AsArZ, bool modify = true);
     ZString strip(char target, bool modify = true);
     ZString removeWhitespace();
@@ -97,13 +100,13 @@ public:
     ZString duplicate(unsigned iterate, bool modify = true);
     ZString popLast(bool modify = true);
 
-    AsArZ explode(char delim);
-    AsArZ strict_explode(char delim);
-    AsArZ explode();
+    ArZ explode(char delim);
+    ArZ strict_explode(char delim);
+    ArZ explode();
 
-    ZString toJSON(AsArZ, bool modify = true);
-    bool validJSON();
-    AsArZ fromJSON();
+    //ZString toJSON(AsArZ, bool modify = true);
+    //bool validJSON();
+    //AsArZ fromJSON();
 
     friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
 private:

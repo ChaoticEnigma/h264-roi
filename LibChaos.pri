@@ -13,7 +13,8 @@ SOURCES += \
     libchaos/zthread.cpp \
     libchaos/libchaos-main.cpp \
     libchaos/zparcel.cpp \
-    libchaos/zlogworker.cpp
+    libchaos/zlogworker.cpp \
+    libchaos/zjson.cpp
 
 
 OTHER_FILES += \
@@ -30,6 +31,9 @@ HEADERS += \
     libchaos/zpath.h \
     libchaos/zthread.h \
     libchaos/zparcel.h \
-    libchaos/zlogworker.h
+    libchaos/zlogworker.h \
+    libchaos/zarray.h \
+    libchaos/zassoc.h \
+    libchaos/zjson.h
 
 

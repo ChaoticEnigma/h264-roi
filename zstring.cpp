@@ -415,16 +415,16 @@ ZString ZString::replaceXmlTagCont(ZString tag, ZString after){
 
 ZString ZString::label(AsArZ values, bool modify){
     for(unsigned i = 0; i < values.size(); ++i)
-        label(values.getIndex(i), values[i], modify);
+        label(values.key(i), values[i], modify);
     return ZString(data);
 }
-ZString ZString::label(std::string labeltxt, ZString value, bool modify){
-    std::string label = std::string("<?").append(labeltxt).append("?>");
-    return replace(label, value.str(), modify);
+ZString ZString::label(ZString labeltxt, ZString value, bool modify){
+    ZString label = ZString("<?").append(labeltxt).append("?>");
+    return replace(label, value, modify);
 }
 
-AsArZ ZString::explode(char delim){
-    AsArZ out;
+ArZ ZString::explode(char delim){
+    ArZ out;
     std::string str = data;
     for(unsigned i = 0; i < str.length(); ++i){
         if(str[i] == '"'){
@@ -444,8 +444,8 @@ AsArZ ZString::explode(char delim){
     out.push(str);
     return out;
 }
-AsArZ ZString::strict_explode(char delim){
-    AsArZ out;
+ArZ ZString::strict_explode(char delim){
+    ArZ out;
     std::string str = data;
     for(unsigned i = 0; i < str.length(); ++i){
         if(str[i] == delim && str[i-1] != '\\'){
@@ -564,162 +564,6 @@ ZString ZString::duplicate(unsigned iter, bool modify){
 
 ZString ZString::popLast(bool modify){
     return substr(0, size()-1, modify);
-}
-
-ZString ZString::toJSON(AsArZ arr, bool modify){
-    ZString tmp;
-    tmp << "{\"" << ZString(arr.getIndex(0)).replace("\"", "\\\"").str() << "\":\"" << arr[0].replace("\"", "\\\"") << "\"";
-    for(unsigned i = 1; i < arr.size(); ++i)
-        tmp << ",\"" << ZString(arr.getIndex(i)).replace("\"", "\\\"").str() << "\":\"" << arr[i].replace("\"", "\\\"") << "\"";
-    tmp << "}";
-    if(modify)
-        data = tmp.str();
-    return tmp;
-}
-
-bool ZString::validJSON(){
-    // JSON validation function and partner fromJSON()
-    // All values must have keys: "":"", NOT "",
-    // You can have as many spaces or newlines as you want between keys and values or keys or opening or closing brackets
-    std::string s = data;
-    // loc is chnaged when specified character is hit under specific conditions
-    enum Locat {
-        start,
-        firstc, // {
-        skey, // "
-        key, // any char but "
-        ekey, // "
-        colon, // :
-        svalue, // "
-        value, // any char but "
-        evalue // "
-        // JSON is valid if } is hit without errors earlier
-    } loc = start;
-    unsigned last = 0;
-    unsigned size = s.size();
-    for(unsigned i = 0; i < s.size(); ++i){
-        char c = s[i];
-        switch(loc){
-        case start:
-            if(c != '{')
-                return false;
-            loc = firstc;
-            break;
-        case firstc:
-            if(c == '"')
-                loc = skey;
-            else if(c != ' ' && c != '\n')
-                return false;
-            break;
-        case skey:
-            if(c == '"')
-                return false;
-            loc = key;
-            break;
-        case key:
-            if(c == '"' && s[i-1] != '\\')
-                loc = ekey;
-            break;
-        case ekey:
-            if(c == ':')
-                loc = colon;
-            else if(c != ' ' && c != '\n')
-                return false;
-            break;
-        case colon:
-            if(c == '"')
-                loc = svalue;
-            else if(c != ' ' && c != '\n')
-                return false;
-            break;
-        case svalue:
-            if(c == '"' && s[i-1] != '\\')
-                loc = evalue;
-            else
-                loc = value;
-            break;
-        case value:
-            if(c == '"' && s[i-1] != '\\')
-                loc = evalue;
-            break;
-        case evalue:
-            if(c == ',')
-                loc = firstc;
-            else if(c == '}')
-                return true;
-            else if(c != ' ' && c != '\n')
-                return false;
-            break;
-        default:
-            // Not Good. Likely Memory Corruption.
-            return false;
-            break;
-        }
-        last = i;
-    }
-    return false;
-}
-
-AsArZ ZString::fromJSON(){
-    if(!validJSON())
-        return AsArZ();
-    std::string s = data;
-    enum Locat {
-        firstc,
-        key,
-        ekey,
-        value,
-        evalue
-    } loc = firstc;
-    AsArZ final;
-    ZString kbuff;
-    ZString vbuff;
-    for(unsigned i = 0; i < s.size(); ++i){
-        char c = s[i];
-        switch(loc){
-        case firstc:
-            if(c == '"')
-                loc = key;
-            break;
-        case key:
-            if(c == '"' && s[i-1] != '\\')
-                loc = ekey;
-            else
-                kbuff << c;
-            break;
-        case ekey:
-            if(c == '"')
-                loc = value;
-            break;
-        case value:
-            if(c == '"' && s[i-1] != '\\')
-                loc = evalue;
-            else
-                vbuff << c;
-            break;
-        case evalue:
-            {
-                ZString kp = kbuff;
-                kp.replace("\\\"", "\"");
-                ZString vp = vbuff;
-                vp.replace("\\\"", "\"");
-                final[final.size()] = vp;
-                final.I(final.size()-1) = kp.str();
-                kbuff.clear();
-                vbuff.clear();
-                if(c == ',')
-                    loc = firstc;
-                else if(c == '}')
-                    return final;
-            }
-            break;
-        default:
-            // Not Good.
-            break;
-        }
-    }
-    // This should not happen.
-    return final;
 }
 
 std::ostream &operator<<(std::ostream& lhs, ZString rhs){
