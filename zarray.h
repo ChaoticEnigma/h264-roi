@@ -31,6 +31,7 @@ public:
 
     ZArray<T> &push(T value){
         data.push_back(value);
+        return *this;
     }
 
     ZArray<T> &pop(unsigned index){

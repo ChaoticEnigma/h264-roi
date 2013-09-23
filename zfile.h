@@ -25,11 +25,11 @@ class ZFile {
         ZString read();
         ZString read(unsigned);
         ZString readline();
-        static ZString readFile(ZString name);
+        //static ZString readFile(ZString name);
         static ZString readFile(ZPath name);
-        static ZString readFile(ZString name, bool&);
+        //static ZString readFile(ZString name, bool&);
         static ZString readFile(ZPath name, bool&);
-        static bool writeFile(ZString name, ZString &data);
+        //static bool writeFile(ZString name, ZString &data);
         static bool writeFile(ZPath name, ZString &data);
         bool append(ZString);
         bool write(ZString);

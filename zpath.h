@@ -12,10 +12,13 @@ namespace LibChaos {
 class ZPath {
 public:
     ZPath();
+    ZPath(const char *);
+    ZPath(std::string);
     ZPath(ZString);
     ZPath(ZString, bool);
+
     ZPath &operator=(ZPath);
-    ZPath &operator=(ZString);
+    //ZPath &operator=(ZString);
     ZPath &operator=(ArZ);
     bool operator==(ZPath);
     ZPath operator+(ZPath);
