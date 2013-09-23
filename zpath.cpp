@@ -26,6 +26,9 @@ ZPath::ZPath(ZString path, bool absl) : data(){
     *this = ZPath(ZString(path));
     absolute = absl;
 }
+ZPath::ZPath(const char *path) : data(){
+    operator=(ZString(path));
+}
 
 
 ZPath &ZPath::operator=(ZPath path){
