@@ -8,14 +8,12 @@ SOURCES += \
     libchaos/zfile.cpp \
     libchaos/sqlite3.c \
     libchaos/database.cpp \
-    libchaos/asar.tpp \
     libchaos/zpath.cpp \
     libchaos/zthread.cpp \
     libchaos/libchaos-main.cpp \
     libchaos/zparcel.cpp \
     libchaos/zlogworker.cpp \
     libchaos/zjson.cpp
-
 
 OTHER_FILES += \
     libchaos/CMakeLists.txt
@@ -26,7 +24,6 @@ HEADERS += \
     libchaos/zfile.h \
     libchaos/sqlite3.h \
     libchaos/database.h \
-    libchaos/asar.h \
     libchaos/zmutex.h \
     libchaos/zpath.h \
     libchaos/zthread.h \
@@ -34,6 +31,7 @@ HEADERS += \
     libchaos/zlogworker.h \
     libchaos/zarray.h \
     libchaos/zassoc.h \
-    libchaos/zjson.h
+    libchaos/zjson.h \
+    libchaos/asar.h
 
-
+INCLUDEPATH += libchaos

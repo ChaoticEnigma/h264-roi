@@ -6,25 +6,33 @@ namespace LibChaos {
 ZPath::ZPath() : data(), absolute(false){}
 ZPath::ZPath(const char *path) : data(){
     //operator=(ZPath(ZString(path)));
-    *this = ZPath(ZString(path));
+    //*this = ZPath(ZString(path));
+    absolute = fromZString(path, data);
 }
 ZPath::ZPath(std::string path){
     //operator=(ZPath(ZString(path)));
-    *this = ZPath(ZString(path));
+    //*this = ZPath(ZString(path));
+    absolute = fromZString(path, data);
 }
 ZPath::ZPath(ZString path) : data(){
     //operator=(path);
-    if(path[0] == '/')
-        absolute = true;
-    else
-        absolute = false;
-    data = path.explode('/');
-    data.clean();
+    absolute = fromZString(path, data);
 }
 ZPath::ZPath(ZString path, bool absl) : data(){
     //operator=(path);
-    *this = ZPath(ZString(path));
-    absolute = absl;
+    //*this = ZPath(ZString(path));
+    //absolute = absl;
+    absolute = fromZString(path, data);
+}
+
+bool ZPath::fromZString(ZString str, ArZ &dat){
+    dat = str.explode('/');
+    dat.clean();
+    if(str[0] == '/'){
+        return true;
+    } else {
+        return false;
+    }
 }
 
 ZPath &ZPath::operator=(ZPath path){

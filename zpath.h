@@ -45,6 +45,8 @@ public:
     unsigned size();
     ArZ &dat();
 private:
+    bool fromZString(ZString, ArZ &);
+
     ArZ data;
     bool absolute;
 };

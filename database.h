@@ -13,6 +13,7 @@
 namespace LibChaos {
 
 typedef ZAssoc<ZString, AsArZ> SqlRows;
+//typedef AssocArray<AsArZ> SqlRows;
 
 class Database {
 public:

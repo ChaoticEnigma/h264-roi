@@ -2,11 +2,11 @@
 
 namespace LibChaos {
 
-ZString::ZString(){
-    data.clear();
+ZString::ZString() : data(){
+    //data.clear();
 }
 ZString::~ZString(){
-    data.clear();
+    //data.clear();
 }
 
 ZString &ZString::operator=(ZString str){
@@ -41,30 +41,6 @@ ZString &ZString::operator<<(ZString str){
 ZString::ZString(std::string str){
     data = str;
 }
-//ZString &ZString::operator=(std::string str){
-//    data = str;
-//    return *this;
-//}
-//bool ZString::operator==(const std::string rhs){
-//    if(data == rhs)
-//        return true;
-//    return false;
-//}
-//bool ZString::operator!=(const std::string rhs){
-//    if(data != rhs)
-//        return true;
-//    return false;
-//}
-//ZString ZString::operator+(std::string str){
-//    return ZString(data.append(str));
-//}
-//ZString &ZString::operator+=(std::string str){
-//    data = data.append(str);
-//    return *this;
-//}
-//ZString &ZString::operator<<(std::string str){
-//    return operator+=(str);
-//}
 std::string &ZString::str(){
     return data;
 }
@@ -76,32 +52,6 @@ ZString::ZString(char *str){
         data = std::string();
     }
 }
-//ZString &ZString::operator=(char *str){
-//    data = str;
-//    return *this;
-//}
-//bool ZString::operator==(char *rhs){
-//    ZString comp = rhs;
-//    if(data == comp.str())
-//        return true;
-//    return false;
-//}
-//bool ZString::operator!=(char *rhs){
-//    ZString comp = rhs;
-//    if(data != comp.str())
-//        return true;
-//    return false;
-//}
-//ZString ZString::operator+(char *str){
-//    return ZString(data.append(ZString(str).str()));
-//}
-//ZString &ZString::operator+=(char *str){
-//    data = data.append(ZString(str).str());
-//    return *this;
-//}
-//ZString &ZString::operator<<(char *str){
-//    return operator+=(str);
-//}
 char* ZString::c(){
     char str[size()];
     return strcpy(str, data.c_str());
@@ -114,32 +64,6 @@ ZString::ZString(const char *str){
         data = std::string();
     }
 }
-//ZString &ZString::operator=(const char *str){
-//    data = str;
-//    return *this;
-//}
-//bool ZString::operator==(const char *rhs){
-//    ZString comp = rhs;
-//    if(data == comp.str())
-//        return true;
-//    return false;
-//}
-//bool ZString::operator!=(const char *rhs){
-//    ZString comp = rhs;
-//    if(data != comp.str())
-//        return true;
-//    return false;
-//}
-//ZString ZString::operator+(const char *str){
-//    return ZString(data.append(ZString(str).str()));
-//}
-//ZString &ZString::operator+=(const char *str){
-//    data = data.append(ZString(str).str());
-//    return *this;
-//}
-//ZString &ZString::operator<<(const char *str){
-//    return operator+=(str);
-//}
 const char* ZString::cc(){
     return data.c_str();
 }
@@ -147,21 +71,6 @@ const char* ZString::cc(){
 ZString::ZString(char ch){
     data = std::string(1, ch);
 }
-//ZString &ZString::operator=(char str){
-//    data.clear();
-//    data += str;
-//    return *this;
-//}
-//ZString ZString::operator+(char str){
-//    return ZString(data.append(ZString(str).str()));
-//}
-//ZString &ZString::operator+=(char str){
-//    data += str;
-//    return *this;
-//}
-//ZString &ZString::operator<<(char str){
-//    return operator+=(str);
-//}
 
 std::string ZString::ItoS(long int value, int base) {
     std::string buf;
