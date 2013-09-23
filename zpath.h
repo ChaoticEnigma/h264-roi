@@ -18,6 +18,7 @@ public:
     ZPath(ZString, bool);
 
     //ZPath &operator=(ZString);
+    ZPath &operator=(ZPath);
     ZPath &operator=(ArZ);
     bool operator==(ZPath);
     ZPath operator+(ZPath);
