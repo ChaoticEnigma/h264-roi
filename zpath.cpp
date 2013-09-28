@@ -8,10 +8,12 @@ ZPath::ZPath() : data(), absolute(false){}
 ZPath::ZPath(ZString path) : data(){
     operator=(path);
 }
-
 ZPath::ZPath(ZString path, bool absl) : data(){
     operator=(path);
     absolute = absl;
+}
+ZPath::ZPath(const char *path) : data(){
+    operator=(ZString(path));
 }
 
 ZPath &ZPath::operator=(ZPath path){

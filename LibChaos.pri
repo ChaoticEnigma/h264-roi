@@ -34,6 +34,7 @@ HEADERS += \
     libchaos/zlogworker.h \
     libchaos/zarray.h \
     libchaos/zassoc.h \
-    libchaos/zjson.h
+    libchaos/zjson.h \
+    libchaos/ztypes.h
 
 

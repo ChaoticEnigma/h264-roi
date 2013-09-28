@@ -163,7 +163,7 @@ ZString::ZString(char ch){
 //    return operator+=(str);
 //}
 
-std::string ZString::ItoS(long int value, int base) {
+ZString ZString::ItoS(long int value, int base) {
     std::string buf;
     if (base < 2 || base > 16) return buf;
     enum { kMaxDigits = 35 };
@@ -175,11 +175,11 @@ std::string ZString::ItoS(long int value, int base) {
     } while ( quotient );
     if ( value < 0) buf += '-';
     std::reverse( buf.begin(), buf.end() );
-    return buf;
+    return ZString(buf);
 }
 
-ZString::ZString(int num){
-    data = ItoS(num, 10);
+ZString::ZString(long int num){
+    data = ItoS(num, 10).str();
 }
 int ZString::tint(){
     const char *str = data.c_str();

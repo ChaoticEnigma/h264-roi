@@ -7,38 +7,14 @@ namespace LibChaos {
 //#include "resource.h"
 //#include <QDateTime>
 
-#define ZLOG_FORMAT_THIS        4001
-#define ZLOG_PLAIN_THIS         4002
-
 #define ZLOG_FLUSH              1001
 #define ZLOG_NEWLN              1002
 #define ZLOG_FLUSHLN            1003
 #define ZLOG_NOLN               1004
-
-#define ZLOG_DEFAULT_NEWLN      2001
-#define ZLOG_DEFAULT_NOLN       2002
-
-#define ZLOG_MODE_NO_TIME       2101
-#define ZLOG_MODE_TIME          2102
-#define ZLOG_MODE_CLOCK         2103
-
-#define ZLOG_MODE_NO_THREAD     2104
-#define ZLOG_MODE_THREAD        2105
-
 #define ZLOG_NORMAL             3001
 #define ZLOG_DEBUG              3002
-#define ZLOG_MAIN_MODE          3003
-#define ZLOG_DEBUG_MODE         3004
-#define ZLOG_RECALL_DEBUG       3005
-#define ZLOG_DEBUG_ENABLE       3006
-#define ZLOG_DEBUG_DISABLE      3007
-
 #define ZLOG_ERROR              5001
-
 #define ZLOG_STDOUT             6001
-
-#define ZLOG_ENABLE_DAY_LOGS    7001
-#define ZLOG_DISABLE_DAY_LOGS   7002
 
 ZLog::zlog_flag::zlog_flag(short dat) : data(dat){}
 void ZLog::zlog_flag::operator=(short dat){
@@ -116,7 +92,7 @@ ZLog &ZLog::operator<<(ZString text){
 ZLog &ZLog::operator<<(std::string text){
     return log(ZString(text));
 }
-ZLog &ZLog::operator<<(int text){
+ZLog &ZLog::operator<<(long int text){
     return log(ZString(text));
 }
 ZLog &ZLog::operator<<(const char *text){
