@@ -32,6 +32,7 @@ HEADERS += \
     libchaos/zarray.h \
     libchaos/zassoc.h \
     libchaos/zjson.h \
+    libchaos/ztypes.h \
     libchaos/asar.h
 
 INCLUDEPATH += libchaos

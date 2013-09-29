@@ -34,6 +34,9 @@ bool ZPath::fromZString(ZString str, ArZ &dat){
         return false;
     }
 }
+ZPath::ZPath(const char *path) : data(){
+    operator=(ZString(path));
+}
 
 ZPath &ZPath::operator=(ZPath path){
     //data = path.dat();

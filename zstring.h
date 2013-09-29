@@ -42,8 +42,8 @@ public:
 
     ZString(char);
 
-    static std::string ItoS(long int num, int base = 10);
-    ZString(int);
+    static ZString ItoS(long int num, int base = 10);
+    ZString(long int);
     int tint();
 
     char &operator[](unsigned int);
