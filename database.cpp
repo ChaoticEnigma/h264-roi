@@ -8,7 +8,12 @@ namespace LibChaos {
 Database::Database(){}
 
 Database::Database(ZString file){
-    sqlite3_open(file.cc(), &db);
+    rc = sqlite3_open(file.cc(), &db);
+}
+
+Database::~Database(){
+    //delete db;
+    close();
 }
 
 void Database::open(ZString file){

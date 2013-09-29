@@ -19,6 +19,8 @@ class Database {
 public:
     Database();
     Database(ZString file);
+    ~Database();
+
     void open(ZString file);
     bool ok();
     void close();
@@ -48,6 +50,7 @@ private:
     short format;
     int tmp_record_id;
     ZString query_buffer;
+    int rc;
 };
 
 typedef Database ZDatabase;

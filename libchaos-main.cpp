@@ -37,6 +37,15 @@ void string_block(){
     LOG("more text here");
 }
 
+void string_magic_block(){
+    ZString tst = "this and this text";
+    tst.replace("this", "xthisx", 4);
+    LOG(tst);
+    ZString tst2 = "that that that text";
+    tst2.replaceEach("that", "taat", 1);
+    LOG(tst2);
+}
+
 void path_block(){
     // /a/path/here/test.txt
     // /this/path/to/another/place
@@ -134,8 +143,9 @@ int main(){
     ZLog::addLogFile(ZString("logs") + ZLog::genLogFileName("libchaos_"), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 0, true));
     LOG("Starting libchaos Test");
 
-    string_block();
-    path_block();
+    //string_block();
+    string_magic_block();
+    //path_block();
     //thread_block();
     //file_block();
     //array_block();

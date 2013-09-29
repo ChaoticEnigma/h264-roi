@@ -46,14 +46,14 @@ public:
     ZString(int);
     int tint();
 
-    char &operator[](unsigned int index){return data[index]; }
+    char &operator[](unsigned int);
 
     int size();
     int length();
     int count(std::string);
 
-    char first(){ return data[0]; }
-    char last(){ return data[size()-1]; }
+    char first();
+    char last();
 
     void clear();
     bool isEmpty();
@@ -62,7 +62,15 @@ public:
     bool beginsWith(ZString test);
     bool endsWith(ZString test);
 
-    ZString replace(ZString before, ZString after, bool modify = true);
+    static unsigned long findFirst(ZString, ZString);
+
+    // Replace the first occurrence of <before> in <str> with <after>, up to <max> times
+    ZString &replace(ZString before, ZString after, unsigned max = 1000);
+    static ZString replace(ZString str, ZString before, ZString after, unsigned max = 1000);
+    // Replace up to <max> occurences of <before> with <after>
+    ZString &replaceEach(ZString before, ZString after, unsigned max = 1000);
+    static ZString replaceEach(ZString str, ZString before, ZString after, unsigned max = 1000);
+
     ZString findFirstBetween(ZString, ZString);
     ZString replaceBetween(ZString start, ZString end, ZString after);
     ZString findFirstXmlTagCont(ZString tag);
@@ -71,8 +79,10 @@ public:
     ZString label(AsArZ, bool modify = true);
     ZString strip(char target, bool modify = true);
     ZString removeWhitespace();
+
     ZString substr(int, bool modify = true);
     ZString substr(int, int, bool modify = true);
+
     ZString invert(bool modify = true);
     ZString toLower(bool modify = true);
     ZString duplicate(unsigned iterate, bool modify = true);
@@ -89,6 +99,7 @@ public:
     friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
 private:
     std::string data;
+    char byte;
 };
 
 } // namespace LibChaos

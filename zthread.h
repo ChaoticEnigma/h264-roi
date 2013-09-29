@@ -36,12 +36,12 @@ public:
 
     ztid tid();
     static ztid thisTid();
-private:
+
     struct zthreadparam {
         funcType funcptr;
-        ZThreadArg *zarg;
-    };
-
+        ZThreadArg zarg;
+    } _param;
+private:
     bool _run;
     bool _stop;
     int ret;

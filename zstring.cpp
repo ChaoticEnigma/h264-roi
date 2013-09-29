@@ -46,7 +46,7 @@ std::string &ZString::str(){
 }
 
 ZString::ZString(char *str){
-    if(str){
+    if(str != NULL){
         data = std::string(str, strlen(str));
     } else {
         data = std::string();
@@ -58,7 +58,7 @@ char* ZString::c(){
 }
 
 ZString::ZString(const char *str){
-    if(str){
+    if(str != NULL){
         data = std::string(str, strlen(str));
     } else {
         data = std::string();
@@ -79,9 +79,9 @@ std::string ZString::ItoS(long int value, int base) {
     buf.reserve( kMaxDigits );
     long int quotient = value;
     do {
-        buf += "0123456789abcdef"[ std::labs( quotient % base ) ];
+        buf += "0123456789abcdef"[std::labs(quotient % base)];
         quotient /= base;
-    } while ( quotient );
+    } while(quotient);
     if ( value < 0) buf += '-';
     std::reverse( buf.begin(), buf.end() );
     return buf;
@@ -93,6 +93,13 @@ ZString::ZString(int num){
 int ZString::tint(){
     const char *str = data.c_str();
     return atoi(str);
+}
+
+char &ZString::operator[](unsigned int index){
+    if(index > size())
+        return byte;
+    else
+        return data[index];
 }
 
 int ZString::size(){
@@ -119,6 +126,19 @@ int ZString::count(std::string needle){
         }
     }
     return count;
+}
+
+char ZString::first(){
+    if(size() >= 1)
+        return data[0];
+    else
+        return '\0';
+}
+char ZString::last(){
+    if(size() >= 1)
+        return data[size()-1];
+    else
+        return '\0';
 }
 
 void ZString::clear(){
@@ -162,40 +182,171 @@ bool ZString::endsWith(ZString test){
     return test.str() == end;
 }
 
-ZString ZString::replace(ZString zbefore, ZString zafter, bool modify){
-    std::string before = zbefore.str();
-    std::string after = zafter.str();
-    std::string tmpdata = data;
-    std::string tmp = "";
-    for(unsigned i = 0; i < tmpdata.length(); ++i){
-        if(tmpdata[i] == before[0]){
+unsigned long ZString::findFirst(ZString str, ZString find){
+    return str.str().find(find.str());
+}
+
+ZString &ZString::replace(unsigned long pos, unsigned long len, ZString after){
+    data = replace(data, pos, len, after).str();
+    return *this;
+}
+ZString ZString::replace(ZString str, unsigned long pos, unsigned long len, ZString after){
+    ZString pre = substr()
+    if(str.isEmpty())
+        return ZString();
+    if(before.isEmpty())
+        return str;
+    bool found = true;
+    unsigned count = 0;
+    while(found && count < max){
+        unsigned long loc = findFirst(str, before);
+        if(loc != (unsigned long)-1){
+            str.str().replace(loc, before.size(), after.str());
+            ++count;
+        } else {
+            found = false;
+        }
+    }
+    return str;
+}
+
+ZString &ZString::replace(ZString before, ZString after, unsigned max){
+    data = replace(data, before, after, max).str();
+    return *this;
+}
+ZString ZString::replace(ZString str, ZString before, ZString after, unsigned max){
+    if(str.isEmpty())
+        return ZString();
+    if(before.isEmpty())
+        return str;
+    bool found = true;
+    unsigned count = 0;
+    while(found && count < max){
+        unsigned long loc = findFirst(str, before);
+        if(loc != (unsigned long)-1){
+            str.str().replace(loc, before.size(), after.str());
+            ++count;
+        } else {
+            found = false;
+        }
+    }
+    return str;
+}
+
+ZString &ZString::replaceEach(ZString before, ZString after, unsigned max){
+    data = replaceEach(data, before, after, max).str();
+    return *this;
+}
+ZString ZString::replaceEach(ZString str, ZString before, ZString after, unsigned max){
+    if(str.isEmpty())
+        return ZString();
+    if(before.isEmpty())
+        return str;
+
+    //ZString tmp;
+    bool found = true;
+    unsigned count = 0;
+    unsigned last = 0;
+    while(found && count < max){
+        //unsigned long loc = findFirst(str, before);
+        unsigned long loc = str.str().find(before.str(), last);
+        if(loc != (unsigned long)-1){
+            str.str().replace(loc, before.size(), after.str());
+            last = loc + after.size();
+            ++count;
+        } else {
+            found = false;
+        }
+    }
+    //tmp << str;
+    return str;
+}
+
+/*
+        if(str.size() >= before.size()){
+            for(unsigned long i = 0; i < str.size(); ++i){
+                bool match = true;
+                unsigned long last = i;
+                for(unsigned long j = 0; j < before.size(); ++j){
+                    if(str[i+j] != before[j]){
+                        match = false;
+                        break;
+                    }
+                    last = i+j;
+                }
+            }
+        }
+
+        for(unsigned long i = 0; i < str.size(); ++i){
+            if(str[i] == before.first()){
+                bool match = true;
+                int last = 0;
+                for(unsigned long j = 0; j < before.size(); ++j){
+                    if(str[i+j] != before[j]){
+                        match = false;
+                        break;
+                    }
+                    last = i + j;
+                }
+                if(match){
+                    tmp << str.substr(0, i, false);
+                    if(!after.isEmpty()){
+                        tmp << after;
+                    }
+                    str = str.substr(last + 1, false);
+                    //i = -1;
+                }
+            }
+        }
+*/
+
+/*ZString ZString::replace(ZString zbefore, ZString zafter, bool modify){
+    if(isEmpty())
+        return ZString();
+    if(zbefore.isEmpty())
+        return *this;
+    //std::string before = zbefore.str();
+    //std::string after = zafter.str();
+    //std::string tmpdata = data;
+    ZString tmpdata = data;
+    //std::string tmp;
+    ZString tmp;
+    for(long i = 0; i < tmpdata.size(); ++i){
+        if(tmpdata[i] == zbefore.first()){
             bool match = true;
             int last = 0;
-            for(unsigned j = 0; j < before.length(); ++j){
-                if(tmpdata[i+j] != before[j]){
+            for(unsigned j = 0; j < zbefore.size(); ++j){
+                if(tmpdata[i+j] != zbefore[j]){
                     match = false;
                     break;
                 }
                 last = i + j;
             }
             if(match){
-                std::string pre = tmpdata.substr(0, i);
-                std::string suff = tmpdata.substr(last+1);
-                tmp = tmp.append(pre).append(after);
-                tmpdata = suff;
+                //std::string pre = tmpdata.substr(0, i);
+                //std::string suff = tmpdata.substr(last+1);
+                //tmp = tmp.append(pre);
+                tmp << tmpdata.substr(0, i, false);
+                if(!zafter.isEmpty()){
+                    //tmp = tmp.append(zafter.str());
+                    tmp << zafter;
+                }
+                //tmpdata = suff;
+                tmpdata = tmpdata.substr(last + 1, false);
                 i = -1;
             }
         }
     }
-    tmp = tmp.append(tmpdata);
+    //tmp = tmp.append(tmpdata);
+    tmp << tmpdata;
 
     if(modify){
-        data = tmp;
-        return ZString(data);
+        data = tmp.str();
+        return *this;
     } else {
-        return ZString(tmp);
+        return tmp;
     }
-}
+}*/
 
 ZString ZString::findFirstBetween(ZString opening_string, ZString closing_string){
     std::string pre = opening_string.str();
@@ -329,7 +480,10 @@ ZString ZString::label(AsArZ values, bool modify){
 }
 ZString ZString::label(ZString labeltxt, ZString value, bool modify){
     ZString label = ZString("<?").append(labeltxt).append("?>");
-    return replace(label, value, modify);
+    if(modify)
+        return replace(label, value);
+    else
+        return replace(data, label, value);
 }
 
 ArZ ZString::explode(char delim){
