@@ -99,17 +99,17 @@ ZString ZFile::readline(){
     }
     return ZString();
 }
-ZString ZFile::readFile(ZString filenm){
+/*ZString ZFile::readFile(ZString filenm){
     bool st;
     return readFile(ZPath(filenm), st);
-}
+}*/
 ZString ZFile::readFile(ZPath filenm){
     bool st;
     return readFile(filenm, st);
 }
-ZString ZFile::readFile(ZString filenm, bool &status){
+/*ZString ZFile::readFile(ZString filenm, bool &status){
     return readFile(ZPath(filenm), status);
-}
+}*/
 ZString ZFile::readFile(ZPath filenm, bool &status){
     struct stat st_buf;
     int ret = stat(filenm.str().cc(), &st_buf);
@@ -136,9 +136,9 @@ ZString ZFile::readFile(ZPath filenm, bool &status){
     return ZString();
 }
 
-bool ZFile::writeFile(ZString filenm, ZString &data){
+/*bool ZFile::writeFile(ZString filenm, ZString &data){
     return writeFile(ZPath(filenm), data);
-}
+}*/
 bool ZFile::writeFile(ZPath filenm, ZString &data){
     if(!filenm.createDirsTo())
         return false;

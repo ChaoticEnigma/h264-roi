@@ -1,6 +1,7 @@
 #include "database.h"
 #include <stdio.h>
 #include <fstream>
+#include <iostream>
 
 namespace LibChaos {
 
@@ -26,14 +27,18 @@ bool Database::ok(){
 
 int Database::sel_callback(int num_fields, char **p_fields, char **p_col_names){
     if(format == 0){
+        AsArZ tmp;
         for(int i = 0; i < num_fields; ++i){
-            records[tmp_record_id][p_col_names[i]] = p_fields[i];
+            tmp[p_col_names[i]] = p_fields[i];
+            //records[tmp_record_id][p_col_names[i]] = p_fields[i];
         }
-    }else if(format == 1){
+        records.push(tmp);
+    } else if(format == 1){
         for(int i = 0; i < num_fields; ++i){
-            records[p_col_names[i]][tmp_record_id] = p_fields[i];
+            //records[p_col_names[i]][tmp_record_id] = p_fields[i];
+            records[p_col_names[i]].push(p_fields[i]);
         }
-    }else{
+    } else {
         return 1;
     }
     ++tmp_record_id;

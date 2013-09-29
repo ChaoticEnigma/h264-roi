@@ -11,20 +11,21 @@
 using namespace LibChaos;
 
 void string_block(){
-    /*ZString t3 = "hello, this is a string";
-    cout << t3.size() << " " << t3 << endl;
+    ZString t3 = "hello, this is a string";
+    std::cout << t3.size() << " " << t3 << std::endl;
     t3.append(", and this is appended");
-    cout << t3.size() << " " << t3 << endl;
+    std::cout << t3.size() << " " << t3 << std::endl;
     t3.replace(" is ", " \"is still\" ");
-    cout << t3.size() << " " << t3 << endl;
+    std::cout << t3.size() << " " << t3 << std::endl;
     ZArray<ZString> words = t3.explode(' ');
     for(unsigned long i = 0; i < words.size(); ++i)
-        cout << '-' << words[i] << "- ";
-    cout << endl;
-    words.concat(t3.smart_explode(' '));
+        std::cout << '-' << words[i] << "- ";
+    std::cout << std::endl;
+    words.concat(t3.strict_explode(' '));
     for(unsigned long i = 0; i < words.size(); ++i)
-        cout << '-' << words[i] << "- ";
-    cout << endl;*/
+        std::cout << '-' << words[i] << "- ";
+    std::cout << std::endl;
+
     LOG("this text here");
     ZString tst;
     tst << 'a';
@@ -133,11 +134,11 @@ int main(){
     ZLog::addLogFile(ZString("logs") + ZLog::genLogFileName("libchaos_"), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 0, true));
     LOG("Starting libchaos Test");
 
-    //string_block();
-    //path_block();
+    string_block();
+    path_block();
     //thread_block();
     //file_block();
-    array_block();
+    //array_block();
 
     return 0;
 }

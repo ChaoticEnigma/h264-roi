@@ -32,37 +32,15 @@ public:
     ZString &operator<<(ZString);
 
     ZString(std::string);
-//    ZString &operator=(std::string);
-//    bool operator==(const std::string);
-//    bool operator!=(const std::string);
-//    ZString operator+(std::string);
-//    ZString &operator+=(std::string);
-//    ZString &operator<<(std::string);
     std::string &str();
 
     ZString(char*);
-//    ZString &operator=(char*);
-//    bool operator==(char*);
-//    bool operator!=(char*);
-//    ZString operator+(char*);
-//    ZString &operator+=(char*);
-//    ZString &operator<<(char*);
     char *c();
 
     ZString(const char*);
-//    ZString &operator=(const char*);
-//    bool operator==(const char*);
-//    bool operator!=(const char*);
-//    ZString operator+(const char*);
-//    ZString &operator+=(const char*);
-//    ZString &operator<<(const char*);
     const char *cc();
 
     ZString(char);
-//    ZString &operator=(char);
-//    ZString operator+(char);
-//    ZString &operator+=(char);
-//    ZString &operator<<(char);
 
     static ZString ItoS(long int num, int base = 10);
     ZString(long int);
