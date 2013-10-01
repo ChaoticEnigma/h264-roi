@@ -24,6 +24,7 @@ ZThread::ZThread(funcType func, void *argptr) : _run(false), _stop(false){
 }
 
 ZThread::~ZThread(){
+    std::cout << "zthread" << std::endl;
     //kill();
     //stop();
     detach();
@@ -64,7 +65,8 @@ bool ZThread::run(funcType func, void *argptr){
 
 void *ZThread::join(){
     void *retval = NULL;
-    ret = pthread_join(thread, &retval);
+    pthread_t tid = thread;
+    ret = pthread_join(tid, &retval);
     //std::cout << "join " << ret << std::endl;
     _run = false;
     return retval;

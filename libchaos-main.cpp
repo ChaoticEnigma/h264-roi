@@ -41,9 +41,12 @@ void string_magic_block(){
     ZString tst = "this and this text";
     tst.replace("this", "xthisx", 4);
     LOG(tst);
-    ZString tst2 = "that that that text";
-    tst2.replaceEach("that", "taat", 1);
-    LOG(tst2);
+    //ZString tst2 = "that that that text";
+    //tst2.replaceEach("that", "taat", 1);
+    //LOG(tst2);
+    ZString tst3 = "sdfgdfgdfgdfgdfgdfg";
+    tst3.replace(3, 5, "ZZZZ");
+    LOG(tst3);
 }
 
 void path_block(){

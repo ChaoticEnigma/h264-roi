@@ -92,8 +92,8 @@ ZLog &ZLog::operator<<(ZString text){
 ZLog &ZLog::operator<<(std::string text){
     return log(ZString(text));
 }
-ZLog &ZLog::operator<<(long int text){
-    return log(ZString(text));
+ZLog &ZLog::operator<<(zs64 num){
+    return log(ZString(num));
 }
 ZLog &ZLog::operator<<(const char *text){
     return log(ZString(text));
@@ -146,7 +146,7 @@ ZString ZLog::getClock(){
 }
 
 ZString ZLog::getThread(){
-    ZString thread = ZString::ItoS(ZThreadA::thisTid());
+    ZString thread = ZThreadA::thisTid();
     unsigned id;
     bool found = false;
     for(unsigned i = 0; i < thread_ids.size(); ++i){
@@ -160,7 +160,7 @@ ZString ZLog::getThread(){
         id = thread_ids.size();
         thread_ids.push(thread);
     }
-    return ZString::ItoS(id);
+    return id;
 }
 
 ZString ZLog::genLogFileName(ZString prefix){

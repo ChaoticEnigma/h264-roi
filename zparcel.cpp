@@ -125,7 +125,7 @@ bool ZParcel::makeParcel(ZPath out, ZAssoc<ZString, ZPath> in){
         //tmpfile << tmp.cc() << std::flush;
         currpos += flsize;
         ZString loc;
-        loc << ZString::ItoS(currpos) << ',' << ZString::ItoS(flsize);
+        loc << currpos << ',' << flsize;
         inx[in[i].last().str()] = loc;
     }
     tmpfile.close();

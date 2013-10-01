@@ -72,12 +72,35 @@ ZString::ZString(char ch){
     data = std::string(1, ch);
 }
 
-ZString ZString::ItoS(long int value, int base) {
+ZString::ZString(zu16 num){ data = ItoS((zu64)num, 10).str(); }
+ZString::ZString(zs16 num){ data = ItoS((zs64)num, 10).str(); }
+ZString::ZString(zu32 num){ data = ItoS((zu64)num, 10).str(); }
+ZString::ZString(zs32 num){ data = ItoS((zs64)num, 10).str(); }
+ZString::ZString(zuint num){ data = ItoS((zu64)num, 10).str(); }
+ZString::ZString(zsint num){ data = ItoS((zs64)num, 10).str(); }
+ZString::ZString(zu64 num){ data = ItoS((zu64)num, 10).str(); }
+ZString::ZString(zs64 num){ data = ItoS((zs64)num, 10).str(); }
+
+ZString ZString::ItoS(zu64 value, int base) {
     std::string buf;
     if (base < 2 || base > 16) return buf;
     enum { kMaxDigits = 35 };
     buf.reserve( kMaxDigits );
-    long int quotient = value;
+    zu64 quotient = value;
+    do {
+        buf += "0123456789abcdef"[std::labs(quotient % base)];
+        quotient /= base;
+    } while(quotient);
+    if ( value < 0) buf += '-';
+    std::reverse( buf.begin(), buf.end() );
+    return ZString(buf);
+}
+ZString ZString::ItoS(zs64 value, int base) {
+    std::string buf;
+    if (base < 2 || base > 16) return buf;
+    enum { kMaxDigits = 35 };
+    buf.reserve( kMaxDigits );
+    zs64 quotient = value;
     do {
         buf += "0123456789abcdef"[std::labs(quotient % base)];
         quotient /= base;
@@ -87,15 +110,12 @@ ZString ZString::ItoS(long int value, int base) {
     return ZString(buf);
 }
 
-ZString::ZString(long int num){
-    data = ItoS(num, 10).str();
-}
 int ZString::tint(){
     const char *str = data.c_str();
     return atoi(str);
 }
 
-char &ZString::operator[](unsigned int index){
+char &ZString::operator[](zu64 index){
     if(index > size())
         return byte;
     else
@@ -182,16 +202,39 @@ bool ZString::endsWith(ZString test){
     return test.str() == end;
 }
 
+ZString &ZString::substr(zu64 pos){
+    data = substr(data, pos).str();
+    return *this;
+}
+ZString ZString::substr(ZString str, zu64 pos){
+    return ZString(str.str().substr(pos, std::string::npos));
+}
+
+ZString &ZString::substr(zu64 pos, zu64 len){
+    data = substr(data, pos, len).str();
+    return *this;
+}
+ZString ZString::substr(ZString str, zu64 pos, zu64 len){
+    return ZString(str.str().substr(pos, len));
+}
+
 unsigned long ZString::findFirst(ZString str, ZString find){
     return str.str().find(find.str());
 }
 
-ZString &ZString::replace(unsigned long pos, unsigned long len, ZString after){
+ZString &ZString::replace(zu64 pos, zu64 len, ZString after){
     data = replace(data, pos, len, after).str();
     return *this;
 }
-ZString ZString::replace(ZString str, unsigned long pos, unsigned long len, ZString after){
-    ZString pre = substr()
+ZString ZString::replace(ZString str, zu64 pos, zu64 len, ZString after){
+    return substr(str, 0, pos) + after + substr(str, pos+len);
+}
+
+ZString &ZString::replaceRecursive(ZString before, ZString after, unsigned max){
+    data = replace(data, before, after, max).str();
+    return *this;
+}
+ZString ZString::replaceRecursive(ZString str, ZString before, ZString after, unsigned max){
     if(str.isEmpty())
         return ZString();
     if(before.isEmpty())
@@ -219,35 +262,14 @@ ZString ZString::replace(ZString str, ZString before, ZString after, unsigned ma
         return ZString();
     if(before.isEmpty())
         return str;
-    bool found = true;
-    unsigned count = 0;
-    while(found && count < max){
-        unsigned long loc = findFirst(str, before);
-        if(loc != (unsigned long)-1){
-            str.str().replace(loc, before.size(), after.str());
-            ++count;
-        } else {
-            found = false;
-        }
-    }
-    return str;
-}
+    bool unlim = false;
+    if(max == (unsigned)-1)
+        unlim = true;
 
-ZString &ZString::replaceEach(ZString before, ZString after, unsigned max){
-    data = replaceEach(data, before, after, max).str();
-    return *this;
-}
-ZString ZString::replaceEach(ZString str, ZString before, ZString after, unsigned max){
-    if(str.isEmpty())
-        return ZString();
-    if(before.isEmpty())
-        return str;
-
-    //ZString tmp;
     bool found = true;
     unsigned count = 0;
     unsigned last = 0;
-    while(found && count < max){
+    while(found && (count < max || unlim)){
         //unsigned long loc = findFirst(str, before);
         unsigned long loc = str.str().find(before.str(), last);
         if(loc != (unsigned long)-1){
@@ -258,7 +280,6 @@ ZString ZString::replaceEach(ZString str, ZString before, ZString after, unsigne
             found = false;
         }
     }
-    //tmp << str;
     return str;
 }
 
@@ -558,30 +579,6 @@ ZString ZString::removeWhitespace(){
     return *this;
 }
 
-ZString ZString::substr(int pos, bool modify){
-    std::string tmp = data;
-    tmp = tmp.substr(pos);
-
-    if(modify){
-        data = tmp;
-        return ZString(data);
-    } else {
-        return ZString(tmp);
-    }
-}
-
-ZString ZString::substr(int pos, int npos, bool modify){
-    std::string tmp = data;
-    tmp = tmp.substr(pos, npos);
-
-    if(modify){
-        data = tmp;
-        return ZString(data);
-    } else {
-        return ZString(tmp);
-    }
-}
-
 ZString ZString::invert(bool modify){
     std::string buff;
     for(unsigned i = data.length(); i > 0; --i){
@@ -625,8 +622,8 @@ ZString ZString::duplicate(unsigned iter, bool modify){
     }
 }
 
-ZString ZString::popLast(bool modify){
-    return substr(0, size()-1, modify);
+ZString ZString::popLast(){
+    return substr(0, size()-1);
 }
 
 std::ostream &operator<<(std::ostream& lhs, ZString rhs){
