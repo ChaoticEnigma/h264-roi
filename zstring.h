@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <algorithm>
 //#include <cmath>
+#include "ztypes.h"
 
 namespace LibChaos {
 
@@ -42,18 +43,26 @@ public:
 
     ZString(char);
 
-    static ZString ItoS(long int num, int base = 10);
-    ZString(long int);
+    ZString(zu16);
+    ZString(zs16);
+    ZString(zu32);
+    ZString(zs32);
+    ZString(zuint);
+    ZString(zsint);
+    ZString(zu64);
+    ZString(zs64);
+    static ZString ItoS(zu64 num, int base = 10);
+    static ZString ItoS(zs64 num, int base = 10);
     int tint();
 
-    char &operator[](unsigned int index){return data[index]; }
+    char &operator[](zu64);
 
     int size();
     int length();
     int count(std::string);
 
-    char first(){ return data[0]; }
-    char last(){ return data[size()-1]; }
+    char first();
+    char last();
 
     void clear();
     bool isEmpty();
@@ -62,7 +71,25 @@ public:
     bool beginsWith(ZString test);
     bool endsWith(ZString test);
 
-    ZString replace(ZString before, ZString after, bool modify = true);
+    // Get portion of <str> from <pos> to end
+    ZString &substr(zu64 pos);
+    static ZString substr(ZString str, zu64 pos);
+    // Get <len> characters after <pos> of <str>
+    ZString &substr(zu64 pos, zu64 len);
+    static ZString substr(ZString str, zu64 pos, zu64 len);
+
+    static unsigned long findFirst(ZString, ZString);
+
+    ZString &replace(zu64 pos, zu64 len, ZString after);
+    static ZString replace(ZString str, zu64 pos, zu64 len, ZString after);
+    // Replace the first occurrence of <before> in <str> with <after>, up to <max> times
+    ZString &replaceRecursive(ZString before, ZString after, unsigned max = 1000);
+    static ZString replaceRecursive(ZString str, ZString before, ZString after, unsigned max = 1000);
+    // Replace up to <max> occurences of <before> with <after>
+    // <max> = -1 for unlimited
+    ZString &replace(ZString before, ZString after, unsigned max = -1);
+    static ZString replace(ZString str, ZString before, ZString after, unsigned max = -1);
+
     ZString findFirstBetween(ZString, ZString);
     ZString replaceBetween(ZString start, ZString end, ZString after);
     ZString findFirstXmlTagCont(ZString tag);
@@ -71,12 +98,11 @@ public:
     ZString label(AsArZ, bool modify = true);
     ZString strip(char target, bool modify = true);
     ZString removeWhitespace();
-    ZString substr(int, bool modify = true);
-    ZString substr(int, int, bool modify = true);
+
     ZString invert(bool modify = true);
     ZString toLower(bool modify = true);
     ZString duplicate(unsigned iterate, bool modify = true);
-    ZString popLast(bool modify = true);
+    ZString popLast();
 
     ArZ explode(char delim);
     ArZ strict_explode(char delim);
@@ -89,6 +115,7 @@ public:
     friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
 private:
     std::string data;
+    char byte;
 };
 
 } // namespace LibChaos

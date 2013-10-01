@@ -8,38 +8,54 @@ bool ZThreadArg::stop(){
     return (bool)*_stop;
 }
 
-ZThread::ZThread() : _run(false), _stop(false){}
+ZThread::ZThread() : _run(false), _stop(false){
+    bool *sptr = &_stop;
+    _param.zarg._stop = sptr;
+}
 ZThread::ZThread(funcType func) : _run(false), _stop(false){
+    bool *sptr = &_stop;
+    _param.zarg._stop = sptr;
     run(func);
 }
 ZThread::ZThread(funcType func, void *argptr) : _run(false), _stop(false){
+    bool *sptr = &_stop;
+    _param.zarg._stop = sptr;
     run(func, argptr);
 }
 
 ZThread::~ZThread(){
+    std::cout << "zthread" << std::endl;
     //kill();
     //stop();
     detach();
 }
 
 void *ZThread::entry(void *ptr){
-    zthreadparam *param = (zthreadparam*) ptr;
-    param->funcptr(param->zarg);
-    return NULL;
+    ZThread *thr = (ZThread*)ptr;
+    //zthreadparam *param = (zthreadparam*) ptr;
+    //void *ret = param->funcptr(param->zarg);
+    void *ret = thr->_param.funcptr(&thr->_param.zarg);
+    //delete param->zarg;
+    //delete param;
+    return ret;
 }
 
 bool ZThread::run(funcType func){
     return run(func, NULL);
 }
 bool ZThread::run(funcType func, void *argptr){
-    zthreadparam *param  = new zthreadparam;
+    /*zthreadparam *param  = new zthreadparam;
     param->funcptr = func;
     param->zarg = new ZThreadArg;
     param->zarg->arg = argptr;
     bool *sptr = &_stop;
-    param->zarg->_stop = sptr;
+    param->zarg->_stop = sptr;*/
 
-    ret = pthread_create(&thread, NULL, entry, param);
+    _param.funcptr = func;
+    //_param.zarg = new ZThreadArg;
+    _param.zarg.arg = argptr;
+
+    ret = pthread_create(&thread, NULL, entry, this);
     //std::cout << "create " << ret << std::endl;
     if(ret != 0)
         return false;
@@ -49,7 +65,8 @@ bool ZThread::run(funcType func, void *argptr){
 
 void *ZThread::join(){
     void *retval = NULL;
-    ret = pthread_join(thread, &retval);
+    pthread_t tid = thread;
+    ret = pthread_join(tid, &retval);
     //std::cout << "join " << ret << std::endl;
     _run = false;
     return retval;

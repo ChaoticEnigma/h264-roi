@@ -61,7 +61,7 @@ public:
     ZLog &log(ZString logtext);
     ZLog &operator<<(ZString text);
     ZLog &operator<<(std::string text);
-    ZLog &operator<<(long int text);
+    ZLog &operator<<(zs64 text);
     ZLog &operator<<(const char *text);
     ZLog &operator<<(char *text);
     ZLog &operator<<(ZPath text);

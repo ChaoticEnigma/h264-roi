@@ -84,9 +84,11 @@ ZString ZFile::read(unsigned len){
     if(file){
         //std::string contents;
         //contents.resize(len);
-        char cont[len];
+        char *cont = new char[len];
         file.read(cont, len);
-        return ZString(cont);
+        ZString data = cont;
+        free(cont);
+        return data;
     }
     return ZString();
 }

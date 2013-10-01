@@ -19,6 +19,7 @@ ZLogWorker::ZLogWorker(){
 }
 
 ZLogWorker::~ZLogWorker(){
+    std::cout << "zlogworker" << std::endl;
     work.stop();
     work.join();
     //work.interrupt();
