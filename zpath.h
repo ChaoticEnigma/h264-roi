@@ -57,7 +57,7 @@ public:
     char drv();
 #endif
 private:
-    void fromZString(ZString);
+    void fromStr(ZString);
 
     ArZ data;
     bool absolute;
