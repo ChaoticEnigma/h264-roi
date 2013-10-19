@@ -11,13 +11,13 @@ namespace LibChaos {
 ZPath::ZPath() : data(), absolute(false){}
 
 ZPath::ZPath(const char *path){
-    fromZString(path);
+    fromStr(path);
 }
 ZPath::ZPath(std::string path){
-    fromZString(path);
+    fromStr(path);
 }
 ZPath::ZPath(ZString path){
-    fromZString(path);
+    fromStr(path);
 }
 /*ZPath::ZPath(ZString path, bool absl){
     fromZString(path);
@@ -28,7 +28,7 @@ ZPath::ZPath(ArZ arr){
     absolute = false;
 }*/
 
-void ZPath::fromZString(ZString path){
+void ZPath::fromStr(ZString path){
 #ifdef PLATFORM_WINDOWS
     ArZ tmp;
     tmp = path.explodeList(2, ZPATH_DELIM, '/');
@@ -213,6 +213,7 @@ ZPath &ZPath::getAbs(){
 }
 
 bool ZPath::valid(){
+#ifdef PLATFORM_WINDOWS
     for(unsigned i = 0; i < data.size(); ++i){
         if(data[i].count("/") > 0 ||
            data[i].count("\\") > 0 ||
@@ -225,11 +226,18 @@ bool ZPath::valid(){
             return false;
     }
     return true;
+#else
+    for(unsigned i = 0; i < data.size(); ++i){
+        if(data[i].count("/") > 0)
+            return false;
+    }
+    return true;
+#endif
 }
 
 ZPath &ZPath::fix(){
     if(!valid()){
-        operator=(str());
+        fromStr(str());
     }
     return *this;
 }
@@ -299,11 +307,11 @@ ArZ &ZPath::dat(){
 bool &ZPath::abs(){
     return absolute;
 }
+
 #ifdef PLATFORM_WINDOWS
 char ZPath::drv(){
     return drive;
 }
-
 #endif
 
 }
