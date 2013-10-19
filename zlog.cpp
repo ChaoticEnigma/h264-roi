@@ -1,5 +1,6 @@
 #include "zlog.h"
 #include <ctime>
+#include <cstdio>
 
 namespace LibChaos {
 

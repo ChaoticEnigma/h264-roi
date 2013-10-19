@@ -5,6 +5,7 @@
 #include <chrono>
 #include <thread>
 #include <csignal>
+#include <cstdlib>
 
 namespace LibChaos {
 
