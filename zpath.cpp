@@ -22,11 +22,13 @@ ZPath::ZPath(ZString path){
 /*ZPath::ZPath(ZString path, bool absl){
     fromZString(path);
     absolute = absl;
-}
-ZPath::ZPath(ArZ arr){
-    data = arr;
-    absolute = false;
 }*/
+ZPath::ZPath(ArZ arr){
+    ZString buff;
+    for(zu64 i = 0; i < arr.size(); ++i)
+        buff << "/" << arr[i];
+    fromStr(buff);
+}
 
 void ZPath::fromStr(ZString path){
 #ifdef PLATFORM_WINDOWS
@@ -138,16 +140,16 @@ ZPath &ZPath::relTo(ZPath path){
     path.dat().popFrontCount(match_len);
     ZString up = "../";
     up.duplicate(path.depth());
-    ZPath tmp = up;
-    tmp.dat().concat(data);
-    operator=(tmp);
+    ArZ tmp = data;
+    fromStr(up);
+    data.concat(tmp);
     return *this;
 }
 
 ZPath &ZPath::parent(){
-    if(size() < 1)
+    if(size() > 1)
         data.popBack();
-    else
+    else if(!abs())
         data.push("..");
     return *this;
 }

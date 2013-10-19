@@ -21,7 +21,7 @@ public:
     ZPath(std::string);
     ZPath(ZString);
     //ZPath(ZString, bool);
-    //ZPath(ArZ arr);
+    ZPath(ArZ arr);
 
     //ZPath &operator=(ZPath); // Default overload is fine
     //ZPath &operator=(ArZ);
