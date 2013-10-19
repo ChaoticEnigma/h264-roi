@@ -125,8 +125,8 @@ private:
 
 namespace LibChaos {
 
-template <typename T> class ZArray : public ZArrayV1<T> {};
-//template <typename T> using ZArray = ZArrayV1<T>;
+//template <typename T> class ZArray : public ZArrayV1<T> {};
+template <typename T> using ZArray = ZArrayV1<T>;
 
 //template <typename T> class ZArray : public ZArrayV2<T> {};
 

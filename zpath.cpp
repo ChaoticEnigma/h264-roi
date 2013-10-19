@@ -49,7 +49,11 @@ void ZPath::fromZString(ZString path){
     }
 #else
     data = path.explode(ZPATH_DELIM);
-    data.clean();
+    //data.clean();
+    for(zu64 i = 0; i < data.size(); ++i){
+        if(data[i].isEmpty())
+            data.erase(i);
+    }
     absolute = (path[0] == ZPATH_DELIM);
 #endif
 }
