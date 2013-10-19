@@ -1,14 +1,11 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <stdio.h>
+#include "zstring.h"
+#include "zassoc.h"
+
 #define SQLITE_CUSTOM
 #include "sqlite3.h"
-//#include "asar.h"
-#include "zstring.h"
 
 namespace LibChaos {
 

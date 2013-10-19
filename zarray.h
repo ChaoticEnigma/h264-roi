@@ -3,97 +3,98 @@
 
 #include <vector>
 
+#include "ztypes.h"
+
 namespace LibChaos {
 
-template <class T> class ZArray {
+template <typename T> class ZArrayV1 {
 public:
-    ZArray(){}
-    ~ZArray(){}
+    ZArrayV1(){}
+    ~ZArrayV1(){}
 
-    ZArray<T> &operator=(ZArray<T> arr){
+    ZArrayV1<T> &operator=(ZArrayV1<T> arr){
         data = arr.dat();
         return *this;
     }
 
-    T &at(unsigned index){
+    T &at(zu64 index){
         if(index < size()){
             return data[index];
         } else {
             //T tmp = {};
-            T temp[1] = {};
-            empv = temp[0];
+            //T temp[1] = {};
+            //empv = temp[0];
             return empv;
         }
     }
-    T &operator[](unsigned index){
+    T &operator[](zu64 index){
         return at(index);
     }
 
-    ZArray<T> &push(T value){
+    ZArrayV1<T> &push(T value){
         data.push_back(value);
         return *this;
     }
 
-    ZArray<T> &pop(unsigned index){
-        if(index < size()){
-            data.erase(data.begin() + index);
-        }
+    ZArrayV1<T> &erase(zu64 index, zu64 count){
+        data.erase(data.begin() + index, data.begin() + index + count);
         return *this;
     }
-    ZArray<T> &popFront(){
-        if(!empty()){
-            pop(0);
-        }
-        return *this;
+    ZArrayV1<T> &erase(zu64 index){
+        return erase(index, 1);
     }
-    ZArray<T> &popBack(){
+
+    ZArrayV1<T> &pop(zu64 index){
+        return erase(index);
+    }
+    ZArrayV1<T> &popFront(){
+        return pop(0);
+    }
+    ZArrayV1<T> &popBack(){
         if(!empty()){
             data.pop_back();
         }
         return *this;
     }
-    ZArray<T> &popFrontCount(unsigned cnt){
-        for(unsigned i = 0; i < cnt; ++i){
-            popFront();
-        }
-        return *this;
+    ZArrayV1<T> &popFrontCount(unsigned conut){
+        return erase(0, conut);
     }
 
-    ZArray<T> &pushFront(T in){
+    ZArrayV1<T> &pushFront(T in){
         typename std::vector<T>::iterator it;
         it = data.begin();
         data.insert(it, in);
         return *this;
     }
 
-    ZArray<T> &concat(ZArray<T> in){
+    ZArrayV1<T> &concat(ZArrayV1<T> in){
         for(unsigned i = 0; i < in.size(); ++i){
             data.push_back(in[i]);
         }
         return *this;
     }
 
-    ZArray<T> &clean(){
-        for(long int i = 0; i < size(); ++i){
-            if(data[i] == T()){
-                pop(i);
-                i = -1;
-            }
-        }
-        return *this;
-    }
+//    ZArrayV1<T> &clean(){
+//        for(long int i = 0; i < size(); ++i){
+//            if(data[i] == T()){
+//                pop(i);
+//                i = -1;
+//            }
+//        }
+//        return *this;
+//    }
 
-    bool contains(T item){
-        for(unsigned i = 0; i < data.size(); ++i)
-            if(data[i] == item)
-                return true;
-        return false;
-    }
+//    bool contains(T item){
+//        for(unsigned i = 0; i < data.size(); ++i)
+//            if(data[i] == item)
+//                return true;
+//        return false;
+//    }
 
-    T &first(){
+    T &front(){
         return data.front();
     }
-    T &last(){
+    T &back(){
         return data.back();
     }
 
@@ -109,7 +110,7 @@ public:
     std::vector<T> &dat(){
         return data;
     }
-    unsigned size(){
+    zu64 size() const {
         return data.size();
     }
 
@@ -117,6 +118,17 @@ private:
     std::vector<T> data;
     T empv;
 };
+
+}
+
+#include "zarray2.h"
+
+namespace LibChaos {
+
+template <typename T> class ZArray : public ZArrayV1<T> {};
+//template <typename T> using ZArray = ZArrayV1<T>;
+
+//template <typename T> class ZArray : public ZArrayV2<T> {};
 
 }
 

@@ -1,5 +1,9 @@
 #include "zthread.h"
+
 #include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
+
 #include <iostream>
 
 namespace LibChaos {
@@ -24,7 +28,7 @@ ZThread::ZThread(funcType func, void *argptr) : _run(false), _stop(false){
 }
 
 ZThread::~ZThread(){
-    std::cout << "zthread" << std::endl;
+    //std::cout << "zthread" << std::endl;
     //kill();
     //stop();
     detach();
@@ -65,8 +69,8 @@ bool ZThread::run(funcType func, void *argptr){
 
 void *ZThread::join(){
     void *retval = NULL;
-    pthread_t tid = thread;
-    ret = pthread_join(tid, &retval);
+    pthread_t id = thread;
+    ret = pthread_join(id, &retval);
     //std::cout << "join " << ret << std::endl;
     _run = false;
     return retval;

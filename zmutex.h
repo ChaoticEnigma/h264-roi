@@ -15,9 +15,8 @@
 // locked() Returns true if mutex is locked. Else returns false;
 // locker() Returns copy of locking thread's id, or empty boost::thread::id object if unlocked.
 
-//#include "boost/thread.hpp"
-#include "zthread.h"
 #include <atomic>
+#include "zthread.h"
 
 namespace LibChaos {
 

@@ -1,17 +1,13 @@
 #ifndef ZLOGWORKER_H
 #define ZLOGWORKER_H
 
-#include "zthread.h"
-#include "zstring.h"
-#include "zmutex.h"
-#include "zpath.h"
-//#include "zfile.h"
 #include <queue>
-#include <iostream>
-#include <fstream>
-//#include <boost/thread.hpp>
-//#include <thread>
-//#include <pthread.h>
+
+#include "zstring.h"
+#include "zpath.h"
+#include "zthread.h"
+#include "zmutex.h"
+#include "zbinary.h"
 
 namespace LibChaos {
 
@@ -33,6 +29,7 @@ struct LogJob {
     ZString log;
     bool stdout_this;
     bool newln;
+    bool raw;
 };
 
 class ZLogWorker {
@@ -53,7 +50,7 @@ public:
     static ZMutex< std::queue<LogJob> > jobs;
     static zlog_out stdoutlog;
     static zlog_out stderrlog;
-    static std::vector<zlog_outfile> logfiles;
+    static ZArray<zlog_outfile> logfiles;
     static bool lastcomp;
 
     ZLogWorker();

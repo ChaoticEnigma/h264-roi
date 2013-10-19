@@ -1,5 +1,7 @@
 #include "zlogworker.h"
+
 #include <iostream>
+#include <fstream>
 #include <chrono>
 #include <thread>
 #include <csignal>
@@ -9,7 +11,7 @@ namespace LibChaos {
 ZMutex< std::queue<LogJob> > ZLogWorker::jobs;
 ZLogWorker::zlog_out ZLogWorker::stdoutlog;
 ZLogWorker::zlog_out ZLogWorker::stderrlog;
-std::vector<ZLogWorker::zlog_outfile> ZLogWorker::logfiles;
+ZArray<ZLogWorker::zlog_outfile> ZLogWorker::logfiles;
 bool ZLogWorker::lastcomp;
 
 ZLogWorker::ZLogWorker(){
@@ -19,7 +21,7 @@ ZLogWorker::ZLogWorker(){
 }
 
 ZLogWorker::~ZLogWorker(){
-    std::cout << "zlogworker" << std::endl;
+    //std::cout << "zlogworker" << std::endl;
     work.stop();
     work.join();
     //work.interrupt();
@@ -37,6 +39,7 @@ int ZLogWorker::run(){
     work.run(zlogWorker);
     //work = boost::thread(zlogWorker);
     //pthread_create(&work, NULL, zlogWorker, NULL);
+    return 0;
 }
 
 void ZLogWorker::sigHandle(int sig){
@@ -83,18 +86,14 @@ void *ZLogWorker::zlogWorker(void *zarg){
         }
         // Yield for 10 ms
         std::this_thread::yield();
-        //auto start = std::chrono::high_resolution_clock::now();
-        //auto end = start + std::chrono::microseconds(10000);
-        //do {
-        //    std::this_thread::yield();
-        //} while (std::chrono::high_resolution_clock::now() < end);
         //std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
+    return NULL;
 }
 
 ZString ZLogWorker::formatLog(LogJob jb, ZlogFormat fmt){
     ZString output;
-    if(fmt.prefix){
+    if(fmt.prefix && !jb.raw){
         if(fmt.time == 1){
             output << jb.time << " ";
         } else if(fmt.time == 2){
@@ -112,68 +111,7 @@ ZString ZLogWorker::formatLog(LogJob jb, ZlogFormat fmt){
 }
 
 void ZLogWorker::doLog(LogJob jb){
-    /*switch(jb.source){
-    case 0: // 0 - normal
-        if(stdoutlog.normal.enable){
-            std::cout << formatLog(jb, stdoutlog.normal) << std::flush;
-        }
-        if(stderrlog.normal.enable){
-            std::cerr << formatLog(jb, stderrlog.normal) << std::flush;
-        }
-        if(!jb.stdout_this){
-            for(unsigned i = 0; i < logfiles.size(); ++i){
-                if(logfiles[i].normal.enable){
-                    logfiles[i].file.createDirsTo();
-                    std::ofstream lgfl(logfiles[i].file.str().cc(), std::ios::app);
-                    lgfl << formatLog(jb, logfiles[i].normal);
-                    lgfl.flush();
-                    lgfl.close();
-                }
-            }
-        }
-        break;
-    case 1: // 1 - debug
-        if(stdoutlog.debug.enable){
-            std::cout << formatLog(jb, stdoutlog.debug) << std::flush;
-        }
-        if(stderrlog.debug.enable){
-            std::cerr << formatLog(jb, stderrlog.debug) << std::flush;
-        }
-        if(!jb.stdout_this){
-            for(unsigned i = 0; i < logfiles.size(); ++i){
-                if(logfiles[i].debug.enable){
-                    logfiles[i].file.createDirsTo();
-                    std::ofstream lgfl(logfiles[i].file.str().cc(), std::ios::app);
-                    lgfl << formatLog(jb, logfiles[i].debug);
-                    lgfl.flush();
-                    lgfl.close();
-                }
-            }
-        }
-        break;
-    case 2: // 2 - error
-        if(stdoutlog.error.enable){
-            std::cout << formatLog(jb, stdoutlog.error) << std::flush;
-        }
-        if(stderrlog.error.enable){
-            std::cerr << formatLog(jb, stderrlog.error) << std::flush;
-        }
-        if(!jb.stdout_this){
-            for(unsigned i = 0; i < logfiles.size(); ++i){
-                if(logfiles[i].error.enable){
-                    logfiles[i].file.createDirsTo();
-                    std::ofstream lgfl(logfiles[i].file.str().cc(), std::ios::app);
-                    lgfl << formatLog(jb, logfiles[i].error);
-                    lgfl.flush();
-                    lgfl.close();
-                }
-            }
-        }
-        break;
-    }*/
-
     ZlogFormat outfmt, errfmt;
-
 
     switch(jb.source){
     case 0: // 0 - normal
@@ -258,7 +196,7 @@ void ZLogWorker::addLogFile(ZPath pth, ZlogFormat nml, ZlogFormat dbg, ZlogForma
     if(err._init)
         nwfl.error = err;
 
-    logfiles.push_back(nwfl);
+    logfiles.push(nwfl);
 }
 
 }

@@ -1,10 +1,9 @@
 #ifndef ZTHREAD_H
 #define ZTHREAD_H
 
-#include <unistd.h>
-#include <sys/types.h>
 #include <pthread.h>
-//#include <atomic>
+
+#include "ztypes.h"
 
 namespace LibChaos {
 

@@ -1,5 +1,11 @@
 #include "zstring.h"
 
+#include <sstream>
+#include <cstring>
+#include <cstdlib>
+#include <algorithm>
+#include <cstdarg>
+
 namespace LibChaos {
 
 ZString::ZString() : data(){
@@ -9,62 +15,62 @@ ZString::~ZString(){
     //data.clear();
 }
 
-ZString &ZString::operator=(ZString str){
-    data = str.str();
+ZString &ZString::operator=(ZString str_){
+    data = str_.str();
     return *this;
 }
-bool ZString::operator==(ZString str){
-    return data == str.str();
+bool ZString::operator==(ZString str_){
+    return data == str_.str();
 }
-bool ZString::operator!=(ZString str){
-    return data != str.str();
+bool ZString::operator!=(ZString str_){
+    return data != str_.str();
 }
-ZString ZString::concat(ZString str){
+ZString ZString::concat(ZString str_){
     std::string tmp = data;
-    tmp.append(str.str());
+    tmp.append(str_.str());
     return ZString(tmp);
 }
-ZString ZString::operator+(ZString str){
-    return concat(str);
+ZString ZString::operator+(ZString str_){
+    return concat(str_);
 }
-ZString &ZString::append(ZString str){
-    data = data.append(str.str());
+ZString &ZString::append(ZString str_){
+    data = data.append(str_.str());
     return *this;
 }
-ZString &ZString::operator+=(ZString str){
-    return append(str);
+ZString &ZString::operator+=(ZString str_){
+    return append(str_);
 }
-ZString &ZString::operator<<(ZString str){
-    return append(str);
+ZString &ZString::operator<<(ZString str_){
+    return append(str_);
 }
 
-ZString::ZString(std::string str){
-    data = str;
+ZString::ZString(std::string str_){
+    data = str_;
 }
 std::string &ZString::str(){
     return data;
 }
 
-ZString::ZString(char *str){
-    if(str != NULL){
-        data = std::string(str, strlen(str));
+ZString::ZString(char *str_){
+    if(str_ != NULL){
+        data = std::string(str_, strlen(str_));
     } else {
         data = std::string();
     }
 }
-char* ZString::c(){
-    char str[size()];
-    return strcpy(str, data.c_str());
-}
+//char *ZString::c(){
+//    char str_[size()];
+//    return strcpy(str_, data.c_str());
+//}
 
-ZString::ZString(const char *str){
-    if(str != NULL){
-        data = std::string(str, strlen(str));
+ZString::ZString(const char *str_){
+    if(str_ != NULL){
+        data = std::string(str_, strlen(str_));
     } else {
         data = std::string();
     }
 }
-const char* ZString::cc(){
+const char *ZString::cc(){
     return data.c_str();
 }
 
@@ -78,41 +84,49 @@ ZString::ZString(zu32 num){ data = ItoS((zu64)num, 10).str(); }
 ZString::ZString(zs32 num){ data = ItoS((zs64)num, 10).str(); }
 ZString::ZString(zuint num){ data = ItoS((zu64)num, 10).str(); }
 ZString::ZString(zsint num){ data = ItoS((zs64)num, 10).str(); }
-ZString::ZString(zu64 num){ data = ItoS((zu64)num, 10).str(); }
-ZString::ZString(zs64 num){ data = ItoS((zs64)num, 10).str(); }
+ZString::ZString(zu64 num){ data = ItoS(num, 10).str(); }
+ZString::ZString(zs64 num){ data = ItoS(num, 10).str(); }
 
 ZString ZString::ItoS(zu64 value, int base) {
     std::string buf;
-    if (base < 2 || base > 16) return buf;
+    if(base < 2 || base > 16)
+        return buf;
     enum { kMaxDigits = 35 };
-    buf.reserve( kMaxDigits );
+    buf.reserve(kMaxDigits);
     zu64 quotient = value;
     do {
         buf += "0123456789abcdef"[std::labs(quotient % base)];
         quotient /= base;
     } while(quotient);
-    if ( value < 0) buf += '-';
-    std::reverse( buf.begin(), buf.end() );
+    //if(value < 0)
+    //    buf += '-';
+    std::reverse(buf.begin(), buf.end());
     return ZString(buf);
 }
 ZString ZString::ItoS(zs64 value, int base) {
     std::string buf;
     if (base < 2 || base > 16) return buf;
     enum { kMaxDigits = 35 };
-    buf.reserve( kMaxDigits );
+    buf.reserve(kMaxDigits);
     zs64 quotient = value;
     do {
         buf += "0123456789abcdef"[std::labs(quotient % base)];
         quotient /= base;
     } while(quotient);
     if ( value < 0) buf += '-';
-    std::reverse( buf.begin(), buf.end() );
+    std::reverse(buf.begin(), buf.end());
     return ZString(buf);
 }
 
 int ZString::tint(){
-    const char *str = data.c_str();
-    return atoi(str);
+    const char *str_ = data.c_str();
+    return atoi(str_);
+}
+
+ZString::ZString(double num){
+    std::ostringstream stream;
+    stream << num;
+    data = stream.str();
 }
 
 char &ZString::operator[](zu64 index){
@@ -122,16 +136,16 @@ char &ZString::operator[](zu64 index){
         return data[index];
 }
 
-int ZString::size(){
+zu64 ZString::size(){
     return data.size();
 }
-int ZString::length(){
+zu64 ZString::length(){
     return data.length();
 }
 
 int ZString::count(std::string needle){
     std::string haystack = data;
-    int count = 0;
+    int cnt = 0;
     for(unsigned i = 0; i < haystack.length(); ++i){
         if(haystack[i] == needle[0]){
             bool good = true;
@@ -142,10 +156,10 @@ int ZString::count(std::string needle){
                 }
             }
             if(good)
-                ++count;
+                ++cnt;
         }
     }
-    return count;
+    return cnt;
 }
 
 char ZString::first(){
@@ -191,14 +205,14 @@ bool ZString::startsWith(ZString test, bool ignorews){
     }
     return true;
 }
-bool ZString::beginsWith(ZString str){
-    return startsWith(str, false);
+bool ZString::beginsWith(ZString str_){
+    return startsWith(str_, false);
 }
 
 bool ZString::endsWith(ZString test){
     if(test.size() > size())
         return false;
-    std::string end = data.substr(data.size()-test.size(), test.size());
+    std::string end = data.substr(data.size() - test.size(), test.size());
     return test.str() == end;
 }
 
@@ -207,6 +221,8 @@ ZString &ZString::substr(zu64 pos){
     return *this;
 }
 ZString ZString::substr(ZString str, zu64 pos){
+    if(str.size() < pos)
+        return ZString();
     return ZString(str.str().substr(pos, std::string::npos));
 }
 
@@ -215,10 +231,14 @@ ZString &ZString::substr(zu64 pos, zu64 len){
     return *this;
 }
 ZString ZString::substr(ZString str, zu64 pos, zu64 len){
+    if(str.size() < pos)
+        return ZString();
+    if(str.size() < pos + len)
+        return substr(str, pos);
     return ZString(str.str().substr(pos, len));
 }
 
-unsigned long ZString::findFirst(ZString str, ZString find){
+zu64 ZString::findFirst(ZString str, ZString find){
     return str.str().find(find.str());
 }
 
@@ -369,6 +389,11 @@ ZString ZString::replace(ZString str, ZString before, ZString after, unsigned ma
     }
 }*/
 
+ZString ZString::getUntil(ZString str, ZString find){
+    zu64 loc = findFirst(str, find);
+    return str.substr(0, loc);
+}
+
 ZString ZString::findFirstBetween(ZString opening_string, ZString closing_string){
     std::string pre = opening_string.str();
     std::string post = closing_string.str();
@@ -500,48 +525,82 @@ ZString ZString::label(AsArZ values, bool modify){
     return ZString(data);
 }
 ZString ZString::label(ZString labeltxt, ZString value, bool modify){
-    ZString label = ZString("<?").append(labeltxt).append("?>");
+    ZString txt = ZString("<?").append(labeltxt).append("?>");
     if(modify)
-        return replace(label, value);
+        return replace(txt, value);
     else
-        return replace(data, label, value);
+        return replace(data, txt, value);
 }
 
 ArZ ZString::explode(char delim){
     ArZ out;
-    std::string str = data;
-    for(unsigned i = 0; i < str.length(); ++i){
-        if(str[i] == '"'){
-            for(unsigned j = i; j < str.length(); ++j){
-                if(str[j] == '"'){
-                    out.push(str.substr(0, j));
-                    str = str.substr(j+1, str.length());
+    std::string str_ = data;
+    for(unsigned i = 0; i < str_.length(); ++i){
+        if(str_[i] == '"'){
+            for(unsigned j = i; j < str_.length(); ++j){
+                if(str_[j] == '"'){
+                    out.push(str_.substr(0, j));
+                    str_ = str_.substr(j+1, str_.length());
                     i = -1;
                 }
             }
-        } else if(str[i] == delim){
-            out.push(str.substr(0, i));
-            str = str.substr(i+1, str.length());
+        } else if(str_[i] == delim){
+            out.push(str_.substr(0, i));
+            str_ = str_.substr(i+1, str_.length());
             i = -1;
         }
     }
-    out.push(str);
+    out.push(str_);
     return out;
 }
-ArZ ZString::strict_explode(char delim){
+#ifndef BUILDING
+    #define VAARGTYPE NULL
+#else
+    #define VAARGTYPE int
+#endif
+ArZ ZString::explodeList(unsigned nargs, ...){
+    va_list args;
+    va_start(args, nargs);
+    ZArray<char> delims;
+    for(unsigned i = 0; i < nargs; ++i){
+        delims.push(va_arg(args, VAARGTYPE));
+    }
+    va_end(args);
+
     ArZ out;
-    std::string str = data;
-    for(unsigned i = 0; i < str.length(); ++i){
-        if(str[i] == delim && str[i-1] != '\\'){
-            std::string substr = str.substr(0, i);
-            if(substr != ""){
-                out.push(substr);
+    std::string str_ = data;
+    for(zu64 i = 0; i < str_.length(); ++i){
+        bool br = false;
+        for(zu64 j = 0; j < delims.size(); ++j){
+            if(delims[j] == str_[i]){
+                br = true;
+                break;
             }
-            str = str.substr(i+1, str.length());
+        }
+        if(br){
+            out.push(str_.substr(0, i));
+            str_ = str_.substr(i+1, str_.length());
             i = -1;
         }
     }
-    out.push(str);
+    out.push(str_);
+    return out;
+}
+#undef VAARGTYPE
+ArZ ZString::strict_explode(char delim){
+    ArZ out;
+    std::string str_ = data;
+    for(unsigned i = 0; i < str_.length(); ++i){
+        if(str_[i] == delim && str_[i-1] != '\\'){
+            std::string sub = str_.substr(0, i);
+            if(sub != ""){
+                out.push(sub);
+            }
+            str_ = str_.substr(i+1, str_.length());
+            i = -1;
+        }
+    }
+    out.push(str_);
     return out;
 }
 

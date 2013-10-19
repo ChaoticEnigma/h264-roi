@@ -1,5 +1,7 @@
 #include "zjson.h"
 
+#include <cassert>
+
 namespace LibChaos {
 
 ZJSON::ZJSON(){}
@@ -39,7 +41,7 @@ bool ZJSON::validJSON(ZString json){
         evalue // "
         // JSON is valid if } is hit without errors earlier
     } loc = start;
-    unsigned last = 0;
+    //unsigned last = 0;
     //unsigned size = s.size();
     for(unsigned i = 0; i < s.size(); ++i){
         char c = s[i];
@@ -99,7 +101,7 @@ bool ZJSON::validJSON(ZString json){
             return false;
             break;
         }
-        last = i;
+        //last = i;
     }
     return false;
 }
@@ -110,7 +112,7 @@ ZJSON ZJSON::fromJSON(ZString json){
     ZString s = json;
     enum Locat {
         firstc,
-        key,
+        key_,
         ekey,
         value,
         evalue
@@ -123,9 +125,9 @@ ZJSON ZJSON::fromJSON(ZString json){
         switch(loc){
         case firstc:
             if(c == '"')
-                loc = key;
+                loc = key_;
             break;
-        case key:
+        case key_:
             if(c == '"' && s[i-1] != '\\')
                 loc = ekey;
             else
@@ -155,16 +157,16 @@ ZJSON ZJSON::fromJSON(ZString json){
                     loc = firstc;
                 } else if(c == '}'){
                     dat() = final.dat();
-                    return *this;
+                    break;
                 }
             }
             break;
         default:
             // Not Good.
+            assert(false);
             break;
         }
     }
-    // This should not happen.
     return *this;
 }
 

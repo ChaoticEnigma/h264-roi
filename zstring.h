@@ -2,13 +2,8 @@
 #define ZSTRING_H
 
 #include <string>
-#include <sstream>
-#include <cstring>
-//#include "asar.h"
+
 #include "zassoc.h"
-#include <cstdlib>
-#include <algorithm>
-//#include <cmath>
 #include "ztypes.h"
 
 namespace LibChaos {
@@ -36,7 +31,7 @@ public:
     std::string &str();
 
     ZString(char*);
-    char *c();
+    //char *c();
 
     ZString(const char*);
     const char *cc();
@@ -55,10 +50,12 @@ public:
     static ZString ItoS(zs64 num, int base = 10);
     int tint();
 
+    ZString(double);
+
     char &operator[](zu64);
 
-    int size();
-    int length();
+    zu64 size();
+    zu64 length();
     int count(std::string);
 
     char first();
@@ -67,7 +64,7 @@ public:
     void clear();
     bool isEmpty();
 
-    bool startsWith(ZString test_str, bool ignore_whitespace = true);
+    bool startsWith(ZString test, bool ignore_whitespace = true);
     bool beginsWith(ZString test);
     bool endsWith(ZString test);
 
@@ -78,17 +75,21 @@ public:
     ZString &substr(zu64 pos, zu64 len);
     static ZString substr(ZString str, zu64 pos, zu64 len);
 
-    static unsigned long findFirst(ZString, ZString);
+    // Get location of first character of first occurrence of <find> in <str>
+    static zu64 findFirst(ZString str, ZString find);
 
+    // Replace section <len> characters long at <pos> with <after> in <str>
     ZString &replace(zu64 pos, zu64 len, ZString after);
     static ZString replace(ZString str, zu64 pos, zu64 len, ZString after);
     // Replace the first occurrence of <before> in <str> with <after>, up to <max> times
     ZString &replaceRecursive(ZString before, ZString after, unsigned max = 1000);
     static ZString replaceRecursive(ZString str, ZString before, ZString after, unsigned max = 1000);
-    // Replace up to <max> occurences of <before> with <after>
+    // Replace up to <max> occurences of <before> with <after> in <str>
     // <max> = -1 for unlimited
     ZString &replace(ZString before, ZString after, unsigned max = -1);
     static ZString replace(ZString str, ZString before, ZString after, unsigned max = -1);
+
+    static ZString getUntil(ZString str, ZString find);
 
     ZString findFirstBetween(ZString, ZString);
     ZString replaceBetween(ZString start, ZString end, ZString after);
@@ -105,6 +106,7 @@ public:
     ZString popLast();
 
     ArZ explode(char delim);
+    ArZ explodeList(unsigned nargs, ...);
     ArZ strict_explode(char delim);
     ArZ explode();
 

@@ -29,18 +29,18 @@ public:
         return at(index);
     }
 
-    T &at(K key){
+    T &at(K key_){
         for(unsigned i = 0; i < data.size(); ++i){
-            if(data[i].key == key)
+            if(data[i].key == key_)
                 return data[i].val;
         }
-        data.push(Data(key, T()));
+        data.push(Data(key_, T()));
         //T temp = {};
-        //data.push({ key, temp });
+        //data.push({ key_, temp });
         return last();
     }
-    T &operator[](K key){
-        return at(key);
+    T &operator[](K key_){
+        return at(key_);
     }
 
     K &key(unsigned index){
@@ -54,16 +54,16 @@ public:
         }
     }
 
-    ZAssoc<K, T> &push(K key, T value){
-        data.push(Data(key, value));
-        //data.push({ key, value });
+    ZAssoc<K, T> &push(K key_, T value){
+        data.push(Data(key_, value));
+        //data.push({ key_, value });
         return *this;
     }
     ZAssoc<K, T> &push(T value){
         return push(K(), value);
     }
-    ZAssoc<K, T> &pushFront(K key, T value){
-        data.pushFront(Data(key, value));
+    ZAssoc<K, T> &pushFront(K key_, T value){
+        data.pushFront(Data(key_, value));
         //data.pushFront({ key, value });
         return *this;
     }
@@ -75,9 +75,9 @@ public:
         data.pop(index);
         return *this;
     }
-    ZAssoc<K, T> &popAll(K key){
+    ZAssoc<K, T> &popAll(K key_){
         for(unsigned i = 0; i < data.size(); ++i){
-            if(data[i].key == key){
+            if(data[i].key == key_){
                 pop(i);
                 i = 0;
             }
@@ -118,16 +118,16 @@ public:
     }
 
     T &first(){
-        return data.first().val;
+        return data.front().val;
     }
     T &last(){
-        return data.last().val;
+        return data.back().val;
     }
     T &firstKey(){
-        return data.first().key;
+        return data.front().key;
     }
     T &lastKey(){
-        return data.last().key;
+        return data.back().key;
     }
 
     bool empty(){

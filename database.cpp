@@ -1,7 +1,7 @@
 #include "database.h"
+
 #include <stdio.h>
 #include <fstream>
-#include <iostream>
 
 namespace LibChaos {
 

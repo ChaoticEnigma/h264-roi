@@ -20,4 +20,10 @@ typedef signed long zs32;
 typedef unsigned long long zu64;
 typedef signed long long zs64;
 
+// TEMPORARY, ONLY AFFECTS HIGHLIGHTING, NOT BUILD
+#ifndef BUILDING
+    #define PLATFORM_WINDOWS
+    #define COMPILER_MINGW
+#endif
+
 #endif // ZTYPES_H

@@ -3,10 +3,6 @@
 
 namespace LibChaos {
 
-//#include "const.h"
-//#include "resource.h"
-//#include <QDateTime>
-
 #define ZLOG_FLUSH              1001
 #define ZLOG_NEWLN              1002
 #define ZLOG_FLUSHLN            1003
@@ -16,28 +12,28 @@ namespace LibChaos {
 #define ZLOG_ERROR              5001
 #define ZLOG_STDOUT             6001
 
-ZLog::zlog_flag::zlog_flag(short dat) : data(dat){}
-void ZLog::zlog_flag::operator=(short dat){
-    data = dat;
-}
-bool ZLog::zlog_flag::operator==(zlog_flag rhs){
-    if(rhs.data == data) return true; return false;
-}
+//ZLog::zlog_flag::zlog_flag(short dat) : data(dat){}
+//void ZLog::zlog_flag::operator=(short dat){
+//    data = dat;
+//}
+//bool ZLog::zlog_flag::operator==(zlog_flag rhs){
+//    if(rhs.data == data) return true; return false;
+//}
 
-ZLog::zlog_flag ZLog::flush = ZLOG_FLUSH;
-ZLog::zlog_flag ZLog::newln = ZLOG_NEWLN;
-ZLog::zlog_flag ZLog::flushln = ZLOG_FLUSHLN;
-ZLog::zlog_flag ZLog::noln = ZLOG_NOLN;
-ZLog::zlog_flag ZLog::normal = ZLOG_NORMAL;
-ZLog::zlog_flag ZLog::debug = ZLOG_DEBUG;
-ZLog::zlog_flag ZLog::error = ZLOG_ERROR;
-ZLog::zlog_flag ZLog::stdout = ZLOG_STDOUT;
+//ZLog::zlog_flag ZLog::flush = ZLOG_FLUSH;
+//ZLog::zlog_flag ZLog::newln = ZLOG_NEWLN;
+//ZLog::zlog_flag ZLog::flushln = ZLOG_FLUSHLN;
+//ZLog::zlog_flag ZLog::noln = ZLOG_NOLN;
+//ZLog::zlog_flag ZLog::normal = ZLOG_NORMAL;
+//ZLog::zlog_flag ZLog::debug = ZLOG_DEBUG;
+//ZLog::zlog_flag ZLog::error = ZLOG_ERROR;
+//ZLog::zlog_flag ZLog::stdio = ZLOG_STDOUT;
 
 bool ZLog::_init = false;
 ZLogWorker ZLog::worker;
 AsArZ ZLog::thread_ids;
 
-ZLog::ZLog() : source_mode(0), stdout_this(false), write_on_destruct(false), newline(true){}
+ZLog::ZLog() : source_mode(0), stdout_this(false), write_on_destruct(false), newline(true), rawlog(false){}
 
 ZLog::~ZLog(){
     if(write_on_destruct)
@@ -53,13 +49,14 @@ void ZLog::flushLog(){
     out.log = buffer;
     out.stdout_this = stdout_this;
     out.newln = newline;
+    out.raw = rawlog;
     if(_init)
         worker.queue(out);
     else
         ZLogWorker::doLog(out);
 }
 
-ZLog &ZLog::operator<<(zlog_flag flag){
+ZLog &ZLog::operator<<(zlog_flags flag){
     if(flag == flush){
         flushLog();
     } else if(flag == newln){
@@ -69,13 +66,15 @@ ZLog &ZLog::operator<<(zlog_flag flag){
         flushLog();
     } else if(flag == noln){
         newline = false;
+    } else if(flag == raw){
+        rawlog = true;
     } else if(flag == normal){
         source_mode = 0;
     } else if(flag == debug){
         source_mode = 1;
     } else if(flag == error){
         source_mode = 2;
-    } else if(flag == stdout){
+    } else if(flag == stdio){
         stdout_this = true;
     }
     return *this;
@@ -103,6 +102,12 @@ ZLog &ZLog::operator<<(char *text){
 }
 ZLog &ZLog::operator<<(ZPath text){
     return log(text.str());
+}
+ZLog &ZLog::operator<<(ZBinary bin){
+    ZString text;
+    for(zu64 i = 0; i < bin.size(); ++i)
+        text << bin[i];
+    return log(text);
 }
 
 ZString ZLog::pullBuffer(){

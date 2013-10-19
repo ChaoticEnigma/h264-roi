@@ -1,11 +1,16 @@
 #ifndef ZPATH_H
 #define ZPATH_H
 
-#include <unistd.h>
-#include <sys/stat.h>
-//#include "asar.h"
-#include "zarray.h"
 #include "zstring.h"
+#include "zarray.h"
+
+#include <iostream>
+
+#ifdef PLATFORM_WINDOWS
+    #define ZPATH_DELIM '\\'
+#else
+    #define ZPATH_DELIM '/'
+#endif
 
 namespace LibChaos {
 
@@ -15,39 +20,50 @@ public:
     ZPath(const char *);
     ZPath(std::string);
     ZPath(ZString);
-    ZPath(ZString, bool);
+    //ZPath(ZString, bool);
+    //ZPath(ArZ arr);
 
-    ZPath &operator=(ZPath);
-    ZPath &operator=(ArZ);
-    bool operator==(ZPath);
-    ZPath operator+(ZPath);
+    //ZPath &operator=(ZPath); // Default overload is fine
+    //ZPath &operator=(ArZ);
+    //bool operator==(ZPath); // Default overload is fine
+
+    ZPath &concat(ZPath);
     ZPath &operator<<(ZPath);
-    ZString &operator[](unsigned);
+    ZPath operator+(ZPath);
 
+    ZString &operator[](unsigned);
     ZString &last();
 
-    static ZPath pwd();
-    ZPath &relTo(ZPath);
-    ZPath parent();
-    bool childTo(ZPath);
-    ZPath &sanitize();
-    ZPath &getAbs();
-    static ZPath getAbs(ZPath path);
-    ZPath &concat(ZPath);
+    static ZPath pwd(); // Get a ZPath that represents the present working directory of the program
+    ZPath &relTo(ZPath path); // Get a path from an absolute path that is a relative path to the same location, relative to <path>
+    ZPath &parent(); // Get the path to the next directory up
+    bool childTo(ZPath); // Needs REWRITE
+    ZPath &sanitize(); // Gets most direct path (resolves .. in path, as best as possible)
+
+    static ZPath getAbs(ZPath path); // Get absolute representation of path, based on present working directory
+    ZPath &getAbs(); // Operates on object
+
     bool valid();
     ZPath &fix();
     static bool makeDir(ZPath);
     bool createDirsTo();
     ZString str();
-    bool &abs();
     unsigned depth();
     unsigned size();
+
     ArZ &dat();
+    bool &abs();
+#ifdef PLATFORM_WINDOWS
+    char drv();
+#endif
 private:
-    bool fromZString(ZString, ArZ &);
+    void fromZString(ZString);
 
     ArZ data;
     bool absolute;
+#ifdef PLATFORM_WINDOWS
+    char drive;
+#endif
 };
 
 } // namespace LibChaos

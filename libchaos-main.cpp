@@ -1,4 +1,6 @@
 #include <iostream>
+#include <unistd.h>
+
 #include "zstring.h"
 #include "zfile.h"
 #include "zlog.h"
@@ -7,24 +9,24 @@
 #include "zarray.h"
 #include "zassoc.h"
 
-//using namespace std;
+using namespace std;
 using namespace LibChaos;
 
 void string_block(){
     ZString t3 = "hello, this is a string";
-    std::cout << t3.size() << " " << t3 << std::endl;
+    cout << t3.size() << " " << t3 << endl;
     t3.append(", and this is appended");
-    std::cout << t3.size() << " " << t3 << std::endl;
+    cout << t3.size() << " " << t3 << endl;
     t3.replace(" is ", " \"is still\" ");
-    std::cout << t3.size() << " " << t3 << std::endl;
+    cout << t3.size() << " " << t3 << endl;
     ZArray<ZString> words = t3.explode(' ');
     for(unsigned long i = 0; i < words.size(); ++i)
-        std::cout << '-' << words[i] << "- ";
-    std::cout << std::endl;
+        cout << '-' << words[i] << "- ";
+    cout << endl;
     words.concat(t3.strict_explode(' '));
     for(unsigned long i = 0; i < words.size(); ++i)
-        std::cout << '-' << words[i] << "- ";
-    std::cout << std::endl;
+        cout << '-' << words[i] << "- ";
+    cout << endl;
 
     LOG("this text here");
     ZString tst;
@@ -74,12 +76,17 @@ void path_block(){
     pc.sanitize();
     LOG(pc);
 }
+void path_windows_block(){
+    ZPath here = ZPath::pwd();
+    LOG(here.size() << " " << here.str());
+}
 
-void *thread_func(void *zarg){
-    ZThreadArg *arg = (ZThreadArg*)zarg;
+void *thread_func(void */*zarg*/){
+    //ZThreadArg *arg = (ZThreadArg*)zarg;
     LOG("running " << ZThread::thisTid());
     sleep(2);
     LOG("waited 2 " << ZThread::thisTid());
+    return NULL;
 }
 void *thread_func2(void *zarg){
     ZThreadArg *arg = (ZThreadArg*)zarg;
@@ -91,6 +98,7 @@ void *thread_func2(void *zarg){
         sleep(1);
     }
     LOG("broke loop " << ZThread::thisTid());
+    return NULL;
 }
 void thread_block(){
     /*
@@ -141,14 +149,27 @@ void array_block(){
     }
 }
 
+void array_block2(){
+    const char* c1 = "test chars";
+    ZArrayV2<char> t1(c1, 10);
+    t1.push('!');
+    t1.push('\0');
+    OLOG("'" << t1.ptr() << "'");
+    for(zu64 i = 0; i < t1.size(); ++i)
+        OLOG(ZLog::noln << (char)t1[i] << ".");
+    ORLOG(ZLog::newln);
+}
+
 int main(){
-    ZLog::formatStdout(ZlogFormat(true, true, 1, true), ZlogFormat(false, true, 0, true), ZlogFormat(true, true, 0, true));
-    ZLog::addLogFile(ZString("logs") + ZLog::genLogFileName("libchaos_"), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 0, true));
-    LOG("Starting libchaos Test");
+    array_block2();
+    //ZLog::formatStdout(ZlogFormat(true, true, 1, true), ZlogFormat(false, true, 0, true), ZlogFormat(true, true, 0, true));
+    //ZLog::addLogFile(ZPath("logs") + ZLog::genLogFileName("libchaos_"), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 0, true));
+    //LOG("Starting libchaos Test");
 
     //string_block();
-    string_magic_block();
+    //string_magic_block();
     //path_block();
+    //path_windows_block();
     //thread_block();
     //file_block();
     //array_block();
