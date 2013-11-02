@@ -5,6 +5,7 @@
 
 #include "zstring.h"
 #include "zpath.h"
+#include "zbinary.h"
 
 namespace LibChaos {
 
@@ -22,7 +23,7 @@ class ZFile {
         bool open(ZPath, int = 0x10);
         bool close();
 
-        zu64 read(char *, zu64 = -1);
+        zu64 read(ZBinary &out, zu64 = -1);
 
         zu64 write(const char *);
 
@@ -31,7 +32,8 @@ class ZFile {
         static ZString readFile(ZPath name);
         static ZString readFile(ZPath name, bool&);
 
-        static bool writeFile(ZPath name, ZString &data);
+        static bool writeFile(ZPath name, const ZString &data);
+        static zu64 writeFile(ZPath name, const ZBinary &data);
 
         //bool append(ZString);
 
@@ -40,6 +42,8 @@ class ZFile {
 
         bool exists();
         static bool exists(ZPath);
+
+        static ZArray<ZPath> listFiles(ZPath dir);
 
         zu64 flsize();
 

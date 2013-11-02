@@ -22,8 +22,10 @@ typedef signed long long zs64;
 
 // TEMPORARY, ONLY AFFECTS HIGHLIGHTING, NOT BUILD
 #ifndef BUILDING
-    #define PLATFORM_WINDOWS
-    #define COMPILER_MINGW
+    //#define PLATFORM_WINDOWS
+    //#define COMPILER_MINGW
+    #define PLATFORM_LINUX
+    #define COMPILER_GCC
 #endif
 
 #endif // ZTYPES_H

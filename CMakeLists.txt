@@ -83,6 +83,6 @@ IF(UNIX AND NOT FREEBSD)
 ENDIF()
 
 IF(LIBCHAOS_TEST)
-    ADD_EXECUTABLE(test libchaos-main.cpp)
-    TARGET_LINK_LIBRARIES(test chaos)
+    ADD_EXECUTABLE(testchaos libchaos-main.cpp)
+    TARGET_LINK_LIBRARIES(testchaos chaos)
 ENDIF()

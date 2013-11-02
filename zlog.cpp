@@ -4,37 +4,11 @@
 
 namespace LibChaos {
 
-#define ZLOG_FLUSH              1001
-#define ZLOG_NEWLN              1002
-#define ZLOG_FLUSHLN            1003
-#define ZLOG_NOLN               1004
-#define ZLOG_NORMAL             3001
-#define ZLOG_DEBUG              3002
-#define ZLOG_ERROR              5001
-#define ZLOG_STDOUT             6001
-
-//ZLog::zlog_flag::zlog_flag(short dat) : data(dat){}
-//void ZLog::zlog_flag::operator=(short dat){
-//    data = dat;
-//}
-//bool ZLog::zlog_flag::operator==(zlog_flag rhs){
-//    if(rhs.data == data) return true; return false;
-//}
-
-//ZLog::zlog_flag ZLog::flush = ZLOG_FLUSH;
-//ZLog::zlog_flag ZLog::newln = ZLOG_NEWLN;
-//ZLog::zlog_flag ZLog::flushln = ZLOG_FLUSHLN;
-//ZLog::zlog_flag ZLog::noln = ZLOG_NOLN;
-//ZLog::zlog_flag ZLog::normal = ZLOG_NORMAL;
-//ZLog::zlog_flag ZLog::debug = ZLOG_DEBUG;
-//ZLog::zlog_flag ZLog::error = ZLOG_ERROR;
-//ZLog::zlog_flag ZLog::stdio = ZLOG_STDOUT;
-
 bool ZLog::_init = false;
 ZLogWorker ZLog::worker;
 AsArZ ZLog::thread_ids;
 
-ZLog::ZLog() : source_mode(0), stdout_this(false), write_on_destruct(false), newline(true), rawlog(false){}
+ZLog::ZLog() : source_mode(0), stdout_this(false), write_on_destruct(false), newline(true), rawlog(false), priority(false){}
 
 ZLog::~ZLog(){
     if(write_on_destruct)
@@ -51,7 +25,7 @@ void ZLog::flushLog(){
     out.stdout_this = stdout_this;
     out.newln = newline;
     out.raw = rawlog;
-    if(_init)
+    if(_init && !priority)
         worker.queue(out);
     else
         ZLogWorker::doLog(out);
@@ -77,6 +51,10 @@ ZLog &ZLog::operator<<(zlog_flags flag){
         source_mode = 2;
     } else if(flag == stdio){
         stdout_this = true;
+    } else if(flag == sync){
+        priority = true;
+    } else if(flag == async){
+        priority = false;
     }
     return *this;
 }

@@ -69,8 +69,9 @@ bool ZThread::run(funcType func, void *argptr){
 
 void *ZThread::join(){
     void *retval = NULL;
-    pthread_t id = thread;
-    ret = pthread_join(id, &retval);
+    //pthread_t id = thread;
+    //ret = pthread_join(id, &retval);
+    ret = pthread_join(thread, &retval);
     //std::cout << "join " << ret << std::endl;
     _run = false;
     return retval;

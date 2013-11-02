@@ -79,6 +79,14 @@ void path_block(){
 void path_windows_block(){
     ZPath here = ZPath::pwd();
     LOG(here.size() << " " << here.str());
+
+    ZPath mk = "over/there/lol.txt";
+    LOG(mk);
+    if(mk.createDirsTo())
+        LOG("ok");
+    else
+        LOG("no");
+
 }
 
 void *thread_func(void */*zarg*/){
@@ -147,11 +155,25 @@ void array_block(){
     for(unsigned i = 0; i < zarr.size(); ++i){
         LOG(zarr.key(i) << " " << zarr[i]);
     }
+
+    int myints[] = {16,2,77,29};
+    LOG((zu64)myints << " " << sizeof(myints) << " " << sizeof(int));
+    ZArray<int> tst2(myints, 4);
+    for(unsigned i = 0; i < tst2.size(); ++i){
+        LOG(tst2[i]);
+    }
+
+    char mychars[] = {'a', 'b', 'c', 'd', 'e'};
+    LOG((zu64)mychars << " " << sizeof(mychars) << " " << sizeof(char));
+    ZArray<char> tst3(mychars, 4);
+    for(unsigned i = 0; i < tst3.size(); ++i){
+        LOG(ZString(tst3[i]));
+    }
 }
 
 void array_block2(){
     const char* c1 = "test chars";
-    ZArrayV2<char> t1(c1, 10);
+    ZArray<char> t1(c1, 10);
     t1.push('!');
     t1.push('\0');
     OLOG("'" << t1.ptr() << "'");
@@ -161,18 +183,18 @@ void array_block2(){
 }
 
 int main(){
-    array_block2();
     //ZLog::formatStdout(ZlogFormat(true, true, 1, true), ZlogFormat(false, true, 0, true), ZlogFormat(true, true, 0, true));
     //ZLog::addLogFile(ZPath("logs") + ZLog::genLogFileName("libchaos_"), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 1, true), ZlogFormat(true, true, 0, true));
     //LOG("Starting libchaos Test");
 
+    //array_block();
+    //array_block2();
     //string_block();
     //string_magic_block();
     //path_block();
-    //path_windows_block();
+    path_windows_block();
     //thread_block();
     //file_block();
-    //array_block();
 
     return 0;
 }

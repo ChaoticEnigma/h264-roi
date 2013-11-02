@@ -9,6 +9,7 @@
 #define DLOG(A) LibChaos::ZLog() << LibChaos::ZLog::debug << A
 #define RLOG(A) LibChaos::ZLog() << LibChaos::ZLog::raw << A
 #define ELOG(A) LibChaos::ZLog() << LibChaos::ZLog::error << A
+#define SLOG(A) LibChaos::ZLog() << LibChaos::ZLog::sync << A
 #define OLOG(A) LibChaos::ZLog() << LibChaos::ZLog::stdio << A
 #define ORLOG(A) OLOG(LibChaos::ZLog::raw << A)
 
@@ -17,6 +18,7 @@
 #define RLG LibChaos::ZLog() << LibChaos::ZLog::plain_this
 #define ELG LibChaos::ZLog() << LibChaos::ZLog::error
 #define OLG LibChaos::ZLog() << LibChaos::ZLog::stdio
+#define SLG LibChaos::ZLog() << LibChaos::ZLog::sync
 
 #define IF_LOG(A, B, C, D) if(A){ LOG( B << C ); } else { LOG( B << D ); }
 #define IF_DLOG(A, B, C, D) if(A){ DLOG( B << C ); } else { DLOG( B << D ); }
@@ -25,24 +27,6 @@ namespace LibChaos {
 
 class ZLog {
 public:
-//    struct zlog_flag {
-//        zlog_flag(short);
-//        void operator=(short);
-//        bool operator==(zlog_flag);
-//        short data;
-//    };
-
-//    static zlog_flag flush; // Manual call to flush log
-//    static zlog_flag newln; // Append newline to buffer
-//    static zlog_flag flushln; // Manual call to flush log after appending new newline
-//    static zlog_flag noln; // Skip next automatic newline
-
-//    static zlog_flag normal; // Set instance of class to log normally
-//    static zlog_flag debug; // Set instance of class to log to debug buffer
-//    static zlog_flag error; // Current instance to logs and outputs to stderr
-
-//    static zlog_flag stdio; // Current instance outputs only to stdout
-
     enum zlog_flags {
         flush = 1,      // Manual call to flush log
         newln = 2,      // Append newline to buffer
@@ -54,7 +38,10 @@ public:
         debug = 7,      // Set instance of class to log to debug buffer
         error = 8,      // Current instance to logs and outputs to stderr
 
-        stdio = 9       // Current instance outputs only to stdout
+        stdio = 9,      // Current instance outputs only to stdout
+
+        sync = 10,      // Log immediately, block until done
+        async = 11      // Push log to queue, return as soon as possible
     };
 
     ZLog();
@@ -95,6 +82,7 @@ private:
     bool write_on_destruct;
     bool newline;
     bool rawlog;
+    bool priority;
 
 };
 

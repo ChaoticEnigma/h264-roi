@@ -1,15 +1,15 @@
-#ifndef ZASSOC_H
-#define ZASSOC_H
+#ifndef ZASSOC2_H
+#define ZASSOC2_H
 
 #include "zarray.h"
 
-#define ZASSOC_VERSION 1
-
-#if ZASSOC_VERSION == 1
-
 namespace LibChaos {
 
-template <class K, class T> class ZAssoc {
+// FIX ME
+
+struct ZAssoc::Data;
+
+template <class K, class T> class ZAssoc : public ZArray<T> {
 public:
     struct Data {
         Data(){}
@@ -152,10 +152,4 @@ private:
 
 }
 
-#else
-
-#include "zassoc2.h"
-
-#endif
-
-#endif // ZASSOC_H
+#endif // ZASSOC2_H

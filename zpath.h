@@ -47,19 +47,21 @@ public:
     ZPath &fix();
     static bool makeDir(ZPath);
     bool createDirsTo();
-    ZString str();
+
+    ZString str(char delim = ZPATH_DELIM);
+
     unsigned depth();
     unsigned size();
 
     ArZ &dat();
     bool &abs();
 #ifdef PLATFORM_WINDOWS
-    char drv();
+    char &drv();
 #endif
 private:
     void fromStr(ZString);
 
-    ArZ data;
+    ArZ _data;
     bool absolute;
 #ifdef PLATFORM_WINDOWS
     char drive;

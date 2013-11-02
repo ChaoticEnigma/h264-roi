@@ -19,29 +19,20 @@ ZString &ZString::operator=(ZString str_){
     data = str_.str();
     return *this;
 }
-bool ZString::operator==(ZString str_){
+bool ZString::operator==(ZString str_) const {
     return data == str_.str();
 }
-bool ZString::operator!=(ZString str_){
+bool ZString::operator!=(ZString str_) const {
     return data != str_.str();
 }
-ZString ZString::concat(ZString str_){
+ZString ZString::concat(ZString str_) const {
     std::string tmp = data;
     tmp.append(str_.str());
     return ZString(tmp);
 }
-ZString ZString::operator+(ZString str_){
-    return concat(str_);
-}
 ZString &ZString::append(ZString str_){
     data = data.append(str_.str());
     return *this;
-}
-ZString &ZString::operator+=(ZString str_){
-    return append(str_);
-}
-ZString &ZString::operator<<(ZString str_){
-    return append(str_);
 }
 
 ZString::ZString(std::string str_){
@@ -70,7 +61,7 @@ ZString::ZString(const char *str_){
         data = std::string();
     }
 }
-const char *ZString::cc(){
+const char *ZString::cc() const {
     return data.c_str();
 }
 
@@ -118,7 +109,7 @@ ZString ZString::ItoS(zs64 value, int base) {
     return ZString(buf);
 }
 
-int ZString::tint(){
+int ZString::tint() const {
     const char *str_ = data.c_str();
     return atoi(str_);
 }
@@ -129,6 +120,11 @@ ZString::ZString(double num){
     data = stream.str();
 }
 
+ZString::ZString(ZArray<char> bin){
+    for(zu64 i = 0; i < bin.size(); ++i)
+        append(bin[i]);
+}
+
 char &ZString::operator[](zu64 index){
     if(index > size())
         return byte;
@@ -136,14 +132,11 @@ char &ZString::operator[](zu64 index){
         return data[index];
 }
 
-zu64 ZString::size(){
+zu64 ZString::size() const {
     return data.size();
 }
-zu64 ZString::length(){
-    return data.length();
-}
 
-int ZString::count(std::string needle){
+int ZString::count(std::string needle) const {
     std::string haystack = data;
     int cnt = 0;
     for(unsigned i = 0; i < haystack.length(); ++i){
@@ -162,13 +155,13 @@ int ZString::count(std::string needle){
     return cnt;
 }
 
-char ZString::first(){
+char ZString::first() const {
     if(size() >= 1)
         return data[0];
     else
         return '\0';
 }
-char ZString::last(){
+char ZString::last() const {
     if(size() >= 1)
         return data[size()-1];
     else
@@ -178,11 +171,11 @@ char ZString::last(){
 void ZString::clear(){
     data.clear();
 }
-bool ZString::isEmpty(){
+bool ZString::isEmpty() const {
     return data.empty();
 }
 
-bool ZString::startsWith(ZString test, bool ignorews){
+bool ZString::startsWith(ZString test, bool ignorews) const {
     std::string start = test.str();
     bool started;
     if(ignorews)
@@ -205,11 +198,8 @@ bool ZString::startsWith(ZString test, bool ignorews){
     }
     return true;
 }
-bool ZString::beginsWith(ZString str_){
-    return startsWith(str_, false);
-}
 
-bool ZString::endsWith(ZString test){
+bool ZString::endsWith(ZString test) const {
     if(test.size() > size())
         return false;
     std::string end = data.substr(data.size() - test.size(), test.size());

@@ -6,9 +6,13 @@
 
 #include "zfile.h"
 
+#ifdef COMPILER_MINGW
+    #include <direct.h>
+#endif
+
 namespace LibChaos {
 
-ZPath::ZPath() : data(), absolute(false){}
+ZPath::ZPath() : _data(), absolute(false){}
 
 ZPath::ZPath(const char *path){
     fromStr(path);
@@ -42,19 +46,19 @@ void ZPath::fromStr(ZString path){
     if(tmp[0].size() == 2 && tmp[0][1] == ':'){
         drive = tmp[0][0];
         tmp.popFront();
-        data = tmp;
+        _data = tmp;
         absolute = true;
     } else {
-        data = tmp;
+        _data = tmp;
         drive = '!';
         absolute = false;
     }
 #else
-    data = path.explode(ZPATH_DELIM);
+    _data = path.explode(ZPATH_DELIM);
     //data.clean();
-    for(zu64 i = 0; i < data.size(); ++i){
-        if(data[i].isEmpty())
-            data.erase(i);
+    for(zu64 i = 0; i < _data.size(); ++i){
+        if(_data[i].isEmpty())
+            _data.erase(i);
     }
     absolute = (path[0] == ZPATH_DELIM);
 #endif
@@ -96,7 +100,7 @@ void ZPath::fromStr(ZString path){
 }*/
 
 ZPath &ZPath::concat(ZPath path){
-    data.concat(path.dat());
+    _data.concat(path.dat());
     return *this;
 }
 ZPath ZPath::operator+(ZPath path){
@@ -108,11 +112,11 @@ ZPath &ZPath::operator<<(ZPath path){
 }
 
 ZString &ZPath::operator[](unsigned inx){
-    return data[inx];
+    return _data[inx];
 }
 
 ZString &ZPath::last(){
-    return data.back();
+    return _data.back();
 }
 
 ZPath ZPath::pwd(){
@@ -130,27 +134,27 @@ ZPath &ZPath::relTo(ZPath path){
     if(!path.abs())
         path.getAbs();
     int match_len = 0;
-    for(unsigned i = 0; i < path.size() && i < data.size(); ++i){
-        if(path[i] != data[i]){
+    for(unsigned i = 0; i < path.size() && i < _data.size(); ++i){
+        if(path[i] != _data[i]){
             break;
         }
         match_len = i + 1;
     }
-    data.popFrontCount(match_len);
+    _data.popFrontCount(match_len);
     path.dat().popFrontCount(match_len);
     ZString up = "../";
     up.duplicate(path.depth());
-    ArZ tmp = data;
+    ArZ tmp = _data;
     fromStr(up);
-    data.concat(tmp);
+    _data.concat(tmp);
     return *this;
 }
 
 ZPath &ZPath::parent(){
     if(size() > 1)
-        data.popBack();
+        _data.popBack();
     else if(!abs())
-        data.push("..");
+        _data.push("..");
     return *this;
 }
 
@@ -158,7 +162,7 @@ bool ZPath::childTo(ZPath path){
     if(path.depth() > depth())
         return false;
     for(unsigned i = 0; i < path.depth(); ++i){
-        if(path[i] != data[i])
+        if(path[i] != _data[i])
             return false;
     }
     return true;
@@ -174,7 +178,7 @@ ZPath &ZPath::sanitize(){
     // /some/../../../path
     // ../../path
 
-    ArZ tmp = data;
+    ArZ tmp = _data;
     ArZ tmp2;
     bool prevup = false;
     for(unsigned i = 0; i < tmp.size(); ++i){
@@ -196,7 +200,7 @@ ZPath &ZPath::sanitize(){
             prevup = false;
         }
     }
-    data = tmp2;
+    _data = tmp2;
     return *this;
 }
 
@@ -216,21 +220,22 @@ ZPath &ZPath::getAbs(){
 
 bool ZPath::valid(){
 #ifdef PLATFORM_WINDOWS
-    for(unsigned i = 0; i < data.size(); ++i){
-        if(data[i].count("/") > 0 ||
-           data[i].count("\\") > 0 ||
-           data[i].count(":") > 0 ||
-           data[i].count("*") > 0 ||
-           data[i].count("?") > 0 ||
-           data[i].count("<") > 0 ||
-           data[i].count(">") > 0 ||
-           data[i].count("|") > 0)
+    for(unsigned i = 0; i < _data.size(); ++i){
+        if(_data[i].count("/") > 0 ||
+           _data[i].count("\\") > 0 ||
+           _data[i].count(":") > 0 ||
+           _data[i].count("*") > 0 ||
+           _data[i].count("\"") > 0 ||
+           _data[i].count("?") > 0 ||
+           _data[i].count("<") > 0 ||
+           _data[i].count(">") > 0 ||
+           _data[i].count("|") > 0)
             return false;
     }
     return true;
 #else
-    for(unsigned i = 0; i < data.size(); ++i){
-        if(data[i].count("/") > 0)
+    for(unsigned i = 0; i < _data.size(); ++i){
+        if(_data[i].count("/") > 0)
             return false;
     }
     return true;
@@ -251,67 +256,66 @@ bool ZPath::makeDir(ZPath dir){
         if(S_ISDIR(st_buf.st_mode)){
             return true;
         } else {
-            ZFile::remove(dir);
+            return false;
         }
     }
+    const char *tmp = dir.str().cc();
 #ifdef COMPILER_MINGW
-    return (mkdir(dir.str().cc()) == 0);
+    return (_mkdir(tmp) == 0);
 #else
     return (mkdir(dir.str().cc(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0);
 #endif
 }
 
 bool ZPath::createDirsTo(){
-    ZPath orig = *this;
-    orig.getAbs();
+    ZPath orig(_data);
+    orig.abs() = absolute;
+#ifdef PLATFORM_WINDOWS
+    orig.drv() = drive;
+#endif
+    ZPath cur;
+    cur.abs() = orig.abs();
+#ifdef PLATFORM_WINDOWS
+    cur.drv() = orig.drv();
+#endif
     for(unsigned i = 0; i < orig.size()-1; ++i){
-        ZPath tmp;
-        for(unsigned j = 0; j < i+1; ++j){
-            tmp.dat().push(orig[j]);
-        }
-        tmp.abs() = true;
-        if(!makeDir(tmp))
+        cur.concat(orig[i]);
+        if(!makeDir(cur))
             return false;
     }
     return true;
 }
 
-ZString ZPath::str(){
+ZString ZPath::str(char delim){
+    ZString tmp;
+    if(absolute){
 #ifdef PLATFORM_WINDOWS
-    ZString tmp;
-    if(absolute)
-        tmp << drive << ':' << ZPATH_DELIM;
-    for(unsigned i = 0; i < data.size(); ++i){
-        tmp << data[i] << ZPATH_DELIM;
-    }
-    return tmp.popLast();
-#else
-    ZString tmp;
-    if(absolute)
-        tmp = ZPATH_DELIM;
-    for(unsigned i = 0; i < data.size(); ++i){
-        tmp << data[i] << ZPATH_DELIM;
-    }
-    return tmp.popLast();
+        tmp << drive << ':';
 #endif
+        tmp << delim;
+    }
+    for(unsigned i = 0; i < _data.size(); ++i){
+        tmp << _data[i] << delim;
+    }
+    return tmp.popLast();
 }
 
 unsigned ZPath::depth(){
     return size();
 }
 unsigned ZPath::size(){
-    return data.size();
+    return _data.size();
 }
 
 ArZ &ZPath::dat(){
-    return data;
+    return _data;
 }
 bool &ZPath::abs(){
     return absolute;
 }
 
 #ifdef PLATFORM_WINDOWS
-char ZPath::drv(){
+char &ZPath::drv(){
     return drive;
 }
 #endif
