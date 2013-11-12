@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM == WINDOWS
     #define ZPATH_DELIM '\\'
 #else
     #define ZPATH_DELIM '/'
@@ -25,7 +25,8 @@ public:
 
     //ZPath &operator=(ZPath); // Default overload is fine
     //ZPath &operator=(ArZ);
-    //bool operator==(ZPath); // Default overload is fine
+    bool operator==(ZPath);
+    inline bool operator!=(ZPath pth){ return !(operator==(pth)); }
 
     ZPath &concat(ZPath);
     ZPath &operator<<(ZPath);
@@ -55,7 +56,7 @@ public:
 
     ArZ &dat();
     bool &abs();
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM == WINDOWS
     char &drv();
 #endif
 private:
@@ -63,7 +64,7 @@ private:
 
     ArZ _data;
     bool absolute;
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM == WINDOWS
     char drive;
 #endif
 };

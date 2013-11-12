@@ -22,6 +22,13 @@ public:
 //        return *this;
 //    }
 
+    bool operator==(ZArray<T> arr){
+        return (_data == arr.data());
+    }
+    bool operator!=(ZArray<T> arr){
+        return operator==(arr);
+    }
+
     T &at(zu64 index){
         if(index < size()){
             return _data[index];
@@ -36,9 +43,17 @@ public:
         return at(index);
     }
 
+    ZArray<T> &resize(zu64 len){
+        _data.resize(len);
+        return *this;
+    }
+
     ZArray<T> &push(T value){
         _data.push_back(value);
         return *this;
+    }
+    inline ZArray<T> &operator<<(T value){
+        return push(value);
     }
 
     ZArray<T> &erase(zu64 index, zu64 count){

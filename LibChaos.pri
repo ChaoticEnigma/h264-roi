@@ -1,6 +1,6 @@
-TEMPLATE = app
-CONFIG += console
-CONFIG -= qt
+TARGET = chaos
+TEMPLATE = lib
+CONFIG += staticlib console qt
 
 SOURCES += \
     libchaos/zstring.cpp \
@@ -37,3 +37,11 @@ HEADERS += \
     libchaos/zassoc2.h
 
 INCLUDEPATH += libchaos
+
+QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11
+
+LIBS += pthread
+
+DEFINES += BUILDING
+win32:DEFINES += PLATFORM_WINDOWS COMPILER_MINGW
+else:DEFINES += PLATFORM_LINUX COMPILER_GCC

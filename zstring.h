@@ -46,11 +46,11 @@ public:
     ZString(zsint);
     ZString(zu64);
     ZString(zs64);
-    static ZString ItoS(zu64 num, int base = 10);
-    static ZString ItoS(zs64 num, int base = 10);
+    static ZString ItoS(zu64 num, unsigned base = 10);
+    static ZString ItoS(zs64 num, unsigned base = 10);
     int tint() const;
 
-    ZString(double);
+    ZString(double flt, unsigned places = -1);
 
     ZString(ZArray<char> bin);
 

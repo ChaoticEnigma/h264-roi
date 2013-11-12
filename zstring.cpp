@@ -78,33 +78,29 @@ ZString::ZString(zsint num){ data = ItoS((zs64)num, 10).str(); }
 ZString::ZString(zu64 num){ data = ItoS(num, 10).str(); }
 ZString::ZString(zs64 num){ data = ItoS(num, 10).str(); }
 
-ZString ZString::ItoS(zu64 value, int base) {
+ZString ZString::ItoS(zu64 value, unsigned base) {
     std::string buf;
     if(base < 2 || base > 16)
         return buf;
-    enum { kMaxDigits = 35 };
-    buf.reserve(kMaxDigits);
+    buf.reserve(35);
     zu64 quotient = value;
     do {
         buf += "0123456789abcdef"[std::labs(quotient % base)];
         quotient /= base;
     } while(quotient);
-    //if(value < 0)
-    //    buf += '-';
     std::reverse(buf.begin(), buf.end());
     return ZString(buf);
 }
-ZString ZString::ItoS(zs64 value, int base) {
+ZString ZString::ItoS(zs64 value, unsigned base) {
     std::string buf;
     if (base < 2 || base > 16) return buf;
-    enum { kMaxDigits = 35 };
-    buf.reserve(kMaxDigits);
+    buf.reserve(35);
     zs64 quotient = value;
     do {
         buf += "0123456789abcdef"[std::labs(quotient % base)];
         quotient /= base;
     } while(quotient);
-    if ( value < 0) buf += '-';
+    if (value < 0) buf += '-';
     std::reverse(buf.begin(), buf.end());
     return ZString(buf);
 }
@@ -114,10 +110,15 @@ int ZString::tint() const {
     return atoi(str_);
 }
 
-ZString::ZString(double num){
+ZString::ZString(double num, unsigned places){
     std::ostringstream stream;
     stream << num;
-    data = stream.str();
+    if(places != (unsigned)-1){
+        ArZ arr = ZString(stream.str()).explode('.');
+        data = (arr[0] + '.' + arr[1].substr(0, places)).str();
+    } else {
+        data = stream.str();
+    }
 }
 
 ZString::ZString(ZArray<char> bin){

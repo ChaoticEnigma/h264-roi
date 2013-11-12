@@ -34,8 +34,18 @@ ZPath::ZPath(ArZ arr){
     fromStr(buff);
 }
 
+bool ZPath::operator==(ZPath pth){
+#if PLATFORM == WINDOWS
+    if((_data == pth.dat()) && (absolute == pth.abs()) && (drive == pth.drv()))
+        return true;
+    return false;
+#else
+    return (_data == pth.dat() && absolute == pth.abs());
+#endif
+}
+
 void ZPath::fromStr(ZString path){
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM == WINDOWS
     ArZ tmp;
     tmp = path.explodeList(2, ZPATH_DELIM, '/');
     //tmp.clean();
@@ -219,7 +229,7 @@ ZPath &ZPath::getAbs(){
 }
 
 bool ZPath::valid(){
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM == WINDOWS
     for(unsigned i = 0; i < _data.size(); ++i){
         if(_data[i].count("/") > 0 ||
            _data[i].count("\\") > 0 ||
@@ -260,7 +270,7 @@ bool ZPath::makeDir(ZPath dir){
         }
     }
     const char *tmp = dir.str().cc();
-#ifdef COMPILER_MINGW
+#if COMPILER == MINGW
     return (_mkdir(tmp) == 0);
 #else
     return (mkdir(dir.str().cc(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0);
@@ -270,12 +280,12 @@ bool ZPath::makeDir(ZPath dir){
 bool ZPath::createDirsTo(){
     ZPath orig(_data);
     orig.abs() = absolute;
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM == WINDOWS
     orig.drv() = drive;
 #endif
     ZPath cur;
     cur.abs() = orig.abs();
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM == WINDOWS
     cur.drv() = orig.drv();
 #endif
     for(unsigned i = 0; i < orig.size()-1; ++i){
@@ -289,7 +299,7 @@ bool ZPath::createDirsTo(){
 ZString ZPath::str(char delim){
     ZString tmp;
     if(absolute){
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM == WINDOWS
         tmp << drive << ':';
 #endif
         tmp << delim;
@@ -297,7 +307,9 @@ ZString ZPath::str(char delim){
     for(unsigned i = 0; i < _data.size(); ++i){
         tmp << _data[i] << delim;
     }
-    return tmp.popLast();
+    if(_data.size() > 0)
+        tmp.popLast();
+    return tmp;
 }
 
 unsigned ZPath::depth(){
@@ -314,7 +326,7 @@ bool &ZPath::abs(){
     return absolute;
 }
 
-#ifdef PLATFORM_WINDOWS
+#if PLATFORM == WINDOWS
 char &ZPath::drv(){
     return drive;
 }
