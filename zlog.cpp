@@ -8,7 +8,7 @@ bool ZLog::_init = false;
 ZLogWorker ZLog::worker;
 AsArZ ZLog::thread_ids;
 
-ZLog::ZLog() : source_mode(0), stdout_this(false), write_on_destruct(false), newline(true), rawlog(false), priority(false){}
+ZLog::ZLog() : source_mode(0), stdout_this(false), write_on_destruct(false), newline(true), rawlog(false), synclog(false), noqueue(false){}
 
 ZLog::~ZLog(){
     if(write_on_destruct)
@@ -25,10 +25,14 @@ void ZLog::flushLog(){
     out.stdout_this = stdout_this;
     out.newln = newline;
     out.raw = rawlog;
-    if(_init && !priority)
+    if(_init && !noqueue){
         worker.queue(out);
-    else
+        if(synclog){
+            ZLogWorker::wait();
+        }
+    } else {
         ZLogWorker::doLog(out);
+    }
 }
 
 ZLog &ZLog::operator<<(zlog_flags flag){
@@ -52,9 +56,11 @@ ZLog &ZLog::operator<<(zlog_flags flag){
     } else if(flag == stdio){
         stdout_this = true;
     } else if(flag == sync){
-        priority = true;
+        synclog = true;
+    } else if(flag == this_thread){
+        noqueue = true;
     } else if(flag == async){
-        priority = false;
+        synclog = false;
     }
     return *this;
 }

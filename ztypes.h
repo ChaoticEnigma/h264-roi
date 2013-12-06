@@ -1,6 +1,28 @@
 #ifndef ZTYPES_H
 #define ZTYPES_H
 
+#define LINUX   0x01
+#define WINDOWS 0x02
+
+#define GCC     0x11
+#define MINGW   0x12
+
+#ifdef PLATFORM_WINDOWS
+    #ifdef PLATFORM_LINUX
+        #error Multiple platforms declared. Please declare only one platform at a time.
+    #endif
+#endif
+
+#ifdef PLATFORM_WINDOWS
+    #define PLATFORM WINDOWS
+    #define COMPILER MINGW
+#else
+    #define PLATFORM LINUX
+    #define COMPILER GCC
+#endif
+
+namespace LibChaos {
+
 // At least 8 bits (1 byte)
 typedef unsigned char zu8;
 typedef signed char zs8;
@@ -20,18 +42,6 @@ typedef signed long zs32;
 typedef unsigned long long zu64;
 typedef signed long long zs64;
 
-#define LINUX   0x01
-#define WINDOWS 0x02
-
-#define GCC     0x11
-#define MINGW   0x12
-
-#ifdef PLATFORM_WINDOWS
-    #define PLATFORM WINDOWS
-    #define COMPILER MINGW
-#else
-    #define PLATFORM LINUX
-    #define COMPILER GCC
-#endif
+}
 
 #endif // ZTYPES_H

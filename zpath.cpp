@@ -48,10 +48,13 @@ void ZPath::fromStr(ZString path){
 #if PLATFORM == WINDOWS
     ArZ tmp;
     tmp = path.explodeList(2, ZPATH_DELIM, '/');
-    //tmp.clean();
-    for(zu64 i = 0; i < tmp.size(); ++i){
-        if(tmp[i].isEmpty())
+    zu64 i = 0;
+    while(i < tmp.size()){
+        if(tmp[i].isEmpty()){
             tmp.erase(i);
+            i = 0;
+        }
+        ++i;
     }
     if(tmp[0].size() == 2 && tmp[0][1] == ':'){
         drive = tmp[0][0];
@@ -65,10 +68,13 @@ void ZPath::fromStr(ZString path){
     }
 #else
     _data = path.explode(ZPATH_DELIM);
-    //data.clean();
-    for(zu64 i = 0; i < _data.size(); ++i){
-        if(_data[i].isEmpty())
+    zu64 i = 0;
+    while(i < _data.size()){
+        if(_data[i].isEmpty()){
             _data.erase(i);
+            i = 0;
+        }
+        ++i;
     }
     absolute = (path[0] == ZPATH_DELIM);
 #endif

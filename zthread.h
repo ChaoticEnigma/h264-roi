@@ -2,6 +2,7 @@
 #define ZTHREAD_H
 
 #include <pthread.h>
+#include <atomic>
 
 #include "ztypes.h"
 
@@ -12,7 +13,7 @@ typedef unsigned long ztid;
 struct ZThreadArg {
     bool stop();
     void *arg;
-    bool *_stop;
+    std::atomic<bool> *_stop;
 };
 
 class ZThread {
@@ -42,7 +43,7 @@ public:
     } _param;
 private:
     bool _run;
-    bool _stop;
+    std::atomic<bool> _stop;
     int ret;
     pthread_t thread;
 };

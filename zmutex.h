@@ -3,76 +3,85 @@
 
 // ZMutex Class
 // WARNING: Relatively untested
-// Allows storing of an object in a thread-safe manner.
-// Thread-specifc locking, so only the thread that locked the mutex is allowed to unlock it or get a refrence to the contained object.
-// While the mutex is locked, other threads may retrieve a copy of the contained object AT THEIR OWN RISK.
-//      If the object is copied while being written to by another thread, corruption of the copied object may occur.
+// Allows storing of an object in a semi-thread-safe manner.
+// Thread-unique locking, so only the thread that locked the mutex is allowed to unlock it.
+// While the mutex is locked, other threads may get a refrence to the contained object. THREAD RESPONSIBLY. SERIOUSLY.
 
-// read() Returns a read-only COPY of the object.
-// data() If calling thread is locking thread, refrence to contained object is returned, else function blocks until mutex is unlocked.
-// lock() If mutex is unlocked, mutex is locked by calling thread. If mutex is locked by other thread, function blocks until mutex is unlocked by other thread, then mutex is locked by calling thread.
-// unlock() If mutex is unlocked, returns true. If mutex is locked by calling thread, mutex is unlocked. If mutex is locked by other thread, blocks until mutex is unlocked by other thread.
-// locked() Returns true if mutex is locked. Else returns false;
-// locker() Returns copy of locking thread's id, or empty boost::thread::id object if unlocked.
+#include "ztypes.h"
 
+#include <pthread.h>
 #include <atomic>
-#include "zthread.h"
+#include <chrono>
 
 namespace LibChaos {
 
 template <class T> class ZMutex {
 public:
-    ZMutex() : lock_(false), obj(){}
-    T read(){
+    ZMutex() : locker_tid(0), obj(){
+        pthread_mutex_init(&mtx, NULL);
+    }
+    ~ZMutex(){
+        pthread_mutex_destroy(&mtx);
+    }
+
+    // Refrence to contained object is returned. Thread responsibly.
+    inline T &data(){
         return obj;
     }
-    T &data(){
-        //if(tid != boost::this_thread::get_id()){
-        if(tid != ZThread::thisTid()){
-            while(lock_){
-                // Loop until lock_ = false
-            }
+    // If mutex is unlocked, mutex is locked by calling thread. If mutex is locked by other thread, function blocks until mutex is unlocked by other thread, then mutex is locked by calling thread.
+    void lock(){
+        if(!iOwn()){
+            pthread_mutex_lock(&mtx);
+            locker_tid = pthread_self();
         }
-        return obj;
+        return; // We own the mutex
     }
-    bool lock(){
-        //if(tid == boost::this_thread::get_id()){
-        if(tid == ZThread::thisTid()){
-            return false;
+    // Locks mutex and returns true if unlocked, else returns false.
+    bool trylock(){
+        if(!iOwn()){
+            if(pthread_mutex_trylock(&mtx) == 0){
+                locker_tid = pthread_self();
+                return true; // We now own the mutex
+            }
+            return false; // Another thread owns the mutex
         } else {
-            while(lock_){
-                // Loop until lock_ = false
-            }
-            //tid = boost::this_thread::get_id();
-            tid = ZThread::thisTid();
-            lock_ = true;
+            return true; // We already own the mutex
         }
-        return true;
     }
-    bool unlock(){
-        //if(tid == boost::this_thread::get_id()){
-        if(tid == ZThread::thisTid()){
-            //tid = boost::thread::id();
-            tid = 0;
-            lock_ = false;
-        } else {
-            while(lock_){
-                //sleep(1);
-            }
+    // Tries to lock the mutex for <timeout_microsec> microseconds, then returns false.
+    bool timelock(zu64 timeout_microsec){
+        auto end = std::chrono::high_resolution_clock::now() + std::chrono::microseconds(timeout_microsec);
+        while(!trylock()){
+            // Loop until trylock() succeeds OR timeout is exceeded
+            if(std::chrono::high_resolution_clock::now() > end)
+                return false; // Timeout exceeded, mutex is locked by another thread
         }
-        return true;
+        return true; // Locked, and this thread owns it
     }
-    bool locked(){
-        return lock_;
+    // If mutex is unlocked, returns true. If mutex is locked by calling thread, mutex is unlocked. If mutex is locked by other thread, blocks until mutex is unlocked by other thread.
+    void unlock(){
+        if(locked()){
+            lock(); // Make sure we own the mutex first
+            locker_tid = 0;
+            pthread_mutex_unlock(&mtx);
+        }
     }
-    //boost::thread::id locker(){
-    ztid locker(){
-        return tid;
+    // Returns true if mutex is locked, else returns false.
+    inline bool locked(){
+        return (bool)locker();
+    }
+    // Returns locking thread's id, or 0 if unlocked.
+    inline pthread_t locker(){
+        return locker_tid;
+    }
+    // Return true if this thread owns the mutex, else returns false
+    inline bool iOwn(){
+        return (locked() && pthread_self() == locker_tid);
     }
 
 private:
-    std::atomic_bool lock_;
-    ztid tid;
+    pthread_mutex_t mtx;
+    std::atomic<pthread_t> locker_tid;
     T obj;
 };
 

@@ -1,12 +1,26 @@
 #ifndef ZSTRING_H
 #define ZSTRING_H
 
-#include <string>
-
 #include "zassoc.h"
 #include "ztypes.h"
 
+#include <string>
+
+//#if PLATFORM == WINDOWS && ! ZSTRING_NO_WINDOWS_H
+//    #include <windows.h>
+//    #define ZSTRING_WCHAR
+//#endif
+
 namespace LibChaos {
+
+//#define ZSTRING_UNICODEs
+//#ifdef ZSTRING_UNICODE
+//    typedef std::wstring zstring_stl;
+//    typedef wchar_t zstring_char;
+//#else
+//    typedef std::string zstring_stl;
+//    typedef char zstring_char;
+//#endif
 
 class ZString;
 //typedef AssocArray<ZString> AsArZ;
@@ -16,7 +30,7 @@ typedef ZAssoc<ZString, ZString> AsArZ;
 class ZString {
 public:
     ZString();
-    ~ZString();
+    //~ZString();
 
     ZString &operator=(ZString);
     bool operator==(ZString) const;
@@ -30,11 +44,17 @@ public:
     ZString(std::string);
     std::string &str();
 
-    ZString(char*);
+    ZString(std::wstring);
+    std::wstring wstr() const;
+
+    //ZString(char*);
     //char *c();
 
     ZString(const char*);
     const char *cc() const;
+
+    ZString(const wchar_t*);
+    const wchar_t *wc() const;
 
     ZString(char);
 
@@ -58,7 +78,7 @@ public:
 
     zu64 size() const;
     inline zu64 length() const { return size(); }
-    int count(std::string) const;
+    zu64 count(ZString) const;
 
     char first() const;
     char last() const;
@@ -111,6 +131,8 @@ public:
     ArZ explodeList(unsigned nargs, ...);
     ArZ strict_explode(char delim);
     ArZ explode();
+
+    bool isUtf8(ZString);
 
     //ZString toJSON(AsArZ, bool modify = true);
     //bool validJSON();

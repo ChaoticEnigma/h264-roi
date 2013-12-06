@@ -9,7 +9,18 @@
 
 namespace LibChaos {
 
-ZMutex< std::queue<LogJob> > ZLogWorker::jobs;
+#ifdef ZLOG_STD_MUTEX
+std::mutex ZLogWorker::mtx;
+//std::unique_lock<std::mutex> ZLogWorker::ulock(ZLogWorker::mtx, std::defer_lock);
+std::mutex ZLogWorker::formatMtx;
+#else
+ZMutex<char> ZLogWorker::mtx;
+ZMutex<char> ZLogWorker::formatMtx;
+//pthread_mutex_t ZLogWorker::pmtx;
+#endif
+std::queue<LogJob> ZLogWorker::jobs;
+
+std::atomic<bool> ZLogWorker::pending(false);
 ZLogWorker::zlog_out ZLogWorker::stdoutlog;
 ZLogWorker::zlog_out ZLogWorker::stderrlog;
 ZArray<ZLogWorker::zlog_outfile> ZLogWorker::logfiles;
@@ -27,16 +38,15 @@ ZLogWorker::~ZLogWorker(){
     work.join();
     //work.interrupt();
     //pthread_cancel(work);
-
 }
 
 int ZLogWorker::run(){
-    signal(SIGABRT, sigHandle);
-    signal(SIGFPE, sigHandle);
-    signal(SIGILL, sigHandle);
-    signal(SIGINT, sigHandle);
-    signal(SIGSEGV, sigHandle);
-    signal(SIGTERM, sigHandle);
+//    signal(SIGABRT, sigHandle);
+//    signal(SIGFPE, sigHandle);
+//    signal(SIGILL, sigHandle);
+//    signal(SIGINT, sigHandle);
+//    signal(SIGSEGV, sigHandle);
+//    signal(SIGTERM, sigHandle);
     work.run(zlogWorker);
     //work = boost::thread(zlogWorker);
     //pthread_create(&work, NULL, zlogWorker, NULL);
@@ -48,51 +58,53 @@ void ZLogWorker::sigHandle(int sig){
     exit(sig);
 }
 
-void ZLogWorker::wait(){
-    if(!ZLogWorker::jobs.read().empty()){
-        lastcomp = false;
-    }
-    while(!lastcomp){
-        auto start = std::chrono::high_resolution_clock::now();
-        auto end = start + std::chrono::microseconds(10000);
-        do {
-            std::this_thread::yield();
-        } while (std::chrono::high_resolution_clock::now() < end);
+void ZLogWorker::wait(){ // Must NEVER be called by log worker thread
+    while(true){
+        if(!pending && mtx.trylock()){
+            mtx.unlock();
+            if(jobs.empty()){
+                break;
+            }
+        }
     }
     //pthread_join(work, NULL);
     //work.join();
 }
 
 void ZLogWorker::queue(LogJob lj){
-    jobs.lock();
-    jobs.data().push(lj);
-    jobs.unlock();
+    pending = true;
+    mtx.lock();
+    jobs.push(lj);
+    mtx.unlock();
 }
 
 void *ZLogWorker::zlogWorker(void *zarg){
     ZThreadArg *arg = (ZThreadArg*)zarg;
     //std::cout << "worker work is working..." << std::endl;
     while(!arg->stop()){
-        if(!jobs.read().empty()){
-            jobs.lock();
-            std::queue<LogJob> tmp;
-            jobs.data().swap(tmp);
-            jobs.unlock();
+        if(mtx.trylock()){
+            if(!jobs.empty()){
+                pending = true;
+                std::queue<LogJob> tmp;
+                jobs.swap(tmp);
+                mtx.unlock();
 
-            while(!tmp.empty()){
-                doLog(tmp.front());
-                tmp.pop();
+                while(!tmp.empty()){
+                    doLog(tmp.front());
+                    tmp.pop();
+                }
+                pending = false;
+            } else {
+                mtx.unlock();
             }
-            lastcomp = true;
         }
-        // Yield for 10 ms
-        std::this_thread::yield();
+        //std::this_thread::yield();
         //std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     return NULL;
 }
 
-ZString ZLogWorker::formatLog(LogJob jb, ZlogFormat fmt){
+ZString ZLogWorker::makeLog(LogJob jb, ZlogFormat fmt){
     ZString output;
     if(fmt.prefix && !jb.raw){
         if(fmt.time == 1){
@@ -114,6 +126,7 @@ ZString ZLogWorker::formatLog(LogJob jb, ZlogFormat fmt){
 void ZLogWorker::doLog(LogJob jb){
     ZlogFormat outfmt, errfmt;
 
+    formatMtx.lock();
     switch(jb.source){
     case 0: // 0 - normal
         outfmt = stdoutlog.normal;
@@ -123,7 +136,7 @@ void ZLogWorker::doLog(LogJob jb){
                 if(logfiles[i].normal.enable){
                     logfiles[i].file.createDirsTo();
                     std::ofstream lgfl(logfiles[i].file.str().cc(), std::ios::app);
-                    lgfl << formatLog(jb, logfiles[i].normal);
+                    lgfl << makeLog(jb, logfiles[i].normal);
                     lgfl.flush();
                     lgfl.close();
                 }
@@ -138,7 +151,7 @@ void ZLogWorker::doLog(LogJob jb){
                 if(logfiles[i].debug.enable){
                     logfiles[i].file.createDirsTo();
                     std::ofstream lgfl(logfiles[i].file.str().cc(), std::ios::app);
-                    lgfl << formatLog(jb, logfiles[i].debug);
+                    lgfl << makeLog(jb, logfiles[i].debug);
                     lgfl.flush();
                     lgfl.close();
                 }
@@ -153,7 +166,7 @@ void ZLogWorker::doLog(LogJob jb){
                 if(logfiles[i].error.enable){
                     logfiles[i].file.createDirsTo();
                     std::ofstream lgfl(logfiles[i].file.str().cc(), std::ios::app);
-                    lgfl << formatLog(jb, logfiles[i].error);
+                    lgfl << makeLog(jb, logfiles[i].error);
                     lgfl.flush();
                     lgfl.close();
                 }
@@ -161,30 +174,37 @@ void ZLogWorker::doLog(LogJob jb){
         }
         break;
     }
+    formatMtx.unlock();
 
     if(outfmt.enable){
-        std::cout << formatLog(jb, outfmt) << std::flush;
+        //std::cout << makeLog(jb, outfmt) << std::flush;
+        printf("%s", makeLog(jb, outfmt).cc());
     }
     if(errfmt.enable){
-        std::cerr << formatLog(jb, errfmt) << std::flush;
+        //std::cerr << makeLog(jb, errfmt) << std::flush;
+        printf("%s", makeLog(jb, errfmt).cc());
     }
 }
 
 void ZLogWorker::formatStdout(ZlogFormat nml, ZlogFormat dbg, ZlogFormat err){
+    formatMtx.lock();
     if(nml._init)
         stdoutlog.normal = nml;
     if(dbg._init)
         stdoutlog.debug = dbg;
     if(err._init)
         stdoutlog.error = err;
+    formatMtx.unlock();
 }
 void ZLogWorker::formatStderr(ZlogFormat nml, ZlogFormat dbg, ZlogFormat err){
+    formatMtx.lock();
     if(nml._init)
         stderrlog.normal = nml;
     if(dbg._init)
         stderrlog.debug = dbg;
     if(err._init)
        stderrlog.error = err;
+    formatMtx.unlock();
 }
 void ZLogWorker::addLogFile(ZPath pth, ZlogFormat nml, ZlogFormat dbg, ZlogFormat err){
     zlog_outfile nwfl;
@@ -197,7 +217,9 @@ void ZLogWorker::addLogFile(ZPath pth, ZlogFormat nml, ZlogFormat dbg, ZlogForma
     if(err._init)
         nwfl.error = err;
 
+    formatMtx.lock();
     logfiles.push(nwfl);
+    formatMtx.unlock();
 }
 
 }

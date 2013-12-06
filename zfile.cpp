@@ -1,8 +1,10 @@
 #include "zfile.h"
 
-#include <sys/stat.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 namespace LibChaos {
 
@@ -121,9 +123,9 @@ bool ZFile::writeFile(ZPath filenm, const ZString &data){
     return false;
 }
 
-}
-#include "zlog.h"
-namespace LibChaos {
+//}
+//#include "zlog.h"
+//namespace LibChaos {
 
 zu64 ZFile::writeFile(ZPath filenm, const ZBinary &data){
     //LOG(filenm.str().cc());
@@ -135,6 +137,28 @@ zu64 ZFile::writeFile(ZPath filenm, const ZBinary &data){
     if(wrt != data.size())
         return 0;
     return wrt;
+}
+
+zu64 ZFile::copy(ZPath source, ZPath output){
+    FILE* inFile = fopen(source.str().cc(), "rb");
+    FILE* outFile = fopen(output.str().cc(), "wb");
+    zu64 total = 0;
+    char *buffer = new char[32768];
+    zu64 dats;
+    do {
+        dats = fread(buffer, 1, sizeof(buffer), inFile);
+        if(dats <= 0)
+            break;
+        total += fwrite(buffer, 1, dats, outFile);
+    } while(dats == sizeof(buffer));
+    delete[] buffer;
+    fclose(outFile);
+    fclose(inFile);
+    return total;
+}
+
+bool ZFile::createDirsTo(ZPath path){
+    return path.createDirsTo();
 }
 
 /*bool ZFile::append(ZString cont){
@@ -177,8 +201,149 @@ bool ZFile::exists(ZPath name){
     return false;
 }
 
-ZArray<ZPath> ZFile::listFiles(ZPath dir){
+bool ZFile::isDir(ZPath dir){
+    struct stat st;
+#ifdef COMPILER_MINGW
+    stat(dir.str().cc(), &st);
+#else
+    lstat(dir.str().cc(), &st);
+#endif
+    if(S_ISDIR(st.st_mode)){
+        return true;
+    }
+    return false;
+}
+bool ZFile::isFile(ZPath file){
+    if(!exists(file))
+        return false;
+    struct stat st;
+#ifdef COMPILER_MINGW
+    stat(file.str().cc(), &st);
+#else
+    lstat(file.str().cc(), &st);
+#endif
+    if(S_ISREG(st.st_mode)){
+        return true;
+    }
+    return false;
+}
+
+ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
     ZArray<ZPath> files;
+    if(!isDir(dir))
+        return files;
+    DIR *dr;
+    struct dirent *drnt;
+    if((dr = opendir(dir.str().cc())) != NULL){
+        while((drnt = readdir(dr)) != NULL){
+            if(std::string(drnt->d_name) == "." || std::string(drnt->d_name) == "..")
+                continue;
+            ZPath flnm = dir + drnt->d_name;
+            struct stat st;
+#ifdef COMPILER_MINGW
+            stat(flnm.str().cc(), &st);
+#else
+            lstat(flnm.str().cc(), &st);
+#endif
+            if(S_ISDIR(st.st_mode) && recurse){
+                files.concat(listFiles(flnm)); // Unsafe, stack overflow possibility
+            } else {
+                files.push(flnm.getAbs());
+            }
+        }
+        closedir(dr);
+    }
+    return files;
+}
+ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
+    ZArray<ZPath> dirs;
+    if(!isDir(dir))
+        return dirs;
+    DIR *dr;
+    struct dirent *drnt;
+    if((dr = opendir(dir.str().cc())) != NULL){
+        while((drnt = readdir(dr)) != NULL){
+            if(ZString(drnt->d_name) == "." || ZString(drnt->d_name) == "..")
+                continue;
+            ZPath flnm = dir + drnt->d_name;
+            struct stat st;
+#ifdef COMPILER_MINGW
+            stat(flnm.str().cc(), &st);
+#else
+            lstat(flnm.str().cc(), &st);
+#endif
+            if(S_ISDIR(st.st_mode)){
+                dirs.push(flnm.getAbs());
+                if(recurse){
+                    dirs.concat(listDirs(flnm)); // Unsafe, stack overflow possibility
+                }
+            }
+        }
+        closedir(dr);
+    }
+    return dirs;
+}
+
+}
+#include <windows.h>
+namespace LibChaos {
+
+zu64 ZFile::dirSize(ZPath dir){
+#define V 1
+#if V == 1
+    WIN32_FIND_DATAA data;
+    zu64 total = 0;
+    HANDLE sh = FindFirstFileA((dir + "*").str().cc(), &data);
+    if(sh == INVALID_HANDLE_VALUE)
+        return 0;
+    do {
+        if(std::string(data.cFileName) != "." && std::string(data.cFileName) != ".."){
+            if((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+                total += dirSize(dir + data.cFileName);
+            else
+                //total += (zu64)(data.nFileSizeHigh * (MAXDWORD) + data.nFileSizeLow);
+                total += data.nFileSizeLow | (zu64)data.nFileSizeHigh << 32;
+        }
+    } while(FindNextFileA(sh, &data));
+    FindClose(sh);
+    return total;
+#elif V == 2
+    ZArray<ZPath> fls = listFiles(dir);
+    zu64 total = 0;
+    for(zu64 i = 0; i < fls.size(); ++i){
+        total += ZFile(fls[i]).flsize();
+    }
+    return total;
+#elif V == 3
+    WIN32_FIND_DATAA data;
+    HANDLE h;
+    zu64 total = 0;
+    ZArray<ZPath> fls = listFiles(dir);
+    for(zu64 i = 0; i < fls.size(); ++i){
+        h = FindFirstFileA(fls[i].str().cc(), &data);
+        if(h == INVALID_HANDLE_VALUE){
+            total += 0;
+        } else {
+            total += data.nFileSizeLow | (zu64)data.nFileSizeHigh << 32;
+        }
+        FindClose(h);
+    }
+    return total;
+#elif V == 4
+    FILE *pFile = NULL;
+    zu64 total = 0;
+    ZArray<ZPath> fls = listFiles(dir);
+    for(zu64 i = 0; i < fls.size(); ++i){
+        fopen_s(&pFile, dir.str().cc(), "rb");
+        fseek(pFile, 0, SEEK_END);
+        total += ftell(pFile);
+        fclose(pFile);
+        pFile = NULL;
+    }
+    return total;
+#elif V == 5
+    FILE *pFile;
+    zu64 total = 0;
     DIR *dr;
     struct dirent *drnt;
     if((dr = opendir(dir.str().cc())) != NULL){
@@ -193,16 +358,21 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir){
             lstat(flnm.str().cc(), &st);
 #endif
             if(S_ISDIR(st.st_mode)){
-                ZArray<ZPath> tmp = listFiles(flnm);
-                for(zu64 i = 0; i < tmp.size(); ++i)
-                    files.push(tmp[i]);
+                total += dirSize(flnm); // Unsafe, stack overflow possibility
             } else {
-                files.push(flnm.getAbs());
+                fopen_s(&pFile, dir.str().cc(), "rb");
+                fseek(pFile, 0, SEEK_END);
+                total += ftell(pFile);
+                fclose(pFile);
             }
         }
         closedir(dr);
     }
-    return files;
+    return total;
+#else
+    return 0;
+#endif
+#undef V
 }
 
 zu64 ZFile::flsize(){

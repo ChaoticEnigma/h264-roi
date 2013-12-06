@@ -4,6 +4,8 @@ SET(CMAKE_GENERATOR "Unix Makefiles")
 
 PROJECT(LibChaos)
 
+ADD_SUBDIRECTORY(ui)
+
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     asar.h
     database.h
@@ -33,15 +35,17 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     #zparcel.cpp
     zpath.cpp
     zstring.cpp
+    zstring_encode.cpp
     zthread.cpp
 )
 
 ### =================== CONFIG =================== ###
 
 SET(LibChaos_INCLUDE "${LibChaos_SOURCE_DIR}" PARENT_SCOPE)
+SET(LibChaosUI_INCLUDE ${LibChaosUI_INCLUDE} PARENT_SCOPE)
 
 INCLUDE_DIRECTORIES(
-#    ${Boost_INCLUDE_DIR}
+    ${CMAKE_SOURCE_DIR}
 )
 
 IF(WIN32)
@@ -68,6 +72,7 @@ ELSE()
 ENDIF()
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
+#ADD_DEFINITIONS(-DZLOG_STD_MUTEX)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -ansi -std=c++11")
 #SET_SOURCE_FILES_PROPERTIES(sqlite3.c PROPERTIES COMPILE_FLAGS -std=c99)

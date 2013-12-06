@@ -2,6 +2,11 @@
 #define ZLOGWORKER_H
 
 #include <queue>
+#ifdef ZLOG_STD_MUTEX
+    #include <mutex>
+#else
+    #include <pthread.h>
+#endif
 
 #include "zstring.h"
 #include "zpath.h"
@@ -47,7 +52,18 @@ public:
         ZlogFormat error;
         AsArZ format;
     };
-    static ZMutex< std::queue<LogJob> > jobs;
+#ifdef ZLOG_STD_MUTEX
+    static std::mutex mtx;
+    //static std::unique_lock<std::mutex> ulock;
+    static std::mutex formatMtx;
+#else
+    static ZMutex<char> mtx;
+    static ZMutex<char> formatMtx;
+    //pthread_mutex_t pmtx;
+#endif
+    static std::queue<LogJob> jobs;
+
+    static std::atomic<bool> pending;
     static zlog_out stdoutlog;
     static zlog_out stderrlog;
     static ZArray<zlog_outfile> logfiles;
@@ -66,7 +82,7 @@ public:
 private:
     static void *zlogWorker(void *);
     static void sigHandle(int);
-    static ZString formatLog(LogJob jb, ZlogFormat fmt);
+    static ZString makeLog(LogJob jb, ZlogFormat fmt);
 
     ZThread work;
     //boost::thread work;

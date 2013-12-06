@@ -10,6 +10,7 @@
 #define RLOG(A) LibChaos::ZLog() << LibChaos::ZLog::raw << A
 #define ELOG(A) LibChaos::ZLog() << LibChaos::ZLog::error << A
 #define SLOG(A) LibChaos::ZLog() << LibChaos::ZLog::sync << A
+#define TLOG(A) LibChaos::ZLog() << LibChaos::ZLog::this_thread << A
 #define OLOG(A) LibChaos::ZLog() << LibChaos::ZLog::stdio << A
 #define ORLOG(A) OLOG(LibChaos::ZLog::raw << A)
 
@@ -28,20 +29,27 @@ namespace LibChaos {
 class ZLog {
 public:
     enum zlog_flags {
-        flush = 1,      // Manual call to flush log
+        // Actions
+        flush = 1,      // Flush log immediately
         newln = 2,      // Append newline to buffer
-        flushln = 3,    // Manual call to flush log after appending new newline
-        noln = 4,       // Skip next automatic newline
+        flushln = 3,    // Append newline and flush log
+
+        // Format Modifers
+        noln = 4,       // Disable automatic newlines for this object
         raw = 5,        // This object will log without formatting
 
-        normal = 6,     // Set instance of class to log normally
+        // Mode Selection
+        normal = 6,     // Set instance of class to log normally (default)
         debug = 7,      // Set instance of class to log to debug buffer
         error = 8,      // Current instance to logs and outputs to stderr
 
+        // Target Modifiers
         stdio = 9,      // Current instance outputs only to stdout
 
-        sync = 10,      // Log immediately, block until done
-        async = 11      // Push log to queue, return as soon as possible
+        // Sequence Modifiers
+        sync = 10,          // Push log to queue, block until queue is empty
+        this_thread = 11,   // Log immediately from this thread, block until done
+        async = 12          // Push log to queue, return as soon as possible (default)
     };
 
     ZLog();
@@ -82,7 +90,8 @@ private:
     bool write_on_destruct;
     bool newline;
     bool rawlog;
-    bool priority;
+    bool synclog;
+    bool noqueue;
 
 };
 

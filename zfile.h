@@ -35,6 +35,9 @@ class ZFile {
         static bool writeFile(ZPath name, const ZString &data);
         static zu64 writeFile(ZPath name, const ZBinary &data);
 
+        static zu64 copy(ZPath, ZPath);
+        static bool createDirsTo(ZPath);
+
         //bool append(ZString);
 
         bool remove();
@@ -43,7 +46,12 @@ class ZFile {
         bool exists();
         static bool exists(ZPath);
 
-        static ZArray<ZPath> listFiles(ZPath dir);
+        // Path-related functions
+        static bool isDir(ZPath dir);
+        static bool isFile(ZPath dir);
+        static ZArray<ZPath> listFiles(ZPath dir, bool recurse = true);
+        static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false);
+        static zu64 dirSize(ZPath dir);
 
         zu64 flsize();
 

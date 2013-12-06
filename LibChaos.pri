@@ -1,47 +1,46 @@
 TARGET = chaos
 TEMPLATE = lib
-CONFIG += staticlib console qt
-
-SOURCES += \
-    libchaos/zstring.cpp \
-    libchaos/zlog.cpp \
-    libchaos/zfile.cpp \
-    libchaos/sqlite3.c \
-    libchaos/database.cpp \
-    libchaos/zpath.cpp \
-    libchaos/zthread.cpp \
-    libchaos/libchaos-main.cpp \
-    libchaos/zlogworker.cpp \
-    libchaos/zjson.cpp \
-    libchaos/zbinary.cpp
-
-OTHER_FILES += \
-    libchaos/CMakeLists.txt
+CONFIG += staticlib
 
 HEADERS += \
-    libchaos/zstring.h \
-    libchaos/zlog.h \
-    libchaos/zfile.h \
-    libchaos/sqlite3.h \
-    libchaos/database.h \
-    libchaos/zmutex.h \
-    libchaos/zpath.h \
-    libchaos/zthread.h \
-    libchaos/zlogworker.h \
-    libchaos/zarray.h \
-    libchaos/zassoc.h \
-    libchaos/zjson.h \
-    libchaos/ztypes.h \
-    libchaos/zbinary.h \
-    libchaos/zarray2.h \
-    libchaos/zassoc2.h
+    $$PWD/zstring.h \
+    $$PWD/zlog.h \
+    $$PWD/zfile.h \
+    $$PWD/sqlite3.h \
+    $$PWD/database.h \
+    $$PWD/zmutex.h \
+    $$PWD/zpath.h \
+    $$PWD/zthread.h \
+    $$PWD/zlogworker.h \
+    $$PWD/zarray.h \
+    $$PWD/zassoc.h \
+    $$PWD/zjson.h \
+    $$PWD/ztypes.h \
+    $$PWD/zbinary.h \
+    $$PWD/zarray2.h \
+    $$PWD/zassoc2.h
 
-INCLUDEPATH += libchaos
+SOURCES += \
+    $$PWD/zstring.cpp \
+    $$PWD/zlog.cpp \
+    $$PWD/zfile.cpp \
+    $$PWD/sqlite3.c \
+    $$PWD/database.cpp \
+    $$PWD/zpath.cpp \
+    $$PWD/zthread.cpp \
+    $$PWD/libchaos-main.cpp \
+    $$PWD/zlogworker.cpp \
+    $$PWD/zjson.cpp \
+    $$PWD/zbinary.cpp \
+    $$PWD/zstring_encode.cpp
 
-QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11
+OTHER_FILES += $$PWD/CMakeLists.txt
 
-LIBS += pthread
+INCLUDEPATH += $$PWD
 
-DEFINES += BUILDING
+#DEFINES += ZLOG_STD_MUTEX
+
 win32:DEFINES += PLATFORM_WINDOWS COMPILER_MINGW
 else:DEFINES += PLATFORM_LINUX COMPILER_GCC
+
+include($$PWD/ui/LibChaosUI.pri)

@@ -5,15 +5,17 @@
 #include <cstdlib>
 #include <algorithm>
 #include <cstdarg>
+#include <clocale>
+#include <locale>
 
 namespace LibChaos {
 
 ZString::ZString() : data(){
     //data.clear();
 }
-ZString::~ZString(){
-    //data.clear();
-}
+//ZString::~ZString(){
+//    //data.clear();
+//}
 
 ZString &ZString::operator=(ZString str_){
     data = str_.str();
@@ -35,34 +37,54 @@ ZString &ZString::append(ZString str_){
     return *this;
 }
 
-ZString::ZString(std::string str_){
-    data = str_;
-}
+ZString::ZString(std::string str_) : data(str_){}
 std::string &ZString::str(){
     return data;
 }
 
-ZString::ZString(char *str_){
-    if(str_ != NULL){
-        data = std::string(str_, strlen(str_));
-    } else {
-        data = std::string();
-    }
+ZString::ZString(std::wstring wide) : data(wide.begin(), wide.end()){}
+std::wstring ZString::wstr() const {
+    return std::wstring(data.begin(), data.end());
 }
+
+//ZString::ZString(char *str_){
+//    if(str_ != NULL){
+//        data = std::string(str_, strlen(str_));
+//    } else {
+//        data = std::string();
+//    }
+//}
 //char *ZString::c(){
 //    char str_[size()];
 //    return strcpy(str_, data.c_str());
 //}
 
-ZString::ZString(const char *str_){
+ZString::ZString(const char *str_) : data(){
     if(str_ != NULL){
         data = std::string(str_, strlen(str_));
-    } else {
-        data = std::string();
     }
 }
 const char *ZString::cc() const {
     return data.c_str();
+}
+
+}
+#include <windows.h>
+namespace LibChaos {
+
+ZString::ZString(const wchar_t *wstr){
+    if(wstr != NULL){
+        int len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
+        char *str = new char[len];
+        WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
+        data = std::string(str, len);
+    }
+}
+const wchar_t *ZString::wc() const {
+    int len = MultiByteToWideChar(CP_UTF8, 0, cc(), size(), NULL, 0);
+    wchar_t *wstr = new wchar_t[len];
+    MultiByteToWideChar(CP_UTF8, 0, cc(), size(), wstr, len);
+    return wstr;
 }
 
 ZString::ZString(char ch){
@@ -137,13 +159,13 @@ zu64 ZString::size() const {
     return data.size();
 }
 
-int ZString::count(std::string needle) const {
-    std::string haystack = data;
-    int cnt = 0;
-    for(unsigned i = 0; i < haystack.length(); ++i){
+zu64 ZString::count(ZString needle) const {
+    ZString haystack = data;
+    zu64 cnt = 0;
+    for(zu64 i = 0; i < haystack.size(); ++i){
         if(haystack[i] == needle[0]){
             bool good = true;
-            for(unsigned g = i, j = 0; j < needle.length(); ++g, ++j){
+            for(zu64 g = i, j = 0; j < needle.size(); ++g, ++j){
                 if(haystack[g] != needle[j]){
                     good = false;
                     break;
@@ -177,7 +199,7 @@ bool ZString::isEmpty() const {
 }
 
 bool ZString::startsWith(ZString test, bool ignorews) const {
-    std::string start = test.str();
+    ZString start = test;
     bool started;
     if(ignorews)
         started = false;
@@ -203,8 +225,8 @@ bool ZString::startsWith(ZString test, bool ignorews) const {
 bool ZString::endsWith(ZString test) const {
     if(test.size() > size())
         return false;
-    std::string end = data.substr(data.size() - test.size(), test.size());
-    return test.str() == end;
+    ZString end = data.substr(data.size() - test.size(), test.size());
+    return test == end;
 }
 
 ZString &ZString::substr(zu64 pos){
@@ -293,92 +315,6 @@ ZString ZString::replace(ZString str, ZString before, ZString after, unsigned ma
     }
     return str;
 }
-
-/*
-        if(str.size() >= before.size()){
-            for(unsigned long i = 0; i < str.size(); ++i){
-                bool match = true;
-                unsigned long last = i;
-                for(unsigned long j = 0; j < before.size(); ++j){
-                    if(str[i+j] != before[j]){
-                        match = false;
-                        break;
-                    }
-                    last = i+j;
-                }
-            }
-        }
-
-        for(unsigned long i = 0; i < str.size(); ++i){
-            if(str[i] == before.first()){
-                bool match = true;
-                int last = 0;
-                for(unsigned long j = 0; j < before.size(); ++j){
-                    if(str[i+j] != before[j]){
-                        match = false;
-                        break;
-                    }
-                    last = i + j;
-                }
-                if(match){
-                    tmp << str.substr(0, i, false);
-                    if(!after.isEmpty()){
-                        tmp << after;
-                    }
-                    str = str.substr(last + 1, false);
-                    //i = -1;
-                }
-            }
-        }
-*/
-
-/*ZString ZString::replace(ZString zbefore, ZString zafter, bool modify){
-    if(isEmpty())
-        return ZString();
-    if(zbefore.isEmpty())
-        return *this;
-    //std::string before = zbefore.str();
-    //std::string after = zafter.str();
-    //std::string tmpdata = data;
-    ZString tmpdata = data;
-    //std::string tmp;
-    ZString tmp;
-    for(long i = 0; i < tmpdata.size(); ++i){
-        if(tmpdata[i] == zbefore.first()){
-            bool match = true;
-            int last = 0;
-            for(unsigned j = 0; j < zbefore.size(); ++j){
-                if(tmpdata[i+j] != zbefore[j]){
-                    match = false;
-                    break;
-                }
-                last = i + j;
-            }
-            if(match){
-                //std::string pre = tmpdata.substr(0, i);
-                //std::string suff = tmpdata.substr(last+1);
-                //tmp = tmp.append(pre);
-                tmp << tmpdata.substr(0, i, false);
-                if(!zafter.isEmpty()){
-                    //tmp = tmp.append(zafter.str());
-                    tmp << zafter;
-                }
-                //tmpdata = suff;
-                tmpdata = tmpdata.substr(last + 1, false);
-                i = -1;
-            }
-        }
-    }
-    //tmp = tmp.append(tmpdata);
-    tmp << tmpdata;
-
-    if(modify){
-        data = tmp.str();
-        return *this;
-    } else {
-        return tmp;
-    }
-}*/
 
 ZString ZString::getUntil(ZString str, ZString find){
     zu64 loc = findFirst(str, find);

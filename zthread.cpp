@@ -13,17 +13,14 @@ bool ZThreadArg::stop(){
 }
 
 ZThread::ZThread() : _run(false), _stop(false){
-    bool *sptr = &_stop;
-    _param.zarg._stop = sptr;
+    _param.zarg._stop = &_stop;
 }
 ZThread::ZThread(funcType func) : _run(false), _stop(false){
-    bool *sptr = &_stop;
-    _param.zarg._stop = sptr;
+    _param.zarg._stop = &_stop;
     run(func);
 }
 ZThread::ZThread(funcType func, void *argptr) : _run(false), _stop(false){
-    bool *sptr = &_stop;
-    _param.zarg._stop = sptr;
+    _param.zarg._stop = &_stop;
     run(func, argptr);
 }
 
@@ -41,6 +38,7 @@ void *ZThread::entry(void *ptr){
     void *ret = thr->_param.funcptr(&thr->_param.zarg);
     //delete param->zarg;
     //delete param;
+    pthread_exit(ret);
     return ret;
 }
 
