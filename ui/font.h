@@ -16,6 +16,6 @@ private:
     HFONT font;
 };
 
-}
+} // namespace LibChaosUI
 
 #endif // ZUIFONT_H

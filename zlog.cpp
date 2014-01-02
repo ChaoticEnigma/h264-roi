@@ -35,7 +35,7 @@ void ZLog::flushLog(){
     }
 }
 
-ZLog &ZLog::operator<<(zlog_flags flag){
+ZLog &ZLog::operator<<(zlog_flag flag){
     if(flag == flush){
         flushLog();
     } else if(flag == newln){

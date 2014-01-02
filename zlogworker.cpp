@@ -28,6 +28,7 @@ bool ZLogWorker::lastcomp;
 
 ZLogWorker::ZLogWorker(){
     //work = work(zlogWorker);
+    setbuf(stdout, NULL);
     formatStdout(ZlogFormat(true, false, 0, false), ZlogFormat(false, false, 0, false), ZlogFormat(false, false, 0, false));
     formatStderr(ZlogFormat(false, false, 0, false), ZlogFormat(false, false, 0, false), ZlogFormat(true, false, 0, false));
 }

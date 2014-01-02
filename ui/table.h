@@ -8,15 +8,18 @@ namespace LibChaosUI {
 
 class ZTable : public ZControl {
 public:
-    ZTable(int x, int y, int width, int height, int id = 0, ZFont font = ZFont());
+    ZTable(int x, int y, int width, int height, int id = 0, int gid = 0, ZFont font = ZFont());
     bool create();
 
-    int addColumn(ZString header, int width);
+    int addColumn(ZString headcols, int width);
+    int addRow(ZArray<ZString> cells);
 private:
     void updateCols();
 
-    HWND handle;
+    HWND head;
+    HWND list;
     int id;
+    int gid;
     int x;
     int y;
     int width;
@@ -28,10 +31,10 @@ private:
         int width;
     };
 
-    ZArray<Col> head;
-    ZArray< ZArray<ZString> > cols;
+    ZArray<Col> headcols;
+    ZArray< ZArray<ZString> > rows;
 };
 
-}
+} // namespace LibChaosUI
 
 #endif // ZUITABLE_H

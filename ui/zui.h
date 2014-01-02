@@ -6,5 +6,6 @@
 #include "button.h"
 #include "edit.h"
 #include "table.h"
+#include "progress.h"
 
 #endif // ZUI_H

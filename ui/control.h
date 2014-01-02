@@ -2,6 +2,7 @@
 #define ZUICONTROL_H
 
 #include "base.h"
+#include "zmutex.h"
 
 namespace LibChaosUI {
 
@@ -16,6 +17,7 @@ public:
     virtual void initialize();
     virtual bool create();
     virtual bool update();
+    virtual bool destroy();
 
     virtual void callback(int);
 
@@ -25,9 +27,10 @@ public:
     void setChanged(bool ch);
 protected:
     ZWindow *parent;
+    ZMutexV mtx;
     bool changed;
 };
 
-}
+} // namespace LibChaosUI
 
 #endif // ZUICONTROL_H

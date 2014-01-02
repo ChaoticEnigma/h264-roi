@@ -14,7 +14,6 @@
 #define OLOG(A) LibChaos::ZLog() << LibChaos::ZLog::stdio << A
 #define ORLOG(A) OLOG(LibChaos::ZLog::raw << A)
 
-#define LG  LibChaos::ZLog()
 #define DLG LibChaos::ZLog() << LibChaos::ZLog::debug
 #define RLG LibChaos::ZLog() << LibChaos::ZLog::plain_this
 #define ELG LibChaos::ZLog() << LibChaos::ZLog::error
@@ -28,7 +27,7 @@ namespace LibChaos {
 
 class ZLog {
 public:
-    enum zlog_flags {
+    enum zlog_flag {
         // Actions
         flush = 1,      // Flush log immediately
         newln = 2,      // Append newline to buffer
@@ -55,7 +54,7 @@ public:
     ZLog();
     ~ZLog();
 
-    ZLog &operator<<(zlog_flags);
+    ZLog &operator<<(zlog_flag);
     ZLog &log(ZString logtext);
     ZLog &operator<<(ZString text);
     ZLog &operator<<(std::string text);

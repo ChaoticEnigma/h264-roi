@@ -15,19 +15,15 @@
 
 namespace LibChaos {
 
-template <class T> class ZMutex {
+class ZMutexV {
 public:
-    ZMutex() : locker_tid(0), obj(){
+    ZMutexV() : locker_tid(0){
         pthread_mutex_init(&mtx, NULL);
     }
-    ~ZMutex(){
+    ~ZMutexV(){
         pthread_mutex_destroy(&mtx);
     }
 
-    // Refrence to contained object is returned. Thread responsibly.
-    inline T &data(){
-        return obj;
-    }
     // If mutex is unlocked, mutex is locked by calling thread. If mutex is locked by other thread, function blocks until mutex is unlocked by other thread, then mutex is locked by calling thread.
     void lock(){
         if(!iOwn()){
@@ -82,6 +78,18 @@ public:
 private:
     pthread_mutex_t mtx;
     std::atomic<pthread_t> locker_tid;
+};
+
+template <class T> class ZMutex : public ZMutexV {
+public:
+    ZMutex() : ZMutexV(), obj(){}
+
+    // Refrence to contained object is returned. Thread responsibly.
+    inline T &data(){
+        return obj;
+    }
+
+private:
     T obj;
 };
 

@@ -18,4 +18,4 @@ HFONT ZFont::handle(){
     return font;
 }
 
-}
+} // namespace LibChaosUI

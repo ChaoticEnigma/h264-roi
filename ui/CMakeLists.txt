@@ -11,23 +11,27 @@ ENDIF()
 
 SET(LibChaosUI_HEADERS ### =================== HEADERS =================== ###S
     zui.h
-    zuibase.h
-    zuiwindow.h
-    zuicontrol.h
-    zuibutton.h
-    zuiedit.h
-    zuifont.h
-    zuitable.h
+    align.h
+    base.h
+    window.h
+    control.h
+    button.h
+    edit.h
+    font.h
+    table.h
+    progress.h
 )
 IF(WINDOWS) ### =================== SOURCES =================== ###
     SET(LibChaosUI_SOURCES
         win32/window_win32.cpp
         win32/windowproc_win32.cpp
+        win32/align_win32.cpp
         win32/control_win32.cpp
         win32/button_win32.cpp
         win32/edit_win32.cpp
         win32/font_win32.cpp
         win32/table_win32.cpp
+        win32/progress_win32.cpp
     )
 ELSE()
     SET(LibChaosUI_SOURCES

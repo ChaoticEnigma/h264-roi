@@ -21,6 +21,6 @@ private:
     ZFont font;
 };
 
-}
+} // namespace LibChaosUI
 
 #endif // ZUIEDIT_H

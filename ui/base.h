@@ -13,6 +13,6 @@ namespace LibChaosUI {
 
 typedef HWND HandleType;
 
-}
+} // namespace LibChaosUI
 
 #endif // ZUIBASE_H

@@ -11,7 +11,9 @@ HEADERS += \
     $$PWD/button.h \
     $$PWD/edit.h \
     $$PWD/font.h \
-    $$PWD/table.h
+    $$PWD/table.h \
+    libchaos/ui/progress.h \
+    libchaos/ui/align.h
 
 SOURCES += \
     $$PWD/win32/window_win32.cpp \
@@ -20,7 +22,9 @@ SOURCES += \
     $$PWD/win32/button_win32.cpp \
     $$PWD/win32/edit_win32.cpp \
     $$PWD/win32/font_win32.cpp \
-    $$PWD/win32/table_win32.cpp
+    $$PWD/win32/table_win32.cpp \
+    libchaos/ui/win32/progress_win32.cpp \
+    libchaos/ui/win32/align_win32.cpp
 
 OTHER_FILES += $$PWD/CMakeLists.txt
 

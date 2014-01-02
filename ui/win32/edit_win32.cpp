@@ -19,4 +19,4 @@ bool ZEdit::create(){
 //    return create();
 //}
 
-}
+} // namespace LibChaosUI

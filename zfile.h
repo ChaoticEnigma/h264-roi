@@ -16,11 +16,16 @@ namespace LibChaos {
 
 class ZFile {
     public:
+        enum zfile_mode {
+            readonly = 0x10,
+            readwrite = 0x01
+        };
+
         ZFile();
-        ZFile(ZPath, int = 0x10);
+        ZFile(ZPath, int = readonly);
         ~ZFile();
 
-        bool open(ZPath, int = 0x10);
+        bool open(ZPath, int = readonly);
         bool close();
 
         zu64 read(ZBinary &out, zu64 = -1);

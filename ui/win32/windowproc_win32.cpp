@@ -31,28 +31,24 @@ LRESULT CALLBACK ZWindow::windowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         switch(msg){
             case WM_CREATE: {
                 window->setHandle(hwnd);
-                ZArray<ZControl *> &controls = window->getControls();
+                ZArray<ZControl *> controls = window->getControls();
                 for(zu64 i = 0; i < controls.size(); ++i){
                     if(!controls[i]->create()){
                         SLOG("Create failed.");
-                        exit(3);
                     }
                     controls[i]->setChanged(false);
-                    LOG("Created control");
                 }
                 break;
             }
             case WM_PAINT: {
                 if(window->needsUpdate()){
-                    ZArray<ZControl *> &controls = window->getControls();
+                    ZArray<ZControl *> controls = window->getControls();
                     for(zu64 i = 0; i < controls.size(); ++i){
                         if(controls[i]->isChanged()){
                             if(!controls[i]->update()){
                                 SLOG("Update failed.");
-                                exit(3);
                             }
                             controls[i]->setChanged(false);
-                            LOG("Updated control");
                         }
                     }
                     window->setNeedUpdate(false);
@@ -80,4 +76,4 @@ LRESULT CALLBACK ZWindow::windowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 #endif
 }
 
-}
+} // namespace LibChaosUI

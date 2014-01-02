@@ -20,7 +20,10 @@ public:
     void setClickHandler(zuiButtonClick);
     void clickCallback();
     void callback(int);
-    int getId();
+
+    int getId(){
+        return id;
+    }
 private:
     HWND handle;
     int id;
@@ -33,6 +36,6 @@ private:
     zuiButtonClick click;
 };
 
-}
+} // namespace LibChaosUI
 
 #endif // ZUIBUTTON_H

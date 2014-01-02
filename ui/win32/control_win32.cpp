@@ -20,7 +20,10 @@ bool ZControl::create(){
     return false;
 }
 bool ZControl::update(){
-    return create();
+    return destroy() && create();
+}
+bool ZControl::destroy(){
+    return true;
 }
 
 void ZControl::callback(int){
@@ -40,4 +43,4 @@ void ZControl::setChanged(bool change){
         parent->setNeedUpdate(true);
 }
 
-}
+} // namespace LibChaosUI

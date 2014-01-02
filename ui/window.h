@@ -35,13 +35,15 @@ public:
     void loadAccel(zu16);
     int exec();
 
+    int getNewId();
+
 #if PLATFORM == WINDOWS
     // internal stuffs
     void setHandle(HWND hndl);
     HWND getHandle();
     static HINSTANCE getInstance();
     HACCEL getAccel();
-    ZArray<ZControl *> &getControls();
+    ZArray<ZControl *> getControls();
     void setNeedUpdate(bool up);
     bool needsUpdate();
     void registerHandler(int, ZControl *);
@@ -57,6 +59,7 @@ private:
     LPCWSTR windowclass;
     HWND hwnd;
     static HINSTANCE hinst;
+    ztid thread;
     ShowMode showmode;
     bool activate;
     ZString windowtitle;
@@ -68,6 +71,6 @@ private:
     void *windowdata;
 };
 
-}
+} // namespace LibChaosUI
 
 #endif // ZUIWINDOW_H

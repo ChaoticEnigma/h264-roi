@@ -5,7 +5,7 @@ namespace LibChaosUI {
 
 HINSTANCE ZWindow::hinst = 0;
 
-ZWindow::ZWindow(HINSTANCE hInstance, ShowMode mode) : windowclass(L"MainWindow"), hwnd(0), showmode(mode), id_seed(1), update(true){
+ZWindow::ZWindow(HINSTANCE hInstance, ShowMode mode) : windowclass(L"MainWindow"), hwnd(0), showmode(mode), id_seed(801), update(true){
     hinst = hInstance;
     INITCOMMONCONTROLSEX icc;
     icc.dwSize = sizeof(icc);
@@ -62,6 +62,7 @@ bool ZWindow::createWindow(ZString title, int width, int height, zu16 icon_id, z
         //MessageBox(NULL, L"Error creating main window.", L"Error", MB_ICONERROR | MB_OK);
         return false;
     }
+
     return true;
 }
 void ZWindow::show(){
@@ -112,6 +113,10 @@ void ZWindow::add(ZControl *control){
     return;
 }
 
+int ZWindow::getNewId(){
+    return ++id_seed;
+}
+
 void ZWindow::loadAccel(zu16 id){
     accel = LoadAccelerators(hinst, MAKEINTRESOURCE(id));
 }
@@ -139,7 +144,7 @@ HINSTANCE ZWindow::getInstance(){
 HACCEL ZWindow::getAccel(){
     return accel;
 }
-ZArray<ZControl *> &ZWindow::getControls(){
+ZArray<ZControl *> ZWindow::getControls(){
     return controls;
 }
 
@@ -215,4 +220,4 @@ ZWindow::ShowMode ZWindow::getWin32Mode(int nCmdShow){
     return mode;
 }
 
-}
+} // namespace LibChaosUI
