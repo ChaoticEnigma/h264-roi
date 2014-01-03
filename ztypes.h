@@ -44,4 +44,18 @@ typedef signed long long zs64;
 
 }
 
+#define LINUX   0x01
+#define WINDOWS 0x02
+
+#define GCC     0x11
+#define MINGW   0x12
+
+#ifdef PLATFORM_WINDOWS
+    #define PLATFORM WINDOWS
+    #define COMPILER MINGW
+#else
+    #define PLATFORM LINUX
+    #define COMPILER GCC
+#endif
+
 #endif // ZTYPES_H

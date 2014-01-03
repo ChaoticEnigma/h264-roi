@@ -1,6 +1,7 @@
 TARGET = chaos
 TEMPLATE = lib
-CONFIG += staticlib
+CONFIG += staticlib console
+QT -= core gui widgets
 
 HEADERS += \
     $$PWD/zstring.h \
@@ -39,6 +40,8 @@ OTHER_FILES += $$PWD/CMakeLists.txt
 INCLUDEPATH += $$PWD
 
 #DEFINES += ZLOG_STD_MUTEX
+QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11
+LIBS += pthread
 
 win32:DEFINES += PLATFORM_WINDOWS COMPILER_MINGW
 else:DEFINES += PLATFORM_LINUX COMPILER_GCC

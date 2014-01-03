@@ -4,7 +4,11 @@ SET(CMAKE_GENERATOR "Unix Makefiles")
 
 PROJECT(LibChaos)
 
-ADD_SUBDIRECTORY(ui)
+OPTION(LIBCHAOS_UI FALSE "Build LibChaos UI library")
+
+IF(LIBCHAOS_UI)
+    ADD_SUBDIRECTORY(ui)
+ENDIF()
 
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     asar.h
