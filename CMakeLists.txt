@@ -30,6 +30,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zpath.h
     zstring.h
     zthread.h
+    zxml.h
     lib/demangle.h
 )
 
@@ -48,6 +49,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zstring.cpp
     zstring_encode.cpp
     zthread.cpp
+    zxml.cpp
 )
 
 SET(LibChaos_TEST_SOURCES ### =================== TEST_SOURCES =================== ###
