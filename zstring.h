@@ -53,8 +53,10 @@ public:
     ZString(const char*);
     const char *cc() const;
 
+#if PLATFORM == WINDOWS
     ZString(const wchar_t*);
     const wchar_t *wc() const;
+#endif
 
     ZString(char);
 
@@ -137,6 +139,9 @@ public:
     //ZString toJSON(AsArZ, bool modify = true);
     //bool validJSON();
     //AsArZ fromJSON();
+
+    //ZString format(ZString fmt_str, ...);
+    //ZString &format(...);
 
     friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
 private:

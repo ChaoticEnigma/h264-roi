@@ -5,7 +5,7 @@
 #include "zassoc.h"
 
 #define SQLITE_CUSTOM
-#include "sqlite3.h"
+#include "lib/sqlite3.h"
 
 namespace LibChaos {
 

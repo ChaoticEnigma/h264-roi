@@ -59,6 +59,7 @@ class ZFile {
         static zu64 dirSize(ZPath dir);
 
         zu64 flsize();
+        ZPath path(){ return _flpath; }
 
         bool isOpen();
         int getBits();

@@ -275,8 +275,8 @@ bool ZPath::makeDir(ZPath dir){
             return false;
         }
     }
-    const char *tmp = dir.str().cc();
 #if COMPILER == MINGW
+    const char *tmp = dir.str().cc();
     return (_mkdir(tmp) == 0);
 #else
     return (mkdir(dir.str().cc(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0);

@@ -1,6 +1,11 @@
 #ifndef ZTYPES_H
 #define ZTYPES_H
 
+#ifndef __cplusplus
+    #error A C++ compiler is required!
+#endif
+
+// Platform detection
 #define LINUX   0x01
 #define WINDOWS 0x02
 
@@ -20,6 +25,18 @@
     #define PLATFORM LINUX
     #define COMPILER GCC
 #endif
+
+// Constants
+#ifndef NULL
+    #define NULL (void *)0
+#endif
+
+// Macros
+#define FOREACH(A) for(zu64 i = 0; i < A; ++i)
+
+// LibChaos version control
+#define ZARRAY_VERSION 1
+#define ZASSOC_VERSION 1
 
 namespace LibChaos {
 
@@ -43,19 +60,5 @@ typedef unsigned long long zu64;
 typedef signed long long zs64;
 
 }
-
-#define LINUX   0x01
-#define WINDOWS 0x02
-
-#define GCC     0x11
-#define MINGW   0x12
-
-#ifdef PLATFORM_WINDOWS
-    #define PLATFORM WINDOWS
-    #define COMPILER MINGW
-#else
-    #define PLATFORM LINUX
-    #define COMPILER GCC
-#endif
 
 #endif // ZTYPES_H

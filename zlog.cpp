@@ -8,7 +8,7 @@ bool ZLog::_init = false;
 ZLogWorker ZLog::worker;
 AsArZ ZLog::thread_ids;
 
-ZLog::ZLog() : source_mode(0), stdout_this(false), write_on_destruct(false), newline(true), rawlog(false), synclog(false), noqueue(false){}
+ZLog::ZLog(char source) : source_mode(source), stdiolog(false), write_on_destruct(false), newline(true), rawlog(false), synclog(false), noqueue(false){}
 
 ZLog::~ZLog(){
     if(write_on_destruct)
@@ -18,13 +18,18 @@ ZLog::~ZLog(){
 void ZLog::flushLog(){
     LogJob out;
     out.source = source_mode;
-    out.clock = getClock();
-    out.time = getTime();
-    out.thread = getThread();
-    out.log = buffer;
-    out.stdout_this = stdout_this;
+    out.stdio = stdiolog;
     out.newln = newline;
     out.raw = rawlog;
+    out.log = buffer;
+    if(info[ZLogWorker::clock].isEmpty())
+        info[ZLogWorker::clock] = getClock();
+    if(info[ZLogWorker::time].isEmpty())
+        info[ZLogWorker::time] = getTime();
+    if(info[ZLogWorker::thread].isEmpty())
+        info[ZLogWorker::thread] = getThread();
+    out.pinfo = info;
+
     if(_init && !noqueue){
         worker.queue(out);
         if(synclog){
@@ -47,20 +52,14 @@ ZLog &ZLog::operator<<(zlog_flag flag){
         newline = false;
     } else if(flag == raw){
         rawlog = true;
-    } else if(flag == normal){
-        source_mode = 0;
-    } else if(flag == debug){
-        source_mode = 1;
-    } else if(flag == error){
-        source_mode = 2;
     } else if(flag == stdio){
-        stdout_this = true;
+        stdiolog = true;
     } else if(flag == sync){
         synclog = true;
-    } else if(flag == this_thread){
-        noqueue = true;
     } else if(flag == async){
         synclog = false;
+    } else if(flag == this_thread){
+        noqueue = true;
     }
     return *this;
 }
@@ -93,6 +92,14 @@ ZLog &ZLog::operator<<(ZBinary bin){
     for(zu64 i = 0; i < bin.size(); ++i)
         text << bin[i];
     return log(text);
+}
+
+ZLog::zlog_preproc ZLog::makePreProc(info_type type, ZString dat){
+    return { type, dat };
+}
+ZLog &ZLog::operator<<(zlog_preproc in){
+    info[in.type] = in.info;
+    return *this;
 }
 
 ZString ZLog::pullBuffer(){
@@ -172,18 +179,18 @@ void ZLog::init(){
 void ZLog::init(ZPath dlgfl){
     if(!_init){
         init();
-        addLogFile(dlgfl, ZlogFormat(true, false, 0, false), ZlogFormat(true, false, 0, false), ZlogFormat(true, false, 0, false));
+        addLogFile(dlgfl, ZLogSource::normal, TIMELOG);
     }
 }
 
-void ZLog::formatStdout(ZlogFormat nml, ZlogFormat dbg, ZlogFormat err){
-    ZLogWorker::formatStdout(nml, dbg, err);
+void ZLog::formatStdout(zu64 type, ZString fmt){
+    ZLogWorker::formatStdout(type, fmt);
 }
-void ZLog::formatStderr(ZlogFormat nml, ZlogFormat dbg, ZlogFormat err){
-    ZLogWorker::formatStderr(nml, dbg, err);
+void ZLog::formatStderr(zu64 type, ZString fmt){
+    ZLogWorker::formatStderr(type, fmt);
 }
-void ZLog::addLogFile(ZPath pth, ZlogFormat nml, ZlogFormat dbg, ZlogFormat err){
-    ZLogWorker::addLogFile(pth, nml, dbg, err);
+void ZLog::addLogFile(ZPath pth, zu64 type, ZString fmt){
+    ZLogWorker::addLogFile(pth, type, fmt);
 }
 
 }

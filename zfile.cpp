@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <cstring>
 
 namespace LibChaos {
 
@@ -284,12 +285,16 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
     return dirs;
 }
 
+#if PLATFORM == WINDOWS
+#define V 1
 }
 #include <windows.h>
 namespace LibChaos {
+#else
+#define V 2
+#endif
 
 zu64 ZFile::dirSize(ZPath dir){
-#define V 1
 #if V == 1
     WIN32_FIND_DATAA data;
     zu64 total = 0;

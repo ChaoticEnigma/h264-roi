@@ -13,60 +13,57 @@
 #include "zthread.h"
 #include "zmutex.h"
 #include "zbinary.h"
+#include "zmap.h"
+
+// Default Log formats
+#define LOGONLY "%log%"
+#define TIMELOG "%time% - %log%"
+#define TIMETHREAD "%time% %thread% - %log%"
+#define DETAILLOG "%time% %thread% %function% (%file%:%line%) - %log%"
 
 namespace LibChaos {
 
-struct ZlogFormat {
-    ZlogFormat() : _init(false){}
-    ZlogFormat(bool en, bool pr, int tm, bool th) : _init(true), enable(en), prefix(pr), time(tm), thread(th){}
-    bool _init; // does not need to be changed
-    bool enable;
-    bool prefix;
-    int time;
-    bool thread;
-};
-
-struct LogJob {
-    char source;
-    ZString time;
-    ZString clock;
-    ZString thread;
-    ZString log;
-    bool stdout_this;
-    bool newln;
-    bool raw;
-};
+namespace ZLogSource {
+    enum {
+        normal = 1,
+        debug = 2,
+        error = 3
+    };
+}
 
 class ZLogWorker {
 public:
-    struct zlog_out {
-        ZlogFormat normal;
-        ZlogFormat debug;
-        ZlogFormat error;
-        AsArZ format;
+    enum info_type {
+        file = 1,
+        line = 2,
+        function = 3,
+        clock = 4,
+        time = 5,
+        thread = 6
     };
-    struct zlog_outfile {
-        ZPath file;
-        ZlogFormat normal;
-        ZlogFormat debug;
-        ZlogFormat error;
-        AsArZ format;
+
+    struct LogJob {
+        char source;
+        bool stdio;
+        bool newln;
+        bool raw;
+        ZString log;
+        ZMap<info_type, ZString> pinfo;
     };
-#ifdef ZLOG_STD_MUTEX
-    static std::mutex mtx;
-    //static std::unique_lock<std::mutex> ulock;
-    static std::mutex formatMtx;
-#else
+
+    struct zlog_preproc {
+        info_type type;
+        ZString info;
+    };
+
     static ZMutex<char> mtx;
     static ZMutex<char> formatMtx;
-    //pthread_mutex_t pmtx;
-#endif
     static std::queue<LogJob> jobs;
 
     static std::atomic<bool> pending;
-    static zlog_out stdoutlog;
-    static zlog_out stderrlog;
-    static ZArray<zlog_outfile> logfiles;
+    static ZMap<zu64, ZString> stdoutlog;
+    static ZMap<zu64, ZString> stderrlog;
+    static ZAssoc< ZPath, ZMap<zu64, ZString> > logfiles;
     static bool lastcomp;
 
     ZLogWorker();
@@ -76,18 +73,15 @@ public:
     void queue(LogJob);
     static void doLog(LogJob jb);
 
-    static void formatStdout(ZlogFormat, ZlogFormat, ZlogFormat);
-    static void formatStderr(ZlogFormat, ZlogFormat, ZlogFormat);
-    static void addLogFile(ZPath, ZlogFormat, ZlogFormat, ZlogFormat);
+    static void formatStdout(zu64 type, ZString fmt);
+    static void formatStderr(zu64 type, ZString fmt);
+    static void addLogFile(ZPath, zu64 type, ZString fmt);
 private:
     static void *zlogWorker(void *);
     static void sigHandle(int);
-    static ZString makeLog(LogJob jb, ZlogFormat fmt);
+    static ZString makeLog(LogJob &job, ZString fmt);
 
     ZThread work;
-    //boost::thread work;
-    //std::thread work;
-    //pthread_t work;
 };
 
 } // namespace LibChaos

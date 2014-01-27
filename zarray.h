@@ -1,11 +1,9 @@
 #ifndef ZARRAY_H
 #define ZARRAY_H
 
-#include <vector>
-
 #include "ztypes.h"
 
-#define ZARRAY_VERSION 1
+#include <vector>
 
 #if ZARRAY_VERSION == 1
 
@@ -149,12 +147,5 @@ private:
 #include "zarray2.h"
 
 #endif
-
-//namespace LibChaos {
-//template <typename T> class ZArray : public ZArrayV1<T> {};
-//template <typename T> using ZArray = ZArrayV1<T>;
-
-//template <typename T> class ZArray : public ZArrayV2<T> {};
-//}
 
 #endif // ZARRAY_H

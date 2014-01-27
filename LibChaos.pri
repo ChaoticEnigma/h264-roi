@@ -19,7 +19,12 @@ HEADERS += \
     $$PWD/ztypes.h \
     $$PWD/zbinary.h \
     $$PWD/zarray2.h \
-    $$PWD/zassoc2.h
+    $$PWD/zassoc2.h \
+    libchaos/zautobuffer.h \
+    libchaos/test/test.h \
+    libchaos/zautobufferunit.h \
+    libchaos/zerror.h \
+    libchaos/zmap.h
 
 SOURCES += \
     $$PWD/zstring.cpp \
@@ -33,11 +38,22 @@ SOURCES += \
     $$PWD/zlogworker.cpp \
     $$PWD/zjson.cpp \
     $$PWD/zbinary.cpp \
-    $$PWD/zstring_encode.cpp
+    $$PWD/zstring_encode.cpp \
+    libchaos/zautobuffer.cpp \
+    libchaos/test/libchaos-main.cpp \
+    libchaos/test/autobuffer_test.cpp \
+    libchaos/test/thread_test.cpp \
+    libchaos/test/string_test.cpp \
+    libchaos/test/array_test.cpp \
+    libchaos/test/file_test.cpp \
+    libchaos/zerror.cpp \
+    libchaos/test/error_test.cpp
 
 OTHER_FILES += $$PWD/CMakeLists.txt
 
-INCLUDEPATH += $$PWD
+INCLUDEPATH += $$PWD \
+    $$PWD/test \
+    $$PWD/lib
 
 #DEFINES += ZLOG_STD_MUTEX
 QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11

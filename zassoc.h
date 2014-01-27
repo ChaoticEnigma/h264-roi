@@ -3,8 +3,6 @@
 
 #include "zarray.h"
 
-#define ZASSOC_VERSION 1
-
 #if ZASSOC_VERSION == 1
 
 namespace LibChaos {
@@ -12,8 +10,6 @@ namespace LibChaos {
 template <class K, class T> class ZAssoc {
 public:
     struct Data {
-        Data(){}
-        Data(K k, T v) : key(k), val(v){}
         K key;
         T val;
     };
@@ -26,19 +22,23 @@ public:
     }
     ~ZAssoc(){}
 
-    T &at(unsigned index){
+    T &at(zu64 index){
         return data[index].val;
     }
-    T &operator[](unsigned index){
+    T &operator[](zu64 index){
         return at(index);
     }
 
+    T &pos(zu64 index){
+        return data[index].val;
+    }
+
     T &at(K key_){
-        for(unsigned i = 0; i < data.size(); ++i){
+        for(zu64 i = 0; i < data.size(); ++i){
             if(data[i].key == key_)
                 return data[i].val;
         }
-        data.push(Data(key_, T()));
+        data.push({ key_, T() });
         //T temp = {};
         //data.push({ key_, temp });
         return last();
@@ -47,7 +47,7 @@ public:
         return at(key_);
     }
 
-    K &key(unsigned index){
+    K &key(zu64 index){
         if(index < size()){
             return data[index].key;
         } else {
@@ -59,7 +59,7 @@ public:
     }
 
     ZAssoc<K, T> &push(K key_, T value){
-        data.push(Data(key_, value));
+        data.push({ key_, value });
         //data.push({ key_, value });
         return *this;
     }
@@ -67,7 +67,7 @@ public:
         return push(K(), value);
     }
     ZAssoc<K, T> &pushFront(K key_, T value){
-        data.pushFront(Data(key_, value));
+        data.pushFront({ key_, value });
         //data.pushFront({ key, value });
         return *this;
     }
