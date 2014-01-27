@@ -25,8 +25,10 @@ int main(){
 
     if(autobuffer_block() != 0) return 9;
 
+#if PLATFORM == LINUX
     // Always last
     if(error_block() != 0) return 10;
-
+#endif
+    LOG("LibChaos Test Done.");
     return 0;
 }

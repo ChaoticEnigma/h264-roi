@@ -91,12 +91,13 @@ IF(WINDOWS)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwin32 -mwindows")
 ELSE()
     ADD_DEFINITIONS(-DPLATFORM_LINUX -DCOMPILER_GCC)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
 ENDIF()
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
 #ADD_DEFINITIONS(-DZLOG_STD_MUTEX)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -ansi -std=c++11 -rdynamic")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -ansi -std=c++11")
 #SET_SOURCE_FILES_PROPERTIES(sqlite3.c PROPERTIES COMPILE_FLAGS -std=c99)
 
 ### =================== BUILD =================== ###
