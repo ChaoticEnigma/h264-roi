@@ -641,6 +641,15 @@ ZString ZString::duplicate(unsigned iter, bool modify){
 ZString ZString::popLast(){
     return substr(0, size()-1);
 }
+ZString ZString::compound(ArZ parts, ZString delim){
+    ZString name;
+    for(zu64 i = 0; i < parts.size(); ++i){
+        name << parts[i];
+        if(i < parts.size()-1)
+            name << delim;
+    }
+    return name;
+}
 
 std::ostream &operator<<(std::ostream& lhs, ZString rhs){
     lhs << rhs.str();

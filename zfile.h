@@ -9,11 +9,6 @@
 
 namespace LibChaos {
 
-// First bit: read
-// Second bit: write
-#define ZFILE_READ      0x10
-#define ZFILE_WRITE     0x01
-
 class ZFile {
     public:
         enum zfile_mode {
@@ -72,6 +67,9 @@ class ZFile {
         //std::fstream _file;
         FILE* _fileh;
 };
+
+#define ZFILE_READ      ZFile::readonly
+#define ZFILE_WRITE     ZFile::readwrite
 
 } // namespace LibChaos
 

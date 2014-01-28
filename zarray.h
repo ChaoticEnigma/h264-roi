@@ -12,6 +12,9 @@ namespace LibChaos {
 template <typename T> class ZArray {
 public:
     ZArray(){}
+    ZArray(T first){
+        push(first);
+    }
     ZArray(const T *raw, zu64 len) : _data(raw, raw + len){}
     ~ZArray(){}
 

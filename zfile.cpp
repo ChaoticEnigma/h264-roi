@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <cstring>
 
+#include "zlog.h"
+
 namespace LibChaos {
 
 ZFile::ZFile() : _bits(0x000){}
@@ -231,13 +233,14 @@ bool ZFile::isFile(ZPath file){
 
 ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
     ZArray<ZPath> files;
-    if(!isDir(dir))
-        return files;
-    DIR *dr;
-    struct dirent *drnt;
-    if((dr = opendir(dir.str().cc())) != NULL){
+    if(!isDir(dir)){
+        return ZArray<ZPath>(dir);
+    }
+    DIR *dr = opendir(dir.str().cc());
+    if(dr != NULL){
+        struct dirent *drnt;
         while((drnt = readdir(dr)) != NULL){
-            if(std::string(drnt->d_name) == "." || std::string(drnt->d_name) == "..")
+            if(ZString(drnt->d_name) == "." || ZString(drnt->d_name) == "..")
                 continue;
             ZPath flnm = dir + drnt->d_name;
             struct stat st;
@@ -246,8 +249,9 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
 #else
             lstat(flnm.str().cc(), &st);
 #endif
-            if(S_ISDIR(st.st_mode) && recurse){
-                files.concat(listFiles(flnm)); // Unsafe, stack overflow possibility
+            if(S_ISDIR(st.st_mode)){
+                if(recurse)
+                    files.concat(listFiles(flnm));
             } else {
                 files.push(flnm.getAbs());
             }

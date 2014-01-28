@@ -128,6 +128,7 @@ public:
     ZString toLower(bool modify = true);
     ZString duplicate(unsigned iterate, bool modify = true);
     ZString popLast();
+    static ZString compound(ArZ parts, ZString delim);
 
     ArZ explode(char delim);
     ArZ explodeList(unsigned nargs, ...);
