@@ -1,19 +1,21 @@
 #include "zerror.h"
 
 #include "zlog.h"
-//#include <stdio.h>
-//#include <execinfo.h>
-#include <signal.h>
-//#include <stdlib.h>
-//#include <unistd.h>
 
-//#include "demangle.h"
 
+#if PLATFORM == LINUX
+    #include <execinfo.h>
+    #include <signal.h>
+#endif
 #if PLATFORM == WINDOWS
 //    #include <stdlib.h>
 //    #include <windows.h>
 //    #include <imagehlp.h>
 #endif
+
+//#include "demangle.h"
+
+
 
 namespace LibChaos {
 namespace ZError {
@@ -46,8 +48,9 @@ namespace ZError {
 //    }
 //    SymCleanup( GetCurrentProcess() );
 //}
-#else
-void handler(int sig) {
+#endif
+#if PLATFORM == LINUX
+void fatalSignalHandler(int sig) {
     ELOG("Error: signal " << sig);
     void *buffer[100];
     int nptrs = backtrace(buffer, 100);
@@ -76,7 +79,7 @@ void handler(int sig) {
 
 void registerSigSegv(){
 #if PLATFORM == LINUX
-    signal(SIGSEGV, handler);
+    signal(SIGSEGV, fatalSignalHandler);
 #endif
 }
 

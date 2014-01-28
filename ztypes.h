@@ -1,8 +1,8 @@
 #ifndef ZTYPES_H
 #define ZTYPES_H
 
-#ifndef __cplusplus
-    #error A C++ compiler is required!
+#if __cplusplus != 201103L
+    #error A C++ 11 compiler is required!
 #endif
 
 // Platform detection

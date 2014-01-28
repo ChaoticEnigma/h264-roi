@@ -7,7 +7,7 @@ using namespace std;
 using namespace LibChaos;
 
 int array_block();
-int array_block2();
+int assoc_block();
 
 int string_block();
 int string_magic_block();
@@ -21,5 +21,7 @@ int thread_block();
 int autobuffer_block();
 
 int error_block();
+
+typedef int (*test_func)(void);
 
 #endif // TEST_H
