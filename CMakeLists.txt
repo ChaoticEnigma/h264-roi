@@ -11,9 +11,7 @@ IF(LIBCHAOS_UI)
 ENDIF()
 
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
-    asar.h
     database.h
-    lib/sqlite3.h
     zarray.h
     zarray2.h
     zassoc.h
@@ -31,12 +29,14 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zstring.h
     zthread.h
     zxml.h
+    zsocket.h
+
+    lib/sqlite3.h
     lib/demangle.h
 )
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     database.cpp
-    lib/sqlite3.c
     zautobuffer.cpp
     zbinary.cpp
     zerror.cpp
@@ -50,6 +50,9 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zstring_encode.cpp
     zthread.cpp
     zxml.cpp
+    zsocket.cpp
+
+    lib/sqlite3.c
 )
 
 SET(LibChaos_TEST_SOURCES ### =================== TEST_SOURCES =================== ###
@@ -60,6 +63,7 @@ SET(LibChaos_TEST_SOURCES ### =================== TEST_SOURCES =================
     test/thread_test.cpp
     test/autobuffer_test.cpp
     test/error_test.cpp
+    test/socket_test.cpp
 )
 
 ### =================== CONFIG =================== ###

@@ -20,6 +20,8 @@ int thread_block();
 
 int autobuffer_block();
 
+int socket_test();
+
 int error_block();
 
 typedef int (*test_func)(void);

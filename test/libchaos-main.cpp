@@ -19,6 +19,7 @@ int main(int argc, char **argv){
     tests["file"] = file_block;
     tests["thread"] = thread_block;
     tests["autobuffer"] = autobuffer_block;
+    tests["socket"] = socket_test;
 #if PLATFORM == LINUX
     tests["error"] = error_block;
 #endif

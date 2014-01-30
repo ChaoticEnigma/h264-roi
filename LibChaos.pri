@@ -25,7 +25,8 @@ HEADERS += \
     $$PWD/zmap.h \
     $$PWD/lib/sqlite3.h \
     $$PWD/test/test.h \
-    zxml.h
+    zxml.h \
+    libchaos/zsocket.h
 
 SOURCES += \
     $$PWD/zstring.cpp \
@@ -48,7 +49,9 @@ SOURCES += \
     $$PWD/test/array_test.cpp \
     $$PWD/test/file_test.cpp \
     $$PWD/test/error_test.cpp \
-    zxml.cpp
+    zxml.cpp \
+    libchaos/zsocket.cpp \
+    libchaos/test/socket_test.cpp
 
 OTHER_FILES += $$PWD/CMakeLists.txt
 

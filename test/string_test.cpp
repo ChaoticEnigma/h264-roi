@@ -6,19 +6,19 @@
 int string_block(){
     LOG("=== String Test...");
     ZString t3 = "hello, this is a string";
-    cout << t3.size() << " " << t3 << endl;
+    LOG(t3.size() << " " << t3);
     t3.append(", and this is appended");
-    cout << t3.size() << " " << t3 << endl;
+    LOG(t3.size() << " " << t3);
     t3.replace(" is ", " \"is still\" ");
-    cout << t3.size() << " " << t3 << endl;
+    LOG(t3.size() << " " << t3);
     ZArray<ZString> words = t3.explode(' ');
-    for(unsigned long i = 0; i < words.size(); ++i)
-        cout << '-' << words[i] << "- ";
-    cout << endl;
+    for(zu64 i = 0; i < words.size(); ++i)
+        LOG('-' << words[i] << "- " << ZLog::noln);
+    LOG(ZLog::newln);
     words.concat(t3.strict_explode(' '));
-    for(unsigned long i = 0; i < words.size(); ++i)
-        cout << '-' << words[i] << "- ";
-    cout << endl;
+    for(zu64 i = 0; i < words.size(); ++i)
+        LOG('-' << words[i] << "- " << ZLog::noln);
+    LOG(ZLog::newln);
 
     LOG("this text here");
     ZString tst;
