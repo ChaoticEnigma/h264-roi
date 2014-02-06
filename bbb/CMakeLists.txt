@@ -5,12 +5,6 @@ PROJECT(LibChaosBBB)
 
 #ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../chaos ${CMAKE_CURRENT_BINARY_DIR}/chaos)
 
-IF(WIN32)
-    SET(WINDOWS TRUE)
-ELSE()
-    SET(UNIX TRUE)
-ENDIF()
-
 SET(LibChaosBBB_HEADERS ### =================== HEADERS =================== ###S
     zbbb.h
 )

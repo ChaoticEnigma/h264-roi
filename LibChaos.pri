@@ -79,7 +79,8 @@ OTHER_FILES += \
     $$PWD/CMakeLists.txt \
     $$PWD/ui/CMakeLists.txt \
     $$PWD/bbb/CMakeLists.txt \
-    $$PWD/chaos/CMakeLists.txt
+    $$PWD/chaos/CMakeLists.txt \
+    libchaos/test/CMakeLists.txt
 
 INCLUDEPATH += \
     $$PWD \

@@ -3,16 +3,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 PROJECT(LibChaos)
 
-IF(WIN32)
-    MESSAGE(STATUS "Windows Build")
-    SET(WINDOWS TRUE)
-    SET(BUILD_ZSOCKET FALSE)
-ELSE()
-    MESSAGE(STATUS "Unix Build")
-    SET(UNIX TRUE)
-    SET(BUILD_ZSOCKET TRUE)
-ENDIF()
-
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     database.h
     zarray.h
@@ -56,23 +46,9 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     lib/sqlite3.c
 )
 
-SET(LibChaos_TEST_SOURCES ### =================== TEST_SOURCES =================== ###
-    test/libchaos-main.cpp
-    test/array_test.cpp
-    test/string_test.cpp
-    test/file_test.cpp
-    test/thread_test.cpp
-    test/autobuffer_test.cpp
-    test/error_test.cpp
-)
-
 IF(BUILD_ZSOCKET)
-    MESSAGE(STATUS "ZSocket Enabled")
     SET(LibChaos_HEADERS ${LibChaos_HEADERS} zsocket.h)
     SET(LibChaos_SOURCES ${LibChaos_SOURCES} zsocket.cpp)
-    SET(LibChaos_TEST_SOURCES ${LibChaos_TEST_SOURCES} test/socket_test.cpp)
-ELSE()
-    MESSAGE(STATUS "ZSocket Disabled")
 ENDIF()
 
 ### =================== CONFIG =================== ###
@@ -118,9 +94,4 @@ ADD_LIBRARY(chaos ${LibChaos_SOURCES})
 TARGET_LINK_LIBRARIES(chaos pthread)
 IF(UNIX AND NOT FREEBSD)
     TARGET_LINK_LIBRARIES(chaos dl)
-ENDIF()
-
-IF(LIBCHAOS_TEST)
-    ADD_EXECUTABLE(testchaos ${LibChaos_TEST_SOURCES})
-    TARGET_LINK_LIBRARIES(testchaos chaos)
 ENDIF()
