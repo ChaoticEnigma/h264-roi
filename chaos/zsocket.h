@@ -15,23 +15,24 @@ public:
         udp = SOCK_DGRAM,
         raw = SOCK_RAW
     };
-    enum socket_channel {
+    enum socket_family {
         ipv4 = AF_INET,
         unix = AF_UNIX,
         ipv6 = AF_INET6
     };
 
     ZSocket();
-    bool open(socket_type, socket_channel);
+    bool open(socket_type, socket_family);
     void close();
 
-    bool listen(int);
+    bool bind(socket_type typ, socket_family chn, int port);
+    bool listen();
     ZString receive();
 
 private:
     int socketHandle;
     socket_type type;
-    socket_channel channel;
+    socket_family family;
     int port;
 };
 
