@@ -5,52 +5,59 @@ SET(CMAKE_GENERATOR "Unix Makefiles")
 PROJECT(LibChaos)
 
 OPTION(LIBCHAOS_UI FALSE "Build LibChaos UI library")
+OPTION(LIBCHAOS_BBB FALSE "Build LibChaos Beaglebone Black library")
 
 IF(LIBCHAOS_UI)
     ADD_SUBDIRECTORY(ui)
+    SET(LibChaosUI_INCLUDE ${LibChaosUI_INCLUDE} PARENT_SCOPE)
+ENDIF()
+
+IF(LIBCHAOS_BBB)
+    ADD_SUBDIRECTORY(bbb)
+    SET(LibChaosBBB_INCLUDE "${LibChaosBBB_SOURCE_DIR}" PARENT_SCOPE)
 ENDIF()
 
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
-    database.h
-    zarray.h
-    zarray2.h
-    zassoc.h
-    zassoc2.h
-    zautobuffer.h
-    zbinary.h
-    zerror.h
-    zfile.h
-    zjson.h
-    zlog.h
-    zlogworker.h
-    zmutex.h
+    src/database.h
+    src/zarray.h
+    src/zarray2.h
+    src/zassoc.h
+    src/zassoc2.h
+    src/zautobuffer.h
+    src/zbinary.h
+    src/zerror.h
+    src/zfile.h
+    src/zjson.h
+    src/zlog.h
+    src/zlogworker.h
+    src/zmutex.h
     #zparcel.h
-    zpath.h
-    zstring.h
-    zthread.h
-    zxml.h
-    zsocket.h
+    src/zpath.h
+    src/zstring.h
+    src/zthread.h
+    src/zxml.h
+    src/zsocket.h
 
     lib/sqlite3.h
     lib/demangle.h
 )
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
-    database.cpp
-    zautobuffer.cpp
-    zbinary.cpp
-    zerror.cpp
-    zfile.cpp
-    zjson.cpp
-    zlog.cpp
-    zlogworker.cpp
+    src/database.cpp
+    src/zautobuffer.cpp
+    src/zbinary.cpp
+    src/zerror.cpp
+    src/zfile.cpp
+    src/zjson.cpp
+    src/zlog.cpp
+    src/zlogworker.cpp
     #zparcel.cpp
-    zpath.cpp
-    zstring.cpp
-    zstring_encode.cpp
-    zthread.cpp
-    zxml.cpp
-    zsocket.cpp
+    src/zpath.cpp
+    src/zstring.cpp
+    src/zstring_encode.cpp
+    src/zthread.cpp
+    src/zxml.cpp
+    src/zsocket.cpp
 
     lib/sqlite3.c
 )
@@ -69,7 +76,6 @@ SET(LibChaos_TEST_SOURCES ### =================== TEST_SOURCES =================
 ### =================== CONFIG =================== ###
 
 SET(LibChaos_INCLUDE "${LibChaos_SOURCE_DIR}" PARENT_SCOPE)
-SET(LibChaosUI_INCLUDE ${LibChaosUI_INCLUDE} PARENT_SCOPE)
 
 INCLUDE_DIRECTORIES(
     ${LibChaos_SOURCE_DIR}
