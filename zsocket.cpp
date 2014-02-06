@@ -16,48 +16,38 @@
 
 namespace LibChaos {
 
-ZSocket::ZSocket() : socketHandle(0), type(udp), channel(ipv4){
+ZSocket::ZSocket() : socketHandle(0), type(udp), family(ipv4){
 
 }
 
-bool ZSocket::open(socket_type typ, socket_channel chn){
+bool ZSocket::bind(socket_type typ, socket_family chn, int _port){
     type = typ;
-    channel = chn;
-    socketHandle = socket(channel, type, IPPROTO_IP);
+    family = chn;
+    port = _port;
+    socketHandle = socket(family, type, IPPROTO_IP);
     if(socketHandle < 0){
         close();
         ELOG("Socket opening failed.");
         return false;
     }
-    return true;
-}
-
-bool ZSocket::listen(int _port){
-    port = _port;
 
     struct sockaddr_in socketInfo;
-    //bzero(&socketInfo, sizeof(sockaddr_in));
-    memset(&socketInfo, '\0', sizeof(sockaddr_in));
+    memset(&socketInfo, '\0', sizeof(socketInfo));
 
-    char sysHost[MAXHOSTNAME+1];
-    gethostname(sysHost, MAXHOSTNAME);
-    //struct hostNamePtr *hPtr;
-    //hPtr = gethostbyname(sysHost);
-    //if(hPtr == NULL){
-    //   ELOG("System hostname misconfigured.");
-    //   return false;
-    //}
-
-    socketInfo.sin_family = channel;
+    socketInfo.sin_family = family;
     socketInfo.sin_addr.s_addr = htonl(INADDR_ANY);
     socketInfo.sin_port = htons(port);
 
-    if(bind(socketHandle, (struct sockaddr *)&socketInfo, sizeof(struct sockaddr_in)) < 0){
+    if(::bind(socketHandle, (struct sockaddr *)&socketInfo, sizeof(struct sockaddr_in)) < 0){
         close();
         ELOG("Bind failed.");
         return false;
     }
 
+    return true;
+}
+
+bool ZSocket::listen(){
     ::listen(socketHandle, 1);
 
     int socketConnection = accept(socketHandle, NULL, NULL);

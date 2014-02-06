@@ -5,9 +5,19 @@ SET(CMAKE_GENERATOR "Unix Makefiles")
 PROJECT(LibChaos)
 
 OPTION(LIBCHAOS_UI FALSE "Build LibChaos UI library")
+#OPTION(ZSOCKET TRUE "Build ZSocket Class (Unix Only)")
 
 IF(LIBCHAOS_UI)
     ADD_SUBDIRECTORY(ui)
+ENDIF()
+
+IF(WIN32)
+    MESSAGE(STATUS "Windows Build")
+    SET(WINDOWS TRUE)
+ELSE()
+    MESSAGE(STATUS "Unix Build")
+    SET(UNIX TRUE)
+    SET(BUILD_ZSOCKET TRUE)
 ENDIF()
 
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
@@ -29,10 +39,9 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zstring.h
     zthread.h
     zxml.h
-    zsocket.h
 
     lib/sqlite3.h
-    lib/demangle.h
+    #lib/demangle.h
 )
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
@@ -50,7 +59,6 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zstring_encode.cpp
     zthread.cpp
     zxml.cpp
-    zsocket.cpp
 
     lib/sqlite3.c
 )
@@ -63,8 +71,16 @@ SET(LibChaos_TEST_SOURCES ### =================== TEST_SOURCES =================
     test/thread_test.cpp
     test/autobuffer_test.cpp
     test/error_test.cpp
-    test/socket_test.cpp
 )
+
+IF(BUILD_ZSOCKET)
+    MESSAGE(STATUS "ZSocket Enabled")
+    SET(LibChaos_HEADERS ${LibChaos_HEADERS} zsocket.h)
+    SET(LibChaos_SOURCES ${LibChaos_SOURCES} zsocket.cpp)
+    SET(LibChaos_TEST_SOURCES ${LibChaos_TEST_SOURCES} test/socket_test.cpp)
+ELSE()
+    MESSAGE(STATUS "ZSocket Disabled")
+ENDIF()
 
 ### =================== CONFIG =================== ###
 
@@ -75,12 +91,6 @@ INCLUDE_DIRECTORIES(
     ${LibChaos_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}
 )
-
-IF(WIN32)
-    SET(WINDOWS TRUE)
-ELSE()
-    SET(UNIX TRUE)
-ENDIF()
 
 IF(DEBUG)
     ADD_DEFINITIONS(-DDEBUG)
