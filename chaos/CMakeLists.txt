@@ -1,6 +1,5 @@
 ## LibChaos CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-SET(CMAKE_GENERATOR "Unix Makefiles")
 
 PROJECT(LibChaos)
 

@@ -1,4 +1,4 @@
-## LibChaos CMakeLists.txt
+## Main LibChaos CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(CMAKE_GENERATOR "Unix Makefiles")
 
@@ -17,4 +17,3 @@ IF(LIBCHAOS_BBB)
     ADD_SUBDIRECTORY(bbb)
     SET(LibChaosBBB_INCLUDE "${LibChaosBBB_INCLUDE}" PARENT_SCOPE)
 ENDIF()
-
