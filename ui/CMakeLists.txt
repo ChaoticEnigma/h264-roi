@@ -54,7 +54,7 @@ INCLUDE(../configure_build.cmake)
 configure_build("UI" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
 SET(LibChaosUI_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -ansi -std=c++11 -Wl,--subsystem,windows")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -ansi -std=c++11 -Wl,--subsystem,windows")
 
 ### =================== BUILD =================== ###
 

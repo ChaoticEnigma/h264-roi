@@ -4,11 +4,11 @@ SET(CMAKE_GENERATOR "Unix Makefiles")
 
 # Platform Settings
 IF(WIN32)
-    MESSAGE(STATUS "Windows Build")
+    #MESSAGE(STATUS "Windows Build")
     SET(LIBCHAOS_WINDOWS TRUE)
     SET(LIBCHAOS_PLATFORM 2)
 ELSEIF(UNIX)
-    MESSAGE(STATUS "Unix Build")
+    #MESSAGE(STATUS "Unix Build")
     SET(LIBCHAOS_UNIX TRUE)
     SET(LIBCHAOS_PLATFORM 1)
 ELSE()
@@ -38,9 +38,13 @@ ELSE()
     SET(BUILD_ZSOCKET FALSE)
 ENDIF()
 
+# Options
 OPTION(LIBCHAOS_TEST FALSE "Build LibChaos Test suite")
 OPTION(LIBCHAOS_UI FALSE "Build LibChaos UI library")
 OPTION(LIBCHAOS_BBB FALSE "Build LibChaos Beaglebone Black library")
+
+# Export Constants
+SET(LibChaos_CONFIGURE_CMAKE "${CMAKE_CURRENT_SOURCE_DIR}/configure_build.cmake" PARENT_SCOPE)
 
 # LibChaos
 SET(LibChaos_BUILD_STRING "LibChaos -")

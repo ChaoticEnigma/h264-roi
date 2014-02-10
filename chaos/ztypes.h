@@ -2,7 +2,7 @@
 #define ZTYPES_H
 
 #if __cplusplus != 201103L
-    #error A C++ 11 compiler is required!
+    #error LibChaos requires a C++ 11 compiler!
 #endif
 
 // Platform detection

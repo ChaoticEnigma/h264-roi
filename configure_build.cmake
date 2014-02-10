@@ -28,6 +28,7 @@ FUNCTION(configure_build NAME BUILD PLATFORM)
     ENDIF()
 
     SET(BUILD_STRING "${BUILD_STRING}" PARENT_SCOPE)
-    #MESSAGE(STATUS "${BUILD_STRING}")
+
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -ansi -std=c++11" PARENT_SCOPE)
 
 ENDFUNCTION(configure_build)

@@ -15,7 +15,7 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
 
 IF(BUILD_ZSOCKET)
     ADD_DEFINITIONS(-DBUILD_ZSOCKET)
-    SET(LibChaos_Test_SOURCES ${LibChaos_TEST_SOURCES} socket_test.cpp)
+    SET(LibChaosTest_SOURCES ${LibChaosTest_SOURCES} socket_test.cpp)
 ENDIF()
 
 ### =================== CONFIG =================== ###
@@ -32,7 +32,7 @@ SET(LibChaosTest_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
 #ADD_DEFINITIONS(-DZLOG_STD_MUTEX)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -ansi -std=c++11")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -ansi -std=c++11")
 #SET_SOURCE_FILES_PROPERTIES(sqlite3.c PROPERTIES COMPILE_FLAGS -std=c99)
 
 ### =================== BUILD =================== ###

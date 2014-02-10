@@ -25,7 +25,7 @@ INCLUDE(../configure_build.cmake)
 configure_build("BBB" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
 SET(LibChaosBBB_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -ansi -std=c++11")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -ansi -std=c++11")
 
 ### =================== BUILD =================== ###
 
