@@ -80,7 +80,8 @@ OTHER_FILES += \
     $$PWD/ui/CMakeLists.txt \
     $$PWD/bbb/CMakeLists.txt \
     $$PWD/chaos/CMakeLists.txt \
-    libchaos/test/CMakeLists.txt
+    $$PWD/test/CMakeLists.txt \
+    $$PWD/configure_build.cmake
 
 INCLUDEPATH += \
     $$PWD \
@@ -97,5 +98,3 @@ LIBS += pthread
 
 win32:DEFINES += PLATFORM_WINDOWS COMPILER_MINGW
 else:DEFINES += PLATFORM_LINUX COMPILER_GCC
-
-#include($$PWD/ui/LibChaosUI.pri)

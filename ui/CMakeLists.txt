@@ -50,22 +50,9 @@ INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
 )
 
-IF(DEBUG)
-    MESSAGE(STATUS "LibChaosUI Debug Build Starting...")
-    ADD_DEFINITIONS(-g)
-ELSEIF(RELEASE)
-    MESSAGE(STATUS "LibChaosUI Release Build Starting...")
-    ADD_DEFINITIONS(-O3)
-ELSE()
-    MESSAGE(STATUS "LibChaosUI Normal Build Starting...")
-ENDIF()
-
-IF(WINDOWS)
-    ADD_DEFINITIONS(-DPLATFORM_WINDOWS -DCOMPILER_MINGW)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwin32 -mwindows")
-ELSE()
-    ADD_DEFINITIONS(-DPLATFORM_LINUX -DCOMPILER_GCC)
-ENDIF()
+INCLUDE(../configure_build.cmake)
+configure_build("UI" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
+SET(LibChaosUI_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -ansi -std=c++11 -Wl,--subsystem,windows")
 
