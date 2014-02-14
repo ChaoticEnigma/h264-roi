@@ -1,13 +1,9 @@
 ## Project LibChaosUI CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.10)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 PROJECT(LibChaosUI)
 
-IF(WIN32)
-    SET(WINDOWS TRUE)
-ELSE()
-    SET(UNIX TRUE)
-ENDIF()
+#ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../chaos ${CMAKE_CURRENT_BINARY_DIR}/chaos)
 
 SET(LibChaosUI_HEADERS ### =================== HEADERS =================== ###S
     zui.h
@@ -51,27 +47,14 @@ SET(LibChaosUI_INCLUDE "${LibChaosUI_SOURCE_DIR}" PARENT_SCOPE)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR}
-    ..
+    ${LibChaos_INCLUDE}
 )
 
-IF(DEBUG)
-    MESSAGE(STATUS "LibChaosUI Debug Build Starting...")
-    ADD_DEFINITIONS(-g)
-ELSEIF(RELEASE)
-    MESSAGE(STATUS "LibChaosUI Release Build Starting...")
-    ADD_DEFINITIONS(-O3)
-ELSE()
-    MESSAGE(STATUS "LibChaosUI Normal Build Starting...")
-ENDIF()
+INCLUDE(../configure_build.cmake)
+configure_build("UI" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
+SET(LibChaosUI_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 
-IF(WINDOWS)
-    ADD_DEFINITIONS(-DPLATFORM_WINDOWS -DCOMPILER_MINGW)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwin32 -mwindows")
-ELSE()
-    ADD_DEFINITIONS(-DPLATFORM_LINUX -DCOMPILER_GCC)
-ENDIF()
-
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -ansi -std=c++11 -Wl,--subsystem,windows")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -ansi -std=c++11 -Wl,--subsystem,windows")
 
 ### =================== BUILD =================== ###
 

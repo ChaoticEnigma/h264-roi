@@ -1,10 +1,8 @@
 #ifndef ZPATH_H
 #define ZPATH_H
 
-#include "zstring.h"
 #include "zarray.h"
-
-#include <iostream>
+#include "zstring.h"
 
 #if PLATFORM == WINDOWS
     #define ZPATH_DELIM '\\'
@@ -20,11 +18,8 @@ public:
     ZPath(const char *);
     ZPath(std::string);
     ZPath(ZString);
-    //ZPath(ZString, bool);
     ZPath(ArZ arr);
 
-    //ZPath &operator=(ZPath); // Default overload is fine
-    //ZPath &operator=(ArZ);
     bool operator==(ZPath);
     inline bool operator!=(ZPath pth){ return !(operator==(pth)); }
 

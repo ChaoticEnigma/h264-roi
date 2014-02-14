@@ -1,120 +1,75 @@
-## LibChaos CMakeLists.txt
+## Main LibChaos CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(CMAKE_GENERATOR "Unix Makefiles")
 
-PROJECT(LibChaos)
+# Platform Settings
+IF(WIN32)
+    #MESSAGE(STATUS "Windows Build")
+    SET(LIBCHAOS_WINDOWS TRUE)
+    SET(LIBCHAOS_PLATFORM 2)
+ELSEIF(UNIX)
+    #MESSAGE(STATUS "Unix Build")
+    SET(LIBCHAOS_UNIX TRUE)
+    SET(LIBCHAOS_PLATFORM 1)
+ELSE()
+    MESSAGE(ERROR "Unsupported Platform")
+ENDIF()
 
+SET(LibChaos_PLATFORM ${LIBCHAOS_PLATFORM} PARENT_SCOPE)
+
+# Build Settings
+IF(DEBUG)
+    SET(LIBCHAOS_DEBUG TRUE)
+    SET(LIBCHAOS_BUILD 1)
+ELSEIF(RELEASE)
+    SET(LIBCHAOS_RELEASE TRUE)
+    SET(LIBCHAOS_BUILD 2)
+ELSE()
+    SET(LIBCHAOS_NORMAL TRUE)
+    SET(LIBCHAOS_BUILD 3)
+ENDIF()
+
+SET(LibChaos_BUILD ${LIBCHAOS_BUILD} PARENT_SCOPE)
+
+# Platform-specific Support
+IF(LIBCHAOS_UNIX)
+    SET(BUILD_ZSOCKET TRUE)
+ELSE()
+    SET(BUILD_ZSOCKET FALSE)
+ENDIF()
+
+# Options
+OPTION(LIBCHAOS_TEST FALSE "Build LibChaos Test suite")
 OPTION(LIBCHAOS_UI FALSE "Build LibChaos UI library")
+OPTION(LIBCHAOS_BBB FALSE "Build LibChaos Beaglebone Black library")
 
+# Export Constants
+SET(LibChaos_CONFIGURE_CMAKE "${CMAKE_CURRENT_SOURCE_DIR}/configure_build.cmake" PARENT_SCOPE)
+
+# LibChaos
+SET(LibChaos_BUILD_STRING "LibChaos -")
+ADD_SUBDIRECTORY(chaos)
+SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} '${LibChaosCore_BUILD_STRING}'")
+SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
+
+# LibChaos Test
+IF(LIBCHAOS_TEST)
+    ADD_SUBDIRECTORY(test)
+    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING}, '${LibChaosTest_BUILD_STRING}'")
+ENDIF()
+
+# LibChaos UI
 IF(LIBCHAOS_UI)
     ADD_SUBDIRECTORY(ui)
+    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING}, '${LibChaosUI_BUILD_STRING}'")
+    SET(LibChaosUI_INCLUDE ${LibChaosUI_INCLUDE} PARENT_SCOPE)
 ENDIF()
 
-SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
-    asar.h
-    database.h
-    lib/sqlite3.h
-    zarray.h
-    zarray2.h
-    zassoc.h
-    zassoc2.h
-    zautobuffer.h
-    zbinary.h
-    zerror.h
-    zfile.h
-    zjson.h
-    zlog.h
-    zlogworker.h
-    zmutex.h
-    #zparcel.h
-    zpath.h
-    zstring.h
-    zthread.h
-    zxml.h
-    lib/demangle.h
-)
-
-SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
-    database.cpp
-    lib/sqlite3.c
-    zautobuffer.cpp
-    zbinary.cpp
-    zerror.cpp
-    zfile.cpp
-    zjson.cpp
-    zlog.cpp
-    zlogworker.cpp
-    #zparcel.cpp
-    zpath.cpp
-    zstring.cpp
-    zstring_encode.cpp
-    zthread.cpp
-    zxml.cpp
-)
-
-SET(LibChaos_TEST_SOURCES ### =================== TEST_SOURCES =================== ###
-    test/libchaos-main.cpp
-    test/array_test.cpp
-    test/string_test.cpp
-    test/file_test.cpp
-    test/thread_test.cpp
-    test/autobuffer_test.cpp
-    test/error_test.cpp
-)
-
-### =================== CONFIG =================== ###
-
-SET(LibChaos_INCLUDE "${LibChaos_SOURCE_DIR}" PARENT_SCOPE)
-SET(LibChaosUI_INCLUDE ${LibChaosUI_INCLUDE} PARENT_SCOPE)
-
-INCLUDE_DIRECTORIES(
-    ${LibChaos_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}
-)
-
-IF(WIN32)
-    SET(WINDOWS TRUE)
-ELSE()
-    SET(UNIX TRUE)
+# LibChaos BBB (Beaglebone Black)
+IF(LIBCHAOS_BBB)
+    ADD_SUBDIRECTORY(bbb)
+    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING}, '${LibChaosBBB_BUILD_STRING}'")
+    SET(LibChaosBBB_INCLUDE "${LibChaosBBB_INCLUDE}" PARENT_SCOPE)
 ENDIF()
 
-IF(DEBUG)
-    ADD_DEFINITIONS(-DDEBUG)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-    MESSAGE(STATUS "LibChaos Debug Build Starting...")
-ELSEIF(RELEASE)
-    ADD_DEFINITIONS(-DRELEASE)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
-    MESSAGE(STATUS "LibChaos Release Build Starting...")
-ELSE()
-    MESSAGE(STATUS "LibChaos Normal Build Starting...")
-ENDIF()
-
-IF(WINDOWS)
-    ADD_DEFINITIONS(-DPLATFORM_WINDOWS -DCOMPILER_MINGW)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwin32 -mwindows")
-ELSE()
-    ADD_DEFINITIONS(-DPLATFORM_LINUX -DCOMPILER_GCC)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
-ENDIF()
-
-ADD_DEFINITIONS(-DZLOG_USE_THREAD)
-#ADD_DEFINITIONS(-DZLOG_STD_MUTEX)
-
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -ansi -std=c++11")
-#SET_SOURCE_FILES_PROPERTIES(sqlite3.c PROPERTIES COMPILE_FLAGS -std=c99)
-
-### =================== BUILD =================== ###
-
-ADD_DEFINITIONS(-DBUILDING)
-
-ADD_LIBRARY(chaos ${LibChaos_SOURCES})
-TARGET_LINK_LIBRARIES(chaos pthread)
-IF(UNIX AND NOT FREEBSD)
-    TARGET_LINK_LIBRARIES(chaos dl)
-ENDIF()
-
-IF(LIBCHAOS_TEST)
-    ADD_EXECUTABLE(testchaos ${LibChaos_TEST_SOURCES})
-    TARGET_LINK_LIBRARIES(testchaos chaos)
-ENDIF()
+MESSAGE(STATUS ${LibChaos_BUILD_STRING})

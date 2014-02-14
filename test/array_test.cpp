@@ -3,21 +3,13 @@
 #include "zarray.h"
 
 int array_block(){
-    LOG("=== Array Test 1...");
+    LOG("=== Array Test...");
     ZArray<int> tst;
     tst.push(10);
     tst.pushFront(45);
     tst.push(567);
     for(unsigned i = 0; i < tst.size(); ++i){
         LOG(tst[i]);
-    }
-
-    ZAssoc<ZString, ZString> zarr;
-    zarr["here"] = "there";
-    zarr.pushFront("this", "that");
-    zarr.push("where?");
-    for(unsigned i = 0; i < zarr.size(); ++i){
-        LOG(zarr.key(i) << " " << zarr[i]);
     }
 
     int myints[] = {16,2,77,29};
@@ -33,11 +25,7 @@ int array_block(){
     for(unsigned i = 0; i < tst3.size(); ++i){
         LOG(ZString(tst3[i]));
     }
-    return 0;
-}
 
-int array_block2(){
-    LOG("=== Array Test 2...");
     const char* c1 = "test chars";
     ZArray<char> t1(c1, 10);
     t1.push('!');
@@ -46,5 +34,17 @@ int array_block2(){
     for(zu64 i = 0; i < t1.size(); ++i)
         OLOG(ZLog::noln << (char)t1[i] << ".");
     ORLOG(ZLog::newln);
+    return 0;
+}
+
+int assoc_block(){
+    LOG("=== Assoc Test...");
+    ZAssoc<ZString, ZString> zarr;
+    zarr["here"] = "there";
+    zarr.pushFront("this", "that");
+    zarr.push("where?");
+    for(unsigned i = 0; i < zarr.size(); ++i){
+        LOG(zarr.key(i) << " " << zarr[i]);
+    }
     return 0;
 }

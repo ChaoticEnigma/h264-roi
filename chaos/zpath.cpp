@@ -23,10 +23,6 @@ ZPath::ZPath(std::string path){
 ZPath::ZPath(ZString path){
     fromStr(path);
 }
-/*ZPath::ZPath(ZString path, bool absl){
-    fromZString(path);
-    absolute = absl;
-}*/
 ZPath::ZPath(ArZ arr){
     ZString buff;
     for(zu64 i = 0; i < arr.size(); ++i)
@@ -78,42 +74,12 @@ void ZPath::fromStr(ZString path){
     }
     absolute = (path[0] == ZPATH_DELIM);
 #endif
-}
-
-/*ZPath &ZPath::operator=(ZPath path){
-    data = path.dat();
-    absolute = path.abs();
-#ifdef PLATFORM_WINDOWS
-    drive = path.drv();
-#endif
-    return *this;
-}*/
-
-/*ZPath &ZPath::operator=(ZString str){
-    if(str[0] == '/')
-        absolute = true;
-    else
-        absolute = false;
-    data = str.explode('/');
-    data.clean();
-    return *this;
-}*/
-
-/*ZPath &ZPath::operator=(ArZ arr){
-    absolute = false;
-    data = arr;
-    return *this;
-}*/
-
-/*bool ZPath::operator==(ZPath path){
-    if(path.depth() != data.size())
-        return false;
-    for(unsigned i = 0; i < path.size(); ++i){
-        if(path[i] != data[i])
-            return false;
+    for(zu64 i = 0; i < _data.size(); ++i){
+        if(_data[i] == "."){
+            _data.pop(i);
+        }
     }
-    return true;
-}*/
+}
 
 ZPath &ZPath::concat(ZPath path){
     _data.concat(path.dat());

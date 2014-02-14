@@ -3,44 +3,59 @@ TEMPLATE = lib
 CONFIG += staticlib console
 QT -= core gui widgets
 
+# LibChaos
 HEADERS += \
-    $$PWD/zstring.h \
-    $$PWD/zlog.h \
-    $$PWD/zfile.h \
-    $$PWD/database.h \
-    $$PWD/zmutex.h \
-    $$PWD/zpath.h \
-    $$PWD/zthread.h \
-    $$PWD/zlogworker.h \
-    $$PWD/zarray.h \
-    $$PWD/zassoc.h \
-    $$PWD/zjson.h \
-    $$PWD/ztypes.h \
-    $$PWD/zbinary.h \
-    $$PWD/zarray2.h \
-    $$PWD/zassoc2.h \
-    $$PWD/zautobuffer.h \
-    $$PWD/zautobufferunit.h \
-    $$PWD/zerror.h \
-    $$PWD/zmap.h \
-    $$PWD/lib/sqlite3.h \
+    $$PWD/chaos/database.h \
+    $$PWD/chaos/zarray.h \
+    $$PWD/chaos/zarray2.h \
+    $$PWD/chaos/zassoc.h \
+    $$PWD/chaos/zassoc2.h \
+    $$PWD/chaos/zautobuffer.h \
+    $$PWD/chaos/zautobufferunit.h \
+    $$PWD/chaos/zbinary.h \
+    $$PWD/chaos/zerror.h \
+    $$PWD/chaos/zfile.h \
+    $$PWD/chaos/zjson.h \
+    $$PWD/chaos/zlog.h \
+    $$PWD/chaos/zlogworker.h \
+    $$PWD/chaos/zmap.h \
+    $$PWD/chaos/zmutex.h \
+    $$PWD/chaos/zpath.h \
+    $$PWD/chaos/zsocket.h \
+    $$PWD/chaos/zstring.h \
+    $$PWD/chaos/zthread.h \
+    $$PWD/chaos/ztypes.h \
+    $$PWD/chaos/zxml.h \
+    $$PWD/chaos/lib/sqlite3.h \
     $$PWD/test/test.h \
-    zxml.h
+    $$PWD/ui/zui.h \
+    $$PWD/ui/base.h \
+    $$PWD/ui/window.h \
+    $$PWD/ui/control.h \
+    $$PWD/ui/button.h \
+    $$PWD/ui/edit.h \
+    $$PWD/ui/font.h \
+    $$PWD/ui/table.h \
+    $$PWD/ui/progress.h \
+    $$PWD/ui/align.h \
+    $$PWD/bbb/zbbb.h
 
 SOURCES += \
-    $$PWD/zstring.cpp \
-    $$PWD/zlog.cpp \
-    $$PWD/zfile.cpp \
-    $$PWD/database.cpp \
-    $$PWD/zpath.cpp \
-    $$PWD/zthread.cpp \
-    $$PWD/zlogworker.cpp \
-    $$PWD/zjson.cpp \
-    $$PWD/zbinary.cpp \
-    $$PWD/zstring_encode.cpp \
-    $$PWD/zautobuffer.cpp \
-    $$PWD/zerror.cpp \
-    $$PWD/lib/sqlite3.c \
+    $$PWD/chaos/database.cpp \
+    $$PWD/chaos/zautobuffer.cpp \
+    $$PWD/chaos/zbinary.cpp \
+    $$PWD/chaos/zerror.cpp \
+    $$PWD/chaos/zfile.cpp \
+    $$PWD/chaos/zjson.cpp \
+    $$PWD/chaos/zlog.cpp \
+    $$PWD/chaos/zlogworker.cpp \
+    $$PWD/chaos/zpath.cpp \
+    $$PWD/chaos/zsocket.cpp \
+    $$PWD/chaos/zstring.cpp \
+    $$PWD/chaos/zstring_encode.cpp \
+    $$PWD/chaos/zthread.cpp \
+    $$PWD/chaos/zxml.cpp \
+    $$PWD/chaos/lib/sqlite3.c \
     $$PWD/test/libchaos-main.cpp \
     $$PWD/test/autobuffer_test.cpp \
     $$PWD/test/thread_test.cpp \
@@ -48,19 +63,38 @@ SOURCES += \
     $$PWD/test/array_test.cpp \
     $$PWD/test/file_test.cpp \
     $$PWD/test/error_test.cpp \
-    zxml.cpp
+    $$PWD/test/socket_test.cpp \
+    $$PWD/ui/win32/window_win32.cpp \
+    $$PWD/ui/win32/windowproc_win32.cpp \
+    $$PWD/ui/win32/control_win32.cpp \
+    $$PWD/ui/win32/button_win32.cpp \
+    $$PWD/ui/win32/edit_win32.cpp \
+    $$PWD/ui/win32/font_win32.cpp \
+    $$PWD/ui/win32/table_win32.cpp \
+    $$PWD/ui/win32/progress_win32.cpp \
+    $$PWD/ui/win32/align_win32.cpp \
+    $$PWD/bbb/io.cpp
 
-OTHER_FILES += $$PWD/CMakeLists.txt
+OTHER_FILES += \
+    $$PWD/CMakeLists.txt \
+    $$PWD/ui/CMakeLists.txt \
+    $$PWD/bbb/CMakeLists.txt \
+    $$PWD/chaos/CMakeLists.txt \
+    $$PWD/test/CMakeLists.txt \
+    $$PWD/configure_build.cmake
 
-INCLUDEPATH += $$PWD \
+INCLUDEPATH += \
+    $$PWD \
+    $$PWD/chaos \
+    $$PWD/chaos/lib \
     $$PWD/test \
-    $$PWD/lib
+    $$PWD/ui \
+    $$PWD/bbb
 
+# Build
 #DEFINES += ZLOG_STD_MUTEX
 QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11
 LIBS += pthread
 
 win32:DEFINES += PLATFORM_WINDOWS COMPILER_MINGW
 else:DEFINES += PLATFORM_LINUX COMPILER_GCC
-
-include($$PWD/ui/LibChaosUI.pri)
