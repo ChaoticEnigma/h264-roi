@@ -1,5 +1,27 @@
 #include "test.h"
 #include "zsocket.h"
+#include "zthread.h"
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/types.h>
+#include <time.h>
+
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/time.h>
+
+namespace TCP {
 
 //void t1(){
 //    struct sockaddr_in socketInfo;
@@ -73,16 +95,7 @@
 //    }
 //}
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <time.h>
+
 
 void t2(){
     int listenfd = 0, connfd = 0;
@@ -117,13 +130,7 @@ void t2(){
      }
 }
 
-#include <stdio.h> //printf
-#include <string.h>    //strlen
-#include <sys/socket.h>    //socket
-#include <arpa/inet.h> //inet_addr
-#include <unistd.h>    //usleep
-#include <fcntl.h> //fcntl
-#include <sys/time.h>
+
 
 //Size of each chunk of data received, try changing this
 #define CHUNK_SIZE 512
@@ -134,7 +141,8 @@ int recv_timeout(int s, float);
 void tcl1(){
     int socket_desc;
     struct sockaddr_in server;
-    char *message , server_reply[2000];
+    char *message;
+    //char server_reply[2000];
 
     //Create socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
@@ -228,7 +236,7 @@ int t3(){
     int listenfd, connfd, n;
     struct sockaddr_in servaddr, cliaddr;
     socklen_t clilen;
-    pid_t childpid;
+    //pid_t childpid;
     char mesg[1000];
 
     listenfd = socket(AF_INET,SOCK_STREAM,0);
@@ -272,6 +280,121 @@ int t3(){
         //}
         close(connfd);
     }
+    return 0;
+}
+
+}
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <fcntl.h>
+
+namespace UDP {
+
+int c1(){
+    int handle = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+
+    if ( handle <= 0 ){
+        printf( "failed to create socket\n" );
+        return false;
+    }
+
+//    sockaddr_in address;
+//    address.sin_family = AF_INET;
+//    address.sin_addr.s_addr = INADDR_ANY;
+//    address.sin_port = htons( (unsigned short) 8998 );
+
+//    if ( bind( handle, (const sockaddr*) &address, sizeof(sockaddr_in) ) < 0 ){
+//        printf( "failed to bind socket\n" );
+//        return false;
+//    }
+
+    unsigned int a = 127;
+    unsigned int b = 0;
+    unsigned int c = 0;
+    unsigned int d = 1;
+    unsigned short port = 8998;
+
+    unsigned int destination_address = ( a << 24 ) | ( b << 16 ) | ( c << 8 ) | d;
+    unsigned short destination_port = port;
+
+    sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = htonl( destination_address );
+    address.sin_port = htons( destination_port );
+
+    const char *packet_data = "hello over there!";
+    unsigned int packet_size = 17;
+
+    unsigned sent_bytes = sendto( handle, (const char*)packet_data, packet_size, 0, (sockaddr*)&address, sizeof(sockaddr_in) );
+
+    if ( sent_bytes != packet_size ){
+        printf( "failed to send packet: return value = %d\n", sent_bytes );
+        return false;
+    }
+
+    close( handle );
+    return 0;
+}
+
+int s1(){
+    int handle = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+
+    if ( handle <= 0 ){
+        printf( "failed to create socket\n" );
+        return false;
+    }
+
+    sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons( (unsigned short) 8998 );
+
+    if ( bind( handle, (const sockaddr*) &address, sizeof(sockaddr_in) ) < 0 ){
+        printf( "failed to bind socket\n" );
+        return false;
+    }
+
+    int nonBlocking = 1;
+    if ( fcntl( handle, F_SETFL, O_NONBLOCK, nonBlocking ) == -1 ){
+        printf( "failed to set non-blocking socket\n" );
+        return false;
+    }
+
+    LOG("Reading...");
+    while ( true ){
+        unsigned char packet_data[256];
+        unsigned int maximum_packet_size = sizeof( packet_data );
+
+        sockaddr_in from;
+        socklen_t fromLength = sizeof( from );
+
+        int received_bytes = recvfrom( handle, (char*)packet_data, maximum_packet_size, 0, (sockaddr*)&from, &fromLength );
+
+        if ( received_bytes <= 0 )
+            break;
+
+        unsigned int from_address = ntohl( from.sin_addr.s_addr );
+        unsigned int from_port = ntohs( from.sin_port );
+
+        LOG(from_address << " " << from_port << " : " << (char *)packet_data);
+
+        // process received packet
+    }
+
+    close( handle );
+    return 0;
+}
+
+}
+
+void *clientThread(void *){
+    LOG("Waiting to send...");
+    sleep(1);
+    LOG("Sending...");
+    UDP::c1();
+    LOG("Sent.");
+    return NULL;
 }
 
 int socket_test(){
@@ -280,9 +403,15 @@ int socket_test(){
 //    socket.open(ZSocket::tcp, ZSocket::ipv4);
 //    socket.listen(8080);
 
-    //t2();
-    //tcl1();
-    t3();
+    //TCP::t2();
+    //TCP::tcl1();
+    //TCP::t3();
+
+    ZThread clientthr;
+    clientthr.run(clientThread, NULL);
+    LOG("Listening...");
+    UDP::s1();
+    sleep(3);
 
     return 0;
 }
