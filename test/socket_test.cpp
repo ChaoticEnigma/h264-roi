@@ -389,12 +389,22 @@ int s1(){
 }
 
 void *clientThread(void *){
-    LOG("Waiting to send...");
-    sleep(1);
-    LOG("Sending...");
-    UDP::c1();
-    LOG("Sent.");
+//    LOG("Waiting to send...");
+//    sleep(1);
+//    LOG("Sending...");
+//    UDP::c1();
+//    LOG("Sent.");
+
+    ZSocket client;
+    client.open(ZSocket::udp, ZSocket::ipv4, 8998);
+    client.send(ZAddress(127, 0, 0, 1, 8998), "Hello in that thar thread from this here thread!");
+    client.close();
+
     return NULL;
+}
+
+void receivedGram(ZAddress addr, ZString data){
+    LOG(addr.a << "." << addr.b << "." << addr.c << "." << addr.d << ":" << addr.port() << " (" << data.size() << "): " << data);
 }
 
 int socket_test(){
@@ -410,8 +420,11 @@ int socket_test(){
     ZThread clientthr;
     clientthr.run(clientThread, NULL);
     LOG("Listening...");
-    UDP::s1();
-    sleep(3);
+//    UDP::s1();
+//    sleep(3);
+    ZSocket server;
+    server.open(ZSocket::udp, ZSocket::ipv4, 8998);
+    server.listen(receivedGram);
 
     return 0;
 }

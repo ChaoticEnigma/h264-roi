@@ -1,0 +1,10 @@
+LibChaos ideas / todo:
+
+Todo:
+ZSocket
+ZAutoBuffer
+
+Ideas:
+ZReturn - small class
+        - can be used as a return type to indicate success or error
+        - can have a stack trace attached with ZError

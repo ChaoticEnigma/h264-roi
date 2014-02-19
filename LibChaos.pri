@@ -81,7 +81,8 @@ OTHER_FILES += \
     $$PWD/bbb/CMakeLists.txt \
     $$PWD/chaos/CMakeLists.txt \
     $$PWD/test/CMakeLists.txt \
-    $$PWD/configure_build.cmake
+    $$PWD/configure_build.cmake \
+    $$PWD/todo.txt
 
 INCLUDEPATH += \
     $$PWD \
