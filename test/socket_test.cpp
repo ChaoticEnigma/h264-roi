@@ -406,15 +406,19 @@ int socket_test(){
     //TCP::tcl1();
     //TCP::t3();
 
-    ZThread clientthr;
-    clientthr.run(clientThread, NULL);
-    LOG("Listening...");
-    ZSocket server;
-    if(server.open(ZSocket::udp, ZSocket::ipv4, 8998)){
-        server.listen(receivedGram);
+//    ZThread clientthr;
+//    clientthr.run(clientThread, NULL);
+
+    ZSocket sock;
+    if(sock.open(ZSocket::udp, ZSocket::ipv4, 8998)){
+        sock.send(ZAddress(127, 0, 0, 1, 8998), "Hello in that thar thread from this here thread!");
+        LOG("Sent.");
     } else {
         ELOG("Socket Server Fail");
-        return 1;
     }
+
+    LOG("Listening...");
+    sock.listen(receivedGram);
+    sock.close();
     return 0;
 }

@@ -87,10 +87,10 @@ zu64 ZSocket::receive(ZAddress &addr, ZString &str){
         return 0;
 
     sockaddr_in from;
-    socklen_t fromLength = sizeof( from );
+    socklen_t fromLength = sizeof(from);
 
     char *buffer = new char[256];
-    zu64 received_bytes = recvfrom(socketHandle, buffer, 256, 0, (sockaddr*)&from, &fromLength);
+    int received_bytes = recvfrom(socketHandle, (char*)buffer, 256, 0, (sockaddr*)&from, &fromLength);
 
     if(received_bytes <= 0)
         return 0;
