@@ -39,14 +39,14 @@ bool ZSocket::open(socket_type typ, socket_family chn, int _port){
         address.sin_addr.s_addr = INADDR_ANY;
         address.sin_port = htons((unsigned short)port);
 
-        if(bind(socketHandle, (const sockaddr*) &address, sizeof(sockaddr_in) ) < 0 ){
+        if(bind(socketHandle, (const sockaddr*)&address, sizeof(sockaddr_in)) < 0){
             close();
             ELOG("Bind failed.");
             return false;
         }
 
         int nonBlocking = 1;
-        if(fcntl(socketHandle, F_SETFL, O_NONBLOCK, nonBlocking ) == -1){
+        if(fcntl(socketHandle, F_SETFL, O_NONBLOCK, nonBlocking) == -1){
             close();
             ELOG("Set non-blocking failed.");
             return false;
@@ -57,30 +57,6 @@ bool ZSocket::open(socket_type typ, socket_family chn, int _port){
     } else {
         return false;
     }
-
-
-    socketHandle = socket(family, type, IPPROTO_IP);
-    if(socketHandle < 0){
-        close();
-        ELOG("Socket opening failed.");
-        return false;
-    }
-
-    struct sockaddr_in socketInfo;
-    memset(&socketInfo, '\0', sizeof(socketInfo));
-
-    socketInfo.sin_family = family;
-    socketInfo.sin_addr.s_addr = htonl(INADDR_ANY);
-    socketInfo.sin_port = htons(port);
-
-    if(::bind(socketHandle, (struct sockaddr *)&socketInfo, sizeof(struct sockaddr_in)) < 0){
-        close();
-        ELOG("Bind failed.");
-        return false;
-    }
-
-    isopen = true;
-    return true;
 }
 
 bool ZSocket::isOpen(){
@@ -93,7 +69,7 @@ void ZSocket::close(){
 }
 
 bool ZSocket::send(ZAddress addr, const ZString &data){
-    if(socketHandle == 0 )
+    if(socketHandle == 0)
         return false;
 
     sockaddr_in address;
@@ -114,7 +90,7 @@ zu64 ZSocket::receive(ZAddress &addr, ZString &str){
     socklen_t fromLength = sizeof( from );
 
     char *buffer = new char[256];
-    zu64 received_bytes = recvfrom(socketHandle, buffer, 256, 0, (sockaddr*)&from, &fromLength );
+    zu64 received_bytes = recvfrom(socketHandle, buffer, 256, 0, (sockaddr*)&from, &fromLength);
 
     if(received_bytes <= 0)
         return 0;

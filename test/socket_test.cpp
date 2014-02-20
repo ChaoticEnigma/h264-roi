@@ -2,23 +2,18 @@
 #include "zsocket.h"
 #include "zthread.h"
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-#include <sys/types.h>
 #include <time.h>
-
-#include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
 #include <fcntl.h>
+
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <sys/time.h>
 
 namespace TCP {
@@ -285,10 +280,6 @@ int t3(){
 
 }
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <fcntl.h>
-
 namespace UDP {
 
 int c1(){
@@ -389,17 +380,19 @@ int s1(){
 }
 
 void *clientThread(void *){
-//    LOG("Waiting to send...");
-//    sleep(1);
-//    LOG("Sending...");
+    LOG("Waiting to send...");
+    sleep(1);
+    LOG("Sending...");
 //    UDP::c1();
-//    LOG("Sent.");
 
     ZSocket client;
-    client.open(ZSocket::udp, ZSocket::ipv4, 8998);
-    client.send(ZAddress(127, 0, 0, 1, 8998), "Hello in that thar thread from this here thread!");
-    client.close();
-
+    if(client.open(ZSocket::udp, ZSocket::ipv4, 8998)){
+        client.send(ZAddress(127, 0, 0, 1, 8998), "Hello in that thar thread from this here thread!");
+        client.close();
+        LOG("Sent.");
+    } else {
+        ELOG("Socket Server Fail");
+    }
     return NULL;
 }
 
@@ -409,10 +402,6 @@ void receivedGram(ZAddress addr, ZString data){
 
 int socket_test(){
     LOG("=== Socket Test...");
-//    ZSocket socket;
-//    socket.open(ZSocket::tcp, ZSocket::ipv4);
-//    socket.listen(8080);
-
     //TCP::t2();
     //TCP::tcl1();
     //TCP::t3();
@@ -420,11 +409,12 @@ int socket_test(){
     ZThread clientthr;
     clientthr.run(clientThread, NULL);
     LOG("Listening...");
-//    UDP::s1();
-//    sleep(3);
     ZSocket server;
-    server.open(ZSocket::udp, ZSocket::ipv4, 8998);
-    server.listen(receivedGram);
-
+    if(server.open(ZSocket::udp, ZSocket::ipv4, 8998)){
+        server.listen(receivedGram);
+    } else {
+        ELOG("Socket Server Fail");
+        return 1;
+    }
     return 0;
 }
