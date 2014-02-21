@@ -409,16 +409,41 @@ int socket_test(){
 //    ZThread clientthr;
 //    clientthr.run(clientThread, NULL);
 
-    ZSocket sock;
-    if(sock.open(ZSocket::udp, ZSocket::ipv4, 8998)){
-        sock.send(ZAddress(127, 0, 0, 1, 8998), "Hello in that thar thread from this here thread!");
+//    ZSocket sock;
+//    if(sock.open(ZSocket::udp, ZSocket::ipv4, 8998)){
+//        sock.send(ZAddress(127, 0, 0, 1, 8998), "Hello in that thar thread from this here thread!");
+//        LOG("Sent.");
+//    } else {
+//        ELOG("Socket Server Fail");
+//    }
+
+//    LOG("Listening...");
+//    //sock.listen(receivedGram);
+//    ZAddress addr;
+//    ZString data;
+//    if(sock.receive(addr, data) > 0)
+//        LOG(addr.a << "." << addr.b << "." << addr.c << "." << addr.d << ":" << addr.port() << " (" << data.size() << "): " << data);
+//    sock.close();
+
+    Socket sock;
+    if(sock.Open(20000)){
+        sock.Send(Address(127, 0, 0, 1, 8998), "Hello there!", 13);
         LOG("Sent.");
     } else {
         ELOG("Socket Server Fail");
     }
 
     LOG("Listening...");
-    sock.listen(receivedGram);
-    sock.close();
+    //sock.listen(receivedGram);
+    while(true){
+        Address addr;
+        unsigned char data[256];
+        unsigned int len = sock.Receive(addr, data, 256);
+        if(!len)
+            break;
+        LOG(addr.GetA() << "." << addr.GetB() << "." << addr.GetC() << "." << addr.GetD() << ":" << addr.GetPort() << " (" << (zu64)len << "): " << (char*)data);
+    }
+    sock.Close();
+
     return 0;
 }

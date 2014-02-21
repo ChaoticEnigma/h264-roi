@@ -2,9 +2,17 @@ LibChaos ideas / todo:
 
 Todo:
 ZSocket
+    - make it work with udp
+    - make it work with tcp
 ZAutoBuffer
+    - write it
 
 Ideas:
-ZReturn - small class
-        - can be used as a return type to indicate success or error
-        - can have a stack trace attached with ZError
+ZReturn
+    - small class
+    - can be used as a return type to indicate success or error
+    - can have a stack trace attached with ZError
+
+ZDelta
+    - binary delta algorithm
+    - simple version control implementation in utils

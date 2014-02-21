@@ -1,14 +1,5 @@
 #include "zsocket.h"
-
 #include "zlog.h"
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <string.h>
-//#include <stdlib.h>
-#include <fcntl.h>
 
 #define MAXHOSTNAME 256
 
@@ -16,81 +7,92 @@
 
 namespace LibChaos {
 
-ZSocket::ZSocket() : socketHandle(0), isopen(false), type(udp), family(ipv4){
-
-}
+ZSocket::ZSocket() : socket(0), type(udp), family(ipv4){}
 
 bool ZSocket::open(socket_type typ, socket_family chn, int _port){
-    isopen = false;
-    type = typ;
-    family = chn;
-    port = _port;
+    if(!isOpen()){
+        type = typ;
+        family = chn;
+        port = _port;
 
-    if(type == udp){
-        socketHandle = socket(family, SOCK_DGRAM, IPPROTO_UDP);
-        if(socketHandle <= 0){
-            ELOG("Socket opening failed.");
-            socketHandle = 0;
-            return false;
+        if(type == udp){
+            socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+            if(socket <= 0){
+                ELOG("Socket opening failed.");
+                socket = 0;
+                return false;
+            }
+
+            sockaddr_in address;
+            address.sin_family = AF_INET;
+            address.sin_addr.s_addr = INADDR_ANY;
+            address.sin_port = htons((unsigned short)port);
+
+            if(::bind(socket, (const sockaddr*)&address, sizeof(sockaddr_in)) < 0){
+                close();
+                ELOG("Bind failed.");
+                return false;
+            }
+
+#if PLATFORM == LINUX
+            int nonBlocking = 1;
+            if(::fcntl(socket, F_SETFL, O_NONBLOCK, nonBlocking) == -1){
+                ELOG("failed to set non-blocking socket");
+                close();
+                return false;
+            }
+#elif PLATFORM == WINDOWS
+            DWORD nonBlocking = 1;
+            if(::ioctlsocket(socket, FIONBIO, &nonBlocking) != 0){
+                ELOG("failed to set non-blocking socket");
+                close();
+                return false;
+            }
+#endif
+            return true;
         }
-
-        sockaddr_in address;
-        address.sin_family = AF_INET;
-        address.sin_addr.s_addr = INADDR_ANY;
-        address.sin_port = htons((unsigned short)port);
-
-        if(bind(socketHandle, (const sockaddr*)&address, sizeof(sockaddr_in)) < 0){
-            close();
-            ELOG("Bind failed.");
-            return false;
-        }
-
-        int nonBlocking = 1;
-        if(fcntl(socketHandle, F_SETFL, O_NONBLOCK, nonBlocking) == -1){
-            close();
-            ELOG("Set non-blocking failed.");
-            return false;
-        }
-
-        isopen = true;
-        return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 bool ZSocket::isOpen(){
-    return isopen;
+    return (socket != 0);
 }
 
 void ZSocket::close(){
-    ::close(socketHandle);
-    isopen = false;
+    if(socket != 0){
+#if PLATFORM == LINUX
+        ::close(socket);
+#elif PLATFORM == WINDOWS
+        ::closesocket(socket);
+#endif
+        socket = 0;
+    }
 }
 
 bool ZSocket::send(ZAddress addr, const ZString &data){
-    if(socketHandle == 0)
+    if(socket == 0)
         return false;
 
     sockaddr_in address;
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = htonl(addr.address());
-    address.sin_port = htons(addr.port());
+    address.sin_addr.s_addr = ::htonl(addr.address());
+    address.sin_port = ::htons(addr.port());
 
-    zu64 sent_bytes = ::sendto(socketHandle, data.cc(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in));
+    long sent_bytes = ::sendto(socket, data.cc(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in));
 
-    return (sent_bytes == data.size());
+    return ((zu64)sent_bytes == data.size());
 }
 
 zu64 ZSocket::receive(ZAddress &addr, ZString &str){
-    if(socketHandle == 0)
+    if(socket == 0)
         return 0;
 
     sockaddr_in from;
     socklen_t fromLength = sizeof(from);
 
     char *buffer = new char[256];
-    int received_bytes = recvfrom(socketHandle, (char*)buffer, 256, 0, (sockaddr*)&from, &fromLength);
+    int received_bytes = recvfrom(socket, (char*)buffer, 256, 0, (sockaddr*)&from, &fromLength);
 
     if(received_bytes <= 0)
         return 0;
