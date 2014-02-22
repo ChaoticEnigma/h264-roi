@@ -16,6 +16,21 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <assert.h>
+
+#if PLATFORM == WINDOWS
+    #include <winsock2.h>
+#elif PLATFORM == LINUX
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <fcntl.h>
+    #include <unistd.h>
+#endif
+
 namespace TCP {
 
 //void t1(){
@@ -379,25 +394,22 @@ int s1(){
 
 }
 
-void *clientThread(void *){
+void *clientThread(void *zarg){
     LOG("Waiting to send...");
     sleep(1);
     LOG("Sending...");
 //    UDP::c1();
 
-    ZSocket client;
-    if(client.open(ZSocket::udp, ZSocket::ipv4, 8998)){
-        client.send(ZAddress(127, 0, 0, 1, 8998), "Hello in that thar thread from this here thread!");
-        client.close();
-        LOG("Sent.");
-    } else {
-        ELOG("Socket Server Fail");
+    ZThreadArg *arg = (ZThreadArg*)zarg;
+    while(true){
+        ((ZSocket*)arg->arg)->send(ZAddress(127,0,0,1,8998), "hello world out there!");
+        usleep(500000);
     }
     return NULL;
 }
 
 void receivedGram(ZAddress addr, ZString data){
-    LOG(addr.a << "." << addr.b << "." << addr.c << "." << addr.d << ":" << addr.port() << " (" << data.size() << "): " << data);
+    LOG(addr.a() << "." << addr.b() << "." << addr.c() << "." << addr.d() << ":" << addr.port() << " (" << data.size() << "): " << data);
 }
 
 int socket_test(){
@@ -406,12 +418,26 @@ int socket_test(){
     //TCP::tcl1();
     //TCP::t3();
 
-//    ZThread clientthr;
-//    clientthr.run(clientThread, NULL);
+    ZSocket sock;
+
+    if(!sock.open(8998)){
+        ELOG("Socket Server Fail");
+    }
+
+    ZThread clientthr;
+    clientthr.run(clientThread, (void *)&sock);
+
+    LOG("Listening...");
+    sock.listen(receivedGram);
+//    ZAddress addr;
+//    ZString data;
+//    if(sock.receive(addr, data) > 0)
+//        LOG(addr.a() << "." << addr.b() << "." << addr.c() << "." << addr.d() << ":" << addr.port() << " (" << data.size() << "): " << data);
+    sock.close();
 
 //    ZSocket sock;
-//    if(sock.open(ZSocket::udp, ZSocket::ipv4, 8998)){
-//        sock.send(ZAddress(127, 0, 0, 1, 8998), "Hello in that thar thread from this here thread!");
+//    if(sock.Open(20000)){
+//        sock.Send(ZAddress(127, 0, 0, 1, 8998), "Hello there!", 13);
 //        LOG("Sent.");
 //    } else {
 //        ELOG("Socket Server Fail");
@@ -419,31 +445,214 @@ int socket_test(){
 
 //    LOG("Listening...");
 //    //sock.listen(receivedGram);
-//    ZAddress addr;
-//    ZString data;
-//    if(sock.receive(addr, data) > 0)
-//        LOG(addr.a << "." << addr.b << "." << addr.c << "." << addr.d << ":" << addr.port() << " (" << data.size() << "): " << data);
-//    sock.close();
+//    while(true){
+//        ZAddress addr;
+//        unsigned char data[256];
+//        unsigned int len = sock.Receive(addr, data, 256);
+//        if(!len)
+//            break;
+//        LOG(addr.GetA() << "." << addr.GetB() << "." << addr.GetC() << "." << addr.GetD() << ":" << addr.GetPort() << " (" << (zu64)len << "): " << (char*)data);
+//    }
+//    sock.Close();
 
-    Socket sock;
-    if(sock.Open(20000)){
-        sock.Send(Address(127, 0, 0, 1, 8998), "Hello there!", 13);
-        LOG("Sent.");
-    } else {
-        ELOG("Socket Server Fail");
+    return 0;
+}
+
+namespace UDP2 {
+class Address {
+public:
+    Address() : addr(0), _port(0){}
+    Address(unsigned char a, unsigned char b, unsigned char c, unsigned char d, unsigned short prt) : addr((a << 24) | (b << 16) | (c << 8) | d), _port(prt){}
+    Address(unsigned int add, unsigned short prt) : addr(add), _port(prt){}
+
+    unsigned int address() const {
+        return addr;
+    }
+    unsigned char a() const {
+        return ( unsigned char ) ( addr >> 24 );
+    }
+    unsigned char b() const {
+        return ( unsigned char ) ( addr >> 16 );
+    }
+    unsigned char c() const {
+        return ( unsigned char ) ( addr >> 8 );
+    }
+    unsigned char d() const {
+        return ( unsigned char ) ( addr );
+    }
+    unsigned short port() const {
+        return _port;
+    }
+    bool operator ==(const Address & other) const {
+        return addr == other.addr && _port == other._port;
+    }
+    bool operator !=(const Address & other) const {
+        return !(*this == other);
+    }
+private:
+    unsigned int addr;
+    unsigned short _port;
+};
+
+// sockets
+
+inline bool InitializeSockets(){
+    #if PLATFORM == WINDOWS
+    WSADATA WsaData;
+    return WSAStartup( MAKEWORD(2,2), &WsaData ) != NO_ERROR;
+    #else
+    return true;
+    #endif
+}
+
+inline void ShutdownSockets(){
+    #if PLATFORM == WINDOWS
+    WSACleanup();
+    #endif
+}
+
+class Socket {
+public:
+    Socket() : socket(0){}
+    ~Socket(){
+        close();
     }
 
-    LOG("Listening...");
-    //sock.listen(receivedGram);
+    bool open(zu16 port){
+        if(isOpen())
+            return false;
+        socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        if(socket <= 0){
+            ELOG("failed to create socket");
+            socket = 0;
+            return false;
+        }
+
+        sockaddr_in address;
+        address.sin_family = AF_INET;
+        address.sin_addr.s_addr = INADDR_ANY;
+        address.sin_port = htons((unsigned short) port);
+
+        if(bind(socket, (const sockaddr*) &address, sizeof(sockaddr_in)) < 0){
+            ELOG("failed to bind socket");
+            close();
+            return false;
+        }
+
+        #if PLATFORM == LINUX
+            int nonBlocking = 1;
+            if(fcntl(socket, F_SETFL, O_NONBLOCK, nonBlocking) == -1){
+                ELOG("failed to set non-blocking socket");
+                close();
+                return false;
+            }
+        #elif PLATFORM == WINDOWS
+            DWORD nonBlocking = 1;
+            if(ioctlsocket(socket, FIONBIO, &nonBlocking) != 0){
+                ELOG("failed to set non-blocking socket");
+                close();
+                return false;
+            }
+        #endif
+        return true;
+    }
+
+    void close(){
+        if(socket != 0){
+#if PLATFORM == LINUX
+            ::close( socket );
+#elif PLATFORM == WINDOWS
+            closesocket( socket );
+#endif
+            socket = 0;
+        }
+    }
+
+    bool isOpen() const {
+        return socket != 0;
+    }
+
+    bool send(const Address &destination, const ZString &data){
+        if(socket == 0)
+            return false;
+        sockaddr_in address;
+        address.sin_family = AF_INET;
+        address.sin_addr.s_addr = htonl( destination.address() );
+        address.sin_port = htons( (unsigned short) destination.port() );
+
+        long sent_bytes = sendto( socket, data.cc(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in) );
+        return (unsigned long)sent_bytes == data.size();
+    }
+
+    int receive(Address &sender, ZString &str){
+        //assert(data);
+        if(socket == 0)
+            return false;
+#if PLATFORM == WINDOWS
+        typedef int socklen_t;
+#endif
+        zu64 size = 256;
+        unsigned char data[size];
+        sockaddr_in from;
+        socklen_t fromLength = sizeof( from );
+        int received_bytes = recvfrom( socket, (char*)data, size, 0, (sockaddr*)&from, &fromLength );
+        if(received_bytes <= 0)
+            return 0;
+        unsigned int address = ntohl( from.sin_addr.s_addr );
+        unsigned int port = ntohs( from.sin_port );
+        sender = Address(address, port);
+        str = ZString((char *)data);
+        return received_bytes;
+    }
+
+    typedef void (*receiveCallback)(Address, ZString);
+
+    void listen(receiveCallback receivedFunc){
+        while(true){
+            while(true){
+                Address sender;
+                ZString str;
+                int bytes_read = receive(sender, str);
+                if(!bytes_read)
+                    break;
+                receivedFunc(sender, str);
+            }
+        }
+    }
+
+private:
+    int socket;
+};
+}
+
+void *sendThread(void *zarg){
+    ZThreadArg *arg = (ZThreadArg*)zarg;
     while(true){
-        Address addr;
-        unsigned char data[256];
-        unsigned int len = sock.Receive(addr, data, 256);
-        if(!len)
-            break;
-        LOG(addr.GetA() << "." << addr.GetB() << "." << addr.GetC() << "." << addr.GetD() << ":" << addr.GetPort() << " (" << (zu64)len << "): " << (char*)data);
+        ((UDP2::Socket*)arg->arg)->send(UDP2::Address(127,0,0,1,8998), "hello world out there!");
+        usleep(500000);
     }
-    sock.Close();
+    return NULL;
+}
 
+void receivedPacket(UDP2::Address sender, ZString data){
+    LOG("packet " << sender.a() << "." << sender.b() << "." << sender.c() << "." << sender.d() << ":" << sender.port() << " (" << data.size() << "): " << data);
+}
+
+int socket_block2(){
+    LOG("=== Socket Test 2...");
+    InitializeSockets();
+    int port = 8998;
+    UDP2::Socket socket;
+    if(!socket.open(port)){
+        ELOG("failed to create socket!");
+        return 1;
+    }
+
+    ZThread thr;
+    thr.run(sendThread, (void*)&socket);
+
+    socket.listen(receivedPacket);
+
+    ShutdownSockets();
     return 0;
 }

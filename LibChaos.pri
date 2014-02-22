@@ -73,8 +73,7 @@ SOURCES += \
     $$PWD/ui/win32/table_win32.cpp \
     $$PWD/ui/win32/progress_win32.cpp \
     $$PWD/ui/win32/align_win32.cpp \
-    $$PWD/bbb/io.cpp \
-    test/socket2_test.cpp
+    $$PWD/bbb/io.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

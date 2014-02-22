@@ -1,6 +1,10 @@
 #include "zsocket.h"
 #include "zlog.h"
 
+#define ZSOCKET_BUFFER 1024 * 64
+
+#if ZSOCKET_VERSION == 1
+
 #define MAXHOSTNAME 256
 
 //#define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
@@ -119,3 +123,185 @@ bool ZSocket::listen(receiveCallback callback){
 }
 
 }
+
+#else
+
+#include <cstring>
+
+namespace LibChaos {
+
+ZAddress::ZAddress() : addr(0), _port(0){}
+ZAddress::ZAddress(unsigned char a, unsigned char b, unsigned char c, unsigned char d, unsigned short prt) : addr((a << 24) | (b << 16) | (c << 8) | d), _port(prt){}
+ZAddress::ZAddress(unsigned int add, unsigned short prt) : addr(add), _port(prt){}
+
+unsigned int ZAddress::address() const {
+    return addr;
+}
+unsigned char ZAddress::a() const {
+    return ( unsigned char ) ( addr >> 24 );
+}
+unsigned char ZAddress::b() const {
+    return ( unsigned char ) ( addr >> 16 );
+}
+unsigned char ZAddress::c() const {
+    return ( unsigned char ) ( addr >> 8 );
+}
+unsigned char ZAddress::d() const {
+    return ( unsigned char ) ( addr );
+}
+unsigned short ZAddress::port() const {
+    return _port;
+}
+bool ZAddress::operator ==(const ZAddress & other) const {
+    return addr == other.addr && _port == other._port;
+}
+bool ZAddress::operator !=(const ZAddress & other) const {
+    return !(*this == other);
+}
+
+// /////////////////////////////////////////////
+
+ZSocket::ZSocket() : socket(0), buffer(new char[ZSOCKET_BUFFER]){
+    memset(buffer, 0, ZSOCKET_BUFFER);
+}
+ZSocket::~ZSocket(){
+    close();
+    delete buffer;
+}
+
+bool ZSocket::open(zu16 port){
+    if(isOpen())
+        return false;
+    socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if(socket <= 0){
+        ELOG("failed to create socket");
+        socket = 0;
+        return false;
+    }
+
+    sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons((unsigned short) port);
+
+    if(bind(socket, (const sockaddr*) &address, sizeof(sockaddr_in)) < 0){
+        ELOG("failed to bind socket");
+        close();
+        return false;
+    }
+
+    #if PLATFORM == LINUX
+        int nonBlocking = 1;
+        if(fcntl(socket, F_SETFL, O_NONBLOCK, nonBlocking) == -1){
+            ELOG("failed to set non-blocking socket");
+            close();
+            return false;
+        }
+    #elif PLATFORM == WINDOWS
+        DWORD nonBlocking = 1;
+        if(ioctlsocket(socket, FIONBIO, &nonBlocking) != 0){
+            ELOG("failed to set non-blocking socket");
+            close();
+            return false;
+        }
+    #endif
+    return true;
+}
+
+void ZSocket::close(){
+    if(socket != 0){
+#if PLATFORM == LINUX
+        ::close( socket );
+#elif PLATFORM == WINDOWS
+        closesocket( socket );
+#endif
+        socket = 0;
+    }
+}
+
+bool ZSocket::isOpen() const {
+    return socket != 0;
+}
+
+bool ZSocket::send(const ZAddress &destination, const ZString &data){
+    if(socket == 0)
+        return false;
+    sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = htonl( destination.address() );
+    address.sin_port = htons( (unsigned short) destination.port() );
+
+    long sent_bytes = sendto( socket, data.cc(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in) );
+    return (unsigned long)sent_bytes == data.size();
+}
+
+zu32 ZSocket::receive(ZAddress &sender, ZString &str){
+    //assert(data);
+    if(socket == 0)
+        return false;
+#if PLATFORM == WINDOWS
+    typedef int socklen_t;
+#endif
+    zu64 size = 256;
+    unsigned char data[size];
+    sockaddr_in from;
+    socklen_t fromLength = sizeof( from );
+    int received_bytes = recvfrom( socket, (char*)data, size, 0, (sockaddr*)&from, &fromLength );
+    if(received_bytes <= 0)
+        return 0;
+    unsigned int address = ntohl( from.sin_addr.s_addr );
+    unsigned int port = ntohs( from.sin_port );
+    sender = ZAddress(address, port);
+    str = ZString((char *)data);
+    return received_bytes;
+}
+
+void ZSocket::listen(receiveCallback receivedFunc){
+    while(true){
+        ZAddress sender;
+        ZString str;
+        int bytes_read = receive(sender, str);
+        if(!bytes_read)
+            continue;
+        receivedFunc(sender, str);
+    }
+}
+//void ZSocket::listen(receiveCallback receivedFunc, zu64 limit){
+//    ZAddress sender;
+//    ZString data;
+//    if(limit == (zu64)(-1)){
+//        while(true){
+//            ZAddress sender;
+//            unsigned char buffer[256];
+//            int bytes_read = receiveraw(sender, buffer, sizeof(buffer));
+//            if(!bytes_read)
+//                break;
+//            receivedFunc(sender, ZString((char*)buffer));
+//        }
+//    } else {
+//        zu64 i = 0;
+//        while(i < limit){
+//            ZAddress sender;
+//            unsigned char buffer[256];
+//            int bytes_read = receiveraw(sender, buffer, sizeof(buffer));
+//            if(!bytes_read)
+//                break;
+//            receivedFunc(sender, ZString((char*)buffer));
+//        }
+//    }
+//}
+
+//void ZSocket::receiveOne(receiveCallback receivedFunc){
+//    while(true){
+//        ZAddress sender;
+//        unsigned char buffer[256];
+//        int bytes_read = receiveraw(sender, buffer, sizeof(buffer));
+//        if(!bytes_read)
+//            break;
+//        receivedFunc(sender, ZString((char*)buffer));
+//    }
+//}
+
+}
+
+#endif
