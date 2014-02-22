@@ -11,26 +11,19 @@ namespace LibChaos {
 class ZBinary {
 public:
     ZBinary();
-    ZBinary(const char *ptr, zu64 len);
+    ZBinary(const unsigned char *ptr, zu64 len);
 
-//    ZBinary &operator=(ZBinary arr){
-//        _data = arr.data();
-//        return *this;
-//    }
-
-    inline char &operator[](zu64 inx){
+    inline unsigned char &operator[](zu64 inx){
         return _data[inx];
     }
 
     zu64 size() const;
 
-    ZArray<char> &data();
-    const char *raw() const;
+    ZArray<unsigned char> &data();
+    const unsigned char *raw() const;
 private:
-    ZArray<char> _data;
+    ZArray<unsigned char> _data;
 };
-
-//typedef std::vector<char> ZBinary;
 
 }
 

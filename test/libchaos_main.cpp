@@ -21,7 +21,6 @@ int main(int argc, char **argv){
     tests["autobuffer"] = autobuffer_block;
 #ifdef BUILD_ZSOCKET
     tests["socket"] = socket_test;
-    tests["socket2"] = socket_block2;
 #endif
 #if PLATFORM == LINUX
     tests["error"] = error_block;

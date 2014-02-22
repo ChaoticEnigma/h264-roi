@@ -161,8 +161,8 @@ bool ZAddress::operator !=(const ZAddress & other) const {
 
 // /////////////////////////////////////////////
 
-ZSocket::ZSocket() : socket(0), buffer(new char[ZSOCKET_BUFFER]){
-    memset(buffer, 0, ZSOCKET_BUFFER);
+ZSocket::ZSocket() : socket(0), buffer(NULL){
+    //memset(buffer, 0, ZSOCKET_BUFFER);
 }
 ZSocket::~ZSocket(){
     close();
@@ -223,47 +223,49 @@ bool ZSocket::isOpen() const {
     return socket != 0;
 }
 
-bool ZSocket::send(const ZAddress &destination, const ZString &data){
+bool ZSocket::send(const ZAddress &destination, const ZBinary &data){
     if(socket == 0)
         return false;
     sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl( destination.address() );
     address.sin_port = htons( (unsigned short) destination.port() );
-
-    long sent_bytes = sendto( socket, data.cc(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in) );
+    long sent_bytes = sendto( socket, data.raw(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in) );
     return (unsigned long)sent_bytes == data.size();
 }
 
-zu32 ZSocket::receive(ZAddress &sender, ZString &str){
-    //assert(data);
+zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
     if(socket == 0)
         return false;
-#if PLATFORM == WINDOWS
-    typedef int socklen_t;
-#endif
-    zu64 size = 256;
-    unsigned char data[size];
+    //zu64 size = 256;
+    if(buffer == NULL)
+        buffer = new unsigned char[ZSOCKET_BUFFER];
+    //unsigned char data[size];
     sockaddr_in from;
-    socklen_t fromLength = sizeof( from );
-    int received_bytes = recvfrom( socket, (char*)data, size, 0, (sockaddr*)&from, &fromLength );
+    socklen_t fromLength = sizeof(from);
+    long received_bytes = recvfrom(socket, buffer, ZSOCKET_BUFFER, 0, (sockaddr*)&from, &fromLength);
     if(received_bytes <= 0)
         return 0;
-    unsigned int address = ntohl( from.sin_addr.s_addr );
-    unsigned int port = ntohs( from.sin_port );
+    unsigned int address = ntohl(from.sin_addr.s_addr);
+    unsigned int port = ntohs(from.sin_port);
     sender = ZAddress(address, port);
-    str = ZString((char *)data);
-    return received_bytes;
+    zu64 len = 0;
+    while(len < ZSOCKET_BUFFER){
+        if(buffer[len] == 0)
+            break;
+        ++len;
+    }
+    str = ZBinary(buffer, len);
+    return (zu32)received_bytes;
 }
 
 void ZSocket::listen(receiveCallback receivedFunc){
     while(true){
         ZAddress sender;
-        ZString str;
-        int bytes_read = receive(sender, str);
-        if(!bytes_read)
+        ZBinary data;
+        if(!receive(sender, data))
             continue;
-        receivedFunc(sender, str);
+        receivedFunc(sender, data);
     }
 }
 //void ZSocket::listen(receiveCallback receivedFunc, zu64 limit){

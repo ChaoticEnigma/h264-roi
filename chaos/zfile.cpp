@@ -56,11 +56,11 @@ bool ZFile::close(){
 zu64 ZFile::read(ZBinary &out, zu64 max){
     if(!isOpen() || !(_bits & 0x010))
         return 0;
-    char *buffer;
+    unsigned char *buffer;
     if(flsize() >= max)
-        buffer = new char[max];
+        buffer = new unsigned char[max];
     else
-        buffer = new char[flsize()];
+        buffer = new unsigned char[flsize()];
     //zu64 dats = fread(buffer, 1, sizeof buffer, _fileh);
     zu64 len = fread(buffer, 1, sizeof buffer, _fileh);
     out = ZBinary(buffer, len);

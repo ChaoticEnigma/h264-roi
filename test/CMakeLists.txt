@@ -4,7 +4,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(LibChaos_Test)
 
 SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES =================== ###
-    libchaos-main.cpp
+    libchaos_main.cpp
     array_test.cpp
     string_test.cpp
     file_test.cpp

@@ -377,7 +377,7 @@ inline void ShutdownSockets(){
 
 class ZSocket {
 public:
-    typedef void (*receiveCallback)(ZAddress, ZString);
+    typedef void (*receiveCallback)(ZAddress, ZBinary);
 #if PLATFORM == WINDOWS
     typedef int socklen_t;
 #endif
@@ -389,10 +389,10 @@ public:
     void close();
     bool isOpen() const;
 
-    bool send(const ZAddress &destination, const ZString &data);
+    bool send(const ZAddress &destination, const ZBinary &data);
 
     //zu32 receiveraw(ZAddress & sender, void * data, zu64 size);
-    zu32 receive(ZAddress &sender, ZString &str);
+    zu32 receive(ZAddress &sender, ZBinary &str);
     void listen(receiveCallback receivedFunc);
     //void listen(receiveCallback receivedFunc, zu64 limit = -1);
 
@@ -400,7 +400,7 @@ private:
     //void receiveOne(receiveCallback receivedFunc);
 
     int socket;
-    char *buffer;
+    unsigned char *buffer;
 };
 
 }

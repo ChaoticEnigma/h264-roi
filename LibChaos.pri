@@ -56,7 +56,7 @@ SOURCES += \
     $$PWD/chaos/zthread.cpp \
     $$PWD/chaos/zxml.cpp \
     $$PWD/chaos/lib/sqlite3.c \
-    $$PWD/test/libchaos-main.cpp \
+    $$PWD/test/libchaos_main.cpp \
     $$PWD/test/autobuffer_test.cpp \
     $$PWD/test/thread_test.cpp \
     $$PWD/test/string_test.cpp \
