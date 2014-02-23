@@ -5,8 +5,8 @@
 void sendGrams(ZSocket *sock){
     zu64 count = 0;
     //ZAddress addr(127,0,0,1, 8998);
-    ZAddress addr(192,168,1,38, 8998);
-    //ZAddress addr(192,168,1,89, 8998);
+    //ZAddress addr(192,168,1,38, 8998);
+    ZAddress addr(192,168,1,89, 8998);
 
     while(true){
         ZString str = "hello world out there! ";
