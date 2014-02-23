@@ -13,7 +13,7 @@ void sendGrams(ZSocket *sock){
         str << ZString::ItoS(count);
         ZBinary data((unsigned char *)str.cc(), str.size());
         sock->send(addr, data);
-        LOG("to " << addr.str() << " (" << data.size() << "): \"" << data.raw() << "\"");
+        LOG("to " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
         ++count;
         usleep(500000);
     }
