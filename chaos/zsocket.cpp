@@ -29,6 +29,12 @@ unsigned char ZAddress::d() const {
 unsigned short ZAddress::port() const {
     return _port;
 }
+ZString ZAddress::str(){
+    ZString str;
+    str << a() << "." << b() << '.' << c() << '.' << d() << ':' << port();
+    return str;
+}
+
 bool ZAddress::operator ==(const ZAddress & other) const {
     return addr == other.addr && _port == other._port;
 }

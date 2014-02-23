@@ -35,6 +35,8 @@ public:
     unsigned char c() const;
     unsigned char d() const;
     unsigned short port() const;
+    ZString str();
+
     bool operator ==(const ZAddress & other) const;
     bool operator !=(const ZAddress & other) const;
 private:

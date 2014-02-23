@@ -7,16 +7,16 @@
 #if defined(_WIN32)
 #define SPLATFORM PLATFORM_WINDOWS
 #elif defined(__APPLE__)
-#define PLATFORM PLATFORM_MAC
+#define SPLATFORM PLATFORM_MAC
 #else
-#define PLATFORM PLATFORM_UNIX
+#define SPLATFORM PLATFORM_UNIX
 #endif
 
 #if SPLATFORM == PLATFORM_WINDOWS
 
     #include <winsock2.h>
 
-#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+#elif SPLATFORM == PLATFORM_MAC || SPLATFORM == PLATFORM_UNIX
 
     #include <sys/socket.h>
     #include <netinet/in.h>
@@ -325,7 +325,7 @@ int socket2_test(){
                 sender.GetPort(), bytes_read );
         }
 
-        wait( 0.25f );
+        usleep(250000);
     }
 
     // shutdown socket layer

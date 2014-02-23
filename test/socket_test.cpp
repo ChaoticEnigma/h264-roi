@@ -34,14 +34,15 @@
 void sendGrams(ZSocket *sock){
     zu64 count = 0;
     //ZAddress addr(127,0,0,1, 8998);
-    ZAddress addr(192,168,1,38, 8998);
+    //ZAddress addr(192,168,1,38, 8998);
+    ZAddress addr(192,168,1,89, 8998);
 
     while(true){
         ZString str = "hello world out there! ";
         str << ZString::ItoS(count);
         ZBinary data((unsigned char *)str.cc(), str.size());
         data.data().push(0);
-        LOG(data.size() << " " << (char *)data.raw());
+        LOG("to " << addr.str() << " (" << data.size() << "): \"" << (char *)data.raw() << "\"");
         sock->send(addr, data);
         ++count;
         usleep(500000);
@@ -74,7 +75,7 @@ int socket_test(){
 }
 
 void receivedGram(ZAddress addr, ZBinary data){
-    LOG("packet " << addr.a() << "." << addr.b() << "." << addr.c() << "." << addr.d() << ":" << addr.port() << " (" << data.size() << "): " << (char *)data.raw());
+    LOG("from " << addr.str() << " (" << data.size() << "): \"" << (char *)data.raw() << "\"");
 }
 
 int socketserver_test(){
