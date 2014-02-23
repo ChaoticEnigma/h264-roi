@@ -22,6 +22,7 @@ int autobuffer_block();
 
 #ifdef BUILD_ZSOCKET
 int socket_test();
+int socketserver_test();
 #endif
 
 int error_block();
