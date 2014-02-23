@@ -38,7 +38,8 @@ HEADERS += \
     $$PWD/ui/table.h \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
-    $$PWD/bbb/zbbb.h
+    $$PWD/bbb/zbbb.h \
+    chaos/zaddress.h
 
 SOURCES += \
     $$PWD/chaos/database.cpp \
@@ -74,7 +75,8 @@ SOURCES += \
     $$PWD/ui/win32/progress_win32.cpp \
     $$PWD/ui/win32/align_win32.cpp \
     $$PWD/bbb/io.cpp \
-    test/socket2_test.cpp
+    test/socket2_test.cpp \
+    chaos/zaddress.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

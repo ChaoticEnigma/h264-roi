@@ -20,11 +20,9 @@ int thread_block();
 
 int autobuffer_block();
 
-#ifdef BUILD_ZSOCKET
 int socket_test();
 int socketserver_test();
 int socket2_test();
-#endif
 
 int error_block();
 

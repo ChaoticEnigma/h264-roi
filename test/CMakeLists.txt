@@ -11,15 +11,9 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     thread_test.cpp
     autobuffer_test.cpp
     error_test.cpp
+    socket_test.cpp
+    socket2_test.cpp
 )
-
-IF(BUILD_ZSOCKET)
-    ADD_DEFINITIONS(-DBUILD_ZSOCKET)
-    SET(LibChaosTest_SOURCES ${LibChaosTest_SOURCES}
-        socket_test.cpp
-        socket2_test.cpp
-    )
-ENDIF()
 
 ### =================== CONFIG =================== ###
 

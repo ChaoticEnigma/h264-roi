@@ -1,41 +1,12 @@
 #include "test.h"
 #include "zsocket.h"
-#include "zthread.h"
-
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <time.h>
-#include <fcntl.h>
-
-//#include <arpa/inet.h>
-//#include <netinet/in.h>
-//#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/time.h>
-
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <assert.h>
-
-#if PLATFORM == WINDOWS
-    #include <winsock2.h>
-#elif PLATFORM == LINUX
-    #include <sys/socket.h>
-    #include <netinet/in.h>
-    #include <fcntl.h>
-    #include <unistd.h>
-#endif
 
 void sendGrams(ZSocket *sock){
     zu64 count = 0;
     //ZAddress addr(127,0,0,1, 8998);
-    //ZAddress addr(192,168,1,38, 8998);
-    ZAddress addr(192,168,1,89, 8998);
+    ZAddress addr(192,168,1,38, 8998);
+    //ZAddress addr(192,168,1,89, 8998);
 
     while(true){
         ZString str = "hello world out there! ";
@@ -47,12 +18,6 @@ void sendGrams(ZSocket *sock){
         ++count;
         usleep(500000);
     }
-}
-
-void *clientThread(void *zarg){
-    LOG("Sending...");
-    sendGrams((ZSocket*)((ZThreadArg*)zarg)->arg);
-    return NULL;
 }
 
 int socket_test(){
@@ -67,6 +32,7 @@ int socket_test(){
         return 2;
     }
 
+    LOG("Sending...");
     sendGrams(&sock);
 
     sock.close();

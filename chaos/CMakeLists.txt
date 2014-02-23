@@ -5,6 +5,7 @@ PROJECT(LibChaos)
 
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     database.h
+    zaddress.h
     zarray.h
     zarray2.h
     zassoc.h
@@ -19,6 +20,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zmutex.h
     #zparcel.h
     zpath.h
+    zsocket.h
     zstring.h
     zthread.h
     zxml.h
@@ -29,6 +31,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     database.cpp
+    zaddress.cpp
     zautobuffer.cpp
     zbinary.cpp
     zerror.cpp
@@ -38,6 +41,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zlogworker.cpp
     #zparcel.cpp
     zpath.cpp
+    zsocket.cpp
     zstring.cpp
     zstring_encode.cpp
     zthread.cpp
@@ -45,11 +49,6 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
 
     lib/sqlite3.c
 )
-
-IF(BUILD_ZSOCKET)
-    SET(LibChaos_HEADERS ${LibChaos_HEADERS} zsocket.h)
-    SET(LibChaos_SOURCES ${LibChaos_SOURCES} zsocket.cpp)
-ENDIF()
 
 ### =================== CONFIG =================== ###
 
@@ -81,8 +80,5 @@ IF(LIBCHAOS_UNIX)
         TARGET_LINK_LIBRARIES(chaos dl)
     ENDIF()
 ELSEIF(LIBCHAOS_WINDOWS)
-    IF(BUILD_ZSOCKET)
-        TARGET_LINK_LIBRARIES(chaos ws2_32)
-        #TARGET_LINK_LIBRARIES(chaos wsock32)
-    ENDIF()
+    TARGET_LINK_LIBRARIES(chaos ws2_32)
 ENDIF()

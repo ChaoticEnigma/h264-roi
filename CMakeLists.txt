@@ -31,13 +31,6 @@ ENDIF()
 
 SET(LibChaos_BUILD ${LIBCHAOS_BUILD} PARENT_SCOPE)
 
-# Platform-specific Support
-#IF(LIBCHAOS_UNIX)
-    SET(BUILD_ZSOCKET TRUE)
-#ELSE()
-#    SET(BUILD_ZSOCKET FALSE)
-#ENDIF()
-
 # Options
 OPTION(LIBCHAOS_TEST FALSE "Build LibChaos Test suite")
 OPTION(LIBCHAOS_UI FALSE "Build LibChaos UI library")

@@ -1,52 +1,31 @@
 #include "zsocket.h"
 #include "zlog.h"
 
+#if PLATFORM == WINDOWS
+    #include <winsock2.h>
+#elif PLATFORM == LINUX
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <fcntl.h>
+    #include <unistd.h>
+
+    #include <fstream>
+    #include <string>
+    #include <vector>
+    #include <assert.h>
+    #include <cstring>
+#endif
+
 #define ZSOCKET_BUFFER 1024 * 64
 
-#include <cstring>
+#if PLATFORM == WINDOWS
+    typedef int socklen_t;
+#endif
 
 namespace LibChaos {
 
-ZAddress::ZAddress() : addr(0), _port(0){}
-ZAddress::ZAddress(unsigned char a, unsigned char b, unsigned char c, unsigned char d, unsigned short prt) : addr((a << 24) | (b << 16) | (c << 8) | d), _port(prt){}
-ZAddress::ZAddress(unsigned int add, unsigned short prt) : addr(add), _port(prt){}
+ZSocket::ZSocket() : socket(0), buffer(NULL){}
 
-unsigned int ZAddress::address() const {
-    return addr;
-}
-unsigned char ZAddress::a() const {
-    return ( unsigned char ) ( addr >> 24 );
-}
-unsigned char ZAddress::b() const {
-    return ( unsigned char ) ( addr >> 16 );
-}
-unsigned char ZAddress::c() const {
-    return ( unsigned char ) ( addr >> 8 );
-}
-unsigned char ZAddress::d() const {
-    return ( unsigned char ) ( addr );
-}
-unsigned short ZAddress::port() const {
-    return _port;
-}
-ZString ZAddress::str(){
-    ZString str;
-    str << a() << "." << b() << '.' << c() << '.' << d() << ':' << port();
-    return str;
-}
-
-bool ZAddress::operator ==(const ZAddress & other) const {
-    return addr == other.addr && _port == other._port;
-}
-bool ZAddress::operator !=(const ZAddress & other) const {
-    return !(*this == other);
-}
-
-// /////////////////////////////////////////////
-
-ZSocket::ZSocket() : socket(0), buffer(NULL){
-    //memset(buffer, 0, ZSOCKET_BUFFER);
-}
 ZSocket::~ZSocket(){
     close();
     delete buffer;
@@ -57,7 +36,7 @@ bool ZSocket::open(zu16 port){
         return false;
     socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if(socket <= 0){
-        ELOG("failed to create socket");
+        ELOG("ZSocket: failed to create socket");
         socket = 0;
         return false;
     }
@@ -68,7 +47,7 @@ bool ZSocket::open(zu16 port){
     address.sin_port = htons((unsigned short) port);
 
     if(bind(socket, (const sockaddr*) &address, sizeof(sockaddr_in)) < 0){
-        ELOG("failed to bind socket");
+        ELOG("ZSocket: failed to bind socket");
         close();
         return false;
     }
@@ -76,14 +55,14 @@ bool ZSocket::open(zu16 port){
     #if PLATFORM == LINUX
         int nonBlocking = 1;
         if(fcntl(socket, F_SETFL, O_NONBLOCK, nonBlocking) == -1){
-            ELOG("failed to set non-blocking socket");
+            ELOG("ZSocket: failed to set non-blocking socket");
             close();
             return false;
         }
     #elif PLATFORM == WINDOWS
         DWORD nonBlocking = 1;
         if(ioctlsocket(socket, FIONBIO, &nonBlocking) != 0){
-            ELOG("failed to set non-blocking socket");
+            ELOG("ZSocket: failed to set non-blocking socket");
             close();
             return false;
         }
@@ -94,9 +73,9 @@ bool ZSocket::open(zu16 port){
 void ZSocket::close(){
     if(socket != 0){
 #if PLATFORM == LINUX
-        ::close( socket );
+        ::close(socket);
 #elif PLATFORM == WINDOWS
-        closesocket( socket );
+        closesocket(socket);
 #endif
         socket = 0;
     }
@@ -124,10 +103,9 @@ bool ZSocket::send(const ZAddress &destination, const ZBinary &data){
 zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
     if(socket == 0)
         return false;
-    //zu64 size = 256;
     if(buffer == NULL)
         buffer = new unsigned char[ZSOCKET_BUFFER];
-    //unsigned char data[size];
+    memset(buffer, 0, ZSOCKET_BUFFER);
     sockaddr_in from;
     socklen_t fromLength = sizeof(from);
 #if PLATFORM == LINUX
@@ -159,40 +137,19 @@ void ZSocket::listen(receiveCallback receivedFunc){
         receivedFunc(sender, data);
     }
 }
-//void ZSocket::listen(receiveCallback receivedFunc, zu64 limit){
-//    ZAddress sender;
-//    ZString data;
-//    if(limit == (zu64)(-1)){
-//        while(true){
-//            ZAddress sender;
-//            unsigned char buffer[256];
-//            int bytes_read = receiveraw(sender, buffer, sizeof(buffer));
-//            if(!bytes_read)
-//                break;
-//            receivedFunc(sender, ZString((char*)buffer));
-//        }
-//    } else {
-//        zu64 i = 0;
-//        while(i < limit){
-//            ZAddress sender;
-//            unsigned char buffer[256];
-//            int bytes_read = receiveraw(sender, buffer, sizeof(buffer));
-//            if(!bytes_read)
-//                break;
-//            receivedFunc(sender, ZString((char*)buffer));
-//        }
-//    }
-//}
 
-//void ZSocket::receiveOne(receiveCallback receivedFunc){
-//    while(true){
-//        ZAddress sender;
-//        unsigned char buffer[256];
-//        int bytes_read = receiveraw(sender, buffer, sizeof(buffer));
-//        if(!bytes_read)
-//            break;
-//        receivedFunc(sender, ZString((char*)buffer));
-//    }
-//}
+bool ZSocket::InitializeSockets(){
+#if PLATFORM == WINDOWS
+    WSADATA WsaData;
+    return (WSAStartup(MAKEWORD(2,2), &WsaData) == 0);
+#else
+    return true;
+#endif
+}
+void ZSocket::ShutdownSockets(){
+#if PLATFORM == WINDOWS
+    WSACleanup();
+#endif
+}
 
 }

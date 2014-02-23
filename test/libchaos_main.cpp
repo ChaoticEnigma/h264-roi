@@ -19,11 +19,9 @@ int main(int argc, char **argv){
     tests["file"] = file_block;
     tests["thread"] = thread_block;
     tests["autobuffer"] = autobuffer_block;
-#ifdef BUILD_ZSOCKET
     tests["socket"] = socket_test;
     tests["socketserver"] = socketserver_test;
     tests["socket2"] = socket2_test;
-#endif
 #if PLATFORM == LINUX
     tests["error"] = error_block;
 #endif

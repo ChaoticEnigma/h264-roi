@@ -24,6 +24,7 @@
 
 #endif
 
+#include <unistd.h>
 #include <assert.h>
 
 namespace net
