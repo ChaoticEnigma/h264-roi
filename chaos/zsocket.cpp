@@ -12,6 +12,7 @@
 #endif
 
 #define ZSOCKET_BUFFER 1024 * 64
+#define ZSOCKET_MAX 1024 * 64 - 9
 
 #if PLATFORM == WINDOWS
     typedef int socklen_t;
@@ -119,17 +120,15 @@ zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
 #endif
     if(received_bytes <= 0)
         return 0;
-    unsigned int address = ntohl(from.sin_addr.s_addr);
-    unsigned int port = ntohs(from.sin_port);
-    sender = ZAddress(address, port);
-    zu64 len = 0;
+    sender = ZAddress(ntohl(from.sin_addr.s_addr), ntohs(from.sin_port));
+    zu32 len = 0;
     while(len < ZSOCKET_BUFFER){
         if(buffer[len] == 0)
             break;
         ++len;
     }
     str = ZBinary(buffer, len);
-    return (zu32)received_bytes;
+    return len;
 }
 
 void ZSocket::listen(receiveCallback receivedFunc){
@@ -138,7 +137,7 @@ void ZSocket::listen(receiveCallback receivedFunc){
         ZBinary data;
         if(!receive(sender, data))
             continue;
-        receivedFunc(sender, data);
+        receivedFunc(this, sender, data);
     }
 }
 

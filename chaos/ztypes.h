@@ -39,7 +39,7 @@
 #define FOREACH(A) for(zu64 i = 0; i < A; ++i)
 
 // LibChaos version control
-#define ZARRAY_VERSION 1
+#define ZARRAY_VERSION 2
 #define ZASSOC_VERSION 1
 
 #include <stdint.h>

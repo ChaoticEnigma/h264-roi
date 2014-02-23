@@ -9,7 +9,7 @@ namespace LibChaos {
 
 class ZSocket {
 public:
-    typedef void (*receiveCallback)(ZAddress, ZBinary);
+    typedef void (*receiveCallback)(ZSocket *socket, const ZAddress &sender, const ZBinary &data);
 
     ZSocket();
     ~ZSocket();

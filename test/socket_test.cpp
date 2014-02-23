@@ -34,7 +34,7 @@ int socket_test(){
     return 0;
 }
 
-void receivedGram(ZAddress addr, ZBinary data){
+void receivedGram(ZSocket *socket, const ZAddress &addr, const ZBinary &data){
     LOG("from " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
 }
 
