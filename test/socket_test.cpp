@@ -12,9 +12,8 @@ void sendGrams(ZSocket *sock){
         ZString str = "hello world out there! ";
         str << ZString::ItoS(count);
         ZBinary data((unsigned char *)str.cc(), str.size());
-        data.data().push(0);
-        LOG("to " << addr.str() << " (" << data.size() << "): \"" << (char *)data.raw() << "\"");
         sock->send(addr, data);
+        LOG("to " << addr.str() << " (" << data.size() << "): \"" << data.raw() << "\"");
         ++count;
         usleep(500000);
     }
@@ -22,10 +21,6 @@ void sendGrams(ZSocket *sock){
 
 int socket_test(){
     LOG("=== Socket Test...");
-    if(!ZSocket::InitializeSockets()){
-        LOG("Init Error");
-        return 1;
-    }
     ZSocket sock;
     if(!sock.open(8998)){
         ELOG("Socket Open Fail");
@@ -36,20 +31,15 @@ int socket_test(){
     sendGrams(&sock);
 
     sock.close();
-    ZSocket::ShutdownSockets();
     return 0;
 }
 
 void receivedGram(ZAddress addr, ZBinary data){
-    LOG("from " << addr.str() << " (" << data.size() << "): \"" << (char *)data.raw() << "\"");
+    LOG("from " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
 }
 
 int socketserver_test(){
     LOG("=== Socket Server Test...");
-    if(!ZSocket::InitializeSockets()){
-        LOG("Init Error");
-        return 1;
-    }
     ZSocket sock;
     if(!sock.open(8998)){
         ELOG("Socket Open Fail");
@@ -60,6 +50,5 @@ int socketserver_test(){
     sock.listen(receivedGram);
 
     sock.close();
-    ZSocket::ShutdownSockets();
     return 0;
 }

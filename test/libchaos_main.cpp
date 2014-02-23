@@ -3,7 +3,7 @@
 int main(int argc, char **argv){
     ZLog::formatStdout(ZLogSource::normal, "%time% %thread% - %log%");
     ZLog::formatStderr(ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
-    ZPath lgf = ZString("logs") + ZLog::genLogFileName("testchaos_");
+    ZPath lgf = ZPath("logs") + ZLog::genLogFileName("testchaos_");
     ZLog::addLogFile(lgf, ZLogSource::normal, "%time% %thread% - %log%");
     ZLog::addLogFile(lgf, ZLogSource::debug, "%time% %thread% %function% (%file%:%line%) - %log%");
     ZLog::addLogFile(lgf, ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");

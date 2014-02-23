@@ -55,7 +55,7 @@ public:
     ZLog &operator<<(std::string text);
     ZLog &operator<<(zs64 text);
     ZLog &operator<<(const char *text);
-    ZLog &operator<<(char *text);
+    ZLog &operator<<(const unsigned char *text);
     ZLog &operator<<(ZPath text);
     ZLog &operator<<(ZBinary text);
 

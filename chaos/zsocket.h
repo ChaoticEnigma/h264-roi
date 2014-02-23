@@ -20,19 +20,16 @@ public:
 
     bool send(const ZAddress &destination, const ZBinary &data);
 
-    //zu32 receiveraw(ZAddress & sender, void * data, zu64 size);
     zu32 receive(ZAddress &sender, ZBinary &str);
     void listen(receiveCallback receivedFunc);
-    //void listen(receiveCallback receivedFunc, zu64 limit = -1);
 
+private:
     static bool InitializeSockets();
     static void ShutdownSockets();
 
-private:
-    //void receiveOne(receiveCallback receivedFunc);
-
     int socket;
     unsigned char *buffer;
+    static zu64 socket_count;
 };
 
 }
