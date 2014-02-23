@@ -35,7 +35,7 @@ int socket_test(){
 }
 
 void receivedGram(ZAddress addr, ZBinary data){
-    LOG("from " << addr.str() << " (" << data.size() << "): \"" << data.raw() << "\"");
+    LOG("from " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
 }
 
 int socketserver_test(){

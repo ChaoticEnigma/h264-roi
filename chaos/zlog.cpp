@@ -90,7 +90,7 @@ ZLog &ZLog::operator<<(ZPath text){
 ZLog &ZLog::operator<<(ZBinary bin){
     ZString text;
     for(zu64 i = 0; i < bin.size(); ++i)
-        text << bin[i];
+        text << (char)bin[i];
     return log(text);
 }
 
