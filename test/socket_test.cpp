@@ -31,10 +31,7 @@
     #include <unistd.h>
 #endif
 
-void *clientThread(void *zarg){
-    LOG("Sending...");
-
-    ZThreadArg *arg = (ZThreadArg*)zarg;
+void sendGrams(ZSocket *sock){
     zu64 count = 0;
     //ZAddress addr(127,0,0,1, 8998);
     ZAddress addr(192,168,1,38, 8998);
@@ -45,15 +42,16 @@ void *clientThread(void *zarg){
         ZBinary data((unsigned char *)str.cc(), str.size());
         data.data().push(0);
         LOG(data.size() << " " << (char *)data.raw());
-        ((ZSocket*)arg->arg)->send(addr, data);
+        sock->send(addr, data);
         ++count;
         usleep(500000);
     }
-    return NULL;
 }
 
-void receivedGram(ZAddress addr, ZBinary data){
-    LOG("packet " << addr.a() << "." << addr.b() << "." << addr.c() << "." << addr.d() << ":" << addr.port() << " (" << data.size() << "): " << (char *)data.raw());
+void *clientThread(void *zarg){
+    LOG("Sending...");
+    sendGrams((ZSocket*)((ZThreadArg*)zarg)->arg);
+    return NULL;
 }
 
 int socket_test(){
@@ -62,35 +60,39 @@ int socket_test(){
         LOG("Init Error");
         return 1;
     }
-
     ZSocket sock;
     if(!sock.open(8998)){
         ELOG("Socket Open Fail");
         return 2;
     }
 
-    ZThread clientthr;
-    clientthr.run(clientThread, (void *)&sock);
+    sendGrams(&sock);
 
-    LOG("Listening...");
-    sock.listen(receivedGram);
     sock.close();
     ZSocket::ShutdownSockets();
     return 0;
 }
 
+void receivedGram(ZAddress addr, ZBinary data){
+    LOG("packet " << addr.a() << "." << addr.b() << "." << addr.c() << "." << addr.d() << ":" << addr.port() << " (" << data.size() << "): " << (char *)data.raw());
+}
+
 int socketserver_test(){
     LOG("=== Socket Server Test...");
-
+    if(!ZSocket::InitializeSockets()){
+        LOG("Init Error");
+        return 1;
+    }
     ZSocket sock;
-
     if(!sock.open(8998)){
-        ELOG("Socket Server Fail");
+        ELOG("Socket Open Fail");
+        return 2;
     }
 
     LOG("Listening...");
     sock.listen(receivedGram);
-    sock.close();
 
+    sock.close();
+    ZSocket::ShutdownSockets();
     return 0;
 }
