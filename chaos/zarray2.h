@@ -25,7 +25,8 @@ public:
         memcpy(_data, raw, len * sizeof(T));
     }
     ~ZArray(){
-        delete[] _data;
+        if(_data != nullptr)
+            delete[] _data;
     }
 
     bool operator==(const ZArray<T> &arr) const {
