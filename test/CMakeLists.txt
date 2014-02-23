@@ -17,6 +17,7 @@ IF(BUILD_ZSOCKET)
     ADD_DEFINITIONS(-DBUILD_ZSOCKET)
     SET(LibChaosTest_SOURCES ${LibChaosTest_SOURCES}
         socket_test.cpp
+        socket2_test.cpp
     )
 ENDIF()
 
