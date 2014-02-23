@@ -81,8 +81,8 @@ ZLog &ZLog::operator<<(zs64 num){
 ZLog &ZLog::operator<<(const char *text){
     return log(ZString(text));
 }
-ZLog &ZLog::operator<<(char *text){
-    return log(ZString(text));
+ZLog &ZLog::operator<<(const unsigned char *text){
+    return log(ZString((const char *)text));
 }
 ZLog &ZLog::operator<<(ZPath text){
     return log(text.str());

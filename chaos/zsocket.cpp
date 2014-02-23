@@ -24,11 +24,20 @@
 
 namespace LibChaos {
 
-ZSocket::ZSocket() : socket(0), buffer(NULL){}
+zu64 ZSocket::socket_count = 0;
+
+ZSocket::ZSocket() : socket(0), buffer(NULL){
+    if(socket_count <= 0)
+        InitializeSockets();
+    ++socket_count;
+}
 
 ZSocket::~ZSocket(){
     close();
     delete buffer;
+    --socket_count;
+    if(socket_count <= 0)
+        ShutdownSockets();
 }
 
 bool ZSocket::open(zu16 port){
@@ -105,7 +114,7 @@ zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
         return false;
     if(buffer == NULL)
         buffer = new unsigned char[ZSOCKET_BUFFER];
-    memset(buffer, 0, ZSOCKET_BUFFER);
+    //memset(buffer, 0, ZSOCKET_BUFFER);
     sockaddr_in from;
     socklen_t fromLength = sizeof(from);
 #if PLATFORM == LINUX
@@ -141,11 +150,14 @@ void ZSocket::listen(receiveCallback receivedFunc){
 bool ZSocket::InitializeSockets(){
 #if PLATFORM == WINDOWS
     WSADATA WsaData;
-    return (WSAStartup(MAKEWORD(2,2), &WsaData) == 0);
-#else
-    return true;
+    if(WSAStartup(MAKEWORD(2,2), &WsaData) != 0){
+        ELOG("ZSocket: WSAStartup Failed to Initialize Sockets");
+        return false;
+    }
 #endif
+    return true;
 }
+
 void ZSocket::ShutdownSockets(){
 #if PLATFORM == WINDOWS
     WSACleanup();
