@@ -21,9 +21,7 @@ int main(int argc, char **argv){
     tests["socket"] = socket_test;
     tests["socketserver"] = socketserver_test;
     tests["socket2"] = socket2_test;
-#if PLATFORM == LINUX
     tests["error"] = error_block;
-#endif
 
     if(argc > 1){
         ArZ run;
