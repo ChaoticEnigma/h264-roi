@@ -22,7 +22,7 @@ namespace LibChaos {
 
 zu64 ZSocket::socket_count = 0;
 
-ZSocket::ZSocket() : socket(0), buffer(NULL){
+ZSocket::ZSocket() : socket(0), buffer(nullptr){
     if(socket_count <= 0)
         InitializeSockets();
     ++socket_count;
