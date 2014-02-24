@@ -20,9 +20,11 @@ int thread_block();
 
 int autobuffer_block();
 
-int socket_test();
-int socketserver_test();
-int socket2_test();
+int udp_test();
+int udpserver_test();
+
+int tcp_test();
+int tcpserver_test();
 
 int error_block();
 

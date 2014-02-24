@@ -23,7 +23,7 @@ void sendGrams(ZSocket *sock){
     }
 }
 
-int socket_test(){
+int udp_test(){
     LOG("=== Socket Test...");
     ZSocket sock;
     if(!sock.open(8998)){
@@ -48,7 +48,7 @@ void stopHandler(ZError::zerror_signal sig){
     run = false;
 }
 
-int socketserver_test(){
+int udpserver_test(){
     LOG("=== Socket Server Test...");
     ZSocket sock;
     if(!sock.open(8998)){
