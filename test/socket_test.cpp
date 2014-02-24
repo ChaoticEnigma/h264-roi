@@ -44,11 +44,8 @@ void receivedGram(ZSocket *socket, const ZAddress &addr, const ZBinary &data){
 
 static bool run = true;
 
-void stopHandler(int sig){
+void stopHandler(ZError::zerror_signal sig){
     run = false;
-    printf("Hello from handler\n");
-    TLOG("Stop Handler " << sig);
-    exit(sig);
 }
 
 int socketserver_test(){
@@ -59,15 +56,8 @@ int socketserver_test(){
         return 2;
     }
 
-    printf("test output\n");
-//    struct sigaction action;
-//    action.sa_handler = stopHandler;
-//    sigemptyset(&action.sa_mask);
-//    sigaddset(&action.sa_mask, SIGTERM);
-//    action.sa_flags = 0;
-//    sigaction(SIGINT, &action, 0);
-    if(ZError::registerExitHandler())
-        LOG("Registered");
+    ZError::registerInterruptHandler(stopHandler);
+    ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     LOG("Listening...");
     //sock.listen(receivedGram);
@@ -80,10 +70,7 @@ int socketserver_test(){
         receivedGram(&sock, sender, data);
     }
 
-    TLOG("Stop Handled");
-
-    usleep(100000);
-
+    TLOG("Stopped");
     sock.close();
     return 0;
 }

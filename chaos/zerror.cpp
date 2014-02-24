@@ -1,5 +1,6 @@
 #include "zerror.h"
 #include "zlog.h"
+#include "zmap.h"
 
 #if PLATFORM == LINUX
     #include <execinfo.h>
@@ -75,9 +76,8 @@ void registerSigSegv(){
 #endif
 }
 
-void exitHandler(int sig){
-    LOG("Exit Handler " << sig);
-}
+
+#if PLATFORM == WINDOWS
 BOOL WINAPI ConsoleHandler(DWORD dwType){
     LOG("Console Exit Handler " << dwType);
 //    switch(dwType){
@@ -93,16 +93,62 @@ BOOL WINAPI ConsoleHandler(DWORD dwType){
 //    }
     return TRUE;
 }
-bool registerExitHandler(){
-#if PLATFORM == LINUX
+#endif
+
+struct sigset {
+    zerror_signal sigtype;
+    signalHandler handler;
+};
+static ZMap<int, sigset> sigmap;
+
+void sigHandle(int sig){
+    if(sigmap.exists(sig) && sigmap[sig].handler != NULL)
+        (sigmap[sig].handler)(sigmap[sig].sigtype);
+}
+
+bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
+    int sig = 0;
+    switch(sigtype){
+    case interrupt:
+        sig = SIGINT;
+        break;
+    case abort:
+        sig = SIGABRT;
+        break;
+    case quit:
+        sig = SIGQUIT;
+        break;
+    case illegal:
+        sig = SIGILL;
+        break;
+    case segv:
+        sig = SIGSEGV;
+        break;
+    case terminate:
+        sig = SIGTERM;
+        break;
+    case fpe:
+        sig = SIGFPE;
+        break;
+    default:
+        return false;
+        break;
+    }
+
+    sigmap[sig] = { sigtype, handler };
+
     struct sigaction action;
-    action.sa_handler = exitHandler;
+    action.sa_handler = sigHandle;
     sigemptyset(&action.sa_mask);
-    //sigaddset(&action.sa_mask, SIGTERM);
+    sigaddset(&action.sa_mask, sig);
     action.sa_flags = 0;
-    sigaction(SIGINT, &action, 0);
-    sigaction(SIGTERM, &action, 0);
-    sigaction(SIGQUIT, &action, 0);
+    sigaction(sig, &action, 0);
+    return true;
+}
+
+bool registerInterruptHandler(signalHandler handler){
+#if PLATFORM == LINUX
+    registerSignalHandler(interrupt, handler);
 #elif PLATFORM == WINDOWS
     if(!SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE)){
         return false;
