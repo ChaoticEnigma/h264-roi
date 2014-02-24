@@ -57,21 +57,21 @@ bool ZSocket::open(zu16 port){
         return false;
     }
 
-    #if PLATFORM == LINUX
-        int nonBlocking = 1;
-        if(fcntl(socket, F_SETFL, O_NONBLOCK, nonBlocking) == -1){
-            ELOG("ZSocket: failed to set non-blocking socket");
-            close();
-            return false;
-        }
-    #elif PLATFORM == WINDOWS
-        DWORD nonBlocking = 1;
-        if(ioctlsocket(socket, FIONBIO, &nonBlocking) != 0){
-            ELOG("ZSocket: failed to set non-blocking socket");
-            close();
-            return false;
-        }
-    #endif
+//    #if PLATFORM == LINUX
+//        int nonBlocking = 1;
+//        if(fcntl(socket, F_SETFL, O_NONBLOCK, nonBlocking) == -1){
+//            ELOG("ZSocket: failed to set non-blocking socket");
+//            close();
+//            return false;
+//        }
+//    #elif PLATFORM == WINDOWS
+//        DWORD nonBlocking = 1;
+//        if(ioctlsocket(socket, FIONBIO, &nonBlocking) != 0){
+//            ELOG("ZSocket: failed to set non-blocking socket");
+//            close();
+//            return false;
+//        }
+//    #endif
     return true;
 }
 
