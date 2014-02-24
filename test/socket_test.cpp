@@ -12,23 +12,6 @@ void stopHandler(ZError::zerror_signal sig){
     run = false;
 }
 
-void sendGrams(ZSocket *sock){
-    zu64 count = 0;
-    //ZAddress addr(127,0,0,1, 8998);
-    //ZAddress addr(192,168,1,38, 8998);
-    ZAddress addr(192,168,1,89, 8998);
-
-    while(run){
-        ZString str = "hello world out there! ";
-        str << ZString::ItoS(count);
-        ZBinary data((unsigned char *)str.cc(), str.size());
-        sock->send(addr, data);
-        LOG("to " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
-        ++count;
-        usleep(500000);
-    }
-}
-
 int udp_test(){
     LOG("=== UDP Socket Test...");
     ZError::registerInterruptHandler(stopHandler);
@@ -40,14 +23,25 @@ int udp_test(){
         return 2;
     }
     LOG("Sending...");
-    sendGrams(&sock);
+
+    zu64 count = 0;
+    //ZAddress addr(127,0,0,1, 8998);
+    ZAddress addr(192,168,1,38, 8998);
+    //ZAddress addr(192,168,1,89, 8998);
+
+    while(run){
+        ZString str = "hello world out there! ";
+        str << ZString::ItoS(count);
+        ZBinary data((unsigned char *)str.cc(), str.size());
+        sock.send(addr, data);
+        LOG("to " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
+        ++count;
+        usleep(500000);
+    }
+
     TLOG("Stopped");
     sock.close();
     return 0;
-}
-
-void receivedGram(ZSocket *socket, const ZAddress &addr, const ZBinary &data){
-    LOG("from " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
 }
 
 int udpserver_test(){
@@ -68,7 +62,7 @@ int udpserver_test(){
         ZBinary data;
         if(!sock.receive(sender, data))
             continue;
-        receivedGram(&sock, sender, data);
+        LOG("from " << sender.str() << " (" << data.size() << "): \"" << data << "\"");
     }
 
     TLOG("Stopped");

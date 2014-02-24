@@ -1,10 +1,35 @@
 #include "zaddress.h"
 
+#include <string.h>
+#include <sys/types.h>
+//#include <sys/socket.h>
+//#include <netdb.h>
+//#include <arpa/inet.h>
+//#include <netinet/in.h>
+#include <unistd.h>
+
+#if PLATFORM == WINDOWS
+    #include <windows.h>
+#endif
+
 namespace LibChaos {
 
-ZAddress::ZAddress() : _addr(0), _port(0){}
-ZAddress::ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zu16 prt) : _addr((a << 24) | (b << 16) | (c << 8) | d), _port(prt){}
-ZAddress::ZAddress(zu32 add, zu16 prt) : _addr(add), _port(prt){}
+ZAddress::ZAddress() : _addr(0), _port(0){
+
+}
+ZAddress::ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zu16 prt) : _addr((a << 24) | (b << 16) | (c << 8) | d), _port(prt){
+
+}
+ZAddress::ZAddress(zu32 add, zu16 prt) : _addr(add), _port(prt){
+    struct addrinfo hints, *res;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
+
+    getaddrinfo(NULL, "3490", &hints, &res);
+}
 ZAddress::ZAddress(ZString str) : _addr(0), _port(0){
     ArZ addrprt = str.explode(':');
     if(addrprt.size() == 2){

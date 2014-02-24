@@ -25,6 +25,8 @@ public:
     ZSocket();
     ~ZSocket();
 
+    ZAddress getAddress(ZString);
+
     // UDP
     bool open(zport port);
     void close();
@@ -35,6 +37,8 @@ public:
 
     // TCP
 
+
+    bool setNonBlocking();
 
 private:
     static bool InitializeSockets();

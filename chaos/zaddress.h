@@ -23,6 +23,8 @@ public:
     zport port() const;
     ZString str() const;
 
+    bool getAddrInfo(struct addrinfo **out);
+
 //    bool operator ==(const ZAddress &other) const;
 //    bool operator !=(const ZAddress &other) const;
 private:

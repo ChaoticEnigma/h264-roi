@@ -36,6 +36,21 @@ ZSocket::~ZSocket(){
         ShutdownSockets();
 }
 
+ZAddress ZSocket::getAddress(ZString str){
+    ZAddress addr;
+    ArZ addrprt = str.explode(':');
+    if(addrprt.size() == 2){
+        ArZ addr = addrprt[0].explode('.');
+        if(addr.size() == 4){
+            return ZAddress((zu8)addr[0].tint(), (zu8)addr[1].tint(), (zu8)addr[2].tint(), (zu8)addr[3].tint(), (zu16)addrprt[1].tint());
+        } else {
+
+        }
+    } else {
+
+    }
+}
+
 bool ZSocket::open(zu16 port){
     if(isOpen())
         return false;
@@ -56,27 +71,11 @@ bool ZSocket::open(zu16 port){
         close();
         return false;
     }
-
-//    #if PLATFORM == LINUX
-//        int nonBlocking = 1;
-//        if(fcntl(socket, F_SETFL, O_NONBLOCK, nonBlocking) == -1){
-//            ELOG("ZSocket: failed to set non-blocking socket");
-//            close();
-//            return false;
-//        }
-//    #elif PLATFORM == WINDOWS
-//        DWORD nonBlocking = 1;
-//        if(ioctlsocket(socket, FIONBIO, &nonBlocking) != 0){
-//            ELOG("ZSocket: failed to set non-blocking socket");
-//            close();
-//            return false;
-//        }
-//    #endif
     return true;
 }
 
 void ZSocket::close(){
-    if(socket != 0){
+    if(isOpen()){
 #if PLATFORM == LINUX
         ::close(socket);
 #elif PLATFORM == WINDOWS
@@ -91,7 +90,7 @@ bool ZSocket::isOpen() const {
 }
 
 bool ZSocket::send(const ZAddress &destination, const ZBinary &data){
-    if(socket == 0)
+    if(!isOpen())
         return false;
     sockaddr_in address;
     address.sin_family = AF_INET;
@@ -106,7 +105,7 @@ bool ZSocket::send(const ZAddress &destination, const ZBinary &data){
 }
 
 zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
-    if(socket == 0)
+    if(!isOpen())
         return false;
     if(buffer == NULL)
         buffer = new unsigned char[ZSOCKET_BUFFER];
@@ -133,6 +132,29 @@ void ZSocket::listen(receiveCallback receivedFunc){
             continue;
         receivedFunc(this, sender, data);
     }
+}
+
+bool ZSocket::setNonBlocking(){
+#if PLATFORM == LINUX
+
+    int nonBlocking = 1;
+    if(fcntl(socket, F_SETFL, O_NONBLOCK, nonBlocking) == -1){
+        ELOG("ZSocket: failed to set non-blocking socket");
+        close();
+        return false;
+    }
+
+#elif PLATFORM == WINDOWS
+
+    DWORD nonBlocking = 1;
+    if(ioctlsocket(socket, FIONBIO, &nonBlocking) != 0){
+        ELOG("ZSocket: failed to set non-blocking socket");
+        close();
+        return false;
+    }
+
+#endif
+    return true;
 }
 
 bool ZSocket::InitializeSockets(){
