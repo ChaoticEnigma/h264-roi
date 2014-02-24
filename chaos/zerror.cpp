@@ -76,8 +76,21 @@ void registerSigSegv(){
 #endif
 }
 
+struct sigset {
+    zerror_signal sigtype;
+    signalHandler handler;
+};
+static ZMap<int, sigset> sigmap;
 
-#if PLATFORM == WINDOWS
+#if PLATFORM == LINUX
+
+void sigHandle(int sig){
+    if(sigmap.exists(sig) && sigmap[sig].handler != NULL)
+        (sigmap[sig].handler)(sigmap[sig].sigtype);
+}
+
+#elif PLATFORM == WINDOWS
+
 BOOL WINAPI ConsoleHandler(DWORD dwType){
     LOG("Console Exit Handler " << dwType);
 //    switch(dwType){
@@ -93,20 +106,13 @@ BOOL WINAPI ConsoleHandler(DWORD dwType){
 //    }
     return TRUE;
 }
+
 #endif
 
-struct sigset {
-    zerror_signal sigtype;
-    signalHandler handler;
-};
-static ZMap<int, sigset> sigmap;
-
-void sigHandle(int sig){
-    if(sigmap.exists(sig) && sigmap[sig].handler != NULL)
-        (sigmap[sig].handler)(sigmap[sig].sigtype);
-}
-
 bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
+
+#if PLATFORM == LINUX
+
     int sig = 0;
     switch(sigtype){
     case interrupt:
@@ -143,18 +149,19 @@ bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
     sigaddset(&action.sa_mask, sig);
     action.sa_flags = 0;
     sigaction(sig, &action, 0);
-    return true;
-}
 
-bool registerInterruptHandler(signalHandler handler){
-#if PLATFORM == LINUX
-    registerSignalHandler(interrupt, handler);
 #elif PLATFORM == WINDOWS
+
     if(!SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE)){
         return false;
     }
+
 #endif
+
     return true;
+}
+bool registerInterruptHandler(signalHandler handler){
+    return registerSignalHandler(interrupt, handler);
 }
 
 }

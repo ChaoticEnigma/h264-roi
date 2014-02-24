@@ -22,9 +22,7 @@ int main(int argc, char **argv){
     tests["udpserver"] = udpserver_test;
     tests["tcp"] = tcp_test;
     tests["tcpserver"] = tcpserver_test;
-#if PLATFORM == LINUX
     tests["error"] = error_block;
-#endif
 
     if(argc > 1){
         ArZ run;
