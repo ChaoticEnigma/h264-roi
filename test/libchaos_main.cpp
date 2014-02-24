@@ -8,7 +8,6 @@ int main(int argc, char **argv){
     ZLog::addLogFile(lgf, ZLogSource::debug, "%time% %thread% %function% (%file%:%line%) - %log%");
     ZLog::addLogFile(lgf, ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
 
-
     ZAssoc<ZString, test_func> tests;
     tests["array"] = array_block;
     tests["assoc"] = assoc_block;

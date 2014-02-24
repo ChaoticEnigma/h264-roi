@@ -75,5 +75,41 @@ void registerSigSegv(){
 #endif
 }
 
+void exitHandler(int sig){
+    LOG("Exit Handler " << sig);
+}
+BOOL WINAPI ConsoleHandler(DWORD dwType){
+    LOG("Console Exit Handler " << dwType);
+//    switch(dwType){
+//    case CTRL_C_EVENT:
+//        printf("ctrl-c\n");
+//        break;
+//    case CTRL_BREAK_EVENT:
+//        printf("break\n");
+//        break;
+//    default:
+//        printf("Some other event\n");
+//        break;
+//    }
+    return TRUE;
+}
+bool registerExitHandler(){
+#if PLATFORM == LINUX
+    struct sigaction action;
+    action.sa_handler = exitHandler;
+    sigemptyset(&action.sa_mask);
+    //sigaddset(&action.sa_mask, SIGTERM);
+    action.sa_flags = 0;
+    sigaction(SIGINT, &action, 0);
+    sigaction(SIGTERM, &action, 0);
+    sigaction(SIGQUIT, &action, 0);
+#elif PLATFORM == WINDOWS
+    if(!SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE)){
+        return false;
+    }
+#endif
+    return true;
+}
+
 }
 }

@@ -6,6 +6,7 @@ namespace LibChaos {
 namespace ZError {
 
 void registerSigSegv();
+bool registerExitHandler();
 
 }
 

@@ -51,7 +51,7 @@ bool ZSocket::open(zu16 port){
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons((unsigned short) port);
 
-    if(bind(socket, (const sockaddr*) &address, sizeof(sockaddr_in)) < 0){
+    if(::bind(socket, (const sockaddr*) &address, sizeof(sockaddr_in)) < 0){
         ELOG("ZSocket: failed to bind socket");
         close();
         return false;
@@ -80,7 +80,7 @@ void ZSocket::close(){
 #if PLATFORM == LINUX
         ::close(socket);
 #elif PLATFORM == WINDOWS
-        closesocket(socket);
+        ::closesocket(socket);
 #endif
         socket = 0;
     }
@@ -95,14 +95,14 @@ bool ZSocket::send(const ZAddress &destination, const ZBinary &data){
         return false;
     sockaddr_in address;
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = htonl( destination.address() );
-    address.sin_port = htons( (unsigned short) destination.port() );
+    address.sin_addr.s_addr = htonl(destination.address());
+    address.sin_port = htons(destination.port());
 #if PLATFORM == LINUX
-    long sent_bytes = sendto(socket, data.raw(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in));
+    long sent = ::sendto(socket, data.raw(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in));
 #elif PLATFORM == WINDOWS
-    long sent_bytes = sendto(socket, (const char *)data.raw(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in));
+    long sent = ::sendto(socket, (const char *)data.raw(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in));
 #endif
-    return (unsigned long)sent_bytes == data.size();
+    return (zu64)sent == data.size();
 }
 
 zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
@@ -114,21 +114,15 @@ zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
     sockaddr_in from;
     socklen_t fromLength = sizeof(from);
 #if PLATFORM == LINUX
-    long received_bytes = recvfrom(socket, buffer, ZSOCKET_BUFFER, 0, (sockaddr*)&from, &fromLength);
+    long received = ::recvfrom(socket, buffer, ZSOCKET_BUFFER, 0, (sockaddr*)&from, &fromLength);
 #elif PLATFORM == WINDOWS
-    long received_bytes = recvfrom(socket, (char *)buffer, ZSOCKET_BUFFER, 0, (sockaddr*)&from, &fromLength);
+    long received = ::recvfrom(socket, (char *)buffer, ZSOCKET_BUFFER, 0, (sockaddr*)&from, &fromLength);
 #endif
-    if(received_bytes <= 0)
+    if(received <= 0)
         return 0;
     sender = ZAddress(ntohl(from.sin_addr.s_addr), ntohs(from.sin_port));
-    zu32 len = 0;
-    while(len < ZSOCKET_BUFFER){
-        if(buffer[len] == 0)
-            break;
-        ++len;
-    }
-    str = ZBinary(buffer, len);
-    return len;
+    str = ZBinary(buffer, received);
+    return received;
 }
 
 void ZSocket::listen(receiveCallback receivedFunc){

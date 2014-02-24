@@ -1,6 +1,10 @@
 #include "test.h"
 #include "zsocket.h"
 #include <unistd.h>
+#include <signal.h>
+#include <stdio.h>
+#include <unistd.h>
+#include "zerror.h"
 
 void sendGrams(ZSocket *sock){
     zu64 count = 0;
@@ -38,6 +42,15 @@ void receivedGram(ZSocket *socket, const ZAddress &addr, const ZBinary &data){
     LOG("from " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
 }
 
+static bool run = true;
+
+void stopHandler(int sig){
+    run = false;
+    printf("Hello from handler\n");
+    TLOG("Stop Handler " << sig);
+    exit(sig);
+}
+
 int socketserver_test(){
     LOG("=== Socket Server Test...");
     ZSocket sock;
@@ -46,8 +59,30 @@ int socketserver_test(){
         return 2;
     }
 
+    printf("test output\n");
+//    struct sigaction action;
+//    action.sa_handler = stopHandler;
+//    sigemptyset(&action.sa_mask);
+//    sigaddset(&action.sa_mask, SIGTERM);
+//    action.sa_flags = 0;
+//    sigaction(SIGINT, &action, 0);
+    if(ZError::registerExitHandler())
+        LOG("Registered");
+
     LOG("Listening...");
-    sock.listen(receivedGram);
+    //sock.listen(receivedGram);
+
+    while(run){
+        ZAddress sender;
+        ZBinary data;
+        if(!sock.receive(sender, data))
+            continue;
+        receivedGram(&sock, sender, data);
+    }
+
+    TLOG("Stop Handled");
+
+    usleep(100000);
 
     sock.close();
     return 0;
