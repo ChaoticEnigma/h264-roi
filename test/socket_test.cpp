@@ -24,7 +24,7 @@ void sendGrams(ZSocket *sock){
 }
 
 int udp_test(){
-    LOG("=== Socket Test...");
+    LOG("=== UDP Socket Test...");
     ZSocket sock;
     if(!sock.open(8998)){
         ELOG("Socket Open Fail");
@@ -49,7 +49,7 @@ void stopHandler(ZError::zerror_signal sig){
 }
 
 int udpserver_test(){
-    LOG("=== Socket Server Test...");
+    LOG("=== UDP Socket Server Test...");
     ZSocket sock;
     if(!sock.open(8998)){
         ELOG("Socket Open Fail");
