@@ -48,7 +48,7 @@ public:
 private:
 
     union {
-        zu8 _u_addr_ptr_base;
+        zu8 _v6_addr[16];
 
         // IPv6 128 bits
         struct {
