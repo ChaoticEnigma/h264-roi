@@ -29,7 +29,7 @@ public:
     bool open(ZAddress port);
     void close();
     bool isOpen() const;
-    bool send(const ZAddress &destination, const ZBinary &data);
+    bool send(ZAddress destination, const ZBinary &data);
     zu32 receive(ZAddress &sender, ZBinary &str);
     void listen(receiveCallback receivedFunc);
 

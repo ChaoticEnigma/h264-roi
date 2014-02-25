@@ -1,24 +1,39 @@
 #ifndef ZTYPES_H
 #define ZTYPES_H
 
+// Compiler
+#define GCC     0x11
+#define MINGW   0x12
+
 #if __cplusplus != 201103L
     #error LibChaos requires a C++11 compiler!
 #endif
 
-// Platform detection
+#ifdef _LIBCHAOS_COMPILER_GCC
+    #define COMPILER GCC
+#else
+    #ifdef _LIBCHAOS_COMPILER_MINGW
+        #define COMPILER MINGW
+    #else
+        #error Unsupported Compiler!
+    #endif
+#endif
+
+#ifdef PLATFORM_LINUX
+    #ifdef PLATFORM_WINDOWS
+        #error Multiple compilers declared. Please declare only one compiler at a time.
+    #endif
+#endif
+
+// Platform
 #define LINUX   0x01
 #define WINDOWS 0x02
 
-#define GCC     0x11
-#define MINGW   0x12
-
-#ifdef PLATFORM_LINUX
+#ifdef _LIBCHAOS_PLATFORM_LINUX
     #define PLATFORM LINUX
-    #define COMPILER GCC
 #else
-    #ifdef PLATFORM_WINDOWS
+    #ifdef _LIBCHAOS_PLATFORM_WINDOWS
         #define PLATFORM WINDOWS
-        #define COMPILER MINGW
     #else
         #error Unsupported Platform!
     #endif
@@ -27,6 +42,21 @@
 #ifdef PLATFORM_LINUX
     #ifdef PLATFORM_WINDOWS
         #error Multiple platforms declared. Please declare only one platform at a time.
+    #endif
+#endif
+
+// Build
+#define LIBCHAOS_DEBUG      0x21
+#define LIBCHAOS_RELEASE    0x22
+#define LIBCHAOS_NORMAL     0x23
+
+#ifdef _LIBCHAOS_BUILD_DEBUG
+    #define LIBCHAOS_BUILD LIBCHAOS_DEBUG
+#else
+    #ifdef _LIBCHAOS_BUILD_RELEASE
+        #define LIBCHAOS_BUILD LIBCHAOS_RELEASE
+    #else
+        #define LIBCHAOS_BUILD LIBCHAOS_NORMAL
     #endif
 #endif
 

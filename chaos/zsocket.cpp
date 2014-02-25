@@ -48,6 +48,9 @@ ZSocket::~ZSocket(){
 bool ZSocket::open(ZAddress addr){
     if(isOpen())
         return false;
+
+    addr.doLookup();
+
     socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if(socket <= 0){
         ELOG("ZSocket: failed to create socket");
@@ -60,15 +63,24 @@ bool ZSocket::open(ZAddress addr){
 //    address.sin_addr.s_addr = INADDR_ANY;
 //    address.sin_port = htons(addr.port());
 
-    struct addrinfo *addinf;
-    addr.getAddrInfo(addinf);
-    if(::bind(socket, addinf->ai_addr, addinf->ai_addrlen) < 0){
-        ZAddress::freeAddrInfo(addinf);
+    addr.doLookup();
+
+    sockaddr_storage *adr = (sockaddr_storage *)addr.getSockAddr();
+    if(adr->ss_family == AF_INET){
+        sockaddr_in *ad4 = (sockaddr_in *)adr;
+        LOG(ZAddress((zu32)ad4->sin_addr.s_addr, (zu16)ad4->sin_port).fullStr());
+    } else if(adr->ss_family == AF_INET6){
+        //sockaddr_in6 *ad6 = (sockaddr_in6 *)adr;
+        //LOG(ZAddress((zu32)ad6->sin6_addr.__in6_u, (zu16)ad6->sin6_port).fullStr());
+    }
+
+    if(::bind(socket, addr.getSockAddr(), addr.getSockAddrLen()) < 0){
         ELOG("ZSocket: failed to bind socket");
+        LOG(addr.fullStr());
+        LOG(adr->ss_family);
         close();
         return false;
     }
-    ZAddress::freeAddrInfo(addinf);
     return true;
 }
 
@@ -87,7 +99,7 @@ bool ZSocket::isOpen() const {
     return socket != 0;
 }
 
-bool ZSocket::send(const ZAddress &destination, const ZBinary &data){
+bool ZSocket::send(ZAddress destination, const ZBinary &data){
     if(!isOpen())
         return false;
 //    sockaddr_in address;
@@ -95,14 +107,12 @@ bool ZSocket::send(const ZAddress &destination, const ZBinary &data){
 //    address.sin_addr.s_addr = htonl(destination.address());
 //    address.sin_port = htons(destination.port());
 
-    struct addrinfo *addinf;
-    destination.getAddrInfo(addinf);
+    destination.doLookup();
 #if PLATFORM == LINUX
-    long sent = ::sendto(socket, data.raw(), data.size(), 0, addinf->ai_addr, addinf->ai_addrlen);
+    long sent = ::sendto(socket, data.raw(), data.size(), 0, destination.getSockAddr(), destination.getSockAddrLen());
 #elif PLATFORM == WINDOWS
-    long sent = ::sendto(socket, (const char *)data.raw(), data.size(), 0, addinf->ai_addr, addinf->ai_addrlen);
+    long sent = ::sendto(socket, (const char *)data.raw(), data.size(), 0, destination.getSockAddr(), destination.getSockAddrLen());
 #endif
-    ZAddress::freeAddrInfo(addinf);
     return (zu64)sent == data.size();
 }
 

@@ -7,13 +7,23 @@
 
 #define PREPROCM LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::file, ZPath(__FILE__).last().str()) << LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::function, __FUNCTION__) << LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::line, __LINE__)
 
-#define LOG(A)  LibChaos::ZLog() << PREPROCM << A
-#define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::debug) << PREPROCM << A
-#define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error) << PREPROCM << A
-#define RLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::raw << A
-#define SLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::sync << A
-#define TLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::this_thread << A
-#define OLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::stdio << A
+#if LIBCHAOS_BUILD == LIBCHAOS_RELEASE
+    #define LOG(A)  LibChaos::ZLog() << A
+    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::debug) << PREPROCM << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error) << PREPROCM << A
+    #define RLOG(A) LibChaos::ZLog() << LibChaos::ZLog::raw << A
+    #define SLOG(A) LibChaos::ZLog() << LibChaos::ZLog::sync << A
+    #define TLOG(A) LibChaos::ZLog() << LibChaos::ZLog::this_thread << A
+    #define OLOG(A) LibChaos::ZLog() << LibChaos::ZLog::stdio << A
+#else
+    #define LOG(A)  LibChaos::ZLog() << PREPROCM << A
+    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::debug) << PREPROCM << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error) << PREPROCM << A
+    #define RLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::raw << A
+    #define SLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::sync << A
+    #define TLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::this_thread << A
+    #define OLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::stdio << A
+#endif
 #define ORLOG(A) OLOG(LibChaos::ZLog::raw << A)
 
 #define IF_LOG(A, B, C, D) if(A){ LOG( B << C ); } else { LOG( B << D ); }

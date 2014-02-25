@@ -24,6 +24,9 @@ public:
     ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zport port);
     ZAddress(zu32 add, zport port);
     ZAddress(ZString str);
+
+    ZAddress(const ZAddress &other);
+
     ~ZAddress();
 
     zu32 address() const;
@@ -37,24 +40,41 @@ public:
     ZString portStr() const;
     ZString fullStr() const;
 
-    bool getAddrInfo(struct addrinfo *&out) const;
-    static void freeAddrInfo(struct addrinfo *old);
+    bool doLookup();
+
+    sockaddr *getSockAddr() const;
+    socklen_t getSockAddrLen() const;
 
 private:
+
     union {
-        zu32 _addr : 32;
+        zu8 _u_addr_ptr_base;
+
+        // IPv6 128 bits
         struct {
-            zu8 _d : 8;
-            zu8 _c : 8;
-            zu8 _b : 8;
-            zu8 _a : 8;
+            zu64 _v6_first  : 64;
+            zu64 _v6_second : 64;
+        };
+
+        // IPv4 32 bits
+        union {
+            zu32 _v4_addr : 32;
+            struct {
+                zu8 _v4_d : 8;
+                zu8 _v4_c : 8;
+                zu8 _v4_b : 8;
+                zu8 _v4_a : 8;
+            };
         };
     };
+
+
     zport _port;
 
     ZString name;
 
-    //struct addrinfo *addressinfo;
+    sockaddr_storage *_sockaddress;
+    socklen_t _socksize;
 };
 
 }

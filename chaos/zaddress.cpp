@@ -15,24 +15,24 @@
 
 namespace LibChaos {
 
-ZAddress::ZAddress() : _addr(0), _port(0){
+ZAddress::ZAddress() : _v4_addr(0), _port(0), _sockaddress(new sockaddr_storage){
 
 }
-ZAddress::ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zu16 prt) : _addr((a << 24) | (b << 16) | (c << 8) | d), _port(prt){
+ZAddress::ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zu16 prt) : _v4_addr((a << 24) | (b << 16) | (c << 8) | d), _port(prt), _sockaddress(new sockaddr_storage){
 
 }
-ZAddress::ZAddress(zu32 add, zu16 prt) : _addr(add), _port(prt){
+ZAddress::ZAddress(zu32 add, zu16 prt) : _v4_addr(add), _port(prt), _sockaddress(new sockaddr_storage){
 
 }
-ZAddress::ZAddress(ZString str) : _addr(0), _port(0){
+ZAddress::ZAddress(ZString str) : _v4_addr(0), _port(0), _sockaddress(new sockaddr_storage){
     ArZ addrprt = str.explode(':');
     if(addrprt.size() == 2){
         ArZ addr = addrprt[0].explode('.');
         if(addr.size() == 4){
-            _a = (zu8)addr[0].tint();
-            _b = (zu8)addr[1].tint();
-            _c = (zu8)addr[2].tint();
-            _d = (zu8)addr[3].tint();
+            _v4_a = (zu8)addr[0].tint();
+            _v4_b = (zu8)addr[1].tint();
+            _v4_c = (zu8)addr[2].tint();
+            _v4_d = (zu8)addr[3].tint();
             _port = (zu16)addrprt[1].tint();
         } else {
             name = addrprt[0];
@@ -43,23 +43,28 @@ ZAddress::ZAddress(ZString str) : _addr(0), _port(0){
     }
 }
 
+ZAddress::ZAddress(const ZAddress &other) : _v4_addr(other._v4_addr), _port(other._port), _sockaddress(new sockaddr_storage){
+    memcpy(_sockaddress, other._sockaddress, other._socksize);
+}
+
 ZAddress::~ZAddress(){
+    delete _sockaddress;
 }
 
 zu32 ZAddress::address() const {
-    return _addr;
+    return _v4_addr;
 }
 zu8 ZAddress::a() const {
-    return _a;
+    return _v4_a;
 }
 zu8 ZAddress::b() const {
-    return _b;
+    return _v4_b;
 }
 zu8 ZAddress::c() const {
-    return _c;
+    return _v4_c;
 }
 zu8 ZAddress::d() const {
-    return _d;
+    return _v4_d;
 }
 zu16 ZAddress::port() const {
     return _port;
@@ -78,69 +83,51 @@ ZString ZAddress::fullStr() const {
     return (ZString(addrStr()) << ':' << port());
 }
 
-bool ZAddress::getAddrInfo(struct addrinfo *&out) const {
+bool ZAddress::doLookup(){
     struct addrinfo hints, *res;
+
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_IDN | AI_CANONNAME | AI_CANONIDN;
-    if(_addr == 0)
+    //hints.ai_flags = AI_IDN | AI_CANONNAME | AI_CANONIDN;
+    if(_v4_addr == 0)
         hints.ai_flags = hints.ai_flags | AI_PASSIVE;
 
-    if(_addr == 0){
-        if(_port == 0){
-            return false;
-        } else {
-            ZString port = portStr();
-            int status;
-            if((status = getaddrinfo(NULL, port.cc(), &hints, &res)) != 0){
-                ELOG("ZSocket: getaddrinfo 1: " << gai_strerror(status));
-                return false;
-            }
-        }
+    ZString addr = addrStr();
+    ZString port = portStr();
+
+    char *addrptr;
+    char *portptr;
+
+    if(!addr.isEmpty() || _v4_addr != 0){
+        addrptr = (char *)addr.cc();
     } else {
-        ZString addr = addrStr();
-        if(_port == 0){
-            int status;
-            if((status = getaddrinfo(addr.cc(), NULL, &hints, &res)) != 0){
-                ELOG("ZSocket: getaddrinfo 2: " << gai_strerror(status));
-                return false;
-            }
-        } else {
-            ZString port = portStr();
-            int status;
-            if((status = getaddrinfo(addr.cc(), port.cc(), &hints, &res)) != 0){
-                ELOG("ZSocket: getaddrinfo 3: " << gai_strerror(status));
-                return false;
-            }
-        }
+        addrptr = NULL;
+    }
+    if(_port != 0){
+        portptr = (char *)port.cc();
+    } else {
+        portptr = NULL;
     }
 
-//    for(struct addrinfo *p = res; p != NULL; p = p->ai_next) {
-//        void *addr;
-//        ZString ipver;
-//        char ipstr[INET6_ADDRSTRLEN];
+    int status;
+    if((status = getaddrinfo(addrptr, portptr, &hints, &res)) != 0){
+        ELOG("ZSocket: getaddrinfo 1: " << gai_strerror(status));
+        return false;
+    }
 
-//        if (p->ai_family == AF_INET) {
-//            struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
-//            addr = &(ipv4->sin_addr);
-//            ipver = "IPv4";
-//        } else {
-//            struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)p->ai_addr;
-//            addr = &(ipv6->sin6_addr);
-//            ipver = "IPv6";
-//        }
+    memcpy(_sockaddress, res->ai_addr, res->ai_addrlen); // Expand later to take more than the first address
 
-//        inet_ntop(p->ai_family, addr, ipstr, sizeof(ipstr));
-//    }
-
-    //addressinfo = res;
-    out = res;
+    freeaddrinfo(res);
     return true;
 }
 
-void ZAddress::freeAddrInfo(struct addrinfo *old){
-    freeaddrinfo(old);
+sockaddr *ZAddress::getSockAddr() const {
+    return (sockaddr *)_sockaddress;
+}
+
+socklen_t ZAddress::getSockAddrLen() const {
+    return _socksize;
 }
 
 }
