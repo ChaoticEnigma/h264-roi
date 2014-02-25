@@ -4,9 +4,15 @@
 #include "ztypes.h"
 #include "zstring.h"
 
-#include <sys/socket.h>
 #include <sys/types.h>
-#include <netdb.h>
+
+#if PLATFORM == WINDOWS
+    #include <winsock2.h>
+#elif PLATFORM == LINUX
+    #include <sys/socket.h>
+    #include <netdb.h>
+    #include <arpa/inet.h>
+#endif
 
 namespace LibChaos {
 

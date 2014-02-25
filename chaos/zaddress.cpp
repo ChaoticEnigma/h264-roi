@@ -4,10 +4,14 @@
 #include <string.h>
 
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
 
-#include <arpa/inet.h>
+#if PLATFORM == WINDOWS
+    #include <winsock2.h>
+#elif PLATFORM == LINUX
+    #include <sys/socket.h>
+    #include <netdb.h>
+    #include <arpa/inet.h>
+#endif
 
 namespace LibChaos {
 
