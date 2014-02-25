@@ -25,10 +25,8 @@ public:
     ZSocket();
     ~ZSocket();
 
-    ZAddress getAddress(ZString);
-
     // UDP
-    bool open(zport port);
+    bool open(ZAddress port);
     void close();
     bool isOpen() const;
     bool send(const ZAddress &destination, const ZBinary &data);
@@ -36,7 +34,7 @@ public:
     void listen(receiveCallback receivedFunc);
 
     // TCP
-
+    bool openStream(ZAddress address);
 
     bool setNonBlocking();
 

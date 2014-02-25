@@ -18,7 +18,7 @@ int udp_test(){
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZSocket sock;
-    if(!sock.open(8998)){
+    if(!sock.open(ZAddress(0, 8998))){
         ELOG("Socket Open Fail");
         return 2;
     }
@@ -34,7 +34,7 @@ int udp_test(){
         str << ZString::ItoS(count);
         ZBinary data((unsigned char *)str.cc(), str.size());
         sock.send(addr, data);
-        LOG("to " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
+        LOG("to " << addr.fullStr() << " (" << data.size() << "): \"" << data << "\"");
         ++count;
         usleep(500000);
     }
@@ -50,7 +50,7 @@ int udpserver_test(){
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZSocket sock;
-    if(!sock.open(8998)){
+    if(!sock.open(ZAddress(0, 8998))){
         ELOG("Socket Open Fail");
         return 2;
     }
@@ -62,7 +62,7 @@ int udpserver_test(){
         ZBinary data;
         if(!sock.receive(sender, data))
             continue;
-        LOG("from " << sender.str() << " (" << data.size() << "): \"" << data << "\"");
+        LOG("from " << sender.fullStr() << " (" << data.size() << "): \"" << data << "\"");
     }
 
     TLOG("Stopped");

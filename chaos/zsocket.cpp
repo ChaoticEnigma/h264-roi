@@ -3,6 +3,7 @@
 
 #if PLATFORM == WINDOWS
     #include <winsock2.h>
+    #include <windows.h>
 #elif PLATFORM == LINUX
     #include <sys/socket.h>
     #include <netinet/in.h>
@@ -10,6 +11,14 @@
     #include <unistd.h>
     #include <cstring>
 #endif
+
+#include <string.h>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+
+#include <arpa/inet.h>
 
 #define ZSOCKET_BUFFER 1024 * 64
 #define ZSOCKET_MAX 1024 * 64 - 9
@@ -36,22 +45,7 @@ ZSocket::~ZSocket(){
         ShutdownSockets();
 }
 
-ZAddress ZSocket::getAddress(ZString str){
-    ZAddress addr;
-    ArZ addrprt = str.explode(':');
-    if(addrprt.size() == 2){
-        ArZ addr = addrprt[0].explode('.');
-        if(addr.size() == 4){
-            return ZAddress((zu8)addr[0].tint(), (zu8)addr[1].tint(), (zu8)addr[2].tint(), (zu8)addr[3].tint(), (zu16)addrprt[1].tint());
-        } else {
-
-        }
-    } else {
-
-    }
-}
-
-bool ZSocket::open(zu16 port){
+bool ZSocket::open(ZAddress addr){
     if(isOpen())
         return false;
     socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -61,16 +55,20 @@ bool ZSocket::open(zu16 port){
         return false;
     }
 
-    sockaddr_in address;
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons((unsigned short) port);
+//    sockaddr_in address;
+//    address.sin_family = AF_INET;
+//    address.sin_addr.s_addr = INADDR_ANY;
+//    address.sin_port = htons(addr.port());
 
-    if(::bind(socket, (const sockaddr*) &address, sizeof(sockaddr_in)) < 0){
+    struct addrinfo *addinf;
+    addr.getAddrInfo(addinf);
+    if(::bind(socket, addinf->ai_addr, addinf->ai_addrlen) < 0){
+        ZAddress::freeAddrInfo(addinf);
         ELOG("ZSocket: failed to bind socket");
         close();
         return false;
     }
+    ZAddress::freeAddrInfo(addinf);
     return true;
 }
 
@@ -92,15 +90,19 @@ bool ZSocket::isOpen() const {
 bool ZSocket::send(const ZAddress &destination, const ZBinary &data){
     if(!isOpen())
         return false;
-    sockaddr_in address;
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = htonl(destination.address());
-    address.sin_port = htons(destination.port());
+//    sockaddr_in address;
+//    address.sin_family = AF_INET;
+//    address.sin_addr.s_addr = htonl(destination.address());
+//    address.sin_port = htons(destination.port());
+
+    struct addrinfo *addinf;
+    destination.getAddrInfo(addinf);
 #if PLATFORM == LINUX
-    long sent = ::sendto(socket, data.raw(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in));
+    long sent = ::sendto(socket, data.raw(), data.size(), 0, addinf->ai_addr, addinf->ai_addrlen);
 #elif PLATFORM == WINDOWS
-    long sent = ::sendto(socket, (const char *)data.raw(), data.size(), 0, (sockaddr*)&address, sizeof(sockaddr_in));
+    long sent = ::sendto(socket, (const char *)data.raw(), data.size(), 0, addinf->ai_addr, addinf->ai_addrlen);
 #endif
+    ZAddress::freeAddrInfo(addinf);
     return (zu64)sent == data.size();
 }
 
@@ -132,6 +134,11 @@ void ZSocket::listen(receiveCallback receivedFunc){
             continue;
         receivedFunc(this, sender, data);
     }
+}
+
+bool ZSocket::openStream(ZAddress address){
+
+    return true;
 }
 
 bool ZSocket::setNonBlocking(){

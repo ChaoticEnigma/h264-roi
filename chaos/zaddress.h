@@ -4,6 +4,10 @@
 #include "ztypes.h"
 #include "zstring.h"
 
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netdb.h>
+
 namespace LibChaos {
 
 typedef zu16 zport;
@@ -14,6 +18,7 @@ public:
     ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zport port);
     ZAddress(zu32 add, zport port);
     ZAddress(ZString str);
+    ~ZAddress();
 
     zu32 address() const;
     zu8 a() const;
@@ -21,12 +26,14 @@ public:
     zu8 c() const;
     zu8 d() const;
     zport port() const;
-    ZString str() const;
 
-    bool getAddrInfo(struct addrinfo **out);
+    ZString addrStr() const;
+    ZString portStr() const;
+    ZString fullStr() const;
 
-//    bool operator ==(const ZAddress &other) const;
-//    bool operator !=(const ZAddress &other) const;
+    bool getAddrInfo(struct addrinfo *&out) const;
+    static void freeAddrInfo(struct addrinfo *old);
+
 private:
     union {
         zu32 _addr : 32;
@@ -38,6 +45,10 @@ private:
         };
     };
     zport _port;
+
+    ZString name;
+
+    //struct addrinfo *addressinfo;
 };
 
 }
