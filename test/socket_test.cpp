@@ -22,6 +22,9 @@ int udp_test(){
         ELOG("Socket Open Fail");
         return 2;
     }
+
+    sock.allowRebind(true);
+
     LOG("Sending...");
 
     zu64 count = 0;
@@ -69,8 +72,8 @@ void *srvThread(void *zarg){
 
 int udpserver_test(){
     LOG("=== UDP Socket Server Test...");
-    ZError::registerInterruptHandler(stopHandler);
-    ZError::registerSignalHandler(ZError::terminate, stopHandler);
+//    ZError::registerInterruptHandler(stopHandler);
+//    ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZSocket sock(ZSocket::udp);
     if(!sock.open(ZAddress(0, 8998))){
@@ -79,9 +82,10 @@ int udpserver_test(){
     }
 
     //sock.setBlocking(false);
+    sock.allowRebind(true);
 
-    ZThread thread;
-    thread.run(srvThread, (void *)&sock);
+//    ZThread thread;
+//    thread.run(srvThread, (void *)&sock);
 
     LOG("Listening...");
     //sock.listen(receivedGram);

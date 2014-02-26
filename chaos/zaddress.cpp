@@ -16,6 +16,7 @@
 
 namespace LibChaos {
 
+#if PLATFORM == WINDOWS
 const char *inet_ntop(int af, const void* src, char *dst, int cnt){
     sockaddr_storage srcaddr;
     memset(&srcaddr, 0, sizeof(sockaddr_storage));
@@ -61,6 +62,7 @@ int inet_pton(int af, const char *src, void *dst){
     }
     return 0;
 }
+#endif
 
 ZAddress::ZAddress() : _protocol(ipv4), _port(0){
     memset(_v6_addr, 0, 16);
