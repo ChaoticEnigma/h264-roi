@@ -46,14 +46,16 @@ public:
     socklen_t getSockAddrLen() const;
 
 private:
+    char _protocol;
 
     union {
-        zu8 _v6_addr[16];
-
         // IPv6 128 bits
-        struct {
-            zu64 _v6_first  : 64;
-            zu64 _v6_second : 64;
+        union {
+            zu8 _v6_addr[16];
+            struct {
+                zu64 _v6_first  : 64;
+                zu64 _v6_second : 64;
+            };
         };
 
         // IPv4 32 bits

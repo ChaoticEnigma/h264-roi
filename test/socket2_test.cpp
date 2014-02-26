@@ -4,7 +4,7 @@
 #include <string.h>
 
 int lookup(const char *name, const char *port){
-    struct addrinfo hints, *res, *p;
+    struct addrinfo hints, *res;
     int status;
     char ipstr[INET6_ADDRSTRLEN];
 
@@ -13,13 +13,13 @@ int lookup(const char *name, const char *port){
     hints.ai_socktype = SOCK_STREAM;
 
     if((status = getaddrinfo(name, port, &hints, &res)) != 0){
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
+        ELOG("ZSocket: getaddrinfo: " << gai_strerror(status));
         return 2;
     }
 
     RLOG("IP addresses for " << name << ":" << port << " -" << ZLog::newln);
 
-    for(p = res;p != NULL; p = p->ai_next) {
+    for(struct addrinfo *p = res; p != NULL; p = p->ai_next){
         void *addr;
 
         // get the pointer to the address itself,
@@ -28,7 +28,7 @@ int lookup(const char *name, const char *port){
             struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
             addr = &(ipv4->sin_addr);
             inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
-            RLOG("  IPv4 -" << p->ai_family << "- " << ipstr << " ("<< p->ai_addrlen << ") : " << p->ai_canonname << " : " << p->ai_protocol << " " << p->ai_socktype << ZLog::newln);
+            RLOG("  IPv4 -" << p->ai_family << "- " << ipv4->sin_addr.s_addr << "- " << ipstr << " ("<< p->ai_addrlen << ") : " << p->ai_canonname << " : " << p->ai_protocol << " " << p->ai_socktype << ZLog::newln);
         } else { // IPv6
             struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)p->ai_addr;
             addr = &(ipv6->sin6_addr);
@@ -44,10 +44,11 @@ int lookup(const char *name, const char *port){
 int tcp_test(){
     LOG("=== TCP Socket Test...");
 
-    lookup("127.0.0.1", "8080");
-    lookup("google.com", "http");
-    //lookup("google.com", "dns");
-    lookup("microsoft.com", "80");
+    lookup("127.0.0.1", NULL);
+    lookup("google.com", NULL);
+    lookup("microsoft.com", NULL);
+    lookup("znnxs.com", NULL);
+    lookup("git.znnxs.com", NULL);
 
     ZSocket sock;
     //sock.openStream(ZAddress(0, 8998));
