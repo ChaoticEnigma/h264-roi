@@ -29,7 +29,7 @@ int udp_test(){
 
     zu64 count = 0;
     //ZAddress addr(127,0,0,1, 8998);
-    ZAddress addr("192.168.1.38", 8998);
+    ZAddress addr("192.168.1.89", 8998);
     //ZAddress addr(192,168,1,89, 8998);
 
     while(run){
@@ -72,8 +72,8 @@ void *srvThread(void *zarg){
 
 int udpserver_test(){
     LOG("=== UDP Socket Server Test...");
-//    ZError::registerInterruptHandler(stopHandler);
-//    ZError::registerSignalHandler(ZError::terminate, stopHandler);
+    ZError::registerInterruptHandler(stopHandler);
+    ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZSocket sock(ZSocket::udp);
     if(!sock.open(ZAddress(8998))){

@@ -89,7 +89,7 @@ ZAddress::ZAddress(int protocol, ZString str) : _protocol(protocol), _port(0){
 //ZAddress::ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zu16 prt) : _protocol(ipv4), _v4_a(a), _v4_b(b), _v4_c(c), _v4_d(d), _port(prt){}
 //ZAddress::ZAddress(zu32 add, zu16 prt) : _protocol(ipv4), _v4_addr_32(add), _port(prt){}
 
-ZAddress::ZAddress(zport port) : _protocol(ipv4), _port(0){
+ZAddress::ZAddress(zport port) : _protocol(ipv4), _port(port){
     memset(_v6_addr, 0, 16);
 }
 
