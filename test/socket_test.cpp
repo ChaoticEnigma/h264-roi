@@ -18,7 +18,7 @@ int udp_test(){
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZSocket sock(ZSocket::udp);
-    if(!sock.open(ZAddress(0, 8998))){
+    if(!sock.open(ZAddress(8998))){
         ELOG("Socket Open Fail");
         return 2;
     }
@@ -29,7 +29,7 @@ int udp_test(){
 
     zu64 count = 0;
     //ZAddress addr(127,0,0,1, 8998);
-    ZAddress addr(192,168,1,38, 8998);
+    ZAddress addr("192.168.1.38", 8998);
     //ZAddress addr(192,168,1,89, 8998);
 
     while(run){
@@ -52,7 +52,7 @@ void *srvThread(void *zarg){
     LOG("Sending...");
 
     //ZAddress addr(127,0,0,1, 8998);
-    ZAddress addr(192,168,1,38, 8998);
+    ZAddress addr("192.168.1.38", 8998);
     //ZAddress addr(192,168,1,89, 8998);
 
     ZSocket *sock = (ZSocket*)(((ZThreadArg*)zarg)->arg);
@@ -76,7 +76,7 @@ int udpserver_test(){
 //    ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZSocket sock(ZSocket::udp);
-    if(!sock.open(ZAddress(0, 8998))){
+    if(!sock.open(ZAddress(8998))){
         ELOG("Socket Open Fail");
         return 2;
     }

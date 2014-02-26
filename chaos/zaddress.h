@@ -35,8 +35,9 @@ public:
     ZAddress(ZString str, zport port);
     ZAddress(int protocol, ZString str);
 
-    ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zport port);
-    ZAddress(zu32 add, zport port);
+    //ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zport port);
+    //ZAddress(zu32 add, zport port);
+    ZAddress(zport port);
 
     ZAddress(const sockaddr_storage *);
 

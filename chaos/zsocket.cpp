@@ -105,7 +105,7 @@ zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
     if(buffer == NULL)
         buffer = new unsigned char[ZSOCKET_BUFFER];
     //memset(buffer, 0, ZSOCKET_BUFFER);
-    sockaddr_in from;
+    sockaddr_storage from;
     socklen_t fromLength = sizeof(from);
 #if PLATFORM == LINUX
     long received = ::recvfrom(_socket, buffer, ZSOCKET_BUFFER, 0, (sockaddr*)&from, &fromLength);
@@ -114,7 +114,8 @@ zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
 #endif
     if(received <= 0)
         return 0;
-    sender = ZAddress(ntohl(from.sin_addr.s_addr), ntohs(from.sin_port));
+    sender = ZAddress(&from);
+    //sender = ZAddress(ntohl(from.sin_addr.s_addr), ntohs(from.sin_port));
     str = ZBinary(buffer, received);
     return received;
 }

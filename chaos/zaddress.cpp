@@ -86,11 +86,25 @@ ZAddress::ZAddress(int protocol, ZString str) : _protocol(protocol), _port(0){
 }
 
 // IPv4
-ZAddress::ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zu16 prt) : _protocol(ipv4), _v4_a(a), _v4_b(b), _v4_c(c), _v4_d(d), _port(prt){}
-ZAddress::ZAddress(zu32 add, zu16 prt) : _protocol(ipv4), _v4_addr_32(add), _port(prt){}
+//ZAddress::ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zu16 prt) : _protocol(ipv4), _v4_a(a), _v4_b(b), _v4_c(c), _v4_d(d), _port(prt){}
+//ZAddress::ZAddress(zu32 add, zu16 prt) : _protocol(ipv4), _v4_addr_32(add), _port(prt){}
 
-ZAddress::ZAddress(const sockaddr_storage *ptr){
+ZAddress::ZAddress(zport port) : _protocol(ipv4), _port(0){
+    memset(_v6_addr, 0, 16);
+}
 
+ZAddress::ZAddress(const sockaddr_storage *ptr) : _protocol(ipv4), _port(0){
+    if(ptr->ss_family == ipv4){
+        _protocol = ipv4;
+        const sockaddr_in *v4 = (sockaddr_in *)ptr;
+        memcpy(_v4_addr, &(v4->sin_addr), sizeof(v4->sin_addr));
+        _port = v4->sin_port;
+    } else if(ptr->ss_family == ipv6){
+        _protocol = ipv6;
+        const sockaddr_in6 *v6 = (sockaddr_in6 *)ptr;
+        memcpy(_v6_addr, &(v6->sin6_addr), sizeof(v6->sin6_addr));
+        _port = v6->sin6_port;
+    }
 }
 
 ZAddress::ZAddress(const ZAddress &other) : _protocol(other._protocol), _port(other._port){
@@ -208,12 +222,12 @@ bool ZAddress::populate(sockaddr_storage *ptr) const {
     if(_protocol == ipv4){
         sockaddr_in *v4 = (sockaddr_in *)ptr;
         v4->sin_family = AF_INET;
-        memcpy(&(v4->sin_addr), _v4_addr, sizeof(sockaddr_in));
+        memcpy(&(v4->sin_addr), _v4_addr, sizeof(v4->sin_addr));
         v4->sin_port = _port;
     } else if(_protocol == ipv6){
         sockaddr_in6 *v6 = (sockaddr_in6 *)ptr;
         v6->sin6_family = AF_INET6;
-        memcpy(&(v6->sin6_addr), _v6_addr, sizeof(sockaddr_in6));
+        memcpy(&(v6->sin6_addr), _v6_addr, sizeof(v6->sin6_addr));
         v6->sin6_port = _port;
     } else {
         return false;
@@ -246,7 +260,7 @@ bool ZAddress::parseIP(int af, ZString str){
         } else if(status == 1){
             // IPv4 address
             _protocol = ipv4;
-            memcpy(_v4_addr, &(addr4.sin_addr), sizeof(sockaddr_in));
+            memcpy(_v4_addr, &(addr4.sin_addr), sizeof(addr4.sin_addr));
         } else {
             // Internal error
             ELOG("ZAddress: parseIPv4 error " << errno << ": " << strerror(errno));
@@ -262,7 +276,7 @@ bool ZAddress::parseIP(int af, ZString str){
         } else if(status == 1){
             // IPv6 address
             _protocol = ipv6;
-            memcpy(_v6_addr, &(addr6.sin6_addr), sizeof(sockaddr_in6));
+            memcpy(_v6_addr, &(addr6.sin6_addr), sizeof(addr6.sin6_addr));
         } else {
             // Internal error
             ELOG("ZAddress: parseIPv6 error " << errno << ": " << strerror(errno));
