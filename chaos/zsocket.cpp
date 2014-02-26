@@ -13,12 +13,7 @@
 #endif
 
 #include <string.h>
-
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-
-#include <arpa/inet.h>
 
 #define ZSOCKET_BUFFER 1024 * 64
 #define ZSOCKET_MAX 1024 * 64 - 9
@@ -78,7 +73,7 @@ void ZSocket::close(){
 #if PLATFORM == LINUX
         ::close(_socket);
 #elif PLATFORM == WINDOWS
-        ::closesocket(socket);
+        ::closesocket(_socket);
 #endif
         _socket = 0;
     }
@@ -115,7 +110,7 @@ zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
 #if PLATFORM == LINUX
     long received = ::recvfrom(_socket, buffer, ZSOCKET_BUFFER, 0, (sockaddr*)&from, &fromLength);
 #elif PLATFORM == WINDOWS
-    long received = ::recvfrom(socket, (char *)buffer, ZSOCKET_BUFFER, 0, (sockaddr*)&from, &fromLength);
+    long received = ::recvfrom(_socket, (char *)buffer, ZSOCKET_BUFFER, 0, (sockaddr*)&from, &fromLength);
 #endif
     if(received <= 0)
         return 0;
@@ -167,11 +162,19 @@ bool ZSocket::setBlocking(bool set){
     return true;
 }
 bool ZSocket::allowRebind(bool set){
+#if PLATFORM == LINUX
     int opt = set ? 1 : 0;
     if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) != 0){
         ELOG("ZSocket: setsockopt error: " << errno << " " << strerror(errno));
         return false;
     }
+#elif PLATFORM == WINDOWS
+    const char *opt = set ? (const char *)TRUE : (const char *)FALSE;
+    if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, opt, sizeof(BOOL)) != 0){
+        ELOG("ZSocket: setsockopt error: " << errno << " " << strerror(errno));
+        return false;
+    }
+#endif
     return true;
 }
 

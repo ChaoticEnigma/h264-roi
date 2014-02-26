@@ -206,9 +206,9 @@ bool ZFile::exists(ZPath name){
 
 bool ZFile::isDir(ZPath dir){
     struct stat st;
-#ifdef COMPILER_MINGW
+#if COMPILER == MINGW
     stat(dir.str().cc(), &st);
-#else
+#elif COMPILER == GCC
     lstat(dir.str().cc(), &st);
 #endif
     if(S_ISDIR(st.st_mode)){
@@ -220,9 +220,9 @@ bool ZFile::isFile(ZPath file){
     if(!exists(file))
         return false;
     struct stat st;
-#ifdef COMPILER_MINGW
+#if COMPILER == MINGW
     stat(file.str().cc(), &st);
-#else
+#elif COMPILER == GCC
     lstat(file.str().cc(), &st);
 #endif
     if(S_ISREG(st.st_mode)){
@@ -244,9 +244,9 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
                 continue;
             ZPath flnm = dir + drnt->d_name;
             struct stat st;
-#ifdef COMPILER_MINGW
+#if COMPILER == MINGW
             stat(flnm.str().cc(), &st);
-#else
+#elif COMPILER == GCC
             lstat(flnm.str().cc(), &st);
 #endif
             if(S_ISDIR(st.st_mode)){
@@ -272,9 +272,9 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
                 continue;
             ZPath flnm = dir + drnt->d_name;
             struct stat st;
-#ifdef COMPILER_MINGW
+#if COMPILER == MINGW
             stat(flnm.str().cc(), &st);
-#else
+#elif COMPILER == GCC
             lstat(flnm.str().cc(), &st);
 #endif
             if(S_ISDIR(st.st_mode)){

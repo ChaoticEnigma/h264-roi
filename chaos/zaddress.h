@@ -8,10 +8,14 @@
 
 #if PLATFORM == WINDOWS
     #include <winsock2.h>
+    #define IPV4_MAX 16
+    #define IPV6_MAX 46
 #elif PLATFORM == LINUX
     #include <sys/socket.h>
     #include <netdb.h>
     #include <arpa/inet.h>
+    #define IPV4_MAX INET_ADDRSTRLEN
+    #define IPV6_MAX INET6_ADDRSTRLEN
 #endif
 
 namespace LibChaos {
@@ -21,19 +25,20 @@ typedef zu16 zport;
 class ZAddress {
 public:
     enum address_type {
-        ipv4 = 1,
-        ipv6 = 2,
+        ipv4 = AF_INET,
+        ipv6 = AF_INET6,
         hostname = 3
     };
 
     ZAddress();
     ZAddress(ZString str);
     ZAddress(ZString str, zport port);
-    ZAddress(address_type protocol, ZString str);
+    ZAddress(int protocol, ZString str);
 
     ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zport port);
     ZAddress(zu32 add, zport port);
 
+    ZAddress(const sockaddr_storage *);
 
     ZAddress(const ZAddress &other);
 
@@ -62,7 +67,7 @@ public:
 
     zport port() const;
 
-    address_type type() const;
+    int type() const;
     bool isName() const {
         return _protocol == hostname;
     }
@@ -76,11 +81,12 @@ public:
 
 private:
     void parseAny(ZString);
-    bool parseIPv4(ZString);
-    bool parseIPv6(ZString);
+    bool parseIP(int, ZString);
+
+    //static ZString strIP(int af, const void *ptr);
 
 private:
-    address_type _protocol;
+    int _protocol;
     ZString _name;
 
     union {
