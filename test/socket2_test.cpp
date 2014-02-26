@@ -41,19 +41,37 @@ int lookup(const char *name, const char *port){
     return 0;
 }
 
+void showtype(ZAddress addr){
+    if(addr.type() == ZAddress::ipv4)
+        LOG("IPv4 " << addr.address() << " " << addr.str() << " " << addr.a() << "." << addr.b() << "." << addr.c() << "." << addr.d());
+    else if(addr.type() == ZAddress::ipv6)
+        LOG("IPv6 " << addr.str());
+    else
+        LOG("Name " << addr.str());
+}
+
 int tcp_test(){
     LOG("=== TCP Socket Test...");
 
-    lookup("127.0.0.1", NULL);
-    lookup("google.com", NULL);
-    lookup("microsoft.com", NULL);
-    lookup("znnxs.com", NULL);
-    lookup("git.znnxs.com", NULL);
+//    lookup("127.0.0.1", NULL);
+//    lookup("google.com", NULL);
+//    lookup("www.wikipedia.com", "http");
+//    lookup("znnxs.com", NULL);
+//    lookup("git.znnxs.com", NULL);
 
-    ZSocket sock;
-    //sock.openStream(ZAddress(0, 8998));
-    sock.openStream(ZAddress("www.google.com"));
-    sock.openStream(ZAddress("www.znnxs.com"));
+//    showtype(ZAddress("2001:db8:85a3:8d3:1319:8a2e:370:7348"));
+//    showtype(ZAddress("2001:db8:85a3:0:0:0:0:7348"));
+//    showtype(ZAddress("2001:db8:85a3:8d3:1319:8a2e:370:7348"));
+
+    ZArray<ZAddress> lst = ZAddress::lookUpName("::1");
+    for(zu64 i = 0; i < lst.size(); ++i){
+        showtype(lst[i]);
+    }
+
+//    ZSocket sock;
+//    //sock.openStream(ZAddress(0, 8998));
+//    sock.openStream(ZAddress("www.google.com"));
+//    sock.openStream(ZAddress("www.znnxs.com"));
 
     return 0;
 }

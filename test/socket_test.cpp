@@ -17,7 +17,7 @@ int udp_test(){
     ZError::registerInterruptHandler(stopHandler);
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
-    ZSocket sock;
+    ZSocket sock(ZSocket::udp);
     if(!sock.open(ZAddress(0, 8998))){
         ELOG("Socket Open Fail");
         return 2;
@@ -33,8 +33,9 @@ int udp_test(){
         ZString str = "hello world out there! ";
         str << ZString::ItoS(count);
         ZBinary data((unsigned char *)str.cc(), str.size());
-        sock.send(addr, data);
-        LOG("to " << addr.fullStr() << " (" << data.size() << "): \"" << data << "\"");
+        if(!sock.send(addr, data))
+            ELOG("socket failure");
+        LOG("to " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
         ++count;
         usleep(500000);
     }
@@ -47,20 +48,22 @@ int udp_test(){
 void *srvThread(void *zarg){
     LOG("Sending...");
 
-    zu64 count = 0;
     //ZAddress addr(127,0,0,1, 8998);
     ZAddress addr(192,168,1,38, 8998);
     //ZAddress addr(192,168,1,89, 8998);
 
-    while(run){
+    ZSocket *sock = (ZSocket*)(((ZThreadArg*)zarg)->arg);
+
+    for(zu64 i = 0; run && i < 5; ++i){
         ZString str = "hello world out there! ";
-        str << ZString::ItoS(count);
+        str << ZString::ItoS(i);
         ZBinary data((unsigned char *)str.cc(), str.size());
-        ((ZSocket*)(((ZThreadArg*)zarg)->arg))->send(addr, data);
-        LOG("to " << addr.fullStr() << " (" << data.size() << "): \"" << data << "\"");
-        ++count;
+        sock->send(addr, data);
+        LOG("to " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
         usleep(500000);
     }
+    run = false;
+    //sock->close();
     return NULL;
 }
 
@@ -69,11 +72,13 @@ int udpserver_test(){
     ZError::registerInterruptHandler(stopHandler);
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
-    ZSocket sock;
+    ZSocket sock(ZSocket::udp);
     if(!sock.open(ZAddress(0, 8998))){
         ELOG("Socket Open Fail");
         return 2;
     }
+
+    //sock.setBlocking(false);
 
     ZThread thread;
     thread.run(srvThread, (void *)&sock);
@@ -86,7 +91,7 @@ int udpserver_test(){
         ZBinary data;
         if(!sock.receive(sender, data))
             continue;
-        LOG("from " << sender.fullStr() << " (" << data.size() << "): \"" << data << "\"");
+        LOG("from " << sender.str() << " (" << data.size() << "): \"" << data << "\"");
     }
 
     TLOG("Stopped");

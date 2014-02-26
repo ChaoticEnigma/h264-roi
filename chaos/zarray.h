@@ -119,6 +119,14 @@ public:
         return _data.back();
     }
 
+    bool contains(T test){
+        for(unsigned i = 0; i < size(); ++i){
+            if(_data[i] == test)
+                return true;
+        }
+        return false;
+    }
+
     bool empty() const {
         if(_data.size() <= 0)
             return true;
