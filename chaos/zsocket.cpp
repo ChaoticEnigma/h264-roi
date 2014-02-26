@@ -26,7 +26,7 @@ namespace LibChaos {
 
 zu64 ZSocket::socket_count = 0;
 
-ZSocket::ZSocket(socket_type type) : _socket(0), _type(type), buffer(nullptr){
+ZSocket::ZSocket(socket_type type) : _socket(0), _type(type), buffer(nullptr), reuseaddr(false){
     if(socket_count <= 0)
         InitializeSockets();
     ++socket_count;
@@ -55,6 +55,20 @@ bool ZSocket::open(ZAddress addr){
         _socket = 0;
         return false;
     }
+
+#if PLATFORM == LINUX
+    int opt = reuseaddr ? 1 : 0;
+    if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) != 0){
+        ELOG("ZSocket: setsockopt error: " << errno << " " << strerror(errno));
+        return false;
+    }
+#elif PLATFORM == WINDOWS
+    char *opt = reuseaddr ? (char *)TRUE : (char *)FALSE;
+    if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, opt, sizeof(BOOL)) != 0){
+        ELOG("ZSocket: setsockopt error: " << errno << " " << strerror(errno));
+        return false;
+    }
+#endif
 
     sockaddr_storage addrstorage;
     if(addr.isName())
@@ -162,21 +176,8 @@ bool ZSocket::setBlocking(bool set){
 #endif
     return true;
 }
-bool ZSocket::allowRebind(bool set){
-#if PLATFORM == LINUX
-    int opt = set ? 1 : 0;
-    if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) != 0){
-        ELOG("ZSocket: setsockopt error: " << errno << " " << strerror(errno));
-        return false;
-    }
-#elif PLATFORM == WINDOWS
-    const char *opt = set ? (const char *)TRUE : (const char *)FALSE;
-    if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, opt, sizeof(BOOL)) != 0){
-        ELOG("ZSocket: setsockopt error: " << errno << " " << strerror(errno));
-        return false;
-    }
-#endif
-    return true;
+void ZSocket::allowRebind(bool set){
+    reuseaddr = set;
 }
 
 bool ZSocket::InitializeSockets(){

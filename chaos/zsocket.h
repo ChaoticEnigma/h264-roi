@@ -37,7 +37,7 @@ public:
     bool openStream(ZAddress address);
 
     bool setBlocking(bool);
-    bool allowRebind(bool);
+    void allowRebind(bool);
 
 private:
     static bool InitializeSockets();
@@ -48,6 +48,8 @@ private:
     int _socket;
     int _type;
     unsigned char *buffer;
+
+    bool reuseaddr;
 };
 
 }
