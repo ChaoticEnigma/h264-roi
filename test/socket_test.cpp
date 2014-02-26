@@ -18,28 +18,24 @@ int udp_test(){
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZSocket sock(ZSocket::udp);
+    sock.allowRebind(true);
     if(!sock.open(ZAddress(8998))){
         ELOG("Socket Open Fail");
         return 2;
     }
 
-    sock.allowRebind(true);
-
     LOG("Sending...");
 
-    zu64 count = 0;
-    //ZAddress addr(127,0,0,1, 8998);
-    ZAddress addr("192.168.1.38", 8998);
-    //ZAddress addr(192,168,1,89, 8998);
+    ZAddress addr("::0:1", 8998);
+    //ZAddress addr("192.168.1.38", 8998);
+    //ZAddress addr("192.168.1.89", 8998);
 
-    while(run){
+    for(zu64 i = 0; run && i < 5; ++i){
         ZString str = "hello world out there! ";
-        str << ZString::ItoS(count);
+        str << ZString::ItoS(i);
         ZBinary data((unsigned char *)str.cc(), str.size());
-        if(!sock.send(addr, data))
-            ELOG("socket failure");
+        sock.send(addr, data);
         LOG("to " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
-        ++count;
         usleep(500000);
     }
 
@@ -48,44 +44,19 @@ int udp_test(){
     return 0;
 }
 
-void *srvThread(void *zarg){
-    LOG("Sending...");
-
-    //ZAddress addr(127,0,0,1, 8998);
-    ZAddress addr("192.168.1.38", 8998);
-    //ZAddress addr(192,168,1,89, 8998);
-
-    ZSocket *sock = (ZSocket*)(((ZThreadArg*)zarg)->arg);
-
-    for(zu64 i = 0; run && i < 5; ++i){
-        ZString str = "hello world out there! ";
-        str << ZString::ItoS(i);
-        ZBinary data((unsigned char *)str.cc(), str.size());
-        sock->send(addr, data);
-        LOG("to " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
-        usleep(500000);
-    }
-    run = false;
-    //sock->close();
-    return NULL;
-}
-
 int udpserver_test(){
     LOG("=== UDP Socket Server Test...");
-//    ZError::registerInterruptHandler(stopHandler);
-//    ZError::registerSignalHandler(ZError::terminate, stopHandler);
+    ZError::registerInterruptHandler(stopHandler);
+    ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZSocket sock(ZSocket::udp);
+    sock.allowRebind(true);
     if(!sock.open(ZAddress(8998))){
         ELOG("Socket Open Fail");
         return 2;
     }
 
     //sock.setBlocking(false);
-    sock.allowRebind(true);
-
-//    ZThread thread;
-//    thread.run(srvThread, (void *)&sock);
 
     LOG("Listening...");
     //sock.listen(receivedGram);
