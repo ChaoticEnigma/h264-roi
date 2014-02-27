@@ -16,10 +16,11 @@ typedef zu16 zport;
 
 class ZAddress {
 public:
-    enum address_type {
+    enum address_family {
         ipv4 = AF_INET,
         ipv6 = AF_INET6,
-        hostname = AF_UNSPEC
+        hostname = AF_UNSPEC,
+        unix = AF_UNIX
     };
 
     ZAddress();
@@ -39,7 +40,7 @@ public:
     ~ZAddress();
 
     inline bool operator==(const ZAddress &rhs) const {
-        if(     this->_protocol == rhs._protocol &&
+        if(     this->_family == rhs._family &&
                 this->_name == rhs._name &&
                 this->_v6_first == rhs._v6_first &&
                 this->_v6_second == rhs._v6_second &&
@@ -61,15 +62,28 @@ public:
 
     zport port() const;
 
-    int type() const;
+    int family() const;
     bool isName() const {
-        return _protocol == hostname;
+        return _family == hostname;
+    }
+
+    int type() const {
+        return _type;
+    }
+    void setType(int set){
+        _type = set;
+    }
+
+    int protocol() const {
+        return _protocol;
+    }
+    void setProtocol(int set){
+        _protocol = set;
     }
 
     ZString str() const;
 
-    ZAddress doLookup() const;
-    static ZArray<ZAddress> lookUpName(ZString name);
+    static ZArray<ZAddress> lookUp(ZAddress name);
 
     bool populate(sockaddr_storage *ptr) const;
 
@@ -80,7 +94,10 @@ private:
     //static ZString strIP(int af, const void *ptr);
 
 private:
+    int _family;
+    int _type;
     int _protocol;
+
     ZString _name;
 
     union {

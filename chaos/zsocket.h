@@ -7,34 +7,35 @@
 
 namespace LibChaos {
 
+class ZConnection;
+
 class ZSocket {
 public:
     typedef void (*receiveCallback)(ZSocket *_socket, const ZAddress &sender, const ZBinary &data);
 
     enum socket_type {
         tcp = SOCK_STREAM,
-        udp = SOCK_DGRAM
-        //raw = SOCK_RAW
+        udp = SOCK_DGRAM,
+        raw = SOCK_RAW
     };
-//    enum socket_family {
-//        ipv4 = AF_INET,
-//        unix = AF_UNIX,
-//        ipv6 = AF_INET6
-//    };
 
     ZSocket(socket_type type);
     ~ZSocket();
 
-    // UDP
     bool open(ZAddress port);
     void close();
     bool isOpen() const;
+
+    // UDP
     bool send(ZAddress destination, const ZBinary &data);
     zu32 receive(ZAddress &sender, ZBinary &str);
-    void listen(receiveCallback receivedFunc);
+    void receiveFunc(receiveCallback receivedFunc);
 
     // TCP
-    bool openStream(ZAddress address);
+    bool connect(ZAddress addr, ZConnection &conn);
+    bool listen();
+    bool accept(ZConnection &conn);
+
 
     bool setBlocking(bool);
     void allowRebind(bool);
@@ -54,6 +55,25 @@ private:
     unsigned char *buffer;
 
     bool reuseaddr;
+};
+
+class ZConnection {
+public:
+    ZConnection();
+    ZConnection(int fd, ZAddress addr);
+
+    ~ZConnection();
+
+    zu64 read(ZBinary &str);
+    bool write(const ZBinary &data);
+
+    ZAddress other();
+
+private:
+    int _socket;
+    ZAddress _addr;
+
+    unsigned char *buffer;
 };
 
 }
