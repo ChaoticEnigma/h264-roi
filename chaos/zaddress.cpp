@@ -1,17 +1,19 @@
 #include "zaddress.h"
 #include "zlog.h"
 
-#include <string.h>
-
-#include <sys/types.h>
-
 #if PLATFORM == WINDOWS
     #include <winsock2.h>
     #include <ws2tcpip.h>
+    #define IPV4_MAX 16
+    #define IPV6_MAX 46
 #elif PLATFORM == LINUX
-    #include <sys/socket.h>
+    //#include <sys/socket.h>
     #include <netdb.h>
     #include <arpa/inet.h>
+    #include <string.h>
+    //#include <sys/types.h>
+    #define IPV4_MAX INET_ADDRSTRLEN
+    #define IPV6_MAX INET6_ADDRSTRLEN
 #endif
 
 namespace LibChaos {

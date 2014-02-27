@@ -39,6 +39,10 @@ public:
     bool setBlocking(bool);
     void allowRebind(bool);
 
+    int getHandle() const {
+        return _socket;
+    }
+
 private:
     static bool InitializeSockets();
     static void ShutdownSockets();

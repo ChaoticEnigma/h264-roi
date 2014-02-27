@@ -4,23 +4,17 @@
 #if PLATFORM == WINDOWS
     #include <winsock2.h>
     #include <windows.h>
+    typedef int socklen_t;
 #elif PLATFORM == LINUX
     #include <sys/socket.h>
     #include <netinet/in.h>
     #include <fcntl.h>
     #include <unistd.h>
-    #include <cstring>
+    #include <string.h>
 #endif
 
-#include <string.h>
-#include <sys/types.h>
-
-#define ZSOCKET_BUFFER 1024 * 64
-#define ZSOCKET_MAX 1024 * 64 - 9
-
-#if PLATFORM == WINDOWS
-    typedef int socklen_t;
-#endif
+#define ZSOCKET_UDP_BUFFER  1024 * 64
+#define ZSOCKET_UDP_MAX     1024 * 64 - 9
 
 namespace LibChaos {
 
@@ -100,6 +94,8 @@ bool ZSocket::isOpen() const {
 bool ZSocket::send(ZAddress destination, const ZBinary &data){
     if(!isOpen())
         return false;
+    if(data.size() > ZSOCKET_UDP_MAX)
+        return false;
 
     sockaddr_storage addrstorage;
     if(destination.isName())
@@ -117,14 +113,14 @@ zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
     if(!isOpen())
         return false;
     if(buffer == NULL)
-        buffer = new unsigned char[ZSOCKET_BUFFER];
+        buffer = new unsigned char[ZSOCKET_UDP_BUFFER];
     //memset(buffer, 0, ZSOCKET_BUFFER);
     sockaddr_storage from;
     socklen_t fromLength = sizeof(from);
 #if PLATFORM == LINUX
-    long received = ::recvfrom(_socket, buffer, ZSOCKET_BUFFER, 0, (sockaddr*)&from, &fromLength);
+    long received = ::recvfrom(_socket, buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromLength);
 #elif PLATFORM == WINDOWS
-    long received = ::recvfrom(_socket, (char *)buffer, ZSOCKET_BUFFER, 0, (sockaddr*)&from, &fromLength);
+    long received = ::recvfrom(_socket, (char *)buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromLength);
 #endif
     if(received <= 0)
         return 0;

@@ -58,6 +58,9 @@ int udpserver_test(){
 
     //sock.setBlocking(false);
 
+    int out;
+    getsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &out, sizeof(int));
+
     LOG("Listening...");
     //sock.listen(receivedGram);
 
