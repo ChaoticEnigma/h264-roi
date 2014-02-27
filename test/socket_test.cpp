@@ -26,11 +26,11 @@ int udp_test(){
 
     LOG("Sending...");
 
-    ZAddress addr("::0:1", 8998);
+    //ZAddress addr("::0:1", 8998);
     //ZAddress addr("192.168.1.38", 8998);
-    //ZAddress addr("192.168.1.89", 8998);
+    ZAddress addr("192.168.1.89", 8998);
 
-    for(zu64 i = 0; run && i < 5; ++i){
+    for(zu64 i = 0; run /*&& i < 5*/; ++i){
         ZString str = "hello world out there! ";
         str << ZString::ItoS(i);
         ZBinary data((unsigned char *)str.cc(), str.size());
@@ -58,8 +58,10 @@ int udpserver_test(){
 
     //sock.setBlocking(false);
 
-    int out;
-    getsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &out, sizeof(int));
+//    int out;
+//    int len = sizeof(out);
+//    getsockopt(sock.getHandle(), SOL_SOCKET, SO_REUSEADDR, &out, (socklen_t*)&len);
+//    LOG(out);
 
     LOG("Listening...");
     //sock.listen(receivedGram);
