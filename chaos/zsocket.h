@@ -44,6 +44,10 @@ public:
         return _socket;
     }
 
+    ZAddress getBound(){
+        return _bound;
+    }
+
 private:
     static bool InitializeSockets();
     static void ShutdownSockets();
@@ -55,6 +59,8 @@ private:
     unsigned char *buffer;
 
     bool reuseaddr;
+
+    ZAddress _bound;
 };
 
 class ZConnection {

@@ -196,6 +196,7 @@ ZArray<ZAddress> ZAddress::lookUp(ZAddress addr){
         //      p->ai_canonname // Offical service name
 
         ZAddress newaddr((sockaddr_storage *)p->ai_addr);
+        newaddr.setPort(addr.port());
         newaddr.setType(p->ai_socktype);
         newaddr.setProtocol(p->ai_protocol);
 

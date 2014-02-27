@@ -19,25 +19,27 @@ int udp_test(){
 
     ZSocket sock(ZSocket::udp);
     //sock.allowRebind(true);
-    if(!sock.open(ZAddress(8998))){
+    ZAddress bound(8998);
+    if(!sock.open(bound)){
         ELOG("Socket Open Fail");
         return 2;
     }
-
+    LOG("Bound to " << sock.getBound().debugStr());
     LOG("Sending...");
 
     //ZAddress addr("::1", 8998);
     //ZAddress addr("192.168.1.38", 8998);
-    ZAddress addr("192.168.1.89", 8998);
+    //ZAddress addr("192.168.1.89", 8998);
+    ZAddress addr("192.168.1.72", 8998);
 
     for(zu64 i = 0; run /*&& i < 5*/; ++i){
         ZString str = "hello world out there! ";
         str << ZString::ItoS(i);
         ZBinary data((unsigned char *)str.cc(), str.size());
         if(sock.send(addr, data))
-            LOG("to " << addr.str() << " (" << data.size() << "): \"" << data << "\"");
+            LOG("to " << addr.debugStr() << " (" << data.size() << "): \"" << data << "\"");
         else
-            LOG("failed to send");
+            LOG("failed to send to " << addr.str());
         usleep(500000);
     }
 

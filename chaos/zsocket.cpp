@@ -91,6 +91,7 @@ bool ZSocket::open(ZAddress addr){
             continue;
         }
         ok = true;
+        _bound = addrs[i];
     }
     if(!ok){
         ELOG("ZSocket: could not create and bind socket on any address");
@@ -129,6 +130,8 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
 #elif PLATFORM == WINDOWS
     long sent = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
 #endif
+    if(sent < 0)
+        ELOG("ZSocket: sendto error " << getError());
     return (zu64)sent == data.size();
 }
 

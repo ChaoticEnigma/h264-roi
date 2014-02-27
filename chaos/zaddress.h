@@ -61,6 +61,9 @@ public:
     zu8 d() const;
 
     zport port() const;
+    void setPort(zport port){
+        _port = port;
+    }
 
     int family() const;
     bool isName() const {
@@ -86,6 +89,10 @@ public:
     static ZArray<ZAddress> lookUp(ZAddress name);
 
     bool populate(sockaddr_storage *ptr) const;
+
+    ZString debugStr() const {
+        return str() + " : " + _port + ' ' + _family + ' ' + _type + ' ' + _protocol;
+    }
 
 private:
     void parseAny(ZString);
