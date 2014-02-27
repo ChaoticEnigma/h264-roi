@@ -109,8 +109,15 @@ ZAddress::ZAddress(const sockaddr_storage *ptr) : _protocol(ipv4), _port(0){
     }
 }
 
-ZAddress::ZAddress(const ZAddress &other) : _protocol(other._protocol), _port(other._port){
+ZAddress::ZAddress(const ZAddress &other) : _protocol(other._protocol), _name(other._name), _port(other._port){
     memcpy(_v6_addr, other._v6_addr, sizeof(_v6_addr));
+}
+ZAddress &ZAddress::operator=(ZAddress rhs){
+    _protocol = rhs._protocol;
+    _port = rhs._port;
+    _name = rhs._name;
+    memcpy(_v6_addr, rhs._v6_addr, sizeof(_v6_addr));
+    return *this;
 }
 
 ZAddress::~ZAddress(){

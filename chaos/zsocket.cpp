@@ -38,35 +38,37 @@ bool ZSocket::open(ZAddress addr){
     if(isOpen())
         return false;
 
+    if(addr.isName())
+        addr = addr.doLookup();
+
     if(_type == udp)
-        _socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        _socket = ::socket(addr.type(), SOCK_DGRAM, IPPROTO_UDP);
     else if(_type == tcp)
-        _socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        _socket = ::socket(addr.type(), SOCK_STREAM, IPPROTO_TCP);
     else
-        _socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        _socket = ::socket(addr.type(), SOCK_RAW, IPPROTO_RAW);
     if(_socket <= 0){
         ELOG("ZSocket: failed to create socket");
         _socket = 0;
         return false;
     }
 
+    if(reuseaddr){
 #if PLATFORM == LINUX
-    int opt = reuseaddr ? 1 : 0;
-    if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) != 0){
-        ELOG("ZSocket: setsockopt error: " << errno << " " << strerror(errno));
-        return false;
-    }
+        int opt = 1;
+        if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) != 0){
+            ELOG("ZSocket: setsockopt error: " << errno << " " << strerror(errno));
+            return false;
+        }
 #elif PLATFORM == WINDOWS
-    char *opt = reuseaddr ? (char *)TRUE : (char *)FALSE;
-    if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, opt, sizeof(BOOL)) != 0){
-        ELOG("ZSocket: setsockopt error: " << errno << " " << strerror(errno));
-        return false;
-    }
+        if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (char *)TRUE, sizeof(BOOL)) != 0){
+            ELOG("ZSocket: setsockopt error: " << errno << " " << strerror(errno));
+            return false;
+        }
 #endif
+    }
 
     sockaddr_storage addrstorage;
-    if(addr.isName())
-        addr = addr.doLookup();
     addr.populate(&addrstorage);
     if(::bind(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
         ELOG("ZSocket: bind error " << errno << ": " << strerror(errno));

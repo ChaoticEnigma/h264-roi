@@ -19,7 +19,7 @@ public:
     enum address_type {
         ipv4 = AF_INET,
         ipv6 = AF_INET6,
-        hostname = 3
+        hostname = AF_UNSPEC
     };
 
     ZAddress();
@@ -34,6 +34,7 @@ public:
     ZAddress(const sockaddr_storage *);
 
     ZAddress(const ZAddress &other);
+    ZAddress &operator=(ZAddress rhs);
 
     ~ZAddress();
 
