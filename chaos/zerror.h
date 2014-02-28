@@ -1,8 +1,9 @@
 #ifndef ZERROR_H
 #define ZERROR_H
 
-namespace LibChaos {
+#include "zstring.h"
 
+namespace LibChaos {
 namespace ZError {
 
 void registerSigSegv();
@@ -23,8 +24,9 @@ typedef void (*signalHandler)(zerror_signal);
 bool registerInterruptHandler(signalHandler);
 bool registerSignalHandler(zerror_signal, signalHandler);
 
-}
+ZString getError();
 
+}
 }
 
 #endif // ZERROR_H

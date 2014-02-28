@@ -6,8 +6,12 @@
 
 #if PLATFORM == WINDOWS
     #include <winsock2.h>
+    #define IPV4_MAX 16
+    #define IPV6_MAX 46
 #elif PLATFORM == LINUX
     #include <sys/socket.h>
+    #define IPV4_MAX INET_ADDRSTRLEN
+    #define IPV6_MAX INET6_ADDRSTRLEN
 #endif
 
 namespace LibChaos {
@@ -52,13 +56,6 @@ public:
     inline bool operator!=(const ZAddress &rhs) const {
         return !operator==(rhs);
     }
-
-    // Get IPv4 parts
-    zu32 address() const;
-    zu8 a() const;
-    zu8 b() const;
-    zu8 c() const;
-    zu8 d() const;
 
     zport port() const;
     void setPort(zport port){

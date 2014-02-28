@@ -12,6 +12,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zassoc2.h
     zautobuffer.h
     zbinary.h
+    zconnection.h
     zerror.h
     zfile.h
     zjson.h
@@ -34,6 +35,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zaddress.cpp
     zautobuffer.cpp
     zbinary.cpp
+    zconnection.cpp
     zerror.cpp
     zfile.cpp
     zjson.cpp

@@ -18,7 +18,7 @@ int tcp_test(){
     LOG("Connecting...");
 
     //ZAddress addr("::1", 8998);
-    ZAddress addr("192.168.1.38", 8998);
+    ZAddress addr("192.168.1.72", 8998);
     //ZAddress addr("192.168.1.89", 8998);
 
     ZConnection conn;
@@ -36,6 +36,7 @@ int tcp_test(){
     ZBinary data;
     conn.read(data);
     LOG("read (" << data.size() << "): \"" << data << "\"");
+
 
     return 0;
 }

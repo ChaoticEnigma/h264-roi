@@ -5,10 +5,12 @@
 #if PLATFORM == LINUX
     #include <execinfo.h>
     #include <signal.h>
+    #include <cstring>
 #elif PLATFORM == WINDOWS
     #include <stdlib.h>
     #include <windows.h>
     #include <imagehlp.h>
+    #include <winerror.h>
 #endif
 
 namespace LibChaos {
@@ -162,6 +164,19 @@ bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 }
 bool registerInterruptHandler(signalHandler handler){
     return registerSignalHandler(interrupt, handler);
+}
+
+ZString getError(){
+#if PLATFORM == LINUX
+    int err = errno;
+    return ZString() << err << ": " << strerror(err);
+#elif  PLATFORM == WINDOWS
+    int err = WSAGetLastError();
+    char *s = NULL;
+    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), s, 0, NULL);
+    LocalFree(s);
+    return ZString() << err << ": " << s;
+#endif
 }
 
 }

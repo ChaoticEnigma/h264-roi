@@ -4,6 +4,11 @@
 #include "ztypes.h"
 #include "zaddress.h"
 #include "zbinary.h"
+#include "zstring.h"
+#include "zconnection.h"
+
+#define ZSOCKET_UDP_BUFFER  1024 * 64
+#define ZSOCKET_UDP_MAX     1024 * 64 - 9
 
 namespace LibChaos {
 
@@ -61,25 +66,6 @@ private:
     bool reuseaddr;
 
     ZAddress _bound;
-};
-
-class ZConnection {
-public:
-    ZConnection();
-    ZConnection(int fd, ZAddress addr);
-
-    ~ZConnection();
-
-    zu64 read(ZBinary &str);
-    bool write(const ZBinary &data);
-
-    ZAddress other();
-
-private:
-    int _socket;
-    ZAddress _addr;
-
-    unsigned char *buffer;
 };
 
 }

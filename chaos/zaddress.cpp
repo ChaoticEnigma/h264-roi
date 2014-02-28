@@ -4,16 +4,10 @@
 #if PLATFORM == WINDOWS
     #include <winsock2.h>
     #include <ws2tcpip.h>
-    #define IPV4_MAX 16
-    #define IPV6_MAX 46
 #elif PLATFORM == LINUX
-    //#include <sys/socket.h>
     #include <netdb.h>
     #include <arpa/inet.h>
     #include <string.h>
-    //#include <sys/types.h>
-    #define IPV4_MAX INET_ADDRSTRLEN
-    #define IPV6_MAX INET6_ADDRSTRLEN
 #endif
 
 namespace LibChaos {
@@ -126,21 +120,6 @@ ZAddress::~ZAddress(){
     //delete _sockaddress;
 }
 
-zu32 ZAddress::address() const {
-    return _v4_addr_32;
-}
-zu8 ZAddress::a() const {
-    return _v4_a;
-}
-zu8 ZAddress::b() const {
-    return _v4_b;
-}
-zu8 ZAddress::c() const {
-    return _v4_c;
-}
-zu8 ZAddress::d() const {
-    return _v4_d;
-}
 zu16 ZAddress::port() const {
     return _port;
 }
