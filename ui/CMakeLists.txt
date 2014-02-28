@@ -43,7 +43,7 @@ ENDIF()
 
 ### =================== CONFIG =================== ###
 
-SET(LibChaosUI_INCLUDE "${LibChaosUI_SOURCE_DIR}" PARENT_SCOPE)
+SET(LibChaosUI_INCLUDE ${LibChaosUI_SOURCE_DIR} PARENT_SCOPE)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR}

@@ -12,7 +12,6 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zassoc2.h
     zautobuffer.h
     zbinary.h
-    zconnection.h
     zerror.h
     zfile.h
     zjson.h
@@ -21,10 +20,12 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zmutex.h
     #zparcel.h
     zpath.h
-    zsocket.h
     zstring.h
     zthread.h
     zxml.h
+
+    net/zconnection.h
+    net/zsocket.h
 
     lib/sqlite3.h
     #lib/demangle.h
@@ -35,7 +36,6 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zaddress.cpp
     zautobuffer.cpp
     zbinary.cpp
-    zconnection.cpp
     zerror.cpp
     zfile.cpp
     zjson.cpp
@@ -43,18 +43,20 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zlogworker.cpp
     #zparcel.cpp
     zpath.cpp
-    zsocket.cpp
     zstring.cpp
     zstring_encode.cpp
     zthread.cpp
     zxml.cpp
+
+    net/zconnection.cpp
+    net/zsocket.cpp
 
     lib/sqlite3.c
 )
 
 ### =================== CONFIG =================== ###
 
-SET(LibChaos_INCLUDE "${LibChaos_SOURCE_DIR}" PARENT_SCOPE)
+SET(LibChaos_INCLUDE ${LibChaos_SOURCE_DIR} ${LibChaos_SOURCE_DIR}/net PARENT_SCOPE)
 
 INCLUDE_DIRECTORIES(
     ${LibChaos_SOURCE_DIR}
