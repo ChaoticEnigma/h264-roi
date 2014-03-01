@@ -98,7 +98,8 @@ OTHER_FILES += \
     $$PWD/configure_build.cmake \
     $$PWD/todo.txt \
     $$PWD/util/CMakeLists.txt \
-    source_hash.cmake
+    source_hash.cmake \
+    hash.sh
 
 INCLUDEPATH += \
     $$PWD \

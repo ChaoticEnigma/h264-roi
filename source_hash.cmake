@@ -1,9 +1,12 @@
 
-FUNCTION(source_hash DIR DEPEND)
+FUNCTION(source_hash DIR)
 
-    ADD_CUSTOM_TARGET(source_hash
-        DEPENDS ${DEPEND}
-        COMMAND "dir=<${DIR}>; (find \"$dir\" -type f -exec md5sum {} +; find \"$dir\" -type d) | LC_ALL=C sort | md5sum"
+    EXECUTE_PROCESS(
+        WORKING_DIRECTORY "${DIR}/.."
+        COMMAND sh hash.sh "${DIR}"
+        OUTPUT_VARIABLE SOURCES_HASH
     )
+    STRING(STRIP ${SOURCES_HASH} SOURCES_HASH)
+    MESSAGE(STATUS "Hash: ${SOURCES_HASH}")
 
 ENDFUNCTION(source_hash)

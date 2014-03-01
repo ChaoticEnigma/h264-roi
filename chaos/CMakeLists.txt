@@ -68,7 +68,11 @@ INCLUDE_DIRECTORIES(
     ${LibChaos_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}
 )
-
+SET(DEPEND_FILES
+    ${LibChaos_HEADERS}
+    ${LibChaos_SOURCES}
+)
+source_hash(${LibChaos_SOURCE_DIR})
 configure_build("Core" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
 SET(LibChaosCore_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 
