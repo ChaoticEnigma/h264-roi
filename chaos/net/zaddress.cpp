@@ -12,6 +12,14 @@
 
 namespace LibChaos {
 
+ZAddressData::ZAddressData(int fam, int typ, int pro, zport port) : _family(fam), _type(typ), _protocol(pro), _port(port){
+
+}
+
+ZAddressData::ZAddressData(const ZAddressData &other) : _family(other._family), _type(other._type), _protocol(other._protocol), _name(other._name), _port(other._port){
+    memcpy(_v6_addr, other._v6_addr, sizeof(_v6_addr));
+}
+
 #if PLATFORM == WINDOWS
 const char *inet_ntop(int af, const void* src, char *dst, int cnt){
     sockaddr_storage srcaddr;
@@ -60,17 +68,17 @@ int inet_pton(int af, const char *src, void *dst){
 }
 #endif
 
-ZAddress::ZAddress() : _family(ipv4), _type(0), _protocol(0), _port(0){
+ZAddress::ZAddress() : ZAddressData(ipv4, 0, 0, 0){
     memset(_v6_addr, 0, 16);
 }
 
-ZAddress::ZAddress(ZString str) : _family(ipv4), _type(0), _protocol(0), _port(0){
+ZAddress::ZAddress(ZString str) : ZAddressData(ipv4, 0, 0, 0){
     parseAny(str);
 }
-ZAddress::ZAddress(ZString str, zport port) : _family(ipv4), _type(0), _protocol(0), _port(port){
+ZAddress::ZAddress(ZString str, zport port) : ZAddressData(ipv4, 0, 0, port){
     parseAny(str);
 }
-ZAddress::ZAddress(int fam, ZString str) : _family(fam), _type(0), _protocol(0), _port(0){
+ZAddress::ZAddress(int fam, ZString str) : ZAddressData(fam, 0, 0, 0){
     if(_family == ipv4){
         parseIP(ipv4, str);
     } else if(_family == ipv6){
@@ -85,11 +93,11 @@ ZAddress::ZAddress(int fam, ZString str) : _family(fam), _type(0), _protocol(0),
 //ZAddress::ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zu16 prt) : _protocol(ipv4), _v4_a(a), _v4_b(b), _v4_c(c), _v4_d(d), _port(prt){}
 //ZAddress::ZAddress(zu32 add, zu16 prt) : _protocol(ipv4), _v4_addr_32(add), _port(prt){}
 
-ZAddress::ZAddress(zport port) : _family(ipv4), _type(0), _protocol(0), _port(port){
+ZAddress::ZAddress(zport port) : ZAddressData(ipv4, 0, 0, port){
     memset(_v6_addr, 0, 16);
 }
 
-ZAddress::ZAddress(const sockaddr_storage *ptr) : _family(ipv4), _type(0), _protocol(0), _port(0){
+ZAddress::ZAddress(const sockaddr_storage *ptr) : ZAddressData(ipv4, 0, 0, 0){
     if(ptr->ss_family == ipv4){
         const sockaddr_in *v4 = (sockaddr_in *)ptr;
         _family = v4->sin_family;
@@ -103,9 +111,6 @@ ZAddress::ZAddress(const sockaddr_storage *ptr) : _family(ipv4), _type(0), _prot
     }
 }
 
-ZAddress::ZAddress(const ZAddress &other) : _family(other._family), _type(other._type), _protocol(other._protocol), _name(other._name), _port(other._port){
-    memcpy(_v6_addr, other._v6_addr, sizeof(_v6_addr));
-}
 ZAddress &ZAddress::operator=(ZAddress rhs){
     _family = rhs._family;
     _type = rhs._type;

@@ -18,7 +18,43 @@ namespace LibChaos {
 
 typedef zu16 zport;
 
-class ZAddress {
+class ZAddressData {
+protected:
+    ZAddressData(int fam, int typ, int pro, zport port);
+    ZAddressData(const ZAddressData &other);
+protected:
+    int _family;
+    int _type;
+    int _protocol;
+
+    ZString _name;
+
+    union {
+        // IPv6 128 bits
+        union {
+            zu8 _v6_addr[16];
+            struct {
+                zu64 _v6_second;
+                zu64 _v6_first;
+            };
+        };
+
+        // IPv4 32 bits
+        union {
+            zu8 _v4_addr[4];
+            zu32 _v4_addr_32;
+            struct {
+                zu8 _v4_a;
+                zu8 _v4_b;
+                zu8 _v4_c;
+                zu8 _v4_d;
+            };
+        };
+    };
+    zport _port;
+};
+
+class ZAddress : private ZAddressData {
 public:
     enum address_family {
         ipv4 = AF_INET,
@@ -38,7 +74,6 @@ public:
 
     ZAddress(const sockaddr_storage *);
 
-    ZAddress(const ZAddress &other);
     ZAddress &operator=(ZAddress rhs);
 
     ~ZAddress();
@@ -96,37 +131,6 @@ private:
     bool parseIP(int, ZString);
 
     //static ZString strIP(int af, const void *ptr);
-
-private:
-    int _family;
-    int _type;
-    int _protocol;
-
-    ZString _name;
-
-    union {
-        // IPv6 128 bits
-        union {
-            zu8 _v6_addr[16];
-            struct {
-                zu64 _v6_second;
-                zu64 _v6_first;
-            };
-        };
-
-        // IPv4 32 bits
-        union {
-            zu8 _v4_addr[4];
-            zu32 _v4_addr_32;
-            struct {
-                zu8 _v4_a;
-                zu8 _v4_b;
-                zu8 _v4_c;
-                zu8 _v4_d;
-            };
-        };
-    };
-    zport _port;
 };
 
 }

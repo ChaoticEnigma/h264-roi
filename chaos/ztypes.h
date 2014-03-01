@@ -81,6 +81,7 @@ namespace LibChaos {
 typedef unsigned char zu8;
 typedef signed char zs8;
 typedef char zchar;
+typedef zu8 zbyte;
 
 // At least 16 bits (2 bytes)
 typedef unsigned short zu16;

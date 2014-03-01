@@ -5,7 +5,6 @@ PROJECT(LibChaos)
 
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     database.h
-    zaddress.h
     zarray.h
     zarray2.h
     zassoc.h
@@ -24,8 +23,12 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zthread.h
     zxml.h
 
+    net/zaddress.h
     net/zconnection.h
     net/zsocket.h
+    net/zdatagramsocket.h
+    net/zstreamsocket.h
+    net/zstreamconnection.h
 
     lib/sqlite3.h
     #lib/demangle.h
@@ -33,7 +36,6 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     database.cpp
-    zaddress.cpp
     zautobuffer.cpp
     zbinary.cpp
     zerror.cpp
@@ -48,8 +50,12 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zthread.cpp
     zxml.cpp
 
+    net/zaddress.cpp
     net/zconnection.cpp
     net/zsocket.cpp
+    net/zdatagramsocket.cpp
+    net/zstreamsocket.cpp
+    net/zstreamconnection.cpp
 
     lib/sqlite3.c
 )
@@ -63,7 +69,6 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR}
 )
 
-INCLUDE(../configure_build.cmake)
 configure_build("Core" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
 SET(LibChaosCore_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 

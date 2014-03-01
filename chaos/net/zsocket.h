@@ -60,7 +60,7 @@ private:
     static zu64 socket_count;
 
     int _socket;
-    int _type;
+    const socket_type _type;
     unsigned char *buffer;
 
     bool reuseaddr;

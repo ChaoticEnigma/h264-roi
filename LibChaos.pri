@@ -40,7 +40,11 @@ HEADERS += \
     $$PWD/ui/align.h \
     $$PWD/bbb/zbbb.h \
     $$PWD/chaos/net/zsocket.h \
-    $$PWD/chaos/net/zconnection.h
+    $$PWD/chaos/net/zconnection.h \
+    $$PWD/chaos/net/zstreamsocket.h \
+    $$PWD/chaos/net/zdatagramsocket.h \
+    $$PWD/chaos/net/zstreamconnection.h \
+    $$PWD/chaos/net/zaddress.h
 
 SOURCES += \
     $$PWD/chaos/database.cpp \
@@ -78,7 +82,12 @@ SOURCES += \
     $$PWD/bbb/io.cpp \
     $$PWD/test/socket2_test.cpp \
     $$PWD/chaos/net/zsocket.cpp \
-    $$PWD/chaos/net/zconnection.cpp
+    $$PWD/chaos/net/zconnection.cpp \
+    $$PWD/util/extensionfixer.cpp \
+    $$PWD/chaos/net/zstreamsocket.cpp \
+    $$PWD/chaos/net/zdatagramsocket.cpp \
+    $$PWD/chaos/net/zstreamconnection.cpp \
+    $$PWD/chaos/net/zaddress.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -87,7 +96,9 @@ OTHER_FILES += \
     $$PWD/chaos/CMakeLists.txt \
     $$PWD/test/CMakeLists.txt \
     $$PWD/configure_build.cmake \
-    $$PWD/todo.txt
+    $$PWD/todo.txt \
+    $$PWD/util/CMakeLists.txt \
+    source_hash.cmake
 
 INCLUDEPATH += \
     $$PWD \
@@ -96,7 +107,8 @@ INCLUDEPATH += \
     $$PWD/chaos/lib \
     $$PWD/test \
     $$PWD/ui \
-    $$PWD/bbb
+    $$PWD/bbb \
+    $$PWD/util
 
 # Build
 #DEFINES += ZLOG_STD_MUTEX
