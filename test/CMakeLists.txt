@@ -23,15 +23,10 @@ INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
 )
 
-INCLUDE(../configure_build.cmake)
 configure_build("Test" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
 SET(LibChaosTest_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
-#ADD_DEFINITIONS(-DZLOG_STD_MUTEX)
-
-#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -ansi -std=c++11")
-#SET_SOURCE_FILES_PROPERTIES(sqlite3.c PROPERTIES COMPILE_FLAGS -std=c99)
 
 ### =================== BUILD =================== ###
 
