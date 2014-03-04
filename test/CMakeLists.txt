@@ -11,6 +11,7 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     thread_test.cpp
     autobuffer_test.cpp
     error_test.cpp
+    json_test.cpp
 )
 
 IF(BUILD_ZSOCKET)

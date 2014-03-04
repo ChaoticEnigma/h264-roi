@@ -22,6 +22,7 @@ int main(int argc, char **argv){
 #ifdef BUILD_ZSOCKET
     tests["socket"] = socket_test;
 #endif
+    tests["json"] = json_block;
 #if PLATFORM == LINUX
     tests["error"] = error_block;
 #endif

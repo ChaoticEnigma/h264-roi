@@ -73,7 +73,8 @@ SOURCES += \
     $$PWD/ui/win32/table_win32.cpp \
     $$PWD/ui/win32/progress_win32.cpp \
     $$PWD/ui/win32/align_win32.cpp \
-    $$PWD/bbb/io.cpp
+    $$PWD/bbb/io.cpp \
+    libchaos/test/json_test.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

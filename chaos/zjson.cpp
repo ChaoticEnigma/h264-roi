@@ -5,29 +5,30 @@
 namespace LibChaos {
 
 ZJSON::ZJSON(){}
-ZJSON::ZJSON(ZString json){
-    fromJSON(json);
+ZJSON::ZJSON(ZString str){
+    decode(str);
 }
 ZJSON::ZJSON(AsArZ arr){
     dat() = arr.dat();
 }
 
-ZString ZJSON::toJSON(){
-    ZString tmp;
-    tmp << "{\"" << ZString(key(0)).replace("\"", "\\\"").str() << "\":\"" << at(0).replace("\"", "\\\"") << "\"";
-    for(unsigned i = 1; i < size(); ++i){
-        tmp << ",\"" << ZString(key(i)).replace("\"", "\\\"").str() << "\":\"" << at(i).replace("\"", "\\\"") << "\"";
-    }
-    tmp << "}";
-    return tmp;
+ZJSON &ZJSON::operator=(ZString str){
+    return decode(str);
 }
 
-bool ZJSON::validJSON(ZString json){
+bool isWhitespace(char wsp){
+    if(wsp == ' ' || wsp == '\n' || wsp == '\t'){
+        return true;
+    }
+    return false;
+}
+
+bool ZJSON::validJSON(ZString s){
     // JSON validation function and partner fromJSON()
     // All values must have keys: "":"", NOT "",
     // Every key / value must be a string literal with escaped "
     // You can have as many spaces or newlines as you want between keys and values or keys or opening or closing brackets
-    ZString s = json;
+
     // loc is changed when specified character is hit under specific conditions
     enum Locat {
         start,
@@ -54,7 +55,9 @@ bool ZJSON::validJSON(ZString json){
         case firstc:
             if(c == '"')
                 loc = skey;
-            else if(c != ' ' && c != '\n')
+            else if(c == '}')
+                return true;
+            else if(!isWhitespace(c))
                 return false;
             break;
         case skey:
@@ -69,13 +72,13 @@ bool ZJSON::validJSON(ZString json){
         case ekey:
             if(c == ':')
                 loc = colon;
-            else if(c != ' ' && c != '\n')
+            else if(!isWhitespace(c))
                 return false;
             break;
         case colon:
             if(c == '"')
                 loc = svalue;
-            else if(c != ' ' && c != '\n')
+            else if(!isWhitespace(c))
                 return false;
             break;
         case svalue:
@@ -93,7 +96,7 @@ bool ZJSON::validJSON(ZString json){
                 loc = firstc;
             else if(c == '}')
                 return true;
-            else if(c != ' ' && c != '\n')
+            else if(!isWhitespace(c))
                 return false;
             break;
         default:
@@ -106,10 +109,13 @@ bool ZJSON::validJSON(ZString json){
     return false;
 }
 
-ZJSON ZJSON::fromJSON(ZString json){
-    if(!validJSON(json))
-        return AsArZ();
-    ZString s = json;
+bool ZJSON::isValid(){
+    return validJSON(json);
+}
+
+ZJSON ZJSON::fromJSON(ZString s){
+    if(!validJSON(s))
+        return ZJSON();
     enum Locat {
         firstc,
         key_,
@@ -120,7 +126,7 @@ ZJSON ZJSON::fromJSON(ZString json){
     ZJSON final;
     ZString kbuff;
     ZString vbuff;
-    for(unsigned i = 0; i < s.size(); ++i){
+    for(zu64 i = 0; i < s.size(); ++i){
         char c = s[i];
         switch(loc){
         case firstc:
@@ -144,21 +150,16 @@ ZJSON ZJSON::fromJSON(ZString json){
                 vbuff << c;
             break;
         case evalue:
-            {
-                ZString kp = kbuff;
-                kp.replace("\\\"", "\"");
-                ZString vp = vbuff;
-                vp.replace("\\\"", "\"");
-                final.push(vp);
-                final.key(final.size()-1) = kp.str();
+            if(c == ',' || c == '}'){
+                final.push(ZString(vbuff).replace("\\\"", "\""));
+                final.key(final.size()-1) = ZString(kbuff).replace("\\\"", "\"").str();
                 kbuff.clear();
                 vbuff.clear();
                 if(c == ','){
                     loc = firstc;
-                } else if(c == '}'){
+                } /*else if(c == '}'){
                     dat() = final.dat();
-                    break;
-                }
+                }*/
             }
             break;
         default:
@@ -167,7 +168,26 @@ ZJSON ZJSON::fromJSON(ZString json){
             break;
         }
     }
+    return final;
+}
+
+ZJSON &ZJSON::decode(ZString str){
+    json = str;
+    dat() = fromJSON(str).dat();
     return *this;
+}
+
+ZString ZJSON::encode(){
+    ZString tmp;
+    tmp << "{";
+    //tmp << "\"" << ZString(key(0)).replace("\"", "\\\"").str() << "\":\"" << at(0).replace("\"", "\\\"") << "\"";
+    for(unsigned i = 0; i < size(); ++i){
+        if(i != 0)
+            tmp << ",";
+        tmp << "\"" << ZString(key(i)).replace("\"", "\\\"").str() << "\":\"" << at(i).replace("\"", "\\\"") << "\"";
+    }
+    tmp << "}";
+    return tmp;
 }
 
 AsArZ ZJSON::toZAssoc(){

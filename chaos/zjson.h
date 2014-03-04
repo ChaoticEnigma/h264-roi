@@ -12,12 +12,19 @@ public:
     ZJSON(ZString);
     ZJSON(AsArZ);
 
-    ZString toJSON();
+    ZJSON &operator=(ZString);
 
     static bool validJSON(ZString);
-    ZJSON fromJSON(ZString);
+    bool isValid();
+
+    static ZJSON fromJSON(ZString);
+    ZJSON &decode(ZString);
+
+    ZString encode();
 
     AsArZ toZAssoc();
+private:
+    ZString json;
 };
 
 }

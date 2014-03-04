@@ -24,6 +24,8 @@ int autobuffer_block();
 int socket_test();
 #endif
 
+int json_block();
+
 int error_block();
 
 typedef int (*test_func)(void);
