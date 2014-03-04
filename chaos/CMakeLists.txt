@@ -23,6 +23,13 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zthread.h
     zxml.h
 
+    net/zaddress.h
+    net/zconnection.h
+    net/zsocket.h
+    net/zdatagramsocket.h
+    net/zstreamsocket.h
+    net/zstreamconnection.h
+
     lib/sqlite3.h
     #lib/demangle.h
 )
@@ -43,24 +50,29 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zthread.cpp
     zxml.cpp
 
+    net/zaddress.cpp
+    net/zconnection.cpp
+    net/zsocket.cpp
+    net/zdatagramsocket.cpp
+    net/zstreamsocket.cpp
+    net/zstreamconnection.cpp
+
     lib/sqlite3.c
 )
 
-IF(BUILD_ZSOCKET)
-    SET(LibChaos_HEADERS ${LibChaos_HEADERS} zsocket.h)
-    SET(LibChaos_SOURCES ${LibChaos_SOURCES} zsocket.cpp)
-ENDIF()
-
 ### =================== CONFIG =================== ###
 
-SET(LibChaos_INCLUDE "${LibChaos_SOURCE_DIR}" PARENT_SCOPE)
+SET(LibChaos_INCLUDE ${LibChaos_SOURCE_DIR} ${LibChaos_SOURCE_DIR}/net PARENT_SCOPE)
 
 INCLUDE_DIRECTORIES(
     ${LibChaos_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}
 )
-
-INCLUDE(../configure_build.cmake)
+SET(DEPEND_FILES
+    ${LibChaos_HEADERS}
+    ${LibChaos_SOURCES}
+)
+source_hash(${LibChaos_SOURCE_DIR})
 configure_build("Core" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
 SET(LibChaosCore_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 
@@ -76,6 +88,10 @@ ADD_DEFINITIONS(-DBUILDING)
 
 ADD_LIBRARY(chaos ${LibChaos_SOURCES})
 TARGET_LINK_LIBRARIES(chaos pthread)
-IF(UNIX AND NOT FREEBSD)
-    TARGET_LINK_LIBRARIES(chaos dl)
+IF(LIBCHAOS_UNIX)
+    IF(NOT FREEBSD)
+        TARGET_LINK_LIBRARIES(chaos dl)
+    ENDIF()
+ELSEIF(LIBCHAOS_WINDOWS)
+    TARGET_LINK_LIBRARIES(chaos ws2_32)
 ENDIF()

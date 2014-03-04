@@ -2,6 +2,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(CMAKE_GENERATOR "Unix Makefiles")
 
+INCLUDE(configure_build.cmake)
+INCLUDE(source_hash.cmake)
+
 # Platform Settings
 IF(WIN32)
     #MESSAGE(STATUS "Windows Build")
@@ -31,13 +34,6 @@ ENDIF()
 
 SET(LibChaos_BUILD ${LIBCHAOS_BUILD} PARENT_SCOPE)
 
-# Platform-specific Support
-IF(LIBCHAOS_UNIX)
-    SET(BUILD_ZSOCKET TRUE)
-ELSE()
-    SET(BUILD_ZSOCKET FALSE)
-ENDIF()
-
 # Options
 OPTION(LIBCHAOS_TEST FALSE "Build LibChaos Test suite")
 OPTION(LIBCHAOS_UI FALSE "Build LibChaos UI library")
@@ -55,21 +51,27 @@ SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
 # LibChaos Test
 IF(LIBCHAOS_TEST)
     ADD_SUBDIRECTORY(test)
-    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING}, '${LibChaosTest_BUILD_STRING}'")
+    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosTest_BUILD_STRING}'")
+ENDIF()
+
+# LibChaos Utils
+IF(LIBCHAOS_UTIL)
+    ADD_SUBDIRECTORY(util)
+    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosUtil_BUILD_STRING}'")
 ENDIF()
 
 # LibChaos UI
 IF(LIBCHAOS_UI)
     ADD_SUBDIRECTORY(ui)
-    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING}, '${LibChaosUI_BUILD_STRING}'")
+    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosUI_BUILD_STRING}'")
     SET(LibChaosUI_INCLUDE ${LibChaosUI_INCLUDE} PARENT_SCOPE)
 ENDIF()
 
 # LibChaos BBB (Beaglebone Black)
 IF(LIBCHAOS_BBB)
     ADD_SUBDIRECTORY(bbb)
-    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING}, '${LibChaosBBB_BUILD_STRING}'")
-    SET(LibChaosBBB_INCLUDE "${LibChaosBBB_INCLUDE}" PARENT_SCOPE)
+    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosBBB_BUILD_STRING}'")
+    SET(LibChaosBBB_INCLUDE ${LibChaosBBB_INCLUDE} PARENT_SCOPE)
 ENDIF()
 
 MESSAGE(STATUS ${LibChaos_BUILD_STRING})

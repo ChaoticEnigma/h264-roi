@@ -14,7 +14,7 @@ SET(LibChaosBBB_SOURCES ### =================== SOURCES =================== ###
 
 ### =================== CONFIG =================== ###
 
-SET(LibChaosBBB_INCLUDE "${LibChaosBBB_SOURCE_DIR}" PARENT_SCOPE)
+SET(LibChaosBBB_INCLUDE ${LibChaosBBB_SOURCE_DIR} PARENT_SCOPE)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR}

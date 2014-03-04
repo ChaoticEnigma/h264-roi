@@ -20,9 +20,11 @@ int thread_block();
 
 int autobuffer_block();
 
-#ifdef BUILD_ZSOCKET
-int socket_test();
-#endif
+int udp_test();
+int udpserver_test();
+
+int tcp_test();
+int tcpserver_test();
 
 int json_block();
 

@@ -78,11 +78,11 @@ int path_windows_block(){
     ZPath here = ZPath::pwd();
     LOG(here.size() << " " << here.str());
 
-    ZPath mk = "over/there/lol.txt";
-    LOG(mk);
-    if(mk.createDirsTo())
-        LOG("ok");
-    else
-        LOG("no");
+//    ZPath mk = "over/there/lol.txt";
+//    LOG(mk);
+//    if(mk.createDirsTo())
+//        LOG("ok");
+//    else
+//        LOG("no");
     return 0;
 }

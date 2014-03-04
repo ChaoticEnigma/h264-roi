@@ -4,7 +4,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(LibChaos_Test)
 
 SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES =================== ###
-    libchaos-main.cpp
+    libchaos_main.cpp
     array_test.cpp
     string_test.cpp
     file_test.cpp
@@ -12,12 +12,9 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     autobuffer_test.cpp
     error_test.cpp
     json_test.cpp
+    socket_test.cpp
+    socket2_test.cpp
 )
-
-IF(BUILD_ZSOCKET)
-    ADD_DEFINITIONS(-DBUILD_ZSOCKET)
-    SET(LibChaosTest_SOURCES ${LibChaosTest_SOURCES} socket_test.cpp)
-ENDIF()
 
 ### =================== CONFIG =================== ###
 
