@@ -6,7 +6,7 @@
 
 namespace LibChaos {
 
-class ZJSON : public AsArZ {
+class ZJSON {
 public:
     ZJSON();
     ZJSON(ZString);
@@ -24,7 +24,10 @@ public:
 
     AsArZ toZAssoc();
 private:
-    ZString json;
+    union JSONValue {
+        ZString str;
+        ZJSON json;
+    } data;
 };
 
 }
