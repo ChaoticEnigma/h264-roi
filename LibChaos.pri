@@ -1,4 +1,4 @@
-TARGET = chaos
+#TARGET = chaos
 TEMPLATE = lib
 CONFIG += staticlib console
 QT -= core gui widgets
@@ -114,7 +114,7 @@ INCLUDEPATH += \
 
 # Build
 #DEFINES += ZLOG_STD_MUTEX
-QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11
+QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11 -std=c++0x
 LIBS += pthread
 
 win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MINGW

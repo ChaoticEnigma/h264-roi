@@ -8,22 +8,23 @@ int main(int argc, char **argv){
     ZLog::addLogFile(lgf, ZLogSource::debug, "%time% %thread% %function% (%file%:%line%) - %log%");
     ZLog::addLogFile(lgf, ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
 
-    ZAssoc<ZString, test_func> tests;
-    tests["array"] = array_block;
-    tests["assoc"] = assoc_block;
-    tests["string"] = string_block;
-    tests["string_magic"] = string_magic_block;
-    tests["path"] = path_block;
-    tests["path_windows"] = path_windows_block;
-    tests["file"] = file_block;
-    tests["thread"] = thread_block;
-    tests["autobuffer"] = autobuffer_block;
-    tests["json"] = json_block;
-    tests["udp"] = udp_test;
-    tests["udpserver"] = udpserver_test;
-    tests["tcp"] = tcp_test;
-    tests["tcpserver"] = tcpserver_test;
-    tests["error"] = error_block;
+    ZAssoc<ZString, test_func> tests = {
+        { "array", array_block },
+        { "assoc", assoc_block },
+        { "string", string_block },
+        { "string_magic", string_magic_block },
+        { "path", path_block },
+        { "path_windows", path_windows_block },
+        { "file", file_block },
+        { "thread", thread_block },
+        { "autobuffer", autobuffer_block },
+        { "json", json_block },
+        { "udp", udp_test },
+        { "udpserver", udpserver_test },
+        { "tcp", tcp_test },
+        { "tcpserver", tcpserver_test },
+        { "error", error_block }
+    };
 
     if(argc > 1){
         ArZ run;

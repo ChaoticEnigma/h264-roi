@@ -21,7 +21,8 @@ bool ZLogWorker::lastcomp;
 
 ZLogWorker::ZLogWorker(){
     //work = work(zlogWorker);
-    setbuf(stdout, NULL);
+    //setbuf(stdout, NULL);
+    //setbuf(stderr, NULL);
 //    formatStdout(ZLogSource::normal, TIMETHREAD); // These cause a memory leak...?
 //    formatStderr(ZLogSource::error, DETAILLOG);
 }
@@ -105,11 +106,15 @@ ZString ZLogWorker::makeLog(LogJob &job, ZString fmt){
 
 void ZLogWorker::doLog(LogJob jb){
     formatMtx.lock();
-    if(!stdoutlog[jb.source].isEmpty())
-        printf("%s", makeLog(jb, stdoutlog[jb.source]).cc());
+    if(!stdoutlog[jb.source].isEmpty()){
+        fprintf(stdout, "%s", makeLog(jb, stdoutlog[jb.source]).cc());
+        fflush(stdout);
+    }
 
-    if(!stderrlog[jb.source].isEmpty())
+    if(!stderrlog[jb.source].isEmpty()){
         fprintf(stderr, "%s", makeLog(jb, stderrlog[jb.source]).cc());
+        fflush(stderr);
+    }
 
     if(!jb.stdio){
         for(zu64 i = 0; i < logfiles.size(); ++i){

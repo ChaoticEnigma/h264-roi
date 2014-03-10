@@ -113,18 +113,18 @@ ZString ZFile::readFile(ZPath filenm, bool &status){
     return ZString();
 }
 
-bool ZFile::writeFile(ZPath filenm, const ZString &data){
-    if(!filenm.createDirsTo())
-        return false;
-    std::ofstream outfile(filenm.str().cc(), std::ios::out);
-    if(outfile){
-        outfile.write(data.cc(), data.size());
-        outfile.flush();
-        outfile.close();
-        return true;
-    }
-    return false;
-}
+//bool ZFile::writeFile(ZPath filenm, const ZString &data){
+//    if(!filenm.createDirsTo())
+//        return false;
+//    std::ofstream outfile(filenm.str().cc(), std::ios::out);
+//    if(outfile){
+//        outfile.write(data.cc(), data.size());
+//        outfile.flush();
+//        outfile.close();
+//        return true;
+//    }
+//    return false;
+//}
 
 //}
 //#include "zlog.h"

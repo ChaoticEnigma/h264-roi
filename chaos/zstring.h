@@ -95,6 +95,7 @@ public:
     // Get portion of <str> from <pos> to end
     ZString &substr(zu64 pos);
     static ZString substr(ZString str, zu64 pos);
+
     // Get <len> characters after <pos> of <str>
     ZString &substr(zu64 pos, zu64 len);
     static ZString substr(ZString str, zu64 pos, zu64 len);
@@ -105,9 +106,11 @@ public:
     // Replace section <len> characters long at <pos> with <after> in <str>
     ZString &replace(zu64 pos, zu64 len, ZString after);
     static ZString replace(ZString str, zu64 pos, zu64 len, ZString after);
+
     // Replace the first occurrence of <before> in <str> with <after>, up to <max> times
     ZString &replaceRecursive(ZString before, ZString after, unsigned max = 1000);
     static ZString replaceRecursive(ZString str, ZString before, ZString after, unsigned max = 1000);
+
     // Replace up to <max> occurences of <before> with <after> in <str>
     // <max> = -1 for unlimited
     ZString &replace(ZString before, ZString after, unsigned max = -1);
@@ -121,11 +124,19 @@ public:
     ZString replaceXmlTagCont(ZString tag, ZString after);
     ZString label(ZString label, ZString value, bool modify = true);
     ZString label(AsArZ, bool modify = true);
-    ZString strip(char target, bool modify = true);
+
+    // Strip occurences of <target> from beginning and end of <str>
+    ZString &strip(char target);
+    static ZString strip(ZString str, char target);
+
     ZString removeWhitespace();
 
     ZString invert(bool modify = true);
-    ZString toLower(bool modify = true);
+
+    // Convert UPPERCASE characters to lowercase equivalents in <str>
+    ZString &toLower();
+    static ZString toLower(ZString str);
+
     ZString duplicate(unsigned iterate, bool modify = true);
     ZString popLast();
     static ZString compound(ArZ parts, ZString delim);
