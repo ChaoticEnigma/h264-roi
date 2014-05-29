@@ -123,7 +123,7 @@ public:
     bool populate(sockaddr_storage *ptr) const;
 
     ZString debugStr() const {
-        return str() + " : " + _port + ' ' + _family + ' ' + _type + ' ' + _protocol;
+        return ZString() + '[' + str() + "]:" + _port + ',' + _family + '-' + _type + '-' + _protocol;
     }
 
 private:

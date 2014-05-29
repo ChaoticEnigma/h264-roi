@@ -162,6 +162,10 @@ public:
         return _data.back().key;
     }
 
+    void clear(){
+        _data.clear();
+    }
+
     bool empty() const {
         return _data.empty();
     }

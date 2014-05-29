@@ -3,7 +3,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
-
+#include <thread>
 #include <iostream>
 
 namespace LibChaos {
@@ -12,33 +12,27 @@ bool ZThreadArg::stop(){
     return (bool)*_stop;
 }
 
-ZThread::ZThread() : _run(false), _stop(false){
+ZThread::ZThread() : _stop(false), thread(0), _alive(false){
     _param.zarg._stop = &_stop;
 }
-ZThread::ZThread(funcType func) : _run(false), _stop(false){
+ZThread::ZThread(funcType func) : _stop(false), thread(0){
     _param.zarg._stop = &_stop;
     run(func);
 }
-ZThread::ZThread(funcType func, void *argptr) : _run(false), _stop(false){
+ZThread::ZThread(funcType func, void *argptr) : _stop(false), thread(0){
     _param.zarg._stop = &_stop;
     run(func, argptr);
 }
 
 ZThread::~ZThread(){
-    //std::cout << "zthread" << std::endl;
-    //kill();
-    //stop();
     detach();
 }
 
 void *ZThread::entry(void *ptr){
     ZThread *thr = (ZThread*)ptr;
-    //zthreadparam *param = (zthreadparam*) ptr;
-    //void *ret = param->funcptr(param->zarg);
     void *ret = thr->_param.funcptr(&thr->_param.zarg);
-    //delete param->zarg;
-    //delete param;
-    pthread_exit(ret);
+    //pthread_exit(ret);
+    thr->_alive = false;
     return ret;
 }
 
@@ -46,62 +40,59 @@ bool ZThread::run(funcType func){
     return run(func, NULL);
 }
 bool ZThread::run(funcType func, void *argptr){
-    /*zthreadparam *param  = new zthreadparam;
-    param->funcptr = func;
-    param->zarg = new ZThreadArg;
-    param->zarg->arg = argptr;
-    bool *sptr = &_stop;
-    param->zarg->_stop = sptr;*/
-
     _param.funcptr = func;
-    //_param.zarg = new ZThreadArg;
     _param.zarg.arg = argptr;
 
     ret = pthread_create(&thread, NULL, entry, this);
     //std::cout << "create " << ret << std::endl;
-    if(ret != 0)
+    if(ret == 0){
+        _alive = true;
+    } else {
         return false;
-    _run = true;
+    }
     return true;
 }
 
 void *ZThread::join(){
     void *retval = NULL;
-    //pthread_t id = thread;
-    //ret = pthread_join(id, &retval);
-    ret = pthread_join(thread, &retval);
-    //std::cout << "join " << ret << std::endl;
-    _run = false;
+    if(_alive)
+        ret = pthread_join(thread, &retval);
     return retval;
 }
 
 void ZThread::kill(){
-    //if(_run){
+    if(_alive){
         ret = pthread_cancel(thread);
-        //std::cout << "cancel " << ret << std::endl;
-    //}
-    _run = false;
-    //pthread_exit(thread);
+        _alive = false;
+    }
 }
 
 void ZThread::stop(){
-    //ret = pthread_kill(thread, SIGINT);
     _stop = true;
-    _run = false;
-    //std::cout << "stop" << std::endl;
 }
 
 void ZThread::detach(){
-    ret = pthread_detach(thread);
-    //std::cout << "detach " << ret << std::endl;
+    if(_alive)
+        ret = pthread_detach(thread);
 }
 
 ztid ZThread::tid(){
-    return (ztid) thread;
+    return (ztid)thread;
 }
-ztid ZThread::thisTid(){
-    return (ztid) pthread_self();
+bool ZThread::alive(){
+    return _alive;
 }
 
+ztid ZThread::thisTid(){
+    return (ztid)pthread_self();
+}
+
+void ZThread::yield(){
+#if PLATFORM == WINDOWS
+    std::this_thread::yield();
+#else
+    pthread_yield();
+#endif
+}
 
 }

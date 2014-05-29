@@ -1,11 +1,15 @@
 #include "zerror.h"
 #include "zlog.h"
 #include "zmap.h"
+#include <cstdlib>
+#include <cerrno>
 
 #if PLATFORM == LINUX
     #include <execinfo.h>
     #include <signal.h>
     #include <cstring>
+    #define HAVE_DECL_BASENAME 1
+    #include "demangle.h"
 #elif PLATFORM == WINDOWS
     #include <stdlib.h>
     #include <windows.h>
@@ -14,9 +18,57 @@
 #endif
 
 namespace LibChaos {
-namespace ZError {
+
+ZMap<int, ZError::sigset> ZError::sigmap;
+
+ZError::ZError(ZString str, int cd) : desc(str), err(cd), trace(getStackTrace()){
+    //trace.pop();
+}
+
+ZString ZError::what(){
+    return desc;
+}
+int ZError::code(){
+    return err;
+}
+ZError::operator bool(){
+    return (err == 0);
+}
+
+void ZError::logStackTrace(){
+    ELOG("**************************************");
+    for(zu64 i = 0; i < trace.size(); ++i){
+        ELOG(trace[i]);
+    }
+    ELOG("**************************************");
+}
 
 #if PLATFORM == LINUX
+ArZ ZError::getStackTrace(){
+    ArZ trace;
+    void *buffer[100];
+    int nptrs = backtrace(buffer, 100);
+    char **strings = backtrace_symbols(buffer, nptrs);
+    if(strings != NULL){
+        for(int j = 0; j < nptrs; ++j){
+            //ELOG(strings[j]);
+            ZString tmp = strings[j];
+            ZString exec = ZPath(ZString::substr(tmp, 0, ZString::findFirst(tmp, "("))).last().str();
+            tmp.substr(ZString::findFirst(tmp, "("));
+            ArZ pts = tmp.explode(' ');
+            ArZ fpts = pts[0].strip('(').strip(')').explode('+');
+            ZString addr = pts[1].strip('[').strip(']');
+            ZString faddr = fpts[1];
+            ZString fname = fpts[0];
+
+            fname = cplus_demangle(fname.cc(), 0);
+            trace.push(exec + " - (" + fname + " " + faddr + ") : [" + addr + "]");
+        }
+        free(strings);
+    }
+    return trace;
+}
+
 void fatalSignalHandler(int sig){
     ELOG("Error: signal " << sig);
     void *buffer[100];
@@ -43,6 +95,10 @@ void fatalSignalHandler(int sig){
     exit(sig);
 }
 #elif PLATFORM == WINDOWS
+ArZ ZError::getStackTrace(){
+    return ArZ();
+}
+
 //void windows_print_stacktrace(CONTEXT *context){
 //    SymInitialize(GetCurrentProcess(), 0, true);
 //    STACKFRAME frame = { 0 };
@@ -72,21 +128,15 @@ void fatalSignalHandler(int sig){
 //}
 #endif
 
-void registerSigSegv(){
+void ZError::registerSigSegv(){
 #if PLATFORM == LINUX
     signal(SIGSEGV, fatalSignalHandler);
 #endif
 }
 
-struct sigset {
-    zerror_signal sigtype;
-    signalHandler handler;
-};
-static ZMap<int, sigset> sigmap;
-
 #if PLATFORM == LINUX
 
-void sigHandle(int sig){
+void ZError::sigHandle(int sig){
     if(sigmap.exists(sig) && sigmap[sig].handler != NULL)
         (sigmap[sig].handler)(sigmap[sig].sigtype);
 }
@@ -111,7 +161,7 @@ BOOL WINAPI ConsoleHandler(DWORD dwType){
 
 #endif
 
-bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
+bool ZError::registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
 #if PLATFORM == LINUX
 
@@ -162,11 +212,11 @@ bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
     return true;
 }
-bool registerInterruptHandler(signalHandler handler){
+bool ZError::registerInterruptHandler(signalHandler handler){
     return registerSignalHandler(interrupt, handler);
 }
 
-ZString getError(){
+ZString ZError::getSystemError(){
 #if PLATFORM == LINUX
     int err = errno;
     return ZString() << err << ": " << strerror(err);
@@ -179,5 +229,4 @@ ZString getError(){
 #endif
 }
 
-}
 }

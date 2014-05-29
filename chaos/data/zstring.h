@@ -50,7 +50,8 @@ public:
     //ZString(char*);
     //char *c();
 
-    ZString(const char*);
+    ZString(const unsigned char *);
+    ZString(const char *);
     const char *cc() const;
 
 #if PLATFORM == WINDOWS
@@ -64,10 +65,12 @@ public:
     ZString(zs16);
     ZString(zu32);
     ZString(zs32);
+    ZString(zint);
     ZString(zuint);
-    ZString(zsint);
+    //explicit ZString(zsint);
     ZString(zu64);
     ZString(zs64);
+
     static ZString ItoS(zu64 num, unsigned base = 10);
     static ZString ItoS(zs64 num, unsigned base = 10);
     int tint() const;
@@ -141,6 +144,8 @@ public:
     ZString popLast();
     static ZString compound(ArZ parts, ZString delim);
 
+    ArZ split(char delim);
+
     ArZ explode(char delim);
     ArZ explodeList(unsigned nargs, ...);
     ArZ strict_explode(char delim);
@@ -154,6 +159,8 @@ public:
 
     //ZString format(ZString fmt_str, ...);
     //ZString &format(...);
+
+    static bool alphaTest(ZString str1, ZString str2);
 
     friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
 private:

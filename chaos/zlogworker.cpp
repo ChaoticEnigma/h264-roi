@@ -9,94 +9,87 @@
 
 namespace LibChaos {
 
-ZMutex<char> ZLogWorker::mtx;
-ZMutex<char> ZLogWorker::formatMtx;
+ZMutex ZLogWorker::mtx;
+ZMutex ZLogWorker::formatMtx;
+ZCondition ZLogWorker::cond;
 std::queue<ZLogWorker::LogJob> ZLogWorker::jobs;
 
-std::atomic<bool> ZLogWorker::pending(false);
-ZMap<zu64, ZString> ZLogWorker::stdoutlog;
-ZMap<zu64, ZString> ZLogWorker::stderrlog;
-ZAssoc< ZPath, ZMap<zu64, ZString> > ZLogWorker::logfiles;
+ZMap<ZLogWorker::zlog_source, ZString> ZLogWorker::stdoutlog;
+ZMap<ZLogWorker::zlog_source, ZString> ZLogWorker::stderrlog;
+ZAssoc< ZPath, ZMap<ZLogWorker::zlog_source, ZString> > ZLogWorker::logfiles;
 bool ZLogWorker::lastcomp;
 
-ZLogWorker::ZLogWorker(){
-    //work = work(zlogWorker);
-    //setbuf(stdout, NULL);
-    //setbuf(stderr, NULL);
-//    formatStdout(ZLogSource::normal, TIMETHREAD); // These cause a memory leak...?
-//    formatStderr(ZLogSource::error, DETAILLOG);
-}
+ZLogWorker::ZLogWorker(){}
 
 ZLogWorker::~ZLogWorker(){
-    //std::cout << "zlogworker" << std::endl;
-    work.stop();
-    work.join();
-    //work.interrupt();
-    //pthread_cancel(work);
-    //wait();
+    if(work.tid())
+        waitEnd();
 }
 
-int ZLogWorker::run(){
+void ZLogWorker::run(){
     work.run(zlogWorker);
-    return 0;
 }
 
-void ZLogWorker::wait(){ // Must NEVER be called by log worker thread
-    while(true){
-        if(!pending && mtx.trylock()){
-            mtx.unlock();
-            if(jobs.empty()){
-                break;
-            }
-        }
-    }
-    //pthread_join(work, NULL);
-    //work.join();
+void ZLogWorker::waitEnd(){ // Must NEVER be called by log worker thread
+    work.stop();
+    cond.signal();
+    work.join();
 }
 
 void ZLogWorker::queue(LogJob lj){
-    pending = true;
     mtx.lock();
     jobs.push(lj);
     mtx.unlock();
+    cond.signal();
 }
 
-void *ZLogWorker::zlogWorker(void *zarg){
-    ZThreadArg *arg = (ZThreadArg*)zarg;
-    //std::cout << "worker work is working..." << std::endl;
-    while(!arg->stop()){
-        if(mtx.trylock()){
-            if(!jobs.empty()){
-                pending = true;
-                std::queue<LogJob> tmp;
-                jobs.swap(tmp);
+void *ZLogWorker::zlogWorker(void *arg){
+    ZThreadArg *zarg = (ZThreadArg*)arg;
+    std::queue<LogJob> tmp;
+    while(true){
+        mtx.lock(); // Lock mutex
+        if(jobs.empty()){ // If no jobs, wait for jobs
+            if(zarg->stop()){ // If stopped, just break
                 mtx.unlock();
-
-                while(!tmp.empty()){
-                    doLog(tmp.front());
-                    tmp.pop();
-                }
-                pending = false;
-            } else {
-                mtx.unlock();
+                break;
             }
+
+            // Wait to be woken up with work to do
+            cond.waitLock();
+            while(jobs.empty()){
+                mtx.unlock(); // Unlock while waiting so work can be queued
+                cond.wait();
+                mtx.lock(); // Lock again before while(jobs.empty()) condition
+            }
+            cond.waitUnlock();
         }
-        //std::this_thread::yield();
-        //std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        jobs.swap(tmp); // Swap queues
+        mtx.unlock(); // Done with jobs
+
+        // Work through temporary queue
+        while(!tmp.empty()){
+            doLog(tmp.front());
+            tmp.pop();
+        }
+
+        ZThread::yield(); // Yield to other threads
     }
     return NULL;
 }
 
-ZString ZLogWorker::makeLog(LogJob &job, ZString fmt){
+ZString ZLogWorker::makeLog(LogJob &job, ZString f){
+    ZString fmt = f;
     if(!job.raw){
         fmt.replace("%log%", job.log);
         fmt.replace("%clock%", job.pinfo[clock]);
+        fmt.replace("%date%", job.pinfo[date]);
         fmt.replace("%time%", job.pinfo[time]);
+        fmt.replace("%datetime%", job.pinfo[time] + " " + job.pinfo[date]);
         fmt.replace("%thread%", job.pinfo[thread]);
         fmt.replace("%line%", job.pinfo[line]);
         fmt.replace("%file%", job.pinfo[file]);
         fmt.replace("%function%", job.pinfo[function]);
-        if(job.newln)
+        if(job.newln && fmt.last() != '\n')
             fmt << '\n';
         return fmt;
     } else {
@@ -104,15 +97,21 @@ ZString ZLogWorker::makeLog(LogJob &job, ZString fmt){
     }
 }
 
-void ZLogWorker::doLog(LogJob jb){
+void ZLogWorker::doLog(LogJob &jb){
     formatMtx.lock();
     if(!stdoutlog[jb.source].isEmpty()){
         fprintf(stdout, "%s", makeLog(jb, stdoutlog[jb.source]).cc());
+        fflush(stdout);
+    } else if(!stdoutlog[ZLogSource::all].isEmpty()){
+        fprintf(stdout, "%s", makeLog(jb, stdoutlog[ZLogSource::all]).cc());
         fflush(stdout);
     }
 
     if(!stderrlog[jb.source].isEmpty()){
         fprintf(stderr, "%s", makeLog(jb, stderrlog[jb.source]).cc());
+        fflush(stderr);
+    } else if(!stderrlog[ZLogSource::all].isEmpty()){
+        fprintf(stderr, "%s", makeLog(jb, stderrlog[ZLogSource::all]).cc());
         fflush(stderr);
     }
 
@@ -120,9 +119,14 @@ void ZLogWorker::doLog(LogJob jb){
         for(zu64 i = 0; i < logfiles.size(); ++i){
             if(!logfiles[i][jb.source].isEmpty()){
                 logfiles.key(i).createDirsTo();
-
                 std::ofstream lgfl(logfiles.key(i).str().cc(), std::ios::app);
                 lgfl << makeLog(jb, logfiles[i][jb.source]);
+                lgfl.flush();
+                lgfl.close();
+            } else if(!logfiles[i][ZLogSource::all].isEmpty()){
+                logfiles.key(i).createDirsTo();
+                std::ofstream lgfl(logfiles.key(i).str().cc(), std::ios::app);
+                lgfl << makeLog(jb, logfiles[i][ZLogSource::all]);
                 lgfl.flush();
                 lgfl.close();
             }
@@ -131,17 +135,17 @@ void ZLogWorker::doLog(LogJob jb){
     formatMtx.unlock();
 }
 
-void ZLogWorker::formatStdout(zu64 type, ZString fmt){
+void ZLogWorker::formatStdout(zlog_source type, ZString fmt){
     formatMtx.lock();
     stdoutlog[type] = fmt;
     formatMtx.unlock();
 }
-void ZLogWorker::formatStderr(zu64 type, ZString fmt){
+void ZLogWorker::formatStderr(zlog_source type, ZString fmt){
     formatMtx.lock();
     stderrlog[type] = fmt;
     formatMtx.unlock();
 }
-void ZLogWorker::addLogFile(ZPath pth, zu64 type, ZString fmt){
+void ZLogWorker::addLogFile(ZPath pth, zlog_source type, ZString fmt){
     formatMtx.lock();
     logfiles[pth][type] = fmt;
     formatMtx.unlock();

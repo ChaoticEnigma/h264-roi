@@ -1,5 +1,6 @@
 #include "zaddress.h"
 #include "zlog.h"
+#include "zerror.h"
 
 #if PLATFORM == WINDOWS
     #include <winsock2.h>
@@ -8,6 +9,7 @@
     #include <netdb.h>
     #include <arpa/inet.h>
     #include <string.h>
+    #include <netinet/in.h>
 #endif
 
 namespace LibChaos {
@@ -36,7 +38,7 @@ const char *inet_ntop(int af, const void* src, char *dst, int cnt){
     }
 
     if(WSAAddressToString((struct sockaddr *)&srcaddr, sizeof(sockaddr_storage), 0, dst, (LPDWORD) &cnt) != 0){
-        ELOG("ZAddress: WSAAddressToString error " << WSAGetLastError());
+        ELOG("ZAddress: WSAAddressToString error " << ZError::getSystemError());
         return NULL;
     }
     return dst;
@@ -157,7 +159,7 @@ ZArray<ZAddress> ZAddress::lookUp(ZAddress addr){
 
     ZString name = addr.str();
     if((status = getaddrinfo(name.cc(), NULL, &hints, &res)) != 0){
-        ELOG("ZSocket: getaddrinfo: " << gai_strerror(status));
+        ELOG("ZSocket: getaddrinfo: " << ZError::getSystemError());
         return ZArray<ZAddress>();
     }
 
@@ -197,13 +199,13 @@ bool ZAddress::populate(sockaddr_storage *ptr) const {
     if(_family == ipv4){
         sockaddr_in *v4 = (sockaddr_in *)ptr;
         v4->sin_family = AF_INET;
+        v4->sin_port = htons(_port);
         memcpy(&(v4->sin_addr), _v4_addr, sizeof(v4->sin_addr));
-        v4->sin_port = _port;
     } else if(_family == ipv6){
         sockaddr_in6 *v6 = (sockaddr_in6 *)ptr;
         v6->sin6_family = AF_INET6;
+        v6->sin6_port = htons(_port);
         memcpy(&(v6->sin6_addr), _v6_addr, sizeof(v6->sin6_addr));
-        v6->sin6_port = _port;
     } else {
         return false;
     }
@@ -238,7 +240,7 @@ bool ZAddress::parseIP(int af, ZString str){
             memcpy(_v4_addr, &(addr4.sin_addr), sizeof(addr4.sin_addr));
         } else {
             // Internal error
-            ELOG("ZAddress: parseIPv4 error " << errno << ": " << strerror(errno));
+            ELOG("ZAddress: parseIPv4 error " << ZError::getSystemError());
             return false;
         }
         return true;
@@ -254,7 +256,7 @@ bool ZAddress::parseIP(int af, ZString str){
             memcpy(_v6_addr, &(addr6.sin6_addr), sizeof(addr6.sin6_addr));
         } else {
             // Internal error
-            ELOG("ZAddress: parseIPv6 error " << errno << ": " << strerror(errno));
+            ELOG("ZAddress: parseIPv6 error " << ZError::getSystemError());
             return false;
         }
         return true;

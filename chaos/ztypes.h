@@ -61,7 +61,8 @@
 #endif
 
 // Constants
-#ifndef NULL
+#ifdef NULL
+    #undef NULL
     //#define NULL (void *)0
     #define NULL nullptr
 #endif
@@ -87,6 +88,7 @@ typedef zu8 zbyte;
 typedef unsigned short zu16;
 typedef signed short zs16;
 
+typedef int zint;
 typedef unsigned int zuint;
 typedef signed int zsint;
 

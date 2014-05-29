@@ -16,7 +16,7 @@
     #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::debug) << PREPROCM << A
     #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error) << PREPROCM << A
     #define RLOG(A) LibChaos::ZLog() << LibChaos::ZLog::raw << A
-    #define SLOG(A) LibChaos::ZLog() << LibChaos::ZLog::sync << A
+    //#define SLOG(A) LibChaos::ZLog() << LibChaos::ZLog::sync << A
     #define TLOG(A) LibChaos::ZLog() << LibChaos::ZLog::this_thread << A
     #define OLOG(A) LibChaos::ZLog() << LibChaos::ZLog::stdio << A
 #else
@@ -24,7 +24,7 @@
     #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::debug) << PREPROCM << A
     #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error) << PREPROCM << A
     #define RLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::raw << A
-    #define SLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::sync << A
+    //#define SLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::sync << A
     #define TLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::this_thread << A
     #define OLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::stdio << A
 #endif
@@ -37,6 +37,7 @@ namespace LibChaos {
 
 class ZLog {
 public:
+    typedef ZLogSource::zlog_source zlog_source;
     typedef ZLogWorker::zlog_preproc zlog_preproc;
     typedef ZLogWorker::info_type info_type;
     typedef ZLogWorker::LogJob LogJob;
@@ -55,12 +56,12 @@ public:
         stdio = 9,          // Current instance outputs only to stdout
 
         // Sequence Modifiers
-        sync = 10,          // Push log to queue, block until queue is empty
-        async = 11,         // Push log to queue, return as soon as possible (default)
+        //sync = 10,          // Push log to queue, block until queue is empty
+        //async = 11,         // Push log to queue, return as soon as possible (default)
         this_thread = 12    // Log immediately from this thread, block until done
     };
 
-    ZLog(char source = ZLogSource::normal);
+    ZLog(zlog_source source = ZLogSource::normal);
     ~ZLog();
 
     ZLog &operator<<(zlog_flag);
@@ -78,17 +79,20 @@ public:
 
     ZString pullBuffer();
 
+    static ZString getDate();
     static ZString getTime();
     static ZString getClock();
     static ZString getThread();
     static ZString genLogFileName(ZString prefix);
 
     static void init();
-    static void init(ZPath);
+    static void init(ZPath, ZString fmt = TIMELOG);
 
-    static void formatStdout(zu64 type, ZString fmt);
-    static void formatStderr(zu64 type, ZString fmt);
-    static void addLogFile(ZPath, zu64 type, ZString fmt);
+    static void formatStdout(zlog_source type, ZString fmt);
+    static void formatStderr(zlog_source type, ZString fmt);
+    static void addLogFile(ZPath, zlog_source type, ZString fmt);
+
+    static void waitEnd();
 private:
     void flushLog();
 
@@ -98,12 +102,12 @@ private:
 
     ZString buffer;
     ZMap<info_type, ZString> info;
-    char source_mode; // normal = 0, debug = 1, error = 2
+    zlog_source source_mode;
     bool stdiolog;
     bool write_on_destruct;
     bool newline;
     bool rawlog;
-    bool synclog;
+    //bool synclog;
     bool noqueue;
 
 };

@@ -29,10 +29,10 @@ public:
 //        return *this;
 //    }
 
-    bool operator==(ZArray<T> arr){
+    bool operator==(ZArray<T> arr) const {
         return (_data == arr.data());
     }
-    bool operator!=(ZArray<T> arr){
+    bool operator!=(ZArray<T> arr) const {
         return operator==(arr);
     }
 
@@ -72,6 +72,10 @@ public:
     }
     ZArray<T> &erase(zu64 index){
         return erase(index, 1);
+    }
+
+    ZArray<T> &extend(zu64 num = 1){
+        return resize(size() + num);
     }
 
     ZArray<T> &pop(zu64 index){

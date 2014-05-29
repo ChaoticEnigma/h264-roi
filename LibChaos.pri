@@ -6,28 +6,43 @@ QT -= core gui widgets
 # LibChaos
 HEADERS += \
     $$PWD/chaos/database.h \
-    $$PWD/chaos/zarray.h \
-    $$PWD/chaos/zarray2.h \
-    $$PWD/chaos/zassoc.h \
-    $$PWD/chaos/zassoc2.h \
-    $$PWD/chaos/zautobuffer.h \
-    $$PWD/chaos/zautobufferunit.h \
-    $$PWD/chaos/zbinary.h \
     $$PWD/chaos/zerror.h \
     $$PWD/chaos/zfile.h \
-    $$PWD/chaos/zjson.h \
     $$PWD/chaos/zlog.h \
     $$PWD/chaos/zlogworker.h \
-    $$PWD/chaos/zmap.h \
     $$PWD/chaos/zmutex.h \
     $$PWD/chaos/zpath.h \
     $$PWD/chaos/zsocket.h \
-    $$PWD/chaos/zstring.h \
     $$PWD/chaos/zthread.h \
     $$PWD/chaos/ztypes.h \
-    $$PWD/chaos/zxml.h \
+    $$PWD/chaos/ztime.h \
+    $$PWD/chaos/zclock.h \
+    $$PWD/chaos/zret.h \
+    \
+    $$PWD/chaos/data/zarray.h \
+    $$PWD/chaos/data/zarray2.h \
+    $$PWD/chaos/data/zassoc.h \
+    $$PWD/chaos/data/zassoc2.h \
+    $$PWD/chaos/data/zautobuffer.h \
+    $$PWD/chaos/data/zautobufferunit.h \
+    $$PWD/chaos/data/zbinary.h \
+    $$PWD/chaos/data/zdata.h \
+    $$PWD/chaos/data/zjson.h \
+    $$PWD/chaos/data/zmap.h \
+    $$PWD/chaos/data/zstring.h \
+    $$PWD/chaos/data/zxml.h \
+    \
     $$PWD/chaos/lib/sqlite3.h \
+    \
+    $$PWD/chaos/net/zsocket.h \
+    $$PWD/chaos/net/zconnection.h \
+    $$PWD/chaos/net/zstreamsocket.h \
+    $$PWD/chaos/net/zdatagramsocket.h \
+    $$PWD/chaos/net/zstreamconnection.h \
+    $$PWD/chaos/net/zaddress.h \
+    \
     $$PWD/test/test.h \
+    \
     $$PWD/ui/zui.h \
     $$PWD/ui/base.h \
     $$PWD/ui/window.h \
@@ -38,30 +53,38 @@ HEADERS += \
     $$PWD/ui/table.h \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
+    \
     $$PWD/bbb/zbbb.h \
-    $$PWD/chaos/net/zsocket.h \
-    $$PWD/chaos/net/zconnection.h \
-    $$PWD/chaos/net/zstreamsocket.h \
-    $$PWD/chaos/net/zdatagramsocket.h \
-    $$PWD/chaos/net/zstreamconnection.h \
-    $$PWD/chaos/net/zaddress.h
+    libchaos/chaos/zcondition.h
 
 SOURCES += \
     $$PWD/chaos/database.cpp \
-    $$PWD/chaos/zautobuffer.cpp \
-    $$PWD/chaos/zbinary.cpp \
     $$PWD/chaos/zerror.cpp \
     $$PWD/chaos/zfile.cpp \
-    $$PWD/chaos/zjson.cpp \
     $$PWD/chaos/zlog.cpp \
     $$PWD/chaos/zlogworker.cpp \
     $$PWD/chaos/zpath.cpp \
     $$PWD/chaos/zsocket.cpp \
-    $$PWD/chaos/zstring.cpp \
-    $$PWD/chaos/zstring_encode.cpp \
     $$PWD/chaos/zthread.cpp \
-    $$PWD/chaos/zxml.cpp \
+    $$PWD/chaos/ztime.cpp \
+    $$PWD/chaos/zclock.cpp \
+    \
+    $$PWD/chaos/data/zautobuffer.cpp \
+    $$PWD/chaos/data/zbinary.cpp \
+    $$PWD/chaos/data/zjson.cpp \
+    $$PWD/chaos/data/zstring.cpp \
+    $$PWD/chaos/data/zstring_encode.cpp \
+    $$PWD/chaos/data/zxml.cpp \
+    \
     $$PWD/chaos/lib/sqlite3.c \
+    \
+    $$PWD/chaos/net/zsocket.cpp \
+    $$PWD/chaos/net/zconnection.cpp \
+    $$PWD/chaos/net/zstreamsocket.cpp \
+    $$PWD/chaos/net/zdatagramsocket.cpp \
+    $$PWD/chaos/net/zstreamconnection.cpp \
+    $$PWD/chaos/net/zaddress.cpp \
+    \
     $$PWD/test/libchaos_main.cpp \
     $$PWD/test/autobuffer_test.cpp \
     $$PWD/test/thread_test.cpp \
@@ -71,6 +94,8 @@ SOURCES += \
     $$PWD/test/error_test.cpp \
     $$PWD/test/socket_test.cpp \
     $$PWD/test/json_test.cpp \
+    $$PWD/test/socket2_test.cpp \
+    \
     $$PWD/ui/win32/window_win32.cpp \
     $$PWD/ui/win32/windowproc_win32.cpp \
     $$PWD/ui/win32/control_win32.cpp \
@@ -80,15 +105,10 @@ SOURCES += \
     $$PWD/ui/win32/table_win32.cpp \
     $$PWD/ui/win32/progress_win32.cpp \
     $$PWD/ui/win32/align_win32.cpp \
+    \
     $$PWD/bbb/io.cpp \
-    $$PWD/test/socket2_test.cpp \
-    $$PWD/chaos/net/zsocket.cpp \
-    $$PWD/chaos/net/zconnection.cpp \
-    $$PWD/util/extensionfixer.cpp \
-    $$PWD/chaos/net/zstreamsocket.cpp \
-    $$PWD/chaos/net/zdatagramsocket.cpp \
-    $$PWD/chaos/net/zstreamconnection.cpp \
-    $$PWD/chaos/net/zaddress.cpp
+    \
+    $$PWD/util/extensionfixer.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -107,6 +127,7 @@ INCLUDEPATH += \
     $$PWD/chaos \
     $$PWD/chaos/net \
     $$PWD/chaos/lib \
+    $$PWD/chaos/data \
     $$PWD/test \
     $$PWD/ui \
     $$PWD/bbb \

@@ -35,7 +35,7 @@ ZSocket::~ZSocket(){
 bool getSocket(int &fd, ZAddress addr){
     fd = ::socket(addr.family(), addr.type(), addr.protocol());
     if(fd <= 0){
-        ELOG("ZSocket: failed to create socket " << ZError::getError());
+        ELOG("ZSocket: failed to create socket " << ZError::getSystemError());
         fd = 0;
         return false;
     }
@@ -58,13 +58,13 @@ bool ZSocket::open(ZAddress addr){
 #if PLATFORM == LINUX
             int opt = 1;
             if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) != 0){
-                ELOG("ZSocket: setsockopt error: " << ZError::getError());
+                ELOG("ZSocket: setsockopt error: " << ZError::getSystemError());
                 close();
                 continue;
             }
 #elif PLATFORM == WINDOWS
             if(setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (char *)TRUE, sizeof(BOOL)) != 0){
-                ELOG("ZSocket: setsockopt error: " << ZError::getError());
+                ELOG("ZSocket: setsockopt error: " << ZError::getSystemError());
                 close();
                 continue;
             }
@@ -74,7 +74,7 @@ bool ZSocket::open(ZAddress addr){
         sockaddr_storage addrstorage;
         addrs[i].populate(&addrstorage);
         if(::bind(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
-            ELOG("ZSocket: bind error " << ZError::getError());
+            ELOG("ZSocket: bind error " << ZError::getSystemError());
             close();
             continue;
         }
@@ -121,7 +121,7 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
     long sent = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
 #endif
     if(sent < 0)
-        ELOG("ZSocket: sendto error " << ZError::getError());
+        ELOG("ZSocket: sendto error " << ZError::getSystemError());
     return (zu64)sent == data.size();
 }
 
@@ -174,7 +174,7 @@ bool ZSocket::connect(ZAddress addr, ZConnection &conn){
         sockaddr_storage addrstorage;
         addrs[i].populate(&addrstorage);
         if(::connect(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
-            ELOG("ZSocket: connect error " << ZError::getError());
+            ELOG("ZSocket: connect error " << ZError::getSystemError());
             close();
             continue;
         }
@@ -191,7 +191,7 @@ bool ZSocket::connect(ZAddress addr, ZConnection &conn){
 
 bool ZSocket::listen(){
     if(::listen(_socket, 20) != 0){
-        ELOG("ZSocket: listen error " << ZError::getError());
+        ELOG("ZSocket: listen error " << ZError::getSystemError());
         return false;
     }
     return true;
@@ -230,12 +230,12 @@ bool ZSocket::setBlocking(bool set){
 
     int flags = fcntl(_socket, F_GETFL, 0);
     if(flags < 0){
-        ELOG("ZSocket: failed to get socket flags error: " << ZError::getError());
+        ELOG("ZSocket: failed to get socket flags error: " << ZError::getSystemError());
         return false;
     }
     flags = set ? (flags &~ O_NONBLOCK) : (flags | O_NONBLOCK);
     if(fcntl(_socket, F_SETFL, flags) != 0){
-        ELOG("ZSocket: failed to set non-blocking socket error: " << ZError::getError());
+        ELOG("ZSocket: failed to set non-blocking socket error: " << ZError::getSystemError());
         return false;
     }
 
@@ -243,7 +243,7 @@ bool ZSocket::setBlocking(bool set){
 
     DWORD opt = set ? 0 : 1;
     if(ioctlsocket(_socket, FIONBIO, &opt) != 0){
-        ELOG("ZSocket: failed to set non-blocking socket error: " << ZError::getError());
+        ELOG("ZSocket: failed to set non-blocking socket error: " << ZError::getSystemError());
         return false;
     }
 

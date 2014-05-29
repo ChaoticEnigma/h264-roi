@@ -32,6 +32,8 @@ class ZFile {
         static ZString readFile(ZPath name);
         static ZString readFile(ZPath name, bool&);
 
+        static ZBinary readBinary(ZPath name);
+
         //static bool writeFile(ZPath name, const ZString &data);
         static zu64 writeFile(ZPath name, const ZBinary &data);
 

@@ -113,6 +113,28 @@ ZString ZFile::readFile(ZPath filenm, bool &status){
     return ZString();
 }
 
+ZBinary ZFile::readBinary(ZPath name){
+    struct stat st_buf;
+    int ret = stat(name.str().cc(), &st_buf);
+    if(ret != 0){
+        return ZBinary();
+    }
+    if(S_ISDIR(st_buf.st_mode)){
+        return ZBinary();
+    }
+    std::ifstream infile(name.str().cc(), std::ios::in | std::ios::binary);
+    if(infile){
+        ZBinary buff;
+        infile.seekg(0, std::ios::end);
+        buff.fill(0, infile.tellg());
+        infile.seekg(0, std::ios::beg);
+        infile.read((char *)buff.raw(), buff.size());
+        infile.close();
+        return(buff);
+    }
+    return ZBinary();
+}
+
 //bool ZFile::writeFile(ZPath filenm, const ZString &data){
 //    if(!filenm.createDirsTo())
 //        return false;

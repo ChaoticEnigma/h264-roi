@@ -14,6 +14,7 @@
 #include "zmutex.h"
 #include "zbinary.h"
 #include "zmap.h"
+#include "zcondition.h"
 
 // Default Log formats
 #define LOGONLY "%log%"
@@ -24,26 +25,30 @@
 namespace LibChaos {
 
 namespace ZLogSource {
-    enum {
+    enum zlog_source {
         normal = 1,
         debug = 2,
-        error = 3
+        error = 3,
+        all = 4
     };
 }
 
 class ZLogWorker {
 public:
+    typedef ZLogSource::zlog_source zlog_source;
+
     enum info_type {
         file = 1,
         line = 2,
         function = 3,
         clock = 4,
-        time = 5,
-        thread = 6
+        date = 5,
+        time = 6,
+        thread = 7
     };
 
     struct LogJob {
-        char source;
+        zlog_source source;
         bool stdio;
         bool newln;
         bool raw;
@@ -56,26 +61,26 @@ public:
         ZString info;
     };
 
-    static ZMutex<char> mtx;
-    static ZMutex<char> formatMtx;
+    static ZMutex mtx;
+    static ZMutex formatMtx;
+    static ZCondition cond;
     static std::queue<LogJob> jobs;
 
-    static std::atomic<bool> pending;
-    static ZMap<zu64, ZString> stdoutlog;
-    static ZMap<zu64, ZString> stderrlog;
-    static ZAssoc< ZPath, ZMap<zu64, ZString> > logfiles;
+    static ZMap<zlog_source, ZString> stdoutlog;
+    static ZMap<zlog_source, ZString> stderrlog;
+    static ZAssoc< ZPath, ZMap<zlog_source, ZString> > logfiles;
     static bool lastcomp;
 
     ZLogWorker();
     ~ZLogWorker();
-    int run();
-    static void wait();
+    void run();
+    void waitEnd();
     void queue(LogJob);
-    static void doLog(LogJob jb);
+    static void doLog(LogJob &jb);
 
-    static void formatStdout(zu64 type, ZString fmt);
-    static void formatStderr(zu64 type, ZString fmt);
-    static void addLogFile(ZPath, zu64 type, ZString fmt);
+    static void formatStdout(zlog_source type, ZString fmt);
+    static void formatStderr(zlog_source type, ZString fmt);
+    static void addLogFile(ZPath, zlog_source type, ZString fmt);
 private:
     static void *zlogWorker(void *);
     static void sigHandle(int);

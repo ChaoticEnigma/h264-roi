@@ -59,6 +59,11 @@ std::wstring ZString::wstr() const {
 //    return strcpy(str_, data.c_str());
 //}
 
+ZString::ZString(const unsigned char *str_) : data(){
+    if(str_ != NULL){
+        data = std::string((const char *)str_, strlen((const char *)str_));
+    }
+}
 ZString::ZString(const char *str_) : data(){
     if(str_ != NULL){
         data = std::string(str_, strlen(str_));
@@ -97,8 +102,9 @@ ZString::ZString(zu16 num){ data = ItoS((zu64)num, 10).str(); }
 ZString::ZString(zs16 num){ data = ItoS((zs64)num, 10).str(); }
 ZString::ZString(zu32 num){ data = ItoS((zu64)num, 10).str(); }
 ZString::ZString(zs32 num){ data = ItoS((zs64)num, 10).str(); }
+ZString::ZString(zint num){ data = ItoS((zs64)num, 10).str(); }
 ZString::ZString(zuint num){ data = ItoS((zu64)num, 10).str(); }
-ZString::ZString(zsint num){ data = ItoS((zs64)num, 10).str(); }
+//ZString::ZString(zsint num){ data = ItoS((zs64)num, 10).str(); }
 ZString::ZString(zu64 num){ data = ItoS(num, 10).str(); }
 ZString::ZString(zs64 num){ data = ItoS(num, 10).str(); }
 
@@ -461,6 +467,19 @@ ZString ZString::label(ZString labeltxt, ZString value, bool modify){
         return replace(data, txt, value);
 }
 
+ArZ ZString::split(char delim){
+    ArZ out;
+    for(zu64 i = 0; i < size(); ++i){
+        if(data[i] == delim){
+            out.push(substr(data, 0, i-1));
+            if(i < size()-1)
+                out.push(substr(data, i+1));
+            break;
+        }
+    }
+    return out;
+}
+
 ArZ ZString::explode(char delim){
     ArZ out;
     std::string str_ = data;
@@ -649,6 +668,19 @@ ZString ZString::compound(ArZ parts, ZString delim){
             name << delim;
     }
     return name;
+}
+
+bool ZString::alphaTest(ZString str1, ZString str2){
+    for(zu64 k = 0; k < str1.size() && k < str2.size(); ++k){
+        if(str1[k] == str2[k])
+            continue;
+        if(str1[k] < str2[k])
+            return true;
+        return false;
+    }
+    if(str1.size() <= str2.size())
+        return true;
+    return false;
 }
 
 std::ostream &operator<<(std::ostream& lhs, ZString rhs){
