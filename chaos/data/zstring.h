@@ -144,7 +144,7 @@ public:
     ZString popLast();
     static ZString compound(ArZ parts, ZString delim);
 
-    ArZ split(char delim);
+    ArZ split(ZString delim);
 
     ArZ explode(char delim);
     ArZ explodeList(unsigned nargs, ...);

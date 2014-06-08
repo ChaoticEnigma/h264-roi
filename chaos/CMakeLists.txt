@@ -69,6 +69,13 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     net/zstreamconnection.cpp
 )
 
+IF(LIBCHAOS_WINDOWS)
+    SET(LibChaos_SOURCES
+        ${LibChaos_SOURCES}
+        #lib/StackWalker.cpp
+    )
+ENDIF()
+
 ### =================== CONFIG =================== ###
 
 SET(LibChaos_INCLUDE ${LibChaos_SOURCE_DIR} ${LibChaos_SOURCE_DIR}/net ${LibChaos_SOURCE_DIR}/data PARENT_SCOPE)
@@ -81,7 +88,7 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR}
 )
 
-source_hash(${LibChaos_SOURCE_DIR})
+#source_hash(${LibChaos_SOURCE_DIR})
 configure_build("Core" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
 SET(LibChaosCore_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 
@@ -105,5 +112,5 @@ IF(LIBCHAOS_UNIX)
         TARGET_LINK_LIBRARIES(chaos dl)
     ENDIF()
 ELSEIF(LIBCHAOS_WINDOWS)
-    TARGET_LINK_LIBRARIES(chaos ws2_32)
+    TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi version)
 ENDIF()

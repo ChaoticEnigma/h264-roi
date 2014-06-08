@@ -25,6 +25,8 @@ public:
 
     ZString what();
     int code();
+    ZString trace();
+
     explicit operator bool();
 
     void logStackTrace();
@@ -36,7 +38,7 @@ public:
 
     static ZString getSystemError();
 
-    static ArZ getStackTrace();
+    static ArZ getStackTrace(unsigned trim = 1);
 
 private:
     struct sigset {
@@ -49,7 +51,7 @@ private:
 private:
     ZString desc;
     int err;
-    ArZ trace;
+    ArZ stacktrace;
 };
 
 }

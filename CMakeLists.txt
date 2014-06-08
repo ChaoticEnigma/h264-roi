@@ -3,7 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(CMAKE_GENERATOR "Unix Makefiles")
 
 INCLUDE(configure_build.cmake)
-INCLUDE(source_hash.cmake)
+#INCLUDE(source_hash.cmake)
 
 # Platform Settings
 IF(WIN32)

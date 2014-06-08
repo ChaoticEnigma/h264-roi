@@ -467,16 +467,11 @@ ZString ZString::label(ZString labeltxt, ZString value, bool modify){
         return replace(data, txt, value);
 }
 
-ArZ ZString::split(char delim){
+ArZ ZString::split(ZString delim){
     ArZ out;
-    for(zu64 i = 0; i < size(); ++i){
-        if(data[i] == delim){
-            out.push(substr(data, 0, i-1));
-            if(i < size()-1)
-                out.push(substr(data, i+1));
-            break;
-        }
-    }
+    zu64 pos = findFirst(*this, delim);
+    out.push(substr(data, 0, pos));
+    out.push(substr(data, pos + delim.size()));
     return out;
 }
 
