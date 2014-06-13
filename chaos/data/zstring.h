@@ -59,7 +59,7 @@ public:
     const wchar_t *wc() const;
 #endif
 
-    ZString(char);
+    ZString(char, zu64 len = 1);
 
     ZString(zu16);
     ZString(zs16);
@@ -71,7 +71,7 @@ public:
     ZString(zu64);
     ZString(zs64);
 
-    static ZString ItoS(zu64 num, unsigned base = 10);
+    static ZString ItoS(zu64 num, unsigned base = 10, zu64 pad = 0);
     static ZString ItoS(zs64 num, unsigned base = 10);
     int tint() const;
 

@@ -94,8 +94,8 @@ const wchar_t *ZString::wc() const {
 }
 #endif
 
-ZString::ZString(char ch){
-    data = std::string(1, ch);
+ZString::ZString(char ch, zu64 len){
+    data = std::string(len, ch);
 }
 
 ZString::ZString(zu16 num){ data = ItoS((zu64)num, 10).str(); }
@@ -108,7 +108,7 @@ ZString::ZString(zuint num){ data = ItoS((zu64)num, 10).str(); }
 ZString::ZString(zu64 num){ data = ItoS(num, 10).str(); }
 ZString::ZString(zs64 num){ data = ItoS(num, 10).str(); }
 
-ZString ZString::ItoS(zu64 value, unsigned base) {
+ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad) {
     std::string buf;
     if(base < 2 || base > 16)
         return buf;
@@ -119,11 +119,16 @@ ZString ZString::ItoS(zu64 value, unsigned base) {
         quotient /= base;
     } while(quotient);
     std::reverse(buf.begin(), buf.end());
-    return ZString(buf);
+    ZString tmp = buf;
+    if(tmp.size() < pad){
+        tmp = ZString('0', pad-tmp.size()) + tmp;
+    }
+    return tmp;
 }
 ZString ZString::ItoS(zs64 value, unsigned base) {
     std::string buf;
-    if (base < 2 || base > 16) return buf;
+    if (base < 2 || base > 16)
+        return buf;
     buf.reserve(35);
     zs64 quotient = value;
     do {
