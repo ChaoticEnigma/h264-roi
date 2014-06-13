@@ -214,6 +214,90 @@ bool ZFile::remove(ZPath file){
         return true;
     }
 }
+//bool ZFile::removeDir(ZPath name){
+//    const char *path = name.str().cc();
+//    DIR *d = opendir(path);
+//    size_t path_len = strlen(path);
+//    int r = -1;
+
+//    if(d){
+//       struct dirent *p;
+//       r = 0;
+//       while(!r && (p=readdir(d))){
+//           int r2 = -1;
+//           char *buf;
+//           size_t len;
+//           /* Skip the names "." and ".." as we don't want to recurse on them. */
+//           if(!strcmp(p->d_name, ".") || !strcmp(p->d_name, "..")){
+//              continue;
+//           }
+//           len = path_len + strlen(p->d_name) + 2;
+//           buf = (char *)malloc(len);
+
+//           if(buf){
+//              struct stat statbuf;
+//              snprintf(buf, len, "%s/%s", path, p->d_name);
+//              if (!stat(buf, &statbuf)){
+//                 if(S_ISDIR(statbuf.st_mode)){
+//                    r2 = ZFile::removeDir(ZPath(ZString(buf)));
+//                 } else {
+//                    r2 = unlink(buf);
+//                 }
+//              }
+//              free(buf);
+//           }
+//           r = r2;
+//       }
+//       closedir(d);
+//    }
+//    if(!r){
+//       r = rmdir(path);
+//    }
+//    return r;
+//}
+
+bool ZFile::removeDir(ZPath name) {
+    using namespace std;
+    string path = name.str().str();
+    if (path[path.length()-1] != '\\') path += "\\";
+    // first off, we need to create a pointer to a directory
+    DIR *pdir = NULL; // remember, it's good practice to initialise a pointer to NULL!
+    pdir = opendir (path.c_str());
+    struct dirent *pent = NULL;
+    if (pdir == NULL) { // if pdir wasn't initialised correctly
+        return false; // return false to say "we couldn't do it"
+    } // end if
+    char file[256];
+
+    int counter = 1; // use this to skip the first TWO which cause an infinite loop (and eventually, stack overflow)
+    while((pent = readdir(pdir))) { // while there is still something in the directory to list
+        if (counter > 2) {
+            for (int i = 0; i < 256; i++) file[i] = '\0';
+            strcat(file, path.c_str());
+            if (pent == NULL) { // if pent has not been initialised correctly
+                return false; // we couldn't do it
+            } // otherwise, it was initialised correctly, so let's delete the file~
+            strcat(file, pent->d_name); // concatenate the strings to get the complete path
+            if(ZFile::isDir(ZString(file)) == true) {
+                ZFile::removeDir(file);
+            } else { // it's a file, we can use remove
+                remove(file);
+            }
+        } counter++;
+    }
+
+    // finally, let's clean up
+    closedir (pdir); // close the directory
+    if(!rmdir(path.c_str()))
+        return false; // delete the directory
+    return true;
+}
+
+bool ZFile::rename(ZPath old, ZPath newfl){
+    if(::rename(old.str().cc(), newfl.str().cc()) == 0)
+        return true;
+    return false;
+}
 
 bool ZFile::exists(){
     return exists(_flpath);

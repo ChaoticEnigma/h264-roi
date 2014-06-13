@@ -44,6 +44,9 @@ class ZFile {
 
         bool remove();
         static bool remove(ZPath);
+        static bool removeDir(ZPath);
+
+        static bool rename(ZPath old, ZPath newfl);
 
         bool exists();
         static bool exists(ZPath);

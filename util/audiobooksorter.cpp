@@ -66,11 +66,39 @@ void sortNumeric(ArP &list){
     list = tmppcfls;
 }
 
-int main(){
+int main(int argc, char **argv){
     ZLog::formatStdout(ZLogSource::all, "%log%");
 
+    // /////////////////////////
+
+    ArZ param_args;
+    AsArZ param_flags;
+
+    for(int i = 0; i < argc; ++i){
+        if(argv[i][0] == '-'){
+            ZString tmp = argv[i];
+            tmp.substr(1);
+            ArZ fl = tmp.explode('=');
+            ZString flg = fl[0];
+            fl.popFront();
+            ZString str = ZString::compound(fl, ZString());
+            param_flags[flg] = str;
+        } else {
+            param_args.push(argv[i]);
+        }
+    }
+    param_args.popFront();
+
+    // /////////////////////////
+
     LOG("Fixing audiobook...");
-    ZPath pwd  = ZPath::pwd();
+    ZPath pwd;
+    if(param_args.size() == 1){
+        pwd = param_args[0];
+    } else {
+        LOG("ERROR");
+        return 1;
+    }
     ZString name = pwd.last();
     LOG("Got name \"" << name << "\"");
     zu64 count = 0;
@@ -90,9 +118,23 @@ int main(){
         newname.replace(" ", "_");
         ZPath newpath = pwd + newname;
 
-        ++count;
+        if(!ZFile::rename(old, newpath)){
+            ELOG("Could not move " << old);
+            continue;
+        }
 
         LOG(old << " --> " << newpath);
+        ++count;
+    }
+
+    if(count == files.size()){
+        for(zu64 i = 0; i < dirs.size(); ++i){
+            if(!ZFile::removeDir(dirs[i])){
+                ELOG("Could not remove " << dirs[i]);
+                continue;
+            }
+            LOG("XXX " << dirs[i]);
+        }
     }
 
     LOG("Finished: moved " << count << " files.");
