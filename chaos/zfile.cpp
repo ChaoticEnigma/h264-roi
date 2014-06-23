@@ -11,8 +11,8 @@
 
 namespace LibChaos {
 
-ZFile::ZFile() : _bits(0x000){}
-ZFile::ZFile(ZPath name, int mode) : _bits(0x000){
+ZFile::ZFile() : _bits(0){}
+ZFile::ZFile(ZPath name, int mode) : _bits(0){
     open(name, mode);
 }
 ZFile::~ZFile(){
@@ -21,29 +21,37 @@ ZFile::~ZFile(){
 
 bool ZFile::open(ZPath path, int mode){
     _flpath = path;
-    _bits = _bits & 0x011;
-    struct stat st_buf;
-    if(stat(_flpath.str().cc(), &st_buf) != 0 || S_ISDIR(st_buf.st_mode))
-        return false;
+    _bits = mode;
 
+    // Close previous file
     close();
 
+    // If we can't create and write
+    if(!(_bits & create) && (_bits & writeonly)){
+        // Check if the file exists
+        if(!(exists(_flpath) && isFile(_flpath))){
+            // Fail if it doesn't
+            return false;
+        }
+    }
+
+    // Set flags
     ZString modech;
-    if(mode & 0x11){ // read / write
-        _bits = 0x011;
+    if(_bits & readwrite){ // read / write
         modech << "r+";
-    } else if(mode & 0x01){ //write
-        _bits = 0x001;
-        modech << "w";
-    } else if(mode & 0x10){ //read
-        _bits = 0x010;
+    } else if(_bits & readonly){ // read
         modech << "r";
+    } else if(_bits & writeonly){ // write
+        modech << "w";
     }
     modech << "b"; // binary
+
     _fileh = fopen(_flpath.str().cc(), modech.cc());
-    if(_fileh != NULL)
-        _bits = _bits | 0x100;
-    return _fileh != NULL;
+    if(_fileh != NULL){
+        _bits = _bits | goodbit;
+        return true;
+    }
+    return false;
 }
 
 bool ZFile::close(){
@@ -54,7 +62,7 @@ bool ZFile::close(){
 }
 
 zu64 ZFile::read(ZBinary &out, zu64 max){
-    if(!isOpen() || !(_bits & 0x010))
+    if(!(isOpen() && (_bits & readonly)))
         return 0;
     unsigned char *buffer;
     if(flsize() >= max)
@@ -500,7 +508,7 @@ zu64 ZFile::flsize(){
 }
 
 bool ZFile::isOpen(){
-    return _bits & 0x100;
+    return _bits & goodbit;
 }
 int ZFile::getBits(){
     return _bits;
