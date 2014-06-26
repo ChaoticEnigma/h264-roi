@@ -72,6 +72,15 @@ ZDelta
 ZHash
     - ZBinary hashing / checksums
     
+ZUid
+    - custom generation
+    - generation options
+        - sequence
+        - random
+        - time
+        - MAC
+        - content hash
+    
 ZDatabase
     - redundancy to protect from corruption
     - lightweight database
