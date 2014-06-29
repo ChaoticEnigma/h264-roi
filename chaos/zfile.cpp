@@ -26,8 +26,8 @@ bool ZFile::open(ZPath path, int mode){
     // Close previous file
     close();
 
-    // If we can't create and write
-    if(!(_bits & create) && (_bits & writeonly)){
+    // If we're not allowed to create and write
+    if(!((_bits & create) && (_bits & writeonly))){
         // Check if the file exists
         if(!(exists(_flpath) && isFile(_flpath))){
             // Fail if it doesn't

@@ -118,7 +118,7 @@ OTHER_FILES += \
     $$PWD/chaos/CMakeLists.txt \
     $$PWD/test/CMakeLists.txt \
     $$PWD/configure_build.cmake \
-    $$PWD/todo.txt \
+    $$PWD/LibChaos_Todo_Ideas.txt \
     $$PWD/util/CMakeLists.txt \
     $$PWD/source_hash.cmake \
     $$PWD/hash.sh
