@@ -109,7 +109,8 @@ SOURCES += \
     $$PWD/bbb/io.cpp \
     \
     $$PWD/util/extensionfixer.cpp \
-    util/audiobooksorter.cpp
+    util/audiobooksorter.cpp \
+    util/imagedownloader.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
