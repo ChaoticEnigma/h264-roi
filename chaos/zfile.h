@@ -29,6 +29,7 @@ class ZFile {
         bool open(ZPath, int = readonly);
         bool close();
 
+        // does not work correctly
         zu64 read(ZBinary &out, zu64 = -1);
 
         zu64 write(const char *);

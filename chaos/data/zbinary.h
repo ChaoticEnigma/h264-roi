@@ -6,7 +6,7 @@
 #include "ztypes.h"
 #include "zarray.h"
 
-#include <string.h>
+//#include <string.h>
 
 namespace LibChaos {
 
@@ -47,7 +47,10 @@ public:
         return _data.ptr();
     }
 
-    static zu64 hash(char type, const ZBinary &data);
+    enum HashType {
+        hashType1 = 1
+    };
+    static zu64 hash(HashType type, const ZBinary &data);
 private:
     ZArray<zbinary_type> _data;
 };

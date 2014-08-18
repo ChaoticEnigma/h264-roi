@@ -29,3 +29,8 @@ TARGET_LINK_LIBRARIES(audiobooksorter chaos)
 # Image Downloader
 ADD_EXECUTABLE(imagedownloader imagedownloader.cpp)
 TARGET_LINK_LIBRARIES(imagedownloader chaos)
+
+
+# Duplicate Finder
+ADD_EXECUTABLE(duplicatefinder duplicatefinder.cpp)
+TARGET_LINK_LIBRARIES(duplicatefinder chaos)
