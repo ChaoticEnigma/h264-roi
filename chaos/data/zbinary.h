@@ -12,6 +12,10 @@ namespace LibChaos {
 
 class ZBinary {
 public:
+    enum HashType {
+        hashType1 = 1
+    };
+
     typedef unsigned char zbinary_type;
 
     ZBinary();
@@ -70,9 +74,6 @@ public:
         return _data.ptr();
     }
 
-    enum HashType {
-        hashType1 = 1
-    };
     static zu64 hash(HashType type, const ZBinary &data);
 private:
     ZArray<zbinary_type> _data;
