@@ -3,7 +3,7 @@
 namespace LibChaos {
 
 ZBinary::ZBinary() : _data(){}
-ZBinary::ZBinary(const zbinary_type *ptr, zu64 len) : _data(ptr, len){}
+ZBinary::ZBinary(const void *ptr, zu64 len) : _data((const zbinary_type *)ptr, len){}
 
 zu64 ZBinary::hash(char type, const ZBinary &data){
     switch(type){

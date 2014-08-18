@@ -40,9 +40,16 @@ int main(int argc, char **argv){
             bool ok = false;
             for(zu64 j = 0; j < tests.size(); ++j){
                 if(tests.key(j) == run[i].toLower()){
-                    if(tests[j]() != 0){
-                        LOG("!!! Test '" << tests.key(j) << "' Failed!");
-                        return i;
+                    int result = -1;
+                    try {
+                        result = tests[j]();
+                    } catch(int err){
+                        result = err;
+                    }
+                    if(result != 0){
+                        ELOG("!!! Test '" << tests.key(j) << "' Failed: " << result);
+                        ok = true;
+                        break;
                     } else {
                         LOG("=== Finished Test '" << tests.key(j) << "'");
                         ok = true;
@@ -57,8 +64,14 @@ int main(int argc, char **argv){
     } else {
         LOG("*** Starting All LibChaos Tests");
         for(zu64 i = 0; i < tests.size(); ++i){
-            if(tests[i]() != 0){
-                LOG("!!! Test '" << tests.key(i) << "' Failed!");
+            int result = -1;
+            try {
+                result = tests[i]();
+            } catch(int err){
+                result = err;
+            }
+            if(result != 0){
+                LOG("!!! Test '" << tests.key(i) << "' Failed: " << result);
                 return i;
             }
             LOG("=== Finished Test '" << tests.key(i) << "'");

@@ -80,6 +80,27 @@ ZLog &ZLog::operator<<(std::string text){
 ZLog &ZLog::operator<<(zs64 num){
     return log(ZString(num));
 }
+ZLog &ZLog::operator<<(zu64 num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(zs32 num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(zu32 num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(zint num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(zuint num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(double num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(char text){
+    return log(ZString(text));
+}
 ZLog &ZLog::operator<<(const char *text){
     return log(ZString(text));
 }
@@ -91,8 +112,14 @@ ZLog &ZLog::operator<<(ZPath text){
 }
 ZLog &ZLog::operator<<(ZBinary bin){
     ZString text;
-    for(zu64 i = 0; i < bin.size(); ++i)
-        text << (char)bin[i];
+    for(zu64 i = 0; i < bin.size(); ++i){
+        char tmp = bin[i];
+        // If null character, show 0
+        if(tmp == 0){
+            tmp = '0';
+        }
+        text << tmp;
+    }
     return log(text);
 }
 

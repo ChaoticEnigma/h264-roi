@@ -33,7 +33,7 @@ public:
         return (_data == arr.data());
     }
     bool operator!=(ZArray<T> arr) const {
-        return operator==(arr);
+        return !operator==(arr);
     }
 
     T &at(zu64 index){
@@ -49,8 +49,11 @@ public:
     T &operator[](zu64 index){
         return at(index);
     }
-    const T &operator[](zu64 index) const {
+    const T &get(zu64 index) const {
         return _data[index];
+    }
+    const T &operator[](zu64 index) const {
+        return get(index);
     }
 
     ZArray<T> &resize(zu64 len){
