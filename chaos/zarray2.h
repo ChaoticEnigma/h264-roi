@@ -1,3 +1,8 @@
+/*****************************************
+**               LibChaos               **
+**               zarray2.h              **
+**       (c) 2013 Zennix Studios        **
+*****************************************/
 #ifndef ZARRAY2_H
 #define ZARRAY2_H
 
@@ -10,6 +15,9 @@ namespace LibChaos {
 template <typename T> class ZArray {
 public:
     ZArray() : _size(0), _data(nullptr){}
+    ZArray(T first) : _size(0), _data(nullptr){
+        push(first);
+    }
     ZArray(const ZArray<T> &other) : _size(other.size()), _data(new T[_size * sizeof(T)]){
         //std::memcpy(_data, other.ptr(), _size * sizeof(T));
         memcpy(_data, other.ptr(), _size * sizeof(T));
@@ -22,7 +30,21 @@ public:
         memcpy(_data, raw, len * sizeof(T));
     }
     ~ZArray(){
-        delete[] _data;
+        if(_data != nullptr)
+            delete[] _data;
+    }
+
+    bool operator==(const ZArray<T> &arr) const {
+        if(size() != arr.size())
+            return false;
+        for(zu64 i = 0; i < size(); ++i){
+            if(get(i) != arr.get(i))
+                return false;
+        }
+        return true;
+    }
+    bool operator!=(const ZArray<T> &arr) const {
+        return operator==(arr);
     }
 
     ZArray<T> &assign(ZArray<T> arr){
@@ -38,6 +60,9 @@ public:
     }
     inline T &operator[](zu64 index){
         return at(index);
+    }
+    const T &get(zu64 index) const {
+        return _data[index];
     }
 
     ZArray<T> &resize(zu64 len){

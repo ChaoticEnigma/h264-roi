@@ -1,0 +1,35 @@
+LibChaos ideas / todo:
+
+Todo:
+=====================================================================================
+ZAddress
+    - is a mess of system calls and memcpys
+    - move the data and conversions to / from sockaddrs into an internal Data class
+ZSocket
+    - make ZSocket more of a raw base class
+    - less internal validation logic
+    - make type const
+    - make it work with tcp
+ZDatagramSocket : private ZSocket
+    - for sending / receiving messages using ZSocket
+ZStreamSocket : private ZSocket
+    - for accepting / connecting and reading / writing steams using ZSocket
+ZStreamConnection : private ZStreamSocket
+    - copyable representation of a stream connection
+
+ZAutoBuffer
+    - write it
+
+Ideas:
+=====================================================================================
+ZReturn
+    - small class
+    - can be used as a return type to indicate success or error
+    - can have a stack trace attached with ZError
+
+ZDelta
+    - binary delta algorithm
+    - simple version control implementation in utils
+
+ZHash
+    - ZBinary hashing / checksums

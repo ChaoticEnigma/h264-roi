@@ -1,3 +1,8 @@
+/*****************************************
+**               LibChaos               **
+**               zassoc.h               **
+**       (c) 2013 Zennix Studios        **
+*****************************************/
 #ifndef ZASSOC_H
 #define ZASSOC_H
 

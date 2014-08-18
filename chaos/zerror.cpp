@@ -1,13 +1,16 @@
 #include "zerror.h"
 #include "zlog.h"
+#include "zmap.h"
 
 #if PLATFORM == LINUX
     #include <execinfo.h>
     #include <signal.h>
+    #include <cstring>
 #elif PLATFORM == WINDOWS
     #include <stdlib.h>
     #include <windows.h>
     #include <imagehlp.h>
+    #include <winerror.h>
 #endif
 
 namespace LibChaos {
@@ -72,6 +75,107 @@ void fatalSignalHandler(int sig){
 void registerSigSegv(){
 #if PLATFORM == LINUX
     signal(SIGSEGV, fatalSignalHandler);
+#endif
+}
+
+struct sigset {
+    zerror_signal sigtype;
+    signalHandler handler;
+};
+static ZMap<int, sigset> sigmap;
+
+#if PLATFORM == LINUX
+
+void sigHandle(int sig){
+    if(sigmap.exists(sig) && sigmap[sig].handler != NULL)
+        (sigmap[sig].handler)(sigmap[sig].sigtype);
+}
+
+#elif PLATFORM == WINDOWS
+
+BOOL WINAPI ConsoleHandler(DWORD dwType){
+    LOG("Console Exit Handler " << dwType);
+//    switch(dwType){
+//    case CTRL_C_EVENT:
+//        printf("ctrl-c\n");
+//        break;
+//    case CTRL_BREAK_EVENT:
+//        printf("break\n");
+//        break;
+//    default:
+//        printf("Some other event\n");
+//        break;
+//    }
+    return TRUE;
+}
+
+#endif
+
+bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
+
+#if PLATFORM == LINUX
+
+    int sig = 0;
+    switch(sigtype){
+    case interrupt:
+        sig = SIGINT;
+        break;
+    case abort:
+        sig = SIGABRT;
+        break;
+    case quit:
+        sig = SIGQUIT;
+        break;
+    case illegal:
+        sig = SIGILL;
+        break;
+    case segv:
+        sig = SIGSEGV;
+        break;
+    case terminate:
+        sig = SIGTERM;
+        break;
+    case fpe:
+        sig = SIGFPE;
+        break;
+    default:
+        return false;
+        break;
+    }
+
+    sigmap[sig] = { sigtype, handler };
+
+    struct sigaction action;
+    action.sa_handler = sigHandle;
+    sigemptyset(&action.sa_mask);
+    sigaddset(&action.sa_mask, sig);
+    action.sa_flags = 0;
+    sigaction(sig, &action, 0);
+
+#elif PLATFORM == WINDOWS
+
+    if(!SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE)){
+        return false;
+    }
+
+#endif
+
+    return true;
+}
+bool registerInterruptHandler(signalHandler handler){
+    return registerSignalHandler(interrupt, handler);
+}
+
+ZString getError(){
+#if PLATFORM == LINUX
+    int err = errno;
+    return ZString() << err << ": " << strerror(err);
+#elif  PLATFORM == WINDOWS
+    int err = WSAGetLastError();
+    char *s = NULL;
+    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), s, 0, NULL);
+    LocalFree(s);
+    return ZString() << err << ": " << s;
 #endif
 }
 

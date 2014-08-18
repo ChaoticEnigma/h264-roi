@@ -243,8 +243,8 @@ bool ZPath::makeDir(ZPath dir){
     }
 #if COMPILER == MINGW
     const char *tmp = dir.str().cc();
-    return (_mkdir(tmp) == 0);
-#else
+    return (mkdir(tmp) == 0);
+#elif COMPILER == GCC
     return (mkdir(dir.str().cc(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0);
 #endif
 }

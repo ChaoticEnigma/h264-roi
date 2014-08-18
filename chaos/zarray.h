@@ -1,3 +1,8 @@
+/*****************************************
+**               LibChaos               **
+**               zarray.h               **
+**       (c) 2013 Zennix Studios        **
+*****************************************/
 #ifndef ZARRAY_H
 #define ZARRAY_H
 
@@ -117,6 +122,14 @@ public:
     }
     T &back(){
         return _data.back();
+    }
+
+    bool contains(T test){
+        for(unsigned i = 0; i < size(); ++i){
+            if(_data[i] == test)
+                return true;
+        }
+        return false;
     }
 
     bool empty() const {

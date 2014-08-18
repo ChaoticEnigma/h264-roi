@@ -1,1 +1,8 @@
+
+# QtCreator
+*.autosave
+*.user
 *.pro.user
+*.pro.user.*
+
+*.0000000

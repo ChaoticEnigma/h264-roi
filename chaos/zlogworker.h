@@ -1,3 +1,8 @@
+/*****************************************
+**               LibChaos               **
+**               zlogworker.h           **
+**       (c) 2013 Zennix Studios        **
+*****************************************/
 #ifndef ZLOGWORKER_H
 #define ZLOGWORKER_H
 

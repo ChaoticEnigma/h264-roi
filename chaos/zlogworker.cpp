@@ -22,8 +22,8 @@ bool ZLogWorker::lastcomp;
 ZLogWorker::ZLogWorker(){
     //work = work(zlogWorker);
     setbuf(stdout, NULL);
-    formatStdout(ZLogSource::normal, TIMETHREAD);
-    formatStderr(ZLogSource::error, DETAILLOG);
+//    formatStdout(ZLogSource::normal, TIMETHREAD); // These cause a memory leak...?
+//    formatStderr(ZLogSource::error, DETAILLOG);
 }
 
 ZLogWorker::~ZLogWorker(){
@@ -115,8 +115,9 @@ void ZLogWorker::doLog(LogJob jb){
         for(zu64 i = 0; i < logfiles.size(); ++i){
             if(!logfiles[i][jb.source].isEmpty()){
                 logfiles.key(i).createDirsTo();
+
                 std::ofstream lgfl(logfiles.key(i).str().cc(), std::ios::app);
-                lgfl << makeLog(jb, logfiles.key(i)[jb.source]);
+                lgfl << makeLog(jb, logfiles[i][jb.source]);
                 lgfl.flush();
                 lgfl.close();
             }

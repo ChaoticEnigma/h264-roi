@@ -3,11 +3,10 @@
 int main(int argc, char **argv){
     ZLog::formatStdout(ZLogSource::normal, "%time% %thread% - %log%");
     ZLog::formatStderr(ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
-    ZPath lgf = ZString("logs") + ZLog::genLogFileName("testchaos_");
+    ZPath lgf = ZPath("logs") + ZLog::genLogFileName("testchaos_");
     ZLog::addLogFile(lgf, ZLogSource::normal, "%time% %thread% - %log%");
     ZLog::addLogFile(lgf, ZLogSource::debug, "%time% %thread% %function% (%file%:%line%) - %log%");
     ZLog::addLogFile(lgf, ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
-
 
     ZAssoc<ZString, test_func> tests;
     tests["array"] = array_block;
@@ -19,12 +18,12 @@ int main(int argc, char **argv){
     tests["file"] = file_block;
     tests["thread"] = thread_block;
     tests["autobuffer"] = autobuffer_block;
-#ifdef BUILD_ZSOCKET
-    tests["socket"] = socket_test;
-#endif
-#if PLATFORM == LINUX
+    tests["json"] = json_block;
+    tests["udp"] = udp_test;
+    tests["udpserver"] = udpserver_test;
+    tests["tcp"] = tcp_test;
+    tests["tcpserver"] = tcpserver_test;
     tests["error"] = error_block;
-#endif
 
     if(argc > 1){
         ArZ run;

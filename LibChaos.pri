@@ -38,7 +38,13 @@ HEADERS += \
     $$PWD/ui/table.h \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
-    $$PWD/bbb/zbbb.h
+    $$PWD/bbb/zbbb.h \
+    $$PWD/chaos/net/zsocket.h \
+    $$PWD/chaos/net/zconnection.h \
+    $$PWD/chaos/net/zstreamsocket.h \
+    $$PWD/chaos/net/zdatagramsocket.h \
+    $$PWD/chaos/net/zstreamconnection.h \
+    $$PWD/chaos/net/zaddress.h
 
 SOURCES += \
     $$PWD/chaos/database.cpp \
@@ -56,7 +62,7 @@ SOURCES += \
     $$PWD/chaos/zthread.cpp \
     $$PWD/chaos/zxml.cpp \
     $$PWD/chaos/lib/sqlite3.c \
-    $$PWD/test/libchaos-main.cpp \
+    $$PWD/test/libchaos_main.cpp \
     $$PWD/test/autobuffer_test.cpp \
     $$PWD/test/thread_test.cpp \
     $$PWD/test/string_test.cpp \
@@ -64,6 +70,7 @@ SOURCES += \
     $$PWD/test/file_test.cpp \
     $$PWD/test/error_test.cpp \
     $$PWD/test/socket_test.cpp \
+    $$PWD/test/json_test.cpp \
     $$PWD/ui/win32/window_win32.cpp \
     $$PWD/ui/win32/windowproc_win32.cpp \
     $$PWD/ui/win32/control_win32.cpp \
@@ -73,7 +80,15 @@ SOURCES += \
     $$PWD/ui/win32/table_win32.cpp \
     $$PWD/ui/win32/progress_win32.cpp \
     $$PWD/ui/win32/align_win32.cpp \
-    $$PWD/bbb/io.cpp
+    $$PWD/bbb/io.cpp \
+    $$PWD/test/socket2_test.cpp \
+    $$PWD/chaos/net/zsocket.cpp \
+    $$PWD/chaos/net/zconnection.cpp \
+    $$PWD/util/extensionfixer.cpp \
+    $$PWD/chaos/net/zstreamsocket.cpp \
+    $$PWD/chaos/net/zdatagramsocket.cpp \
+    $$PWD/chaos/net/zstreamconnection.cpp \
+    $$PWD/chaos/net/zaddress.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -81,20 +96,30 @@ OTHER_FILES += \
     $$PWD/bbb/CMakeLists.txt \
     $$PWD/chaos/CMakeLists.txt \
     $$PWD/test/CMakeLists.txt \
-    $$PWD/configure_build.cmake
+    $$PWD/configure_build.cmake \
+    $$PWD/todo.txt \
+    $$PWD/util/CMakeLists.txt \
+    $$PWD/source_hash.cmake \
+    $$PWD/hash.sh
 
 INCLUDEPATH += \
     $$PWD \
     $$PWD/chaos \
+    $$PWD/chaos/net \
     $$PWD/chaos/lib \
     $$PWD/test \
     $$PWD/ui \
-    $$PWD/bbb
+    $$PWD/bbb \
+    $$PWD/util
 
 # Build
 #DEFINES += ZLOG_STD_MUTEX
 QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11
 LIBS += pthread
 
-win32:DEFINES += PLATFORM_WINDOWS COMPILER_MINGW
-else:DEFINES += PLATFORM_LINUX COMPILER_GCC
+win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MINGW
+else:DEFINES += _LIBCHAOS_PLATFORM_LINUX _LIBCHAOS_COMPILER_GCC
+
+debug:DEFINES += _LIBCHAOS_BUILD_DEBUG
+#else release:DEFINES += _LIBCHAOS_BUILD_RELEASE
+else:DEFINES += _LIBCHAOS_BUILD_NORMAL
