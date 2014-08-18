@@ -17,6 +17,17 @@ public:
     ZBinary();
     ZBinary(const void *ptr, zu64 len);
 
+    bool operator==(const ZBinary &rhs) const {
+        if(size() != rhs.size())
+            return false;
+        return data() == rhs.data();
+        //return memcmp(lhs.raw(), rhs.raw(), lhs.size());
+    }
+    bool operator!=(const ZBinary &rhs) const {
+        return !operator==(rhs);
+    }
+
+
     inline zbinary_type &operator[](zu64 inx){
         return _data[inx];
     }
@@ -24,7 +35,7 @@ public:
         return _data.get(inx);
     }
 
-    inline ZBinary &fill(zbinary_type dat, zu64 size){
+    ZBinary &fill(zbinary_type dat, zu64 size){
         _data.clear();
         for(zu64 i = 0; i < size; ++i){
             _data.push(dat);
@@ -66,16 +77,6 @@ public:
 private:
     ZArray<zbinary_type> _data;
 };
-
-inline bool operator==(const ZBinary &lhs, const ZBinary &rhs){
-    if(lhs.size() != rhs.size())
-        return false;
-    return lhs.data() == rhs.data();
-    //return memcmp(lhs.raw(), rhs.raw(), lhs.size());
-}
-inline bool operator!=(const ZBinary &lhs, const ZBinary &rhs){
-    return !operator==(lhs, rhs);
-}
 
 }
 
