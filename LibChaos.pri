@@ -108,7 +108,9 @@ SOURCES += \
     \
     $$PWD/bbb/io.cpp \
     \
-    $$PWD/util/extensionfixer.cpp
+    $$PWD/util/extensionfixer.cpp \
+    util/audiobooksorter.cpp \
+    util/imagedownloader.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -117,7 +119,7 @@ OTHER_FILES += \
     $$PWD/chaos/CMakeLists.txt \
     $$PWD/test/CMakeLists.txt \
     $$PWD/configure_build.cmake \
-    $$PWD/todo.txt \
+    $$PWD/LibChaos_Todo_Ideas.txt \
     $$PWD/util/CMakeLists.txt \
     $$PWD/source_hash.cmake \
     $$PWD/hash.sh

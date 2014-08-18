@@ -15,6 +15,8 @@
 #elif PLATFORM == WINDOWS
     #include <stdlib.h>
     #include <windows.h>
+
+    #ifndef FUCK_WINDOWS
     #include <imagehlp.h>
     #include <winerror.h>
     #include <winnt.h>
@@ -23,6 +25,7 @@
     #include <algorithm>
     #include "StackWalker.h"
     #include <list>
+    #endif
 #endif
 
 namespace LibChaos {

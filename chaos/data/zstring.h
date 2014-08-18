@@ -59,7 +59,7 @@ public:
     const wchar_t *wc() const;
 #endif
 
-    ZString(char);
+    ZString(char, zu64 len = 1);
 
     ZString(zu16);
     ZString(zs16);
@@ -71,7 +71,7 @@ public:
     ZString(zu64);
     ZString(zs64);
 
-    static ZString ItoS(zu64 num, unsigned base = 10);
+    static ZString ItoS(zu64 num, unsigned base = 10, zu64 pad = 0);
     static ZString ItoS(zs64 num, unsigned base = 10);
     int tint() const;
 
@@ -91,8 +91,12 @@ public:
     void clear();
     bool isEmpty() const;
 
+    // Tests if <str> begins with <test>. Ignores whitespace at beginning of string if <ignore_whitespace>
     bool startsWith(ZString test, bool ignore_whitespace = true) const;
+    // Alias for startsWith, always ignores whitespace
     inline bool beginsWith(ZString test) const { return startsWith(test, false); }
+
+    // Tests if <str> ends with <test>
     bool endsWith(ZString test) const;
 
     // Get portion of <str> from <pos> to end
@@ -119,6 +123,7 @@ public:
     ZString &replace(ZString before, ZString after, unsigned max = -1);
     static ZString replace(ZString str, ZString before, ZString after, unsigned max = -1);
 
+    // Get sub-string of <str> before first occurence of <find> in <str>
     static ZString getUntil(ZString str, ZString find);
 
     ZString findFirstBetween(ZString, ZString);
@@ -162,6 +167,7 @@ public:
 
     static bool alphaTest(ZString str1, ZString str2);
 
+    // Allows ZString to be used with std streams
     friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
 private:
     std::string data;

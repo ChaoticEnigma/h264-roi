@@ -21,3 +21,11 @@ ADD_DEFINITIONS(-DBUILDING)
 # Extension Fixer
 ADD_EXECUTABLE(extensionfixer extensionfixer.cpp)
 TARGET_LINK_LIBRARIES(extensionfixer chaos)
+
+# Audiobook Sorter
+ADD_EXECUTABLE(audiobooksorter audiobooksorter.cpp)
+TARGET_LINK_LIBRARIES(audiobooksorter chaos)
+
+# Image Downloader
+ADD_EXECUTABLE(imagedownloader imagedownloader.cpp)
+TARGET_LINK_LIBRARIES(imagedownloader chaos)

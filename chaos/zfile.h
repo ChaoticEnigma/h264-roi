@@ -12,8 +12,14 @@ namespace LibChaos {
 class ZFile {
     public:
         enum zfile_mode {
-            readonly = 0x10,
-            readwrite = 0x01
+            readonly    = 0x001,
+            writeonly   = 0x002,
+            readwrite   = 0x003,
+
+            append      = 0x004,
+            create      = 0x008,
+
+            goodbit     = 0x064
         };
 
         ZFile();
@@ -44,6 +50,9 @@ class ZFile {
 
         bool remove();
         static bool remove(ZPath);
+        static bool removeDir(ZPath);
+
+        static bool rename(ZPath old, ZPath newfl);
 
         bool exists();
         static bool exists(ZPath);
@@ -61,12 +70,8 @@ class ZFile {
         bool isOpen();
         int getBits();
     private:
-        // First bit: open
-        // Second bit: read
-        // Third bit: write
         int _bits;
         ZPath _flpath;
-        //std::fstream _file;
         FILE* _fileh;
 };
 
