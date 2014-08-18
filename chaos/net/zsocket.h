@@ -41,9 +41,11 @@ public:
     bool listen();
     bool accept(ZConnection &conn);
 
+    // Default is blocking
+    bool setBlocking(bool block = true);
 
-    bool setBlocking(bool);
-    void allowRebind(bool);
+    // Default is non-rebind
+    void allowRebind(bool rebind = false);
 
     int getHandle() const {
         return _socket;

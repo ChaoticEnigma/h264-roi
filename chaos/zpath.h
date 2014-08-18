@@ -17,6 +17,9 @@
 
 namespace LibChaos {
 
+class ZPath;
+typedef ZArray<ZPath> ArP;
+
 class ZPath {
 public:
     ZPath();

@@ -59,6 +59,11 @@ std::wstring ZString::wstr() const {
 //    return strcpy(str_, data.c_str());
 //}
 
+ZString::ZString(const unsigned char *str_) : data(){
+    if(str_ != NULL){
+        data = std::string((const char *)str_, strlen((const char *)str_));
+    }
+}
 ZString::ZString(const char *str_) : data(){
     if(str_ != NULL){
         data = std::string(str_, strlen(str_));
@@ -89,20 +94,21 @@ const wchar_t *ZString::wc() const {
 }
 #endif
 
-ZString::ZString(char ch){
-    data = std::string(1, ch);
+ZString::ZString(char ch, zu64 len){
+    data = std::string(len, ch);
 }
 
 ZString::ZString(zu16 num){ data = ItoS((zu64)num, 10).str(); }
 ZString::ZString(zs16 num){ data = ItoS((zs64)num, 10).str(); }
 ZString::ZString(zu32 num){ data = ItoS((zu64)num, 10).str(); }
 ZString::ZString(zs32 num){ data = ItoS((zs64)num, 10).str(); }
+ZString::ZString(zint num){ data = ItoS((zs64)num, 10).str(); }
 ZString::ZString(zuint num){ data = ItoS((zu64)num, 10).str(); }
-ZString::ZString(zsint num){ data = ItoS((zs64)num, 10).str(); }
+//ZString::ZString(zsint num){ data = ItoS((zs64)num, 10).str(); }
 ZString::ZString(zu64 num){ data = ItoS(num, 10).str(); }
 ZString::ZString(zs64 num){ data = ItoS(num, 10).str(); }
 
-ZString ZString::ItoS(zu64 value, unsigned base) {
+ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad) {
     std::string buf;
     if(base < 2 || base > 16)
         return buf;
@@ -113,11 +119,16 @@ ZString ZString::ItoS(zu64 value, unsigned base) {
         quotient /= base;
     } while(quotient);
     std::reverse(buf.begin(), buf.end());
-    return ZString(buf);
+    ZString tmp = buf;
+    if(tmp.size() < pad){
+        tmp = ZString('0', pad-tmp.size()) + tmp;
+    }
+    return tmp;
 }
 ZString ZString::ItoS(zs64 value, unsigned base) {
     std::string buf;
-    if (base < 2 || base > 16) return buf;
+    if (base < 2 || base > 16)
+        return buf;
     buf.reserve(35);
     zs64 quotient = value;
     do {
@@ -461,6 +472,14 @@ ZString ZString::label(ZString labeltxt, ZString value, bool modify){
         return replace(data, txt, value);
 }
 
+ArZ ZString::split(ZString delim){
+    ArZ out;
+    zu64 pos = findFirst(*this, delim);
+    out.push(substr(data, 0, pos));
+    out.push(substr(data, pos + delim.size()));
+    return out;
+}
+
 ArZ ZString::explode(char delim){
     ArZ out;
     std::string str_ = data;
@@ -533,31 +552,33 @@ ArZ ZString::strict_explode(char delim){
     return out;
 }
 
-ZString ZString::strip(char target, bool modify){
-    ZString tmp = data;
-    for(unsigned i = 0; i < data.length(); ++i){
-        if(data[i] == target){
-            tmp = data.substr(i+1, data.length());
-        } else {
+ZString &ZString::strip(char target){
+    data = strip(data, target).str();
+    return *this;
+}
+ZString ZString::strip(ZString str, char target){
+    zu64 clen = 0;
+    for(zu64 i = 0; i < str.size(); ++i){
+        if(str[i] == target)
+            ++clen;
+        else
             break;
-        }
     }
-    data = tmp.str();
-    for(unsigned i = 0; i < data.length(); ++i){
-        int curr = data.length() - 1 - i;
-        if(data[curr] == target){
-            tmp = data.substr(0, curr);
-        } else {
-            break;
-        }
-    }
+    if(clen > 0)
+        str.substr(clen, str.size());
 
-    if(modify){
-        data = tmp.str();
-        return ZString(data);
-    } else {
-        return tmp;
+    clen = 0;
+    for(zu64 i = 0; i < str.size(); ++i){
+        zu64 curr = str.size() - 1 - i;
+        if(str[curr] == target)
+            ++clen;
+        else
+            break;
     }
+    if(clen > 0)
+        str.substr(0, str.size() - clen);
+
+    return str;
 }
 
 ZString ZString::removeWhitespace(){
@@ -581,20 +602,18 @@ ZString ZString::invert(bool modify){
     }
 }
 
-ZString ZString::toLower(bool modify){
-    std::string tmp = data;
-    for(unsigned i = 0; i < data.size(); ++i){
+ZString &ZString::toLower(){
+    data = toLower(data).str();
+    return *this;
+}
+ZString ZString::toLower(ZString str){
+    for(zu64 i = 0; i < str.size(); ++i){
         // Custom tolower()
         //if((int)tmp[i] >= 65 && (int)tmp[i] <= 90)
         //    tmp[i] = (char)((int)tmp[i] + 32);
-        tmp[i] = tolower(tmp[i]);
+        str[i] = tolower(str[i]);
     }
-    if(modify){
-        data = tmp;
-        return ZString(data);
-    } else {
-        return ZString(tmp);
-    }
+    return str;
 }
 
 ZString ZString::duplicate(unsigned iter, bool modify){
@@ -649,6 +668,19 @@ ZString ZString::compound(ArZ parts, ZString delim){
             name << delim;
     }
     return name;
+}
+
+bool ZString::alphaTest(ZString str1, ZString str2){
+    for(zu64 k = 0; k < str1.size() && k < str2.size(); ++k){
+        if(str1[k] == str2[k])
+            continue;
+        if(str1[k] < str2[k])
+            return true;
+        return false;
+    }
+    if(str1.size() <= str2.size())
+        return true;
+    return false;
 }
 
 std::ostream &operator<<(std::ostream& lhs, ZString rhs){

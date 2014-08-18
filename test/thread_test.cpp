@@ -17,11 +17,12 @@ void *thread_func2(void *zarg){
     int i = 0;
     while(!arg->stop()){
         LOG("loop" << ++i << " in " << ZThread::thisTid());
-        sleep(1);
+        usleep(1000000);
     }
     LOG("broke loop " << ZThread::thisTid());
     return NULL;
 }
+
 int thread_block(){
     LOG("=== Thread Test...");
     /*

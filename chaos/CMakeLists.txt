@@ -5,23 +5,30 @@ PROJECT(LibChaos)
 
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     database.h
-    zarray.h
-    zarray2.h
-    zassoc.h
-    zassoc2.h
-    zautobuffer.h
-    zbinary.h
+    zclock.h
     zerror.h
     zfile.h
-    zjson.h
     zlog.h
     zlogworker.h
     zmutex.h
-    #zparcel.h
     zpath.h
-    zstring.h
+    zret.h
     zthread.h
-    zxml.h
+    ztime.h
+    ztypes.h
+
+    data/zarray.h
+    data/zarray2.h
+    data/zassoc.h
+    data/zassoc2.h
+    data/zautobuffer.h
+    data/zautobufferunit.h
+    data/zbinary.h
+    data/zdata.h
+    data/zmap.h
+    data/zjson.h
+    data/zstring.h
+    data/zxml.h
 
     net/zaddress.h
     net/zconnection.h
@@ -32,23 +39,32 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 
     lib/sqlite3.h
     #lib/demangle.h
+
+    net/zaddress.h
+    net/zconnection.h
+    net/zsocket.h
+    net/zdatagramsocket.h
+    net/zstreamsocket.h
+    net/zstreamconnection.h
 )
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     database.cpp
-    zautobuffer.cpp
-    zbinary.cpp
+    #zclock.cpp
     zerror.cpp
     zfile.cpp
-    zjson.cpp
     zlog.cpp
     zlogworker.cpp
-    #zparcel.cpp
     zpath.cpp
-    zstring.cpp
-    zstring_encode.cpp
     zthread.cpp
-    zxml.cpp
+    #ztime.cpp
+
+    data/zautobuffer.cpp
+    data/zbinary.cpp
+    data/zjson.cpp
+    data/zstring.cpp
+    data/zstring_encode.cpp
+    data/zxml.cpp
 
     net/zaddress.cpp
     net/zconnection.cpp
@@ -58,21 +74,35 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     net/zstreamconnection.cpp
 
     lib/sqlite3.c
+
+    net/zaddress.cpp
+    net/zconnection.cpp
+    net/zsocket.cpp
+    net/zdatagramsocket.cpp
+    net/zstreamsocket.cpp
+    net/zstreamconnection.cpp
 )
+
+IF(LIBCHAOS_WINDOWS)
+    SET(LibChaos_SOURCES
+        ${LibChaos_SOURCES}
+        #lib/StackWalker.cpp
+    )
+ENDIF()
 
 ### =================== CONFIG =================== ###
 
-SET(LibChaos_INCLUDE ${LibChaos_SOURCE_DIR} ${LibChaos_SOURCE_DIR}/net PARENT_SCOPE)
+SET(LibChaos_INCLUDE ${LibChaos_SOURCE_DIR} ${LibChaos_SOURCE_DIR}/net ${LibChaos_SOURCE_DIR}/data PARENT_SCOPE)
 
 INCLUDE_DIRECTORIES(
     ${LibChaos_SOURCE_DIR}
+    net
+    lib
+    data
     ${CMAKE_SOURCE_DIR}
 )
-SET(DEPEND_FILES
-    ${LibChaos_HEADERS}
-    ${LibChaos_SOURCES}
-)
-source_hash(${LibChaos_SOURCE_DIR})
+
+#source_hash(${LibChaos_SOURCE_DIR})
 configure_build("Core" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
 SET(LibChaosCore_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 
@@ -89,9 +119,12 @@ ADD_DEFINITIONS(-DBUILDING)
 ADD_LIBRARY(chaos ${LibChaos_SOURCES})
 TARGET_LINK_LIBRARIES(chaos pthread)
 IF(LIBCHAOS_UNIX)
-    IF(NOT FREEBSD)
+    TARGET_LINK_LIBRARIES(chaos iberty)
+    IF(FREEBSD)
+        TARGET_LINK_LIBRARIES(chaos execinfo)
+    ELSE()
         TARGET_LINK_LIBRARIES(chaos dl)
     ENDIF()
 ELSEIF(LIBCHAOS_WINDOWS)
-    TARGET_LINK_LIBRARIES(chaos ws2_32)
+    TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi version)
 ENDIF()

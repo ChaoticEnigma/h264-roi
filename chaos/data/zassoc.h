@@ -25,25 +25,31 @@ public:
             push(in[i]);
         }
     }
+    ZAssoc(std::initializer_list<Data> ls){
+        for(auto i = ls.begin(); i < ls.end(); ++i){
+            push(i->key, i->val);
+        }
+    }
+
     ~ZAssoc(){}
 
     T &at(zu64 index){
-        return data[index].val;
+        return _data[index].val;
     }
     T &operator[](zu64 index){
         return at(index);
     }
 
     T &pos(zu64 index){
-        return data[index].val;
+        return _data[index].val;
     }
 
     T &at(K key_){
-        for(zu64 i = 0; i < data.size(); ++i){
-            if(data[i].key == key_)
-                return data[i].val;
+        for(zu64 i = 0; i < _data.size(); ++i){
+            if(_data[i].key == key_)
+                return _data[i].val;
         }
-        data.push({ key_, T() });
+        _data.push({ key_, T() });
         //T temp = {};
         //data.push({ key_, temp });
         return last();
@@ -51,20 +57,27 @@ public:
     T &operator[](K key_){
         return at(key_);
     }
+    const T &operator[](K key_) const {
+        for(zu64 i = 0; i < _data.size(); ++i){
+            if(_data[i].key == key_)
+                return _data[i].val;
+        }
+        throw "Invalid access to const ZAssoc";
+    }
 
     K &key(zu64 index){
         if(index < size()){
-            return data[index].key;
+            return _data[index].key;
         } else {
             K temp[1] = {};
-            empk = temp[0];
+            _empk = temp[0];
             //empk = K();
-            return empk;
+            return _empk;
         }
     }
 
     ZAssoc<K, T> &push(K key_, T value){
-        data.push({ key_, value });
+        _data.push({ key_, value });
         //data.push({ key_, value });
         return *this;
     }
@@ -72,7 +85,7 @@ public:
         return push(K(), value);
     }
     ZAssoc<K, T> &pushFront(K key_, T value){
-        data.pushFront({ key_, value });
+        _data.pushFront({ key_, value });
         //data.pushFront({ key, value });
         return *this;
     }
@@ -81,12 +94,12 @@ public:
     }
 
     ZAssoc<K, T> &pop(unsigned index){
-        data.pop(index);
+        _data.pop(index);
         return *this;
     }
     ZAssoc<K, T> &popAll(K key_){
-        for(unsigned i = 0; i < data.size(); ++i){
-            if(data[i].key == key_){
+        for(unsigned i = 0; i < _data.size(); ++i){
+            if(_data[i].key == key_){
                 pop(i);
                 i = 0;
             }
@@ -94,65 +107,84 @@ public:
         return *this;
     }
     ZAssoc<K, T> &popFront(){
-        data.popFront();
+        _data.popFront();
         return *this;
     }
     ZAssoc<K, T> &popBack(){
-        data.popBack();
+        _data.popBack();
         return *this;
     }
     ZAssoc<K, T> &popFrontCount(unsigned cnt){
-        data.popFrontCount(cnt);
+        _data.popFrontCount(cnt);
         return *this;
     }
 
     ZAssoc<K, T> &concat(ZAssoc<K, T> in){
-        data.concat(in.dat());
+        _data.concat(in.dat());
         return *this;
     }
 
-    bool exists(K test){
-        for(unsigned i = 0; i < size(); ++i){
-            if(data[i].key == test)
+    ZAssoc<K, T> &insert(zu64 pos, K key, T val){
+        _data.insert(pos, { key, val });
+        return *this;
+    }
+
+    bool exists(K test) const {
+        for(zu64 i = 0; i < size(); ++i){
+            if(_data[i].key == test)
                 return true;
         }
         return false;
     }
-    bool contains(T test){
-        for(unsigned i = 0; i < size(); ++i){
-            if(data[i].val == test)
+    bool contains(T test) const {
+        for(zu64 i = 0; i < size(); ++i){
+            if(_data[i].val == test)
                 return true;
         }
         return false;
+    }
+
+    K find(T test){
+        for(zu64 i = 0; i < size(); ++i){
+            if(_data[i].val == test)
+                return _data[i].key;
+        }
+        K temp[1] = {};
+        _empk = temp[0];
+        return _empk;
     }
 
     T &first(){
-        return data.front().val;
+        return _data.front().val;
     }
     T &last(){
-        return data.back().val;
+        return _data.back().val;
     }
     T &firstKey(){
-        return data.front().key;
+        return _data.front().key;
     }
     T &lastKey(){
-        return data.back().key;
+        return _data.back().key;
+    }
+
+    void clear(){
+        _data.clear();
     }
 
     bool empty() const {
-        return data.empty();
+        return _data.empty();
     }
 
     unsigned size() const {
-        return data.size();
+        return _data.size();
     }
     ZArray<Data> &dat(){
-        return data;
+        return _data;
     }
 
 private:
-    ZArray<Data> data;
-    K empk;
+    ZArray<Data> _data;
+    K _empk;
 };
 
 }

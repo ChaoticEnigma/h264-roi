@@ -20,27 +20,28 @@
 
 namespace LibChaos {
 
-class ZMutexV {
+class ZMutex {
 public:
-    ZMutexV() : locker_tid(0){
-        pthread_mutex_init(&mtx, NULL);
+    ZMutex() : locker_tid(0){
+        pthread_mutex_init(&mutex, NULL);
     }
-    ~ZMutexV(){
-        pthread_mutex_destroy(&mtx);
+    ~ZMutex(){
+        pthread_mutex_destroy(&mutex);
     }
 
     // If mutex is unlocked, mutex is locked by calling thread. If mutex is locked by other thread, function blocks until mutex is unlocked by other thread, then mutex is locked by calling thread.
     void lock(){
         if(!iOwn()){
-            pthread_mutex_lock(&mtx);
+            pthread_mutex_lock(&mutex);
             locker_tid = pthread_self();
         }
         return; // We own the mutex
     }
+
     // Locks mutex and returns true if unlocked, else returns false.
     bool trylock(){
         if(!iOwn()){
-            if(pthread_mutex_trylock(&mtx) == 0){
+            if(pthread_mutex_trylock(&mutex) == 0){
                 locker_tid = pthread_self();
                 return true; // We now own the mutex
             }
@@ -49,6 +50,7 @@ public:
             return true; // We already own the mutex
         }
     }
+
     // Tries to lock the mutex for <timeout_microsec> microseconds, then returns false.
     bool timelock(zu64 timeout_microsec){
         auto end = std::chrono::high_resolution_clock::now() + std::chrono::microseconds(timeout_microsec);
@@ -59,14 +61,16 @@ public:
         }
         return true; // Locked, and this thread owns it
     }
+
     // If mutex is unlocked, returns true. If mutex is locked by calling thread, mutex is unlocked. If mutex is locked by other thread, blocks until mutex is unlocked by other thread.
     void unlock(){
         if(locked()){
             lock(); // Make sure we own the mutex first
             locker_tid = 0;
-            pthread_mutex_unlock(&mtx);
+            pthread_mutex_unlock(&mutex);
         }
     }
+
     // Returns true if mutex is locked, else returns false.
     inline bool locked(){
         return (bool)locker();
@@ -77,19 +81,32 @@ public:
     }
     // Return true if this thread owns the mutex, else returns false
     inline bool iOwn(){
-        return (locked() && pthread_self() == locker_tid);
+        return (locker() == pthread_self());
+    }
+
+    inline pthread_mutex_t *handle(){
+        return &mutex;
     }
 
 private:
-    pthread_mutex_t mtx;
+    pthread_mutex_t mutex;
     std::atomic<pthread_t> locker_tid;
 };
 
-template <class T> class ZMutex : public ZMutexV {
-public:
-    ZMutex() : ZMutexV(), obj(){}
+// //////////////////////////////////////////////////////////////////////////////
 
-    // Refrence to contained object is returned. Thread responsibly.
+template <class T> class ZMutexV : public ZMutex {
+public:
+    ZMutexV() : ZMutex(), obj(){}
+    ZMutexV(const T &o) : ZMutex(), obj(o){}
+
+    // Block until mutex owned, return refrence to obj
+    T &lockdata(){
+        lock();
+        return obj;
+    }
+
+    // Return refrence to obj. Thread responsibly.
     inline T &data(){
         return obj;
     }

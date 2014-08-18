@@ -27,7 +27,7 @@ public:
     void setChanged(bool ch);
 protected:
     ZWindow *parent;
-    ZMutexV mtx;
+    ZMutex mtx;
     bool changed;
 };
 

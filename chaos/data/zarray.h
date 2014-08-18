@@ -21,6 +21,12 @@ public:
         push(first);
     }
     ZArray(const T *raw, zu64 len) : _data(raw, raw + len){}
+    ZArray(std::initializer_list<T> ls){
+        for(auto i = ls.begin(); i < ls.end(); ++i){
+            push(*i);
+        }
+    }
+
     ~ZArray(){}
 
 //    ZArray<T> &operator=(ZArray<T> arr){
@@ -28,11 +34,11 @@ public:
 //        return *this;
 //    }
 
-    bool operator==(ZArray<T> arr){
+    bool operator==(ZArray<T> arr) const {
         return (_data == arr.data());
     }
-    bool operator!=(ZArray<T> arr){
-        return operator==(arr);
+    bool operator!=(ZArray<T> arr) const {
+        return !operator==(arr);
     }
 
     T &at(zu64 index){
@@ -47,6 +53,12 @@ public:
     }
     T &operator[](zu64 index){
         return at(index);
+    }
+    const T &get(zu64 index) const {
+        return _data[index];
+    }
+    const T &operator[](zu64 index) const {
+        return get(index);
     }
 
     ZArray<T> &resize(zu64 len){
@@ -68,6 +80,10 @@ public:
     }
     ZArray<T> &erase(zu64 index){
         return erase(index, 1);
+    }
+
+    ZArray<T> &extend(zu64 num = 1){
+        return resize(size() + num);
     }
 
     ZArray<T> &pop(zu64 index){
@@ -97,6 +113,12 @@ public:
         for(unsigned i = 0; i < in.size(); ++i){
             _data.push_back(in[i]);
         }
+        return *this;
+    }
+
+    ZArray<T> &insert(zu64 pos, T in){
+        typename std::vector<T>::iterator it = _data.begin() + pos;
+        _data.insert(it, in);
         return *this;
     }
 

@@ -11,8 +11,8 @@
 
 namespace LibChaos {
 
-ZFile::ZFile() : _bits(0x000){}
-ZFile::ZFile(ZPath name, int mode) : _bits(0x000){
+ZFile::ZFile() : _bits(0){}
+ZFile::ZFile(ZPath name, int mode) : _bits(0){
     open(name, mode);
 }
 ZFile::~ZFile(){
@@ -21,29 +21,37 @@ ZFile::~ZFile(){
 
 bool ZFile::open(ZPath path, int mode){
     _flpath = path;
-    _bits = _bits & 0x011;
-    struct stat st_buf;
-    if(stat(_flpath.str().cc(), &st_buf) != 0 || S_ISDIR(st_buf.st_mode))
-        return false;
+    _bits = mode;
 
+    // Close previous file
     close();
 
+    // If we're not allowed to create and write
+    if(!((_bits & create) && (_bits & writeonly))){
+        // Check if the file exists
+        if(!(exists(_flpath) && isFile(_flpath))){
+            // Fail if it doesn't
+            return false;
+        }
+    }
+
+    // Set flags
     ZString modech;
-    if(mode & 0x11){ // read / write
-        _bits = 0x011;
+    if(_bits & readwrite){ // read / write
         modech << "r+";
-    } else if(mode & 0x01){ //write
-        _bits = 0x001;
-        modech << "w";
-    } else if(mode & 0x10){ //read
-        _bits = 0x010;
+    } else if(_bits & readonly){ // read
         modech << "r";
+    } else if(_bits & writeonly){ // write
+        modech << "w";
     }
     modech << "b"; // binary
+
     _fileh = fopen(_flpath.str().cc(), modech.cc());
-    if(_fileh != NULL)
-        _bits = _bits | 0x100;
-    return _fileh != NULL;
+    if(_fileh != NULL){
+        _bits = _bits | goodbit;
+        return true;
+    }
+    return false;
 }
 
 bool ZFile::close(){
@@ -54,7 +62,7 @@ bool ZFile::close(){
 }
 
 zu64 ZFile::read(ZBinary &out, zu64 max){
-    if(!isOpen() || !(_bits & 0x010))
+    if(!(isOpen() && (_bits & readonly)))
         return 0;
     unsigned char *buffer;
     if(flsize() >= max)
@@ -113,18 +121,40 @@ ZString ZFile::readFile(ZPath filenm, bool &status){
     return ZString();
 }
 
-bool ZFile::writeFile(ZPath filenm, const ZString &data){
-    if(!filenm.createDirsTo())
-        return false;
-    std::ofstream outfile(filenm.str().cc(), std::ios::out);
-    if(outfile){
-        outfile.write(data.cc(), data.size());
-        outfile.flush();
-        outfile.close();
-        return true;
+ZBinary ZFile::readBinary(ZPath name){
+    struct stat st_buf;
+    int ret = stat(name.str().cc(), &st_buf);
+    if(ret != 0){
+        return ZBinary();
     }
-    return false;
+    if(S_ISDIR(st_buf.st_mode)){
+        return ZBinary();
+    }
+    std::ifstream infile(name.str().cc(), std::ios::in | std::ios::binary);
+    if(infile){
+        ZBinary buff;
+        infile.seekg(0, std::ios::end);
+        buff.fill(0, infile.tellg());
+        infile.seekg(0, std::ios::beg);
+        infile.read((char *)buff.raw(), buff.size());
+        infile.close();
+        return(buff);
+    }
+    return ZBinary();
 }
+
+//bool ZFile::writeFile(ZPath filenm, const ZString &data){
+//    if(!filenm.createDirsTo())
+//        return false;
+//    std::ofstream outfile(filenm.str().cc(), std::ios::out);
+//    if(outfile){
+//        outfile.write(data.cc(), data.size());
+//        outfile.flush();
+//        outfile.close();
+//        return true;
+//    }
+//    return false;
+//}
 
 //}
 //#include "zlog.h"
@@ -191,6 +221,90 @@ bool ZFile::remove(ZPath file){
     } else {
         return true;
     }
+}
+//bool ZFile::removeDir(ZPath name){
+//    const char *path = name.str().cc();
+//    DIR *d = opendir(path);
+//    size_t path_len = strlen(path);
+//    int r = -1;
+
+//    if(d){
+//       struct dirent *p;
+//       r = 0;
+//       while(!r && (p=readdir(d))){
+//           int r2 = -1;
+//           char *buf;
+//           size_t len;
+//           /* Skip the names "." and ".." as we don't want to recurse on them. */
+//           if(!strcmp(p->d_name, ".") || !strcmp(p->d_name, "..")){
+//              continue;
+//           }
+//           len = path_len + strlen(p->d_name) + 2;
+//           buf = (char *)malloc(len);
+
+//           if(buf){
+//              struct stat statbuf;
+//              snprintf(buf, len, "%s/%s", path, p->d_name);
+//              if (!stat(buf, &statbuf)){
+//                 if(S_ISDIR(statbuf.st_mode)){
+//                    r2 = ZFile::removeDir(ZPath(ZString(buf)));
+//                 } else {
+//                    r2 = unlink(buf);
+//                 }
+//              }
+//              free(buf);
+//           }
+//           r = r2;
+//       }
+//       closedir(d);
+//    }
+//    if(!r){
+//       r = rmdir(path);
+//    }
+//    return r;
+//}
+
+bool ZFile::removeDir(ZPath name) {
+    using namespace std;
+    string path = name.str().str();
+    if (path[path.length()-1] != '\\') path += "\\";
+    // first off, we need to create a pointer to a directory
+    DIR *pdir = NULL; // remember, it's good practice to initialise a pointer to NULL!
+    pdir = opendir (path.c_str());
+    struct dirent *pent = NULL;
+    if (pdir == NULL) { // if pdir wasn't initialised correctly
+        return false; // return false to say "we couldn't do it"
+    } // end if
+    char file[256];
+
+    int counter = 1; // use this to skip the first TWO which cause an infinite loop (and eventually, stack overflow)
+    while((pent = readdir(pdir))) { // while there is still something in the directory to list
+        if (counter > 2) {
+            for (int i = 0; i < 256; i++) file[i] = '\0';
+            strcat(file, path.c_str());
+            if (pent == NULL) { // if pent has not been initialised correctly
+                return false; // we couldn't do it
+            } // otherwise, it was initialised correctly, so let's delete the file~
+            strcat(file, pent->d_name); // concatenate the strings to get the complete path
+            if(ZFile::isDir(ZString(file)) == true) {
+                ZFile::removeDir(file);
+            } else { // it's a file, we can use remove
+                remove(file);
+            }
+        } counter++;
+    }
+
+    // finally, let's clean up
+    closedir (pdir); // close the directory
+    if(!rmdir(path.c_str()))
+        return false; // delete the directory
+    return true;
+}
+
+bool ZFile::rename(ZPath old, ZPath newfl){
+    if(::rename(old.str().cc(), newfl.str().cc()) == 0)
+        return true;
+    return false;
 }
 
 bool ZFile::exists(){
@@ -394,7 +508,7 @@ zu64 ZFile::flsize(){
 }
 
 bool ZFile::isOpen(){
-    return _bits & 0x100;
+    return _bits & goodbit;
 }
 int ZFile::getBits(){
     return _bits;

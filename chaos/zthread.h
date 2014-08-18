@@ -37,9 +37,12 @@ public:
     void stop();
     void detach();
 
+    static void yield();
+
     static void *entry(void *ptr);
 
     ztid tid();
+    bool alive();
     static ztid thisTid();
 
     struct zthreadparam {
@@ -47,10 +50,10 @@ public:
         ZThreadArg zarg;
     } _param;
 private:
-    bool _run;
     std::atomic<bool> _stop;
     int ret;
     pthread_t thread;
+    bool _alive;
 };
 
 typedef ZThread ZThreadA;

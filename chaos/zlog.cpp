@@ -8,7 +8,7 @@ bool ZLog::_init = false;
 ZLogWorker ZLog::worker;
 AsArZ ZLog::thread_ids;
 
-ZLog::ZLog(char source) : source_mode(source), stdiolog(false), write_on_destruct(false), newline(true), rawlog(false), synclog(false), noqueue(false){}
+ZLog::ZLog(zlog_source source) : source_mode(source), stdiolog(false), write_on_destruct(false), newline(true), rawlog(false), /*synclog(false),*/ noqueue(false){}
 
 ZLog::~ZLog(){
     if(write_on_destruct)
@@ -24,6 +24,8 @@ void ZLog::flushLog(){
     out.log = buffer;
     if(info[ZLogWorker::clock].isEmpty())
         info[ZLogWorker::clock] = getClock();
+    if(info[ZLogWorker::date].isEmpty())
+        info[ZLogWorker::date] = getDate();
     if(info[ZLogWorker::time].isEmpty())
         info[ZLogWorker::time] = getTime();
     if(info[ZLogWorker::thread].isEmpty())
@@ -32,9 +34,9 @@ void ZLog::flushLog(){
 
     if(_init && !noqueue){
         worker.queue(out);
-        if(synclog){
-            ZLogWorker::wait();
-        }
+//        if(synclog){
+//            worker.wait();
+//        }
     } else {
         ZLogWorker::doLog(out);
     }
@@ -54,10 +56,10 @@ ZLog &ZLog::operator<<(zlog_flag flag){
         rawlog = true;
     } else if(flag == stdio){
         stdiolog = true;
-    } else if(flag == sync){
-        synclog = true;
-    } else if(flag == async){
-        synclog = false;
+//    } else if(flag == sync){
+//        synclog = true;
+//    } else if(flag == async){
+//        synclog = false;
     } else if(flag == this_thread){
         noqueue = true;
     }
@@ -78,6 +80,27 @@ ZLog &ZLog::operator<<(std::string text){
 ZLog &ZLog::operator<<(zs64 num){
     return log(ZString(num));
 }
+ZLog &ZLog::operator<<(zu64 num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(zs32 num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(zu32 num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(zint num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(zuint num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(double num){
+    return log(ZString(num));
+}
+ZLog &ZLog::operator<<(char text){
+    return log(ZString(text));
+}
 ZLog &ZLog::operator<<(const char *text){
     return log(ZString(text));
 }
@@ -89,8 +112,14 @@ ZLog &ZLog::operator<<(ZPath text){
 }
 ZLog &ZLog::operator<<(ZBinary bin){
     ZString text;
-    for(zu64 i = 0; i < bin.size(); ++i)
-        text << (char)bin[i];
+    for(zu64 i = 0; i < bin.size(); ++i){
+        char tmp = bin[i];
+        // If null character, show 0
+        if(tmp == 0){
+            tmp = '0';
+        }
+        text << tmp;
+    }
     return log(text);
 }
 
@@ -109,20 +138,23 @@ ZString ZLog::pullBuffer(){
     return tmp;
 }
 
+ZString ZLog::getDate(){
+    time_t raw;
+    time(&raw);
+    struct tm *time;
+    time = localtime(&raw);
+    char buffer[20];
+    sprintf(buffer, "%02d/%02d/%02d", time->tm_mon + 1, time->tm_mday, time->tm_year - 100);
+    ZString out(buffer);
+    return out;
+}
 ZString ZLog::getTime(){
     time_t raw;
     time(&raw);
     struct tm *time;
     time = localtime(&raw);
-    int mon = time->tm_mon + 1;
-    int day = time->tm_mday;
-    int yr = time->tm_year - 100;
-    int hr = time->tm_hour;
-    int min = time->tm_min;
-    int sec = time->tm_sec;
     char buffer[20];
-    sprintf(buffer, "%02d/%02d/%02d %02d:%02d:%02d", mon, day, yr, hr, min, sec);
-    //strftime(buffer, 20, "%02m/%02d/%02y %02H:%02M:%02S", localtime(&raw));
+    sprintf(buffer, "%02d:%02d:%02d", time->tm_hour, time->tm_min, time->tm_sec);
     ZString out(buffer);
     return out;
 }
@@ -176,21 +208,25 @@ void ZLog::init(){
         worker.run();
     }
 }
-void ZLog::init(ZPath dlgfl){
+void ZLog::init(ZPath dlgfl, ZString format){
     if(!_init){
         init();
-        addLogFile(dlgfl, ZLogSource::normal, TIMELOG);
+        addLogFile(dlgfl, ZLogSource::all, format);
     }
 }
 
-void ZLog::formatStdout(zu64 type, ZString fmt){
+void ZLog::formatStdout(zlog_source type, ZString fmt){
     ZLogWorker::formatStdout(type, fmt);
 }
-void ZLog::formatStderr(zu64 type, ZString fmt){
+void ZLog::formatStderr(zlog_source type, ZString fmt){
     ZLogWorker::formatStderr(type, fmt);
 }
-void ZLog::addLogFile(ZPath pth, zu64 type, ZString fmt){
+void ZLog::addLogFile(ZPath pth, zlog_source type, ZString fmt){
     ZLogWorker::addLogFile(pth, type, fmt);
+}
+
+void ZLog::waitEnd(){
+    worker.waitEnd();
 }
 
 }

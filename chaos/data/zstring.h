@@ -55,7 +55,8 @@ public:
     //ZString(char*);
     //char *c();
 
-    ZString(const char*);
+    ZString(const unsigned char *);
+    ZString(const char *);
     const char *cc() const;
 
 #if PLATFORM == WINDOWS
@@ -63,17 +64,19 @@ public:
     const wchar_t *wc() const;
 #endif
 
-    ZString(char);
+    ZString(char, zu64 len = 1);
 
     ZString(zu16);
     ZString(zs16);
     ZString(zu32);
     ZString(zs32);
+    ZString(zint);
     ZString(zuint);
-    ZString(zsint);
+    //explicit ZString(zsint);
     ZString(zu64);
     ZString(zs64);
-    static ZString ItoS(zu64 num, unsigned base = 10);
+
+    static ZString ItoS(zu64 num, unsigned base = 10, zu64 pad = 0);
     static ZString ItoS(zs64 num, unsigned base = 10);
     int tint() const;
 
@@ -93,13 +96,18 @@ public:
     void clear();
     bool isEmpty() const;
 
+    // Tests if <str> begins with <test>. Ignores whitespace at beginning of string if <ignore_whitespace>
     bool startsWith(ZString test, bool ignore_whitespace = true) const;
+    // Alias for startsWith, always ignores whitespace
     inline bool beginsWith(ZString test) const { return startsWith(test, false); }
+
+    // Tests if <str> ends with <test>
     bool endsWith(ZString test) const;
 
     // Get portion of <str> from <pos> to end
     ZString &substr(zu64 pos);
     static ZString substr(ZString str, zu64 pos);
+
     // Get <len> characters after <pos> of <str>
     ZString &substr(zu64 pos, zu64 len);
     static ZString substr(ZString str, zu64 pos, zu64 len);
@@ -110,14 +118,17 @@ public:
     // Replace section <len> characters long at <pos> with <after> in <str>
     ZString &replace(zu64 pos, zu64 len, ZString after);
     static ZString replace(ZString str, zu64 pos, zu64 len, ZString after);
+
     // Replace the first occurrence of <before> in <str> with <after>, up to <max> times
     ZString &replaceRecursive(ZString before, ZString after, unsigned max = 1000);
     static ZString replaceRecursive(ZString str, ZString before, ZString after, unsigned max = 1000);
+
     // Replace up to <max> occurences of <before> with <after> in <str>
     // <max> = -1 for unlimited
     ZString &replace(ZString before, ZString after, unsigned max = -1);
     static ZString replace(ZString str, ZString before, ZString after, unsigned max = -1);
 
+    // Get sub-string of <str> before first occurence of <find> in <str>
     static ZString getUntil(ZString str, ZString find);
 
     ZString findFirstBetween(ZString, ZString);
@@ -126,14 +137,24 @@ public:
     ZString replaceXmlTagCont(ZString tag, ZString after);
     ZString label(ZString label, ZString value, bool modify = true);
     ZString label(AsArZ, bool modify = true);
-    ZString strip(char target, bool modify = true);
+
+    // Strip occurences of <target> from beginning and end of <str>
+    ZString &strip(char target);
+    static ZString strip(ZString str, char target);
+
     ZString removeWhitespace();
 
     ZString invert(bool modify = true);
-    ZString toLower(bool modify = true);
+
+    // Convert UPPERCASE characters to lowercase equivalents in <str>
+    ZString &toLower();
+    static ZString toLower(ZString str);
+
     ZString duplicate(unsigned iterate, bool modify = true);
     ZString popLast();
     static ZString compound(ArZ parts, ZString delim);
+
+    ArZ split(ZString delim);
 
     ArZ explode(char delim);
     ArZ explodeList(unsigned nargs, ...);
@@ -149,6 +170,9 @@ public:
     //ZString format(ZString fmt_str, ...);
     //ZString &format(...);
 
+    static bool alphaTest(ZString str1, ZString str2);
+
+    // Allows ZString to be used with std streams
     friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
 private:
     std::string data;
