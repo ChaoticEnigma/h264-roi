@@ -1,3 +1,8 @@
+/*****************************************
+**               LibChaos               **
+**               zmutex.h               **
+**       (c) 2013 Zennix Studios        **
+*****************************************/
 #ifndef ZMUTEX_H
 #define ZMUTEX_H
 

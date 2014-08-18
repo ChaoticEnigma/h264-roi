@@ -1,3 +1,8 @@
+/*****************************************
+**               LibChaos               **
+**               zstring.h              **
+**       (c) 2013 Zennix Studios        **
+*****************************************/
 #ifndef ZSTRING_H
 #define ZSTRING_H
 

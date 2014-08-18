@@ -1,3 +1,8 @@
+/*****************************************
+**               LibChaos               **
+**               database.h               **
+**       (c) 2013 Zennix Studios        **
+*****************************************/
 #ifndef DATABASE_H
 #define DATABASE_H
 

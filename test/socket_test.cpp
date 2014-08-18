@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
+
 #include "zerror.h"
 
 static bool run = true;

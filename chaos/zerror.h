@@ -1,7 +1,17 @@
+/*****************************************
+**               LibChaos               **
+**               zerror.h               **
+**       (c) 2013 Zennix Studios        **
+*****************************************/
 #ifndef ZERROR_H
 #define ZERROR_H
 
 #include "zstring.h"
+<<<<<<< HEAD
+
+namespace LibChaos {
+namespace ZError {
+=======
 #include "zmap.h"
 
 namespace LibChaos {
@@ -54,6 +64,12 @@ private:
     ArZ stacktrace;
 };
 
+bool registerInterruptHandler(signalHandler);
+bool registerSignalHandler(zerror_signal, signalHandler);
+
+ZString getError();
+
+}
 }
 
 #endif // ZERROR_H

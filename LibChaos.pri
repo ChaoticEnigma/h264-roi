@@ -55,7 +55,8 @@ HEADERS += \
     $$PWD/ui/align.h \
     \
     $$PWD/bbb/zbbb.h \
-    libchaos/chaos/zcondition.h
+    \
+    $$PWD/chaos/zcondition.h
 
 SOURCES += \
     $$PWD/chaos/database.cpp \
@@ -109,9 +110,9 @@ SOURCES += \
     $$PWD/bbb/io.cpp \
     \
     $$PWD/util/extensionfixer.cpp \
-    util/audiobooksorter.cpp \
-    util/imagedownloader.cpp \
-    util/duplicatefinder.cpp
+    $$PWD/util/audiobooksorter.cpp \
+    $$PWD/util/imagedownloader.cpp \
+    $$PWD/util/duplicatefinder.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -120,6 +121,7 @@ OTHER_FILES += \
     $$PWD/chaos/CMakeLists.txt \
     $$PWD/test/CMakeLists.txt \
     $$PWD/configure_build.cmake \
+    $$PWD/todo.txt \
     $$PWD/LibChaos_Todo_Ideas.txt \
     $$PWD/util/CMakeLists.txt \
     $$PWD/source_hash.cmake \

@@ -1,3 +1,8 @@
+/*****************************************
+**               LibChaos               **
+**               ztypes.h               **
+**       (c) 2013 Zennix Studios        **
+*****************************************/
 #ifndef ZTYPES_H
 #define ZTYPES_H
 
@@ -69,6 +74,8 @@
 
 // Macros
 #define FOREACH(A) for(zu64 i = 0; i < A; ++i)
+#define MIN(A, B) ((A < B) ? A : B)
+#define MAX(A, B) ((A > B) ? A : B)
 
 // LibChaos version control
 #define ZARRAY_VERSION 1 //2

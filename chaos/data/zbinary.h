@@ -15,13 +15,13 @@ public:
     typedef unsigned char zbinary_type;
 
     ZBinary();
-    ZBinary(const zbinary_type *ptr, zu64 len);
+    ZBinary(const void *ptr, zu64 len);
 
     inline zbinary_type &operator[](zu64 inx){
         return _data[inx];
     }
     inline const zbinary_type &operator[](zu64 inx) const {
-        return _data[inx];
+        return _data.get(inx);
     }
 
     inline ZBinary &fill(zbinary_type dat, zu64 size){
@@ -30,6 +30,18 @@ public:
             _data.push(dat);
         }
         return *this;
+    }
+
+    void concat(const ZBinary &data){
+        _data.concat(data.data());
+    }
+
+    void reverse(){
+        ZArray<zbinary_type> buff;
+        for(zu64 i = _data.size(); i > 0; --i){
+            buff.push(_data[i]);
+        }
+        _data = buff;
     }
 
     zu64 size() const{

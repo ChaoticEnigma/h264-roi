@@ -1,8 +1,6 @@
 #include "zerror.h"
 #include "zlog.h"
 #include "zmap.h"
-#include <cstdlib>
-#include <cerrno>
 
 #define FUCK_WINDOWS 1
 
@@ -17,14 +15,15 @@
     #include <windows.h>
 
     #ifndef FUCK_WINDOWS
-    #include <imagehlp.h>
-    #include <winerror.h>
-    #include <winnt.h>
-    #include <Psapi.h>
+        #include <imagehlp.h>
+        #include <winerror.h>
 
-    #include <algorithm>
-    #include "StackWalker.h"
-    #include <list>
+        #include <winnt.h>
+        #include <Psapi.h>
+
+        #include <algorithm>
+        #include "StackWalker.h"
+        #include <list>
     #endif
 #endif
 
@@ -685,6 +684,7 @@ BOOL WINAPI ConsoleHandler(DWORD dwType){
 
 bool ZError::registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
+
 #if PLATFORM == LINUX
 
     int sig = 0;
@@ -733,6 +733,7 @@ bool ZError::registerSignalHandler(zerror_signal sigtype, signalHandler handler)
     action.sa_handler = sigHandle;
     sigemptyset(&action.sa_mask);
     sigaddset(&action.sa_mask, sig);
+
     action.sa_flags = SA_SIGINFO | SA_ONSTACK;
     if(sigaction(sig, &action, 0) != 0){
         throw ZError("sigaction");
@@ -748,6 +749,7 @@ bool ZError::registerSignalHandler(zerror_signal sigtype, signalHandler handler)
 
     return true;
 }
+
 bool ZError::registerInterruptHandler(signalHandler handler){
     return registerSignalHandler(interrupt, handler);
 }

@@ -1,3 +1,8 @@
+/*****************************************
+**               LibChaos               **
+**               zautobuffer.h          **
+**       (c) 2013 Zennix Studios        **
+*****************************************/
 #ifndef ZAUTOBUFFER_H
 #define ZAUTOBUFFER_H
 

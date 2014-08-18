@@ -30,6 +30,13 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     data/zstring.h
     data/zxml.h
 
+    net/zaddress.h
+    net/zconnection.h
+    net/zsocket.h
+    net/zdatagramsocket.h
+    net/zstreamsocket.h
+    net/zstreamconnection.h
+
     lib/sqlite3.h
     #lib/demangle.h
 
@@ -58,6 +65,13 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     data/zstring.cpp
     data/zstring_encode.cpp
     data/zxml.cpp
+
+    net/zaddress.cpp
+    net/zconnection.cpp
+    net/zsocket.cpp
+    net/zdatagramsocket.cpp
+    net/zstreamsocket.cpp
+    net/zstreamconnection.cpp
 
     lib/sqlite3.c
 

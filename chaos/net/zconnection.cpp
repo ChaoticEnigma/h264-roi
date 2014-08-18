@@ -58,7 +58,11 @@ zu64 ZConnection::read(ZBinary &str){
     bytes = ::recv(_socket, (char *)buffer, ZSOCKET_TCP_BUFFER, 0);
 #endif
     if(bytes <= -1){
+<<<<<<< HEAD
+        ELOG("ZSocket: read error: " << ZError::getError());
+=======
         ELOG("ZSocket: read error: " << ZError::getSystemError());
+>>>>>>> 9d38ca3f8ecda0da51cc56c6d67d9a2c1262fbc6
         return 0;
     }
     str = ZBinary(buffer, bytes);
@@ -81,7 +85,11 @@ bool ZConnection::write(const ZBinary &data){
     bytes = ::send(_socket, (const char *)data.raw(), data.size(), 0);
 #endif
     if(bytes <= 0){
+<<<<<<< HEAD
+        ELOG("ZSocket: write error: " << ZError::getError());
+=======
         ELOG("ZSocket: write error: " << ZError::getSystemError());
+>>>>>>> 9d38ca3f8ecda0da51cc56c6d67d9a2c1262fbc6
         return false;
     }
     return true;
