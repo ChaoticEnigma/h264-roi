@@ -50,12 +50,12 @@ zu64 ZConnection::read(ZBinary &str){
     }
         long bytes;
     if(buffer == NULL)
-        buffer = new unsigned char[ZSOCKET_TCP_BUFFER];
+        buffer = new unsigned char[ZSOCKET_TCP_BUFFER_SIZE];
 
 #if PLATFORM == LINUX
-    bytes = ::recv(_socket, buffer, ZSOCKET_TCP_BUFFER, 0);
+    bytes = ::read(_socket, buffer, ZSOCKET_TCP_BUFFER_SIZE);
 #elif PLATFORM == WINDOWS
-    bytes = ::recv(_socket, (char *)buffer, ZSOCKET_TCP_BUFFER, 0);
+    bytes = ::recv(_socket, (char *)buffer, ZSOCKET_TCP_BUFFER_SIZE, 0);
 #endif
     if(bytes <= -1){
         ELOG("ZSocket: read error: " << ZError::getSystemError());
@@ -76,7 +76,7 @@ bool ZConnection::write(const ZBinary &data){
     }
     long bytes;
 #if PLATFORM == LINUX
-    bytes = ::send(_socket, data.raw(), data.size(), 0);
+    bytes = ::write(_socket, data.raw(), data.size());
 #elif PLATFORM == WINDOWS
     bytes = ::send(_socket, (const char *)data.raw(), data.size(), 0);
 #endif

@@ -59,7 +59,7 @@ private:
     static bool InitializeSockets();
     static void ShutdownSockets();
 
-    static zu64 socket_count;
+    static zu32 socket_count;
 
     int _socket;
     const socket_type _type;
