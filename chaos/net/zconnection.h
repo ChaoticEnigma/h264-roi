@@ -6,7 +6,7 @@
 #include "zbinary.h"
 #include "zstring.h"
 
-#define ZSOCKET_TCP_BUFFER  1024
+#define ZSOCKET_TCP_BUFFER_SIZE 1024
 
 namespace LibChaos {
 

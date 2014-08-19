@@ -16,7 +16,7 @@
 
 namespace LibChaos {
 
-zu64 ZSocket::socket_count = 0;
+zu32 ZSocket::socket_count = 0;
 
 ZSocket::ZSocket(socket_type type) : _socket(0), _type(type), buffer(nullptr), reuseaddr(false){
     if(socket_count <= 0)
