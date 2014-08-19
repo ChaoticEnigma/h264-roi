@@ -33,6 +33,7 @@ protected:
         // IPv6 128 bits
         union {
             zu8 _v6_addr[16];
+            zu16 _v6_blocks[8];
             struct {
                 zu64 _v6_second;
                 zu64 _v6_first;

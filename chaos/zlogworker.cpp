@@ -21,9 +21,12 @@ bool ZLogWorker::lastcomp;
 
 ZLogWorker::ZLogWorker(){
     //work = work(zlogWorker);
-    setbuf(stdout, NULL);
-//    formatStdout(ZLogSource::normal, TIMETHREAD); // These cause a memory leak...?
-//    formatStderr(ZLogSource::error, DETAILLOG);
+
+    // Output buffering can be default, since it is flushed each line anyway
+    //setbuf(stdout, NULL);
+
+    //    formatStdout(ZLogSource::normal, TIMETHREAD); // These cause a memory leak...?
+    //    formatStderr(ZLogSource::error, DETAILLOG);
 }
 
 ZLogWorker::~ZLogWorker(){

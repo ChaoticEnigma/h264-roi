@@ -15,18 +15,17 @@ int tcp_test(){
 
     ZSocket sock(ZSocket::tcp);
 
-    LOG("Connecting...");
-
     //ZAddress addr("::1", 8998);
-    ZAddress addr("192.168.1.72", 8998);
+    ZAddress addr("192.168.1.71", 8998);
     //ZAddress addr("192.168.1.89", 8998);
 
     ZConnection conn;
+    LOG("Connecting to " << addr.str());
     if(!sock.connect(addr, conn)){
         ELOG("Socket Connect Fail");
         return 3;
     }
-    LOG("connect " << conn.other().str());
+    LOG("connected " << conn.other().str());
 
     ZString str = "hi connection!";
     ZBinary snddata((unsigned char *)str.cc(), str.size());

@@ -170,7 +170,7 @@ bool ZSocket::connect(ZAddress addr, ZConnection &conn){
     for(zu64 i = 0; i < addrs.size(); ++i){
         if(!getSocket(_socket, addrs[i]))
             continue;
-
+        LOG("Got socket for " << addrs[i].debugStr());
         sockaddr_storage addrstorage;
         addrs[i].populate(&addrstorage);
         if(::connect(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
@@ -178,7 +178,7 @@ bool ZSocket::connect(ZAddress addr, ZConnection &conn){
             close();
             continue;
         }
-        end_addr = ZAddress(&addrstorage);
+        end_addr = addrs[i];
         ok = true;
     }
     if(!ok){
