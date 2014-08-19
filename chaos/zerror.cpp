@@ -9,7 +9,9 @@
     #include <signal.h>
     #include <cstring>
     #define HAVE_DECL_BASENAME 1
-    #include "demangle.h"
+    #ifdef IBERTY_DEMANGLE
+        #include "demangle.h"
+    #endif
 #elif PLATFORM == WINDOWS
     #include <stdlib.h>
     #include <windows.h>
@@ -95,7 +97,11 @@ addr2line_parts addr2line(char const * const program_name, void const * const ad
     str.removeWhitespace();
     ArZ tok = str.explode(' ');
     source.symbol = tok[0];
+#ifdef IBERTY_DEMANGLE
     source.name = cplus_demangle(source.symbol.cc(), 0);
+#else
+    source.name = source.symbol;
+#endif
     ArZ flp = tok[2].split(':');
     source.file = flp[0] != "??" ? ZPath(flp[0]) : "";
     source.line = flp[1] != "??" ? flp[1].tint() : 0;
@@ -128,7 +134,11 @@ ArZ ZError::getStackTrace(unsigned trim){
             tmp.substr(ZString::findFirst(tmp, "["));
             ArZ fpts = funcstr.strip(' ').strip('(').strip(')').split('+');
             frame.func_symbol = fpts[0];
+#ifdef IBERTY_DEMANGLE
             frame.func_name = cplus_demangle(frame.func_symbol.cc(), 0);
+#else
+            frame.func_name = frame.func_symbol;
+#endif
             frame.func_addr = fpts[1];
 
             // Address

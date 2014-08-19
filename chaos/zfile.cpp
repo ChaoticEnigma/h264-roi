@@ -143,25 +143,11 @@ ZBinary ZFile::readBinary(ZPath name){
     return ZBinary();
 }
 
-//bool ZFile::writeFile(ZPath filenm, const ZString &data){
-//    if(!filenm.createDirsTo())
-//        return false;
-//    std::ofstream outfile(filenm.str().cc(), std::ios::out);
-//    if(outfile){
-//        outfile.write(data.cc(), data.size());
-//        outfile.flush();
-//        outfile.close();
-//        return true;
-//    }
-//    return false;
-//}
-
-//}
-//#include "zlog.h"
-//namespace LibChaos {
+zu64 ZFile::writeFile(ZPath filenm, const ZString &str){
+    return writeFile(filenm, ZBinary(str.cc(), str.size()));
+}
 
 zu64 ZFile::writeFile(ZPath filenm, const ZBinary &data){
-    //LOG(filenm.str().cc());
     if(!filenm.createDirsTo())
         return 0;
     FILE *fileh = fopen(filenm.str().cc(), "wb");

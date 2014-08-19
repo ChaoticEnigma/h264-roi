@@ -46,7 +46,7 @@ class ZFile {
 
         static ZBinary readBinary(ZPath name);
 
-        //static bool writeFile(ZPath name, const ZString &data);
+        static zu64 writeFile(ZPath name, const ZString &data);
         static zu64 writeFile(ZPath name, const ZBinary &data);
 
         static zu64 copy(ZPath, ZPath);
