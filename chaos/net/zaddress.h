@@ -22,6 +22,7 @@ class ZAddressData {
 protected:
     ZAddressData(int fam, int typ, int pro, zport port);
     ZAddressData(const ZAddressData &other);
+
 protected:
     int _family;
     int _type;
@@ -64,6 +65,12 @@ public:
         unix = AF_UNIX
     };
 
+    enum protocol_type {
+        ip = IPPROTO_IP,
+        tcp = IPPROTO_TCP,
+        udp = IPPROTO_UDP
+    };
+
     ZAddress();
     ZAddress(ZString str);
     ZAddress(ZString str, zport port);
@@ -81,6 +88,8 @@ public:
 
     inline bool operator==(const ZAddress &rhs) const {
         if(     this->_family == rhs._family &&
+                this->_type == rhs._type &&
+                this->_protocol == rhs._protocol &&
                 this->_name == rhs._name &&
                 this->_v6_first == rhs._v6_first &&
                 this->_v6_second == rhs._v6_second &&

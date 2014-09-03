@@ -19,8 +19,8 @@ public:
     typedef void (*receiveCallback)(ZSocket *_socket, const ZAddress &sender, const ZBinary &data);
 
     enum socket_type {
-        tcp = SOCK_STREAM,
-        udp = SOCK_DGRAM,
+        stream = SOCK_STREAM,
+        datagram = SOCK_DGRAM,
         raw = SOCK_RAW
     };
 

@@ -20,6 +20,10 @@ ZAddressData::ZAddressData(const ZAddressData &other) : _family(other._family), 
     memcpy(_v6_addr, other._v6_addr, sizeof(_v6_addr));
 }
 
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
+// ZADDRESS
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
+
 #if PLATFORM == WINDOWS
 const char *inet_ntop(int af, const void* src, char *dst, int cnt){
     sockaddr_storage srcaddr;
@@ -149,22 +153,23 @@ ZString ZAddress::str() const {
 }
 
 ZArray<ZAddress> ZAddress::lookUp(ZAddress addr){
-    struct addrinfo hints, *res;
+    struct addrinfo hints, *result;
     int status;
     //char ipstr[INET6_ADDRSTRLEN];
 
     memset(&hints, 0, sizeof hints);
     //hints.ai_family = AF_UNSPEC; // Redundant
+    hints.
     hints.ai_socktype = addr.type();
 
     ZString name = addr.str();
-    if((status = getaddrinfo(name.cc(), NULL, &hints, &res)) != 0){
+    if((status = getaddrinfo(name.cc(), NULL, &hints, &result)) != 0){
         ELOG("ZSocket: getaddrinfo: " << ZError::getSystemError());
         return ZArray<ZAddress>();
     }
 
     ZArray<ZAddress> addrs;
-    for(struct addrinfo *p = res; p != NULL; p = p->ai_next){
+    for(struct addrinfo *p = result; p != NULL; p = p->ai_next){
 //        void *addr;
 //        if(p->ai_family == AF_INET){
 //            struct sockaddr_in *v4 = (struct sockaddr_in *)p->ai_addr;
@@ -190,7 +195,7 @@ ZArray<ZAddress> ZAddress::lookUp(ZAddress addr){
         if(!addrs.contains(newaddr))
             addrs.push(newaddr);
     }
-    freeaddrinfo(res); // free the linked list
+    freeaddrinfo(result); // free the linked list
     return addrs;
 }
 

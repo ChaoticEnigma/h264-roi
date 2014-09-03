@@ -17,7 +17,7 @@ int udp_test(){
     ZError::registerInterruptHandler(stopHandler);
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
-    ZSocket sock(ZSocket::udp);
+    ZSocket sock(ZSocket::datagram);
     sock.allowRebind(true);
     ZAddress bound(8998);
     if(!sock.open(bound)){
@@ -64,7 +64,7 @@ int udpserver_test(){
     ZError::registerInterruptHandler(stopHandler);
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
-    ZSocket sock(ZSocket::udp);
+    ZSocket sock(ZSocket::datagram);
     sock.allowRebind(true);
     if(!sock.open(ZAddress(8998))){
         ELOG("Socket Open Fail");

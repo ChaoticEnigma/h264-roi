@@ -13,10 +13,11 @@ int tcp_test(){
     ZError::registerInterruptHandler(stopHandler2);
     ZError::registerSignalHandler(ZError::terminate, stopHandler2);
 
-    ZSocket sock(ZSocket::tcp);
+    ZSocket sock(ZSocket::stream);
 
     //ZAddress addr("::1", 8998);
-    ZAddress addr("192.168.1.71", 8998);
+    ZAddress addr("127.0.0.1", 8998);
+    //ZAddress addr("192.168.1.71", 8998);
     //ZAddress addr("192.168.1.89", 8998);
 
     ZConnection conn;
@@ -44,7 +45,7 @@ int tcpserver_test(){
     ZError::registerInterruptHandler(stopHandler2);
     ZError::registerSignalHandler(ZError::terminate, stopHandler2);
 
-    ZSocket sock(ZSocket::tcp);
+    ZSocket sock(ZSocket::stream);
     if(!sock.open(ZAddress(8998))){
         ELOG("Socket Open Fail");
         return 2;
@@ -60,7 +61,7 @@ int tcpserver_test(){
         ZConnection client;
         if(!sock.accept(client))
             continue;
-        LOG("accept " << client.other().str());
+        LOG("accept " << client.other().debugStr());
 
         ZBinary data;
         client.read(data);
