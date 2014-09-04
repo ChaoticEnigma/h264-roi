@@ -11,7 +11,8 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zlog.h
     zlogworker.h
     zmutex.h
-    zpath.h
+    zautobuffer.h
+    zautobufferunit.h
     zret.h
     zthread.h
     ztime.h
@@ -21,11 +22,10 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     data/zarray2.h
     data/zassoc.h
     data/zassoc2.h
-    data/zautobuffer.h
-    data/zautobufferunit.h
     data/zbinary.h
     data/zdata.h
     data/zmap.h
+    data/zpath.h
     data/zjson.h
     data/zstring.h
     data/zxml.h
@@ -50,18 +50,19 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     database.cpp
+    zautobuffer.cpp
     #zclock.cpp
     zerror.cpp
     zfile.cpp
     zlog.cpp
     zlogworker.cpp
-    zpath.cpp
+
     zthread.cpp
     #ztime.cpp
 
-    data/zautobuffer.cpp
     data/zbinary.cpp
     data/zjson.cpp
+    data/zpath.cpp
     data/zstring.cpp
     data/zstring_encode.cpp
     data/zxml.cpp

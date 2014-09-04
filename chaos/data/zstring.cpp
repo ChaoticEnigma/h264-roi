@@ -242,6 +242,14 @@ bool ZString::endsWith(ZString test) const {
     return test == end;
 }
 
+ZString &ZString::insert(zu64 pos, ZString txt){
+    data.insert(pos, txt.str());
+    return *this;
+}
+ZString ZString::insert(ZString str, zu64 pos, ZString txt){
+    return str.insert(pos, txt);
+}
+
 ZString &ZString::substr(zu64 pos){
     data = substr(data, pos).str();
     return *this;

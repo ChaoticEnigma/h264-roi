@@ -65,6 +65,12 @@
     #endif
 #endif
 
+// Signed Integer Encoding
+#define LIBCHAOS_COMPLEMENT (-1 & 3)
+#if LIBCHAOS_COMPLEMENT != 1 && LIBCHAOS_COMPLEMENT == 2 && LIBCHAOS_COMPLEMENT == 3
+    #error Unknown signed integer encoding?
+#endif
+
 // Constants
 #ifdef NULL
     #undef NULL

@@ -104,6 +104,10 @@ public:
     // Tests if <str> ends with <test>
     bool endsWith(ZString test) const;
 
+    // Insert character at direction
+    ZString &insert(zu64 pos, ZString txt);
+    static ZString insert(ZString str, zu64 pos, ZString txt);
+
     // Get portion of <str> from <pos> to end
     ZString &substr(zu64 pos);
     static ZString substr(ZString str, zu64 pos);

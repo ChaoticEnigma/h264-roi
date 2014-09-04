@@ -14,6 +14,8 @@ int string_magic_block();
 int path_block();
 int path_windows_block();
 
+int number_block();
+
 int file_block();
 
 int thread_block();

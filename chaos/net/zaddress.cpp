@@ -159,7 +159,6 @@ ZArray<ZAddress> ZAddress::lookUp(ZAddress addr){
 
     memset(&hints, 0, sizeof hints);
     //hints.ai_family = AF_UNSPEC; // Redundant
-    hints.
     hints.ai_socktype = addr.type();
 
     ZString name = addr.str();

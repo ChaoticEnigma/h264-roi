@@ -15,6 +15,7 @@ int main(int argc, char **argv){
         { "string_magic", string_magic_block },
         { "path", path_block },
         { "path_windows", path_windows_block },
+        { "number", number_block },
         { "file", file_block },
         { "thread", thread_block },
         { "autobuffer", autobuffer_block },
