@@ -5,11 +5,9 @@ QT -= core gui widgets
 
 # LibChaos
 HEADERS += \
-    $$PWD/chaos/database.h \
     $$PWD/chaos/zerror.h \
     $$PWD/chaos/zautobuffer.h \
     $$PWD/chaos/zautobufferunit.h \
-    $$PWD/chaos/zfile.h \
     $$PWD/chaos/zlog.h \
     $$PWD/chaos/zlogworker.h \
     $$PWD/chaos/zmutex.h \
@@ -31,6 +29,10 @@ HEADERS += \
     $$PWD/chaos/data/zpath.h \
     $$PWD/chaos/data/zstring.h \
     $$PWD/chaos/data/zxml.h \
+    \
+    $$PWD/chaos/file/database.h \
+    $$PWD/chaos/file/zbitmap.h \
+    $$PWD/chaos/file/zfile.h \
     \
     $$PWD/chaos/lib/sqlite3.h \
     \
@@ -57,13 +59,12 @@ HEADERS += \
     $$PWD/bbb/zbbb.h \
     \
     $$PWD/chaos/zcondition.h \
-    chaos/data/znumber.h
+    chaos/data/znumber.h \
+    $$PWD/chaos/file/zpng.h
 
 SOURCES += \
-    $$PWD/chaos/database.cpp \
     $$PWD/chaos/zautobuffer.cpp \
     $$PWD/chaos/zerror.cpp \
-    $$PWD/chaos/zfile.cpp \
     $$PWD/chaos/zlog.cpp \
     $$PWD/chaos/zlogworker.cpp \
     $$PWD/chaos/zsocket.cpp \
@@ -77,6 +78,9 @@ SOURCES += \
     $$PWD/chaos/data/zstring.cpp \
     $$PWD/chaos/data/zstring_encode.cpp \
     $$PWD/chaos/data/zxml.cpp \
+    \
+    $$PWD/chaos/file/database.cpp \
+    $$PWD/chaos/file/zfile.cpp \
     \
     $$PWD/chaos/lib/sqlite3.c \
     \
@@ -115,7 +119,9 @@ SOURCES += \
     $$PWD/util/imagedownloader.cpp \
     $$PWD/util/duplicatefinder.cpp \
     chaos/data/znumber.cpp \
-    test/number_test.cpp
+    test/number_test.cpp \
+    $$PWD/chaos/file/zpng.cpp \
+    $$PWD/test/png_test.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -133,9 +139,10 @@ OTHER_FILES += \
 INCLUDEPATH += \
     $$PWD \
     $$PWD/chaos \
-    $$PWD/chaos/net \
-    $$PWD/chaos/lib \
     $$PWD/chaos/data \
+    $$PWD/chaos/file \
+    $$PWD/chaos/lib \
+    $$PWD/chaos/net \
     $$PWD/test \
     $$PWD/ui \
     $$PWD/bbb \

@@ -18,6 +18,7 @@ int main(int argc, char **argv){
         { "path_windows", path_windows_block },
         { "number", number_block },
         { "file", file_block },
+        { "png", png_block },
         { "thread", thread_block },
         { "autobuffer", autobuffer_block },
         { "json", json_block },
@@ -47,7 +48,8 @@ int main(int argc, char **argv){
                         result = tests[j]();
                     } catch(int err){
                         result = err;
-                    } catch(ZError){
+                    } catch(ZError err){
+                        ELOG("!! Error: " << err.what());
                         result = 255;
                     }
                     if(result != 0){
@@ -73,7 +75,8 @@ int main(int argc, char **argv){
                 result = tests[i]();
             } catch(int err){
                 result = err;
-            } catch(ZError){
+            } catch(ZError err){
+                ELOG("!! Error: " << err.what());
                 result = 255;
             }
             if(result != 0){

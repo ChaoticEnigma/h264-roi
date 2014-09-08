@@ -3,8 +3,6 @@
 #include "zbinary.h"
 #include <bitset>
 
-using namespace LibChaos;
-
 void printnum(zu64 num){
     std::bitset<32> b1(num);
     ZString str1 = b1.to_string();

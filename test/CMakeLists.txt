@@ -9,6 +9,7 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     string_test.cpp
     number_test.cpp
     file_test.cpp
+    png_test.cpp
     thread_test.cpp
     autobuffer_test.cpp
     error_test.cpp

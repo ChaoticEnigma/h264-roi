@@ -4,10 +4,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(LibChaos)
 
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
-    database.h
     zclock.h
     zerror.h
-    zfile.h
     zlog.h
     zlogworker.h
     zmutex.h
@@ -30,6 +28,11 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     data/zstring.h
     data/zxml.h
 
+    file/database.h
+    file/zbitmap.h
+    file/zfile.h
+    file/zpng.h
+
     net/zaddress.h
     net/zconnection.h
     net/zsocket.h
@@ -49,11 +52,9 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 )
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
-    database.cpp
     zautobuffer.cpp
     #zclock.cpp
     zerror.cpp
-    zfile.cpp
     zlog.cpp
     zlogworker.cpp
 
@@ -66,6 +67,10 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     data/zstring.cpp
     data/zstring_encode.cpp
     data/zxml.cpp
+
+    file/database.cpp
+    file/zfile.cpp
+    file/zpng.cpp
 
     net/zaddress.cpp
     net/zconnection.cpp
@@ -93,13 +98,20 @@ ENDIF()
 
 ### =================== CONFIG =================== ###
 
-SET(LibChaos_INCLUDE ${LibChaos_SOURCE_DIR} ${LibChaos_SOURCE_DIR}/net ${LibChaos_SOURCE_DIR}/data PARENT_SCOPE)
+SET(LibChaos_INCLUDE
+    ${LibChaos_SOURCE_DIR}
+    ${LibChaos_SOURCE_DIR}/data
+    ${LibChaos_SOURCE_DIR}/file
+    ${LibChaos_SOURCE_DIR}/net
+    PARENT_SCOPE
+)
 
 INCLUDE_DIRECTORIES(
     ${LibChaos_SOURCE_DIR}
-    net
-    lib
     data
+    file
+    lib
+    net
     ${CMAKE_SOURCE_DIR}
 )
 
@@ -123,6 +135,7 @@ ADD_DEFINITIONS(-DBUILDING)
 ADD_LIBRARY(chaos ${LibChaos_SOURCES})
 TARGET_LINK_LIBRARIES(chaos pthread)
 IF(LIBCHAOS_UNIX)
+    TARGET_LINK_LIBRARIES(chaos png)
     IF(IBERTY_DEMANGLE)
         TARGET_LINK_LIBRARIES(chaos iberty)
     ENDIF()
