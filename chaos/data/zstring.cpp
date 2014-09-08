@@ -108,7 +108,7 @@ ZString::ZString(zuint num){ data = ItoS((zu64)num, 10).str(); }
 ZString::ZString(zu64 num){ data = ItoS(num, 10).str(); }
 ZString::ZString(zs64 num){ data = ItoS(num, 10).str(); }
 
-ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad) {
+ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad){
     std::string buf;
     if(base < 2 || base > 16)
         return buf;
@@ -125,7 +125,7 @@ ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad) {
     }
     return tmp;
 }
-ZString ZString::ItoS(zs64 value, unsigned base) {
+ZString ZString::ItoS(zs64 value, unsigned base){
     std::string buf;
     if (base < 2 || base > 16)
         return buf;

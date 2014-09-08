@@ -1,4 +1,5 @@
 #include "test.h"
+#include "zerror.h"
 
 int main(int argc, char **argv){
     ZLog::formatStdout(ZLogSource::normal, "%time% %thread% - %log%");
@@ -46,6 +47,8 @@ int main(int argc, char **argv){
                         result = tests[j]();
                     } catch(int err){
                         result = err;
+                    } catch(ZError){
+                        result = 255;
                     }
                     if(result != 0){
                         ELOG("!!! Test '" << tests.key(j) << "' Failed: " << result);
@@ -70,6 +73,8 @@ int main(int argc, char **argv){
                 result = tests[i]();
             } catch(int err){
                 result = err;
+            } catch(ZError){
+                result = 255;
             }
             if(result != 0){
                 LOG("!!! Test '" << tests.key(i) << "' Failed: " << result);

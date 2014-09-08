@@ -5,6 +5,7 @@
 #include <cstring>
 #include "zstring.h"
 #include <bitset>
+#include "zerror.h"
 
 namespace LibChaos {
 
@@ -103,9 +104,30 @@ public:
     friend ZNumber operator*(ZNumber lhs, const ZNumber &rhs);
     friend ZNumber operator/(ZNumber lhs, const ZNumber &rhs);
 
+    void sum(zu8 lhs, zu8 rhs, zbyte *data){
+
+    }
+
     // Arithmetic Assignment
     ZNumber &operator+=(const ZNumber &other){
+        if(other.isNegative()){
+            throw ZError("wait");
+            return *this;
+        }
 
+        if(other._size > _size){
+            pad(other._size - _size);
+        }
+        zu8 carry = 0;
+        for(zu64 i = 0; i < MAX(_size, other._size); ++i){
+            zu16 sum = byte(i) + other.byte(i) + carry;
+            _data[i] = ((zbyte*)&sum)[0];
+            carry = ((zbyte*)&sum)[1];
+        }
+        if(carry){
+            pad(1);
+            _data[_size - 1] = carry;
+        }
         return *this;
     }
     ZNumber &operator-=(const ZNumber &other){
@@ -117,7 +139,9 @@ public:
         return *this;
     }
     ZNumber &operator/=(const ZNumber &other){
-
+        if(other == 0){
+            throw ZError("Division by zero");
+        }
         return *this;
     }
 
@@ -167,16 +191,31 @@ public:
         if(_data == nullptr){
             return "0";
         }
+        if(base > 32){
+            return "!";
+        }
+
+        const char *digits = "01"       // Binary
+                             "234567"   // Octal
+                             "89"       // Decimal
+                             "abcdef"   // Hexadecimal
+                             "ghijklmnopqrstuv" // Base 32
+                             "wxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@";    // Base 64
 
         ZString out;
+        //char buffer[100];
 
+        bool bit = 0;
         for(zu64 i = 0; i < _size; ++i){
-            bool bit = 0;
-            for(zu8 j = 1; j <= 128; j = j << 1){
-                bit = _data[i] & j;
-                out << (bit ? "1" : "0");
+            for(zu8 j = 0, m = 1; j < 8; ++j, m <<= 1){
+                bit = _data[i] & m;
+
+                //buffer[];
+
+                //out += (bit ? "1" : "0");
+                out += digits[bit];
             }
-            out << " ";
+            out += " ";
         }
         out.strip(' ');
 
@@ -205,6 +244,37 @@ public:
     }
     zu64 size() const {
         return _size;
+    }
+
+    void pad(zu64 num){
+        zbyte *tmp = _data;
+        _data = new zbyte[_size + num];
+        memcpy(_data, tmp, _size);
+        delete[] tmp;
+        for(zu64 i = _size; i < _size + num; ++i){
+            _data[i] = 0;
+        }
+        //memset(_data + _size, 0, num);
+        _size += num;
+    }
+
+    void clean(){
+        zu8 length = 0;
+        for(zu8 i = 0; i < _size; ++i){
+            if(_data[i] == 0){
+                length = i;
+                break;
+            }
+        }
+        zbyte *tmp = _data;
+        _data = new zbyte[length];
+        memcpy(_data, tmp, length);
+        delete[] tmp;
+        _size = length;
+    }
+
+    zbyte byte(zu64 i) const {
+        return (i < _size ? _data[i] : 0);
     }
 
 private:

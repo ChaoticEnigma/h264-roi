@@ -10,6 +10,7 @@
     #define IPV6_MAX 46
 #elif PLATFORM == LINUX
     #include <sys/socket.h>
+    #include <netinet/in.h>
     #define IPV4_MAX INET_ADDRSTRLEN
     #define IPV6_MAX INET6_ADDRSTRLEN
 #endif
