@@ -60,7 +60,9 @@ HEADERS += \
     \
     $$PWD/chaos/zcondition.h \
     chaos/data/znumber.h \
-    $$PWD/chaos/file/zpng.h
+    $$PWD/chaos/file/zpng.h \
+    $$PWD/chaos/file/zimage.h \
+    $$PWD/chaos/file/zbmp.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \

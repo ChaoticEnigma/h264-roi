@@ -39,6 +39,11 @@ public:
         return _data.get(inx);
     }
 
+    ZBinary &resize(zu64 len){
+        _data.resize(len);
+        return *this;
+    }
+
     ZBinary &fill(zbinary_type dat, zu64 size){
         _data.clear();
         for(zu64 i = 0; i < size; ++i){

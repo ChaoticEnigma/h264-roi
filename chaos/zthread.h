@@ -7,7 +7,10 @@
 #define ZTHREAD_H
 
 #include <pthread.h>
+
 #include <atomic>
+// WTF ?
+#undef bool
 
 #include "ztypes.h"
 

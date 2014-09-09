@@ -147,7 +147,7 @@ zu64 ZFile::writeFile(ZPath filenm, const ZString &str){
     return writeFile(filenm, ZBinary(str.cc(), str.size()));
 }
 
-zu64 ZFile::writeFile(ZPath filenm, const ZBinary &data){
+zu64 ZFile::writeBinary(ZPath filenm, const ZBinary &data){
     if(!filenm.createDirsTo())
         return 0;
     FILE *fileh = fopen(filenm.str().cc(), "wb");

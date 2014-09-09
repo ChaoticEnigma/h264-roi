@@ -47,7 +47,9 @@ class ZFile {
         static ZBinary readBinary(ZPath name);
 
         static zu64 writeFile(ZPath name, const ZString &data);
-        static zu64 writeFile(ZPath name, const ZBinary &data);
+        static zu64 writeFile(ZPath name, const ZBinary &data){ return writeBinary(name, data); }
+
+        static zu64 writeBinary(ZPath name, const ZBinary &data);
 
         static zu64 copy(ZPath, ZPath);
         static bool createDirsTo(ZPath);
