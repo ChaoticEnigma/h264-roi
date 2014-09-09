@@ -138,7 +138,11 @@ public:
     bool write(ZPath path) const {
         ZBinary out;
 
-        zu32 filesize = 54 + 3 * bitmap.width() * bitmap.height();
+        zu32 row = sizeof(Pixel) * bitmap.width();
+        zu32 pad = row % 4;
+        zu32 rowsize = row + (4 - pad);
+        zu32 filesize = 54 + rowsize * bitmap.height();
+
         BitmapFileHeader fileh;
         memset(&fileh, 0, sizeof(BitmapFileHeader));
         fileh.bfType = 0x4d42;
@@ -156,9 +160,8 @@ public:
         infoh.biCompression = 0;
         out.concat(writeInfoHeader(&infoh));
 
-        zu64 row = sizeof(Pixel) * bitmap.width();
-        zu64 rowsize = row + (row % 4);
         unsigned char *pixels = new unsigned char[rowsize * bitmap.height()];
+        memset(pixels, 0, rowsize * bitmap.height());
 
         for(zu64 i = 0; i < bitmap.height(); ++i){
             for(zu64 j = 0; j < bitmap.width(); ++j){
