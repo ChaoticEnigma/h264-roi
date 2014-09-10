@@ -8,6 +8,9 @@
 
 namespace LibChaos {
 
+struct Pixel8 {
+    unsigned char g;
+};
 struct Pixel24 {
     unsigned char r;
     unsigned char g;
@@ -19,11 +22,13 @@ struct Pixel32 {
     unsigned char b;
     unsigned char a;
 };
+typedef Pixel8 PixelG;
 typedef Pixel24 PixelRGB;
 typedef Pixel32 PixelRGBA;
 
 typedef PixelRGB Pixel;
 
+static_assert(sizeof(Pixel8) == 1, "Pixel8 has incorrect size");
 static_assert(sizeof(Pixel24) == 3, "Pixel24 has incorrect size");
 static_assert(sizeof(Pixel32) == 4, "Pixel32 has incorrect size");
 
