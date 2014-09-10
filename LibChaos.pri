@@ -123,7 +123,8 @@ SOURCES += \
     chaos/data/znumber.cpp \
     test/number_test.cpp \
     $$PWD/chaos/file/zpng.cpp \
-    $$PWD/test/png_test.cpp
+    $$PWD/test/png_test.cpp \
+    $$PWD/chaos/file/zbmp.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

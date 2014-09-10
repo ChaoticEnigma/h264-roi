@@ -69,6 +69,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     data/zxml.cpp
 
     file/database.cpp
+    file/zbmp.cpp
     file/zfile.cpp
     file/zpng.cpp
 

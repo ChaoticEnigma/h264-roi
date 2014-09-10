@@ -8,6 +8,7 @@
 #include <cstring>
 
 #include "zlog.h"
+#include "zerror.h"
 
 namespace LibChaos {
 
@@ -121,40 +122,53 @@ ZString ZFile::readFile(ZPath filenm, bool &status){
     return ZString();
 }
 
-ZBinary ZFile::readBinary(ZPath name){
+ZBinary ZFile::readBinary(ZPath file){
     struct stat st_buf;
-    int ret = stat(name.str().cc(), &st_buf);
-    if(ret != 0){
-        return ZBinary();
-    }
-    if(S_ISDIR(st_buf.st_mode)){
-        return ZBinary();
-    }
-    std::ifstream infile(name.str().cc(), std::ios::in | std::ios::binary);
-    if(infile){
-        ZBinary buff;
-        infile.seekg(0, std::ios::end);
-        buff.fill(0, infile.tellg());
-        infile.seekg(0, std::ios::beg);
-        infile.read((char *)buff.raw(), buff.size());
-        infile.close();
-        return(buff);
-    }
-    return ZBinary();
+    int ret = stat(file.str().cc(), &st_buf);
+    if(ret != 0)
+        throw ZError("stat error");
+    if(S_ISDIR(st_buf.st_mode))
+        throw ZError("file is directory");
+
+    FILE *fp = fopen(file.str().cc(), "rb");
+    if(fp == NULL)
+        throw ZError("fopen error");
+
+    fseek(fp, 0, SEEK_END);
+    zu64 size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    unsigned char *buffer = new (std::nothrow) unsigned char[size];
+    if(buffer == nullptr)
+        throw ZError("new alloc error");
+
+    zu64 len = fread(buffer, 1, size, fp);
+    fclose(fp);
+    if(len != size)
+        throw ZError("fread error");
+
+    ZBinary data(buffer, size);
+    delete[] buffer;
+    return data;
 }
 
 zu64 ZFile::writeFile(ZPath filenm, const ZString &str){
     return writeFile(filenm, ZBinary(str.cc(), str.size()));
 }
 
-zu64 ZFile::writeBinary(ZPath filenm, const ZBinary &data){
-    if(!filenm.createDirsTo())
+zu64 ZFile::writeBinary(ZPath file, const ZBinary &data){
+    if(!file.createDirsTo())
         return 0;
-    FILE *fileh = fopen(filenm.str().cc(), "wb");
-    zu64 wrt = fwrite(data.raw(), sizeof(char), data.size(), fileh);
-    fclose(fileh);
+
+    FILE *fp = fopen(file.str().cc(), "wb");
+    if(fp == NULL)
+        throw ZError("fopen error");
+
+    zu64 wrt = fwrite(data.raw(), sizeof(char), data.size(), fp);
+    fclose(fp);
     if(wrt != data.size())
-        return 0;
+        throw ZError("fwrite error");
+
     return wrt;
 }
 

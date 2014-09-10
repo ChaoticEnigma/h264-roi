@@ -14,8 +14,16 @@ namespace LibChaos {
 
 class ZPNG : public ZImage {
 public:
-    ZPNG();
-    ZPNG(ZBitmap bmp);
+    ZPNG(){
+
+    }
+    ZPNG(const ZBitmapRGBA &bmp) : bitmap(bmp){
+
+    }
+
+    int readpng_init(FILE *infile, unsigned long *pWidth, unsigned long *pHeight);
+    unsigned char *readpng_get_image(double display_exponent, int *pChannels, unsigned long *pRowbytes);
+    void readpng_cleanup(int free_image_data);
 
     bool read(ZPath path);
     bool write(ZPath path) const;
@@ -24,18 +32,22 @@ public:
     //void write_png_file(char *file_name);
     //void process_file();
 
-    ZString libpngVersionInfo();
+    static ZString libpngVersionInfo();
 
-    ZBitmap toBitmap() const;
+    ZBitmapRGBA toBitmap() const {
+        return bitmap;
+    }
 
 private:
-    ZBitmap image;
+    ZBitmapRGBA bitmap;
 
     png_structp png_ptr;
     png_infop info_ptr;
 
-    int color_type;
-    int bit_depth;
+    png_uint_32 width, height;
+    int bit_depth, color_type;
+
+    unsigned char *image_data = NULL;
 
 //    int x, y;
 //    int width, height, rowbytes;

@@ -19,22 +19,25 @@ struct Pixel32 {
     unsigned char b;
     unsigned char a;
 };
-typedef Pixel24 Pixel;
+typedef Pixel24 PixelRGB;
+typedef Pixel32 PixelRGBA;
+
+typedef PixelRGB Pixel;
+
+static_assert(sizeof(Pixel24) == 3, "Pixel24 has incorrect size");
+static_assert(sizeof(Pixel32) == 4, "Pixel32 has incorrect size");
 
 template <typename pixeltype> class ZBitmapT {
 public:
     ZBitmapT() : _width(0), _height(0), _buffer(nullptr){
 
     }
-    ZBitmapT(zu64 width, zu64 height, bool zero = true) : _width(width), _height(height), _buffer(nullptr){
+    ZBitmapT(zu64 width, zu64 height) : _width(width), _height(height), _buffer(nullptr){
         if(pixels()){
             _buffer = new pixeltype[pixels()];
-            if(zero && _buffer != nullptr){
-                memset(_buffer, 0, bufferSize());
-            }
         }
     }
-    ZBitmapT(const pixeltype *data, zu64 width, zu64 height) : ZBitmapT(width, height, false){
+    ZBitmapT(const pixeltype *data, zu64 width, zu64 height) : ZBitmapT(width, height){
         load(data, width, height);
     }
     ZBitmapT(const ZBitmapT<pixeltype> &other) : ZBitmapT(other.buffer(), other.width(), other.height()){
@@ -62,6 +65,22 @@ public:
         return *this;
     }
 
+    template <typename newtype>
+    ZBitmapT<newtype> recast() const {
+        newtype *buff = new newtype[pixels()];
+        if(sizeof(newtype) > sizeof(pixeltype))
+            memset(buff, 0, pixels() * sizeof(newtype));
+
+        for(zu64 i = 0; i < pixels(); ++i){
+            memcpy(&buff[i], &_buffer[i], MIN(sizeof(newtype), sizeof(pixeltype)));
+            //buff[i] = _buffer[i];
+        }
+
+        ZBitmapT<newtype> out(buff, _width, _height);
+        delete[] buff;
+        return out;
+    }
+
     void load(const pixeltype *data, zu64 width, zu64 height){
         clear();
         _width = width;
@@ -71,6 +90,12 @@ public:
         }
         if(pixels() && _buffer != nullptr && data != nullptr){
             memcpy(_buffer, data, bufferSize());
+        }
+    }
+
+    void zero(){
+        if(_buffer != nullptr){
+            memset(_buffer, 0, bufferSize());
         }
     }
 
@@ -94,6 +119,10 @@ public:
             return;
         if(width == 0){
             clear();
+            return;
+        }
+        if(_height == 0){
+            _width = width;
             return;
         }
         pixeltype *tmp = _buffer;
@@ -128,6 +157,10 @@ public:
             clear();
             return;
         }
+        if(_width == 0){
+            _height = height;
+            return;
+        }
         pixeltype *tmp = _buffer;
         _buffer = new pixeltype[_width * height];
         if(height < _height){
@@ -160,6 +193,9 @@ private:
     zu64 _height;
     pixeltype *_buffer;
 };
+
+typedef ZBitmapT<PixelRGB> ZBitmapRGB;
+typedef ZBitmapT<PixelRGBA> ZBitmapRGBA;
 
 typedef ZBitmapT<Pixel> ZBitmap;
 

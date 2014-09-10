@@ -9,14 +9,12 @@ namespace LibChaos {
 class ZImage {
 public:
 
-    virtual ~ZImage(){
-
-    }
+    //virtual ~ZImage(){}
 
     virtual bool read(ZPath path) = 0;
     virtual bool write(ZPath path) const = 0;
 
-    virtual ZBitmap toBitmap() const = 0;
+    //virtual ZBitmap toBitmap() const = 0;
 };
 
 }

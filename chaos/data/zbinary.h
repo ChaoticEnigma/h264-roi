@@ -1,16 +1,23 @@
 #ifndef ZBINARY_H
 #define ZBINARY_H
 
-//#include <vector>
-
 #include "ztypes.h"
 #include "zarray.h"
-
-//#include <string.h>
+#include <string.h>
 
 namespace LibChaos {
 
 class ZBinary {
+public:
+    class RAW {
+        static void *fillRaw(void *dest, void *src, zu64 src_size, zu64 dest_count){
+            for(zu64 i = 0; i < dest_count; ++i){
+                memcpy((unsigned char *)dest + i, src, src_size);
+            }
+            return dest;
+        }
+    };
+
 public:
     enum HashType {
         hashType1 = 1
