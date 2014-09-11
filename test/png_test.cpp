@@ -37,18 +37,31 @@ int png_block(){
     ZBMP bmp4(bitmap1);
     bmp4.write("toucan-reout.bmp");
 
+    // whois
+    ZPNG png4;
+    png4.read("whois.png");
+
+    ZBMP bmp5(png4.toBitmap().recast<PixelRGB>());
+    bmp5.write("whois-out.bmp");
+
+    ZBMP bmp6;
+    bmp6.read("whois-out.bmp");
+
+    ZPNG png5(bmp6.toBitmap().recast<PixelRGBA>(255));
+    png5.write("whois-reout.png");
+
     return 0;
 
-    ZPNG png4;
-    ZArray<ZPath> files = ZFile::listFiles("png");
-    for(zu64 i = 0; i < files.size(); ++i){
-        if(png4.read(files[i])){
-            ZBMP tmp(png4.toBitmap().recast<PixelRGB>());
-            tmp.write(ZPath("bmp/") + files[i].last().replace(".png", ".bmp"));
-        } else {
-            LOG("Failed: " << files[i]);
-        }
-    }
+//    ZPNG png4;
+//    ZArray<ZPath> files = ZFile::listFiles("png");
+//    for(zu64 i = 0; i < files.size(); ++i){
+//        if(png4.read(files[i])){
+//            ZBMP tmp(png4.toBitmap().recast<PixelRGB>());
+//            tmp.write(ZPath("bmp/") + files[i].last().replace(".png", ".bmp"));
+//        } else {
+//            LOG("Failed: " << files[i]);
+//        }
+//    }
     //png4.read("png/basi0g01.png");
     //png4.read("png/basi4a08.png");
 

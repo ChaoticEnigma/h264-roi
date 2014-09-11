@@ -90,6 +90,8 @@ bool ZPNG::write(ZPath path){
     data->have_time = 0;
     data->gamma = 0.0;
     data->color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+    data->width = bitmap.width();
+    data->height = bitmap.height();
 
     data->interlaced = 1;
 
@@ -104,7 +106,7 @@ bool ZPNG::write(ZPath path){
 
         data->row_pointers = new unsigned char*[bitmap.height() * sizeof(unsigned char *)];
 
-        for(long i = 0; i < bitmap.height(); ++i){
+        for(zu64 i = 0; i < bitmap.height(); ++i){
             data->row_pointers[i] = (unsigned char *)bitmap.buffer() + (i * bitmap.width() * sizeof(Pixel32));
         }
 
@@ -181,6 +183,8 @@ int ZPNG::readpng_init(PngReadData *data, FILE *infile, unsigned long *pWidth, u
      * libpng function */
     if(setjmp(png_jmpbuf(data->png_ptr))){
         png_destroy_read_struct(&data->png_ptr, &data->info_ptr, NULL);
+        data->png_ptr = NULL;
+        data->info_ptr = NULL;
         return 2;
     }
 
@@ -207,6 +211,8 @@ int ZPNG::readpng_get_bgcolor(PngReadData *data, unsigned char *red, unsigned ch
      * libpng function */
     if(setjmp(png_jmpbuf(data->png_ptr))){
         png_destroy_read_struct(&data->png_ptr, &data->info_ptr, NULL);
+        data->png_ptr = NULL;
+        data->info_ptr = NULL;
         return 2;
     }
 
@@ -249,6 +255,8 @@ unsigned char *ZPNG::readpng_get_image(PngReadData *data, double display_exponen
      * libpng function */
     if(setjmp(png_jmpbuf(data->png_ptr))){
         png_destroy_read_struct(&data->png_ptr, &data->info_ptr, NULL);
+        data->png_ptr = NULL;
+        data->info_ptr = NULL;
         return NULL;
     }
 
@@ -282,10 +290,14 @@ unsigned char *ZPNG::readpng_get_image(PngReadData *data, double display_exponen
 
     if((data->image_data = (unsigned char *)malloc(rowbytes * data->height)) == NULL){
         png_destroy_read_struct(&data->png_ptr, &data->info_ptr, NULL);
+        data->png_ptr = NULL;
+        data->info_ptr = NULL;
         return NULL;
     }
     if((row_pointers = (png_bytepp)malloc(data->height * sizeof(png_bytep))) == NULL){
         png_destroy_read_struct(&data->png_ptr, &data->info_ptr, NULL);
+        data->png_ptr = NULL;
+        data->info_ptr = NULL;
         free(data->image_data);
         data->image_data = NULL;
         return NULL;
@@ -315,14 +327,16 @@ void ZPNG::readpng_cleanup(PngReadData *data){
     }
 
     if(data->png_ptr){
-        png_destroy_read_struct(&data->png_ptr, NULL, NULL);
+        if(data->info_ptr){
+            png_destroy_read_struct(&data->png_ptr, &data->info_ptr, NULL);
+            data->info_ptr = NULL;
+        } else {
+            png_destroy_read_struct(&data->png_ptr, NULL, NULL);
+        }
         data->png_ptr = NULL;
     }
 
-    if(data->info_ptr){
-        png_destroy_read_struct(NULL, &data->info_ptr, NULL);
-        data->info_ptr = NULL;
-    }
+
 }
 
 void ZPNG::readpng_warning_handler(png_struct *png_ptr, png_const_charp msg){
@@ -338,8 +352,6 @@ void ZPNG::readpng_error_handler(png_struct *png_ptr, png_const_charp msg){
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
-    int color_type, interlace_type;
-
     /* could also replace libpng warning-handler (final NULL), but no need: */
     data->png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, data, writepng_error_handler, NULL);
     if (!data->png_ptr)
@@ -348,6 +360,7 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
     data->info_ptr = png_create_info_struct(data->png_ptr);
     if (!data->info_ptr) {
         png_destroy_write_struct(&data->png_ptr, NULL);
+        data->png_ptr = NULL;
         return 4;   /* out of memory */
     }
 
@@ -357,6 +370,8 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
      * (as in this program) or exit immediately, so here we go: */
     if (setjmp(data->jmpbuf)) {
         png_destroy_write_struct(&data->png_ptr, &data->info_ptr);
+        data->png_ptr = NULL;
+        data->info_ptr = NULL;
         return 2;
     }
 
@@ -379,9 +394,9 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
     png_set_compression_method(png_ptr, 8);
  */
 
-    interlace_type = data->interlaced ? PNG_INTERLACE_ADAM7 : PNG_INTERLACE_NONE;
+    int interlace_type = data->interlaced ? PNG_INTERLACE_ADAM7 : PNG_INTERLACE_NONE;
 
-    png_set_IHDR(data->png_ptr, data->info_ptr, data->width, data->height, data->bit_depth, color_type, interlace_type, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+    png_set_IHDR(data->png_ptr, data->info_ptr, data->width, data->height, data->bit_depth, data->color_type, interlace_type, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
     if (data->gamma > 0.0)
         png_set_gAMA(data->png_ptr, data->info_ptr, data->gamma);
@@ -411,49 +426,6 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
     }
     png_set_text(data->png_ptr, data->info_ptr, pngtext, texts.size());
     delete[] pngtext;
-
-//    if (mainprog_ptr->have_text) {
-//        png_text text[6];
-//        int num_text = 0;
-
-//        if(mainprog_ptr->have_text & TEXT_TITLE){
-//            text[num_text].compression = PNG_TEXT_COMPRESSION_NONE;
-//            text[num_text].key = "Title";
-//            text[num_text].text = mainprog_ptr->title;
-//            ++num_text;
-//        }
-//        if(mainprog_ptr->have_text & TEXT_AUTHOR){
-//            text[num_text].compression = PNG_TEXT_COMPRESSION_NONE;
-//            text[num_text].key = "Author";
-//            text[num_text].text = mainprog_ptr->author;
-//            ++num_text;
-//        }
-//        if(mainprog_ptr->have_text & TEXT_DESC){
-//            text[num_text].compression = PNG_TEXT_COMPRESSION_NONE;
-//            text[num_text].key = "Description";
-//            text[num_text].text = mainprog_ptr->desc;
-//            ++num_text;
-//        }
-//        if(mainprog_ptr->have_text & TEXT_COPY){
-//            text[num_text].compression = PNG_TEXT_COMPRESSION_NONE;
-//            text[num_text].key = "Copyright";
-//            text[num_text].text = mainprog_ptr->copyright;
-//            ++num_text;
-//        }
-//        if(mainprog_ptr->have_text & TEXT_EMAIL){
-//            text[num_text].compression = PNG_TEXT_COMPRESSION_NONE;
-//            text[num_text].key = "E-mail";
-//            text[num_text].text = mainprog_ptr->email;
-//            ++num_text;
-//        }
-//        if(mainprog_ptr->have_text & TEXT_URL){
-//            text[num_text].compression = PNG_TEXT_COMPRESSION_NONE;
-//            text[num_text].key = "URL";
-//            text[num_text].text = mainprog_ptr->url;
-//            ++num_text;
-//        }
-//        png_set_text(png_ptr, info_ptr, text, num_text);
-//    }
 
     /* write all chunks up to (but not including) first IDAT */
     png_write_info(data->png_ptr, data->info_ptr);
@@ -529,12 +501,13 @@ int ZPNG::writepng_encode_finish(PngWriteData *data){
 
 void ZPNG::writepng_cleanup(PngWriteData *mainprog_ptr){
     if(mainprog_ptr->png_ptr){
-        png_destroy_write_struct(&mainprog_ptr->png_ptr, NULL);
+        if(mainprog_ptr->info_ptr){
+            png_destroy_write_struct(&mainprog_ptr->png_ptr, &mainprog_ptr->info_ptr);
+            mainprog_ptr->info_ptr = NULL;
+        } else {
+            png_destroy_write_struct(&mainprog_ptr->png_ptr, NULL);
+        }
         mainprog_ptr->png_ptr = NULL;
-    }
-    if(mainprog_ptr->info_ptr){
-        png_destroy_write_struct(NULL, &mainprog_ptr->info_ptr);
-        mainprog_ptr->info_ptr = NULL;
     }
 }
 

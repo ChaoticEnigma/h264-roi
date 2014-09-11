@@ -83,7 +83,7 @@ public:
             memset(buff, fill, pixels() * sizeof(newtype));
 
         for(zu64 i = 0; i < pixels(); ++i){
-            memcpy(&buff[i], &_buffer[i], MIN(sizeof(newtype), pixelSize()));
+            memcpy((unsigned char *)buff + (i * sizeof(newtype)), (unsigned char *)_buffer + (i * pixelSize()), MIN(sizeof(newtype), pixelSize()));
             //buff[i] = _buffer[i];
         }
 
