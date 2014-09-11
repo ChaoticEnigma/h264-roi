@@ -45,7 +45,7 @@ public:
     ZBitmapT(const pixeltype *data, zu64 width, zu64 height) : ZBitmapT(width, height){
         load(data, width, height);
     }
-    ZBitmapT(const ZBitmapT<pixeltype> &other) : ZBitmapT(other.buffer(), other.width(), other.height()){
+    ZBitmapT(const ZBitmapT<pixeltype> &other) : ZBitmapT(other._buffer, other._width, other._height){
 
     }
 
@@ -54,30 +54,36 @@ public:
     }
 
     ZBitmapT<pixeltype> &operator=(const ZBitmapT<pixeltype> &other){
-        if(other.pixels() && other.buffer() != nullptr){
-            if(pixels() != other.pixels()){
-                clear();
-                _width = other.width();
-                _height = other.height();
-            }
-            if(_buffer == nullptr){
-                _buffer = new pixeltype[pixels()];
-            }
-            memcpy(_buffer, other.buffer(), bufferSize());
-        } else {
-            clear();
-        }
+        load(other._buffer, other._width, other._height);
         return *this;
     }
 
+    void load(const pixeltype *data, zu64 width, zu64 height){
+        if(width * height){
+            if(bufferSize() != width * height * pixelSize())
+                clear();
+            _width = width;
+            _height = height;
+            if(!_buffer){
+                _buffer = new pixeltype[pixels()];
+            }
+            if(_buffer && data)
+                memcpy(_buffer, data, bufferSize());
+            else
+                clear();
+        } else {
+            clear();
+        }
+    }
+
     template <typename newtype>
-    ZBitmapT<newtype> recast() const {
+    ZBitmapT<newtype> recast(int fill = 0) const {
         newtype *buff = new newtype[pixels()];
-        if(sizeof(newtype) > sizeof(pixeltype))
-            memset(buff, 0, pixels() * sizeof(newtype));
+        if(sizeof(newtype) > pixelSize())
+            memset(buff, fill, pixels() * sizeof(newtype));
 
         for(zu64 i = 0; i < pixels(); ++i){
-            memcpy(&buff[i], &_buffer[i], MIN(sizeof(newtype), sizeof(pixeltype)));
+            memcpy(&buff[i], &_buffer[i], MIN(sizeof(newtype), pixelSize()));
             //buff[i] = _buffer[i];
         }
 
@@ -86,22 +92,17 @@ public:
         return out;
     }
 
-    void load(const pixeltype *data, zu64 width, zu64 height){
-        clear();
-        _width = width;
-        _height = height;
-        if(pixels()){
-            _buffer = new pixeltype[pixels()];
-        }
-        if(pixels() && _buffer != nullptr && data != nullptr){
-            memcpy(_buffer, data, bufferSize());
-        }
-    }
-
     void zero(){
         if(_buffer != nullptr){
             memset(_buffer, 0, bufferSize());
         }
+    }
+
+    pixeltype &operator[](zu64 i){
+        return _buffer[i];
+    }
+    const pixeltype &operator[](zu64 i) const {
+        return _buffer[i];
     }
 
     void set(zu64 i, pixeltype p){
@@ -120,63 +121,93 @@ public:
         return _width;
     }
     void width(zu64 width){
+        // No change
         if(width == _width)
             return;
+        // Width set to zero, preserve height
         if(width == 0){
+            zu64 height = _height;
             clear();
+            _height = height;
             return;
         }
+        // Height is zero, save width
         if(_height == 0){
             _width = width;
             return;
         }
-        pixeltype *tmp = _buffer;
-        _buffer = new pixeltype[width * _height];
-        if(width < _width){
-            if(_width && _height && _buffer != nullptr){
+        pixeltype *tmp = new pixeltype[width * _height];
+        if(tmp){
+            if(width < _width){
+                // If new buffer smaller
+                if(_buffer){
+                    for(zu64 i = 0; i < _height; ++i){
+                        unsigned char *oldrowpos = (unsigned char *)_buffer + (_width * i * pixelSize());
+                        unsigned char *newrowpos = (unsigned char *)tmp + (width * i * pixelSize());
+
+                        // Copy old data
+                        memcpy(newrowpos, oldrowpos, width * pixelSize());
+                    }
+                }
+
+            } else if(width > _width){
+                // If new buffer larger
                 for(zu64 i = 0; i < _height; ++i){
-                    void *newrowpos = _buffer + (_width * i * sizeof(pixeltype));
-                    void *oldrowpos = tmp + (_width * i * sizeof(pixeltype));
-                    memcpy(newrowpos, oldrowpos, _width * sizeof(pixeltype));
+                    unsigned char *oldrowpos = (unsigned char *)_buffer + (_width * i * pixelSize());
+                    unsigned char *newrowpos = (unsigned char *)tmp + (width * i * pixelSize());
+
+                    // Copy old data (if any)
+                    if(_width && _height && _buffer)
+                        memcpy(newrowpos, oldrowpos, _width * pixelSize());
+
+                    // Zero new memory
+                    memset(newrowpos + (_width * pixelSize()), 0, (width - _width) * pixelSize());
                 }
             }
-        } else if(width > _width){
-            for(zu64 i = 0; i < _height; ++i){
-                void *newrowpos = _buffer + (_width * i * sizeof(pixeltype));
-                void *oldrowpos = tmp + (_width * i * sizeof(pixeltype));
-                if(_width && _height && _buffer != nullptr)
-                    memcpy(newrowpos, oldrowpos, _width * sizeof(pixeltype));
-                memset(newrowpos + (_width * sizeof(pixeltype)), 0, (width - _width) * sizeof(pixeltype));
-            }
         }
-        delete[] tmp;
+        delete[] _buffer;
+        _buffer = tmp;
         _width = width;
     }
+
     zu64 height() const {
         return _height;
     }
     void height(zu64 height){
+        // No change
         if(height == _height)
             return;
+        // Height set to zero, preserve width
         if(height == 0){
+            zu64 width = _width;
             clear();
+            _width = width;
             return;
         }
+        // Width is zero, save height
         if(_width == 0){
             _height = height;
             return;
         }
-        pixeltype *tmp = _buffer;
-        _buffer = new pixeltype[_width * height];
+        pixeltype *tmp = new pixeltype[_width * height];
         if(height < _height){
-            if(_width && _height && _buffer != nullptr)
-                memcpy(_buffer, tmp, _width * height * sizeof(pixeltype));
+            // If new buffer smaller
+
+            // Copy old data
+            if(_width && _height && _buffer && tmp)
+                memcpy(tmp, _buffer, _width * height * pixelSize());
         } else if(height > _height){
-            if(_width && _height && _buffer != nullptr)
-                memcpy(_buffer, tmp, _width * _height * sizeof(pixeltype));
-            memset(_buffer + (_width * _height * sizeof(pixeltype)), 0, _width * (height - _height) * sizeof(pixeltype));
+            // If new buffer larger
+
+            // Copy old data (if any)
+            if(_width && _height && _buffer && tmp)
+                memcpy(tmp, _buffer, bufferSize());
+
+            // Zero new memory
+            memset((unsigned char *)tmp + (bufferSize()), 0, _width * (height - _height) * pixelSize());
         }
-        delete[] tmp;
+        delete[] _buffer;
+        _buffer = tmp;
         _height = height;
     }
 
@@ -185,8 +216,11 @@ public:
 //            return 0;
         return _width * _height;
     }
+    zu64 pixelSize() const {
+        return sizeof(pixeltype);
+    }
     zu64 bufferSize() const {
-        return pixels() * sizeof(pixeltype);
+        return pixels() * pixelSize();
     }
 
     pixeltype *buffer() const {

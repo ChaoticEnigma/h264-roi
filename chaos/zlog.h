@@ -80,6 +80,7 @@ public:
     ZLog &operator<<(zu32 text);
     ZLog &operator<<(zint num);
     ZLog &operator<<(zuint num);
+    ZLog &operator<<(bool tf);
     ZLog &operator<<(double text);
     ZLog &operator<<(char text);
     ZLog &operator<<(const char *text);

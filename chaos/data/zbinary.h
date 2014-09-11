@@ -9,8 +9,15 @@ namespace LibChaos {
 
 class ZBinary {
 public:
+    typedef unsigned char zbinary_type;
+
+    enum HashType {
+        hashType1 = 1
+    };
+
+public:
     class RAW {
-        static void *fillRaw(void *dest, void *src, zu64 src_size, zu64 dest_count){
+        static void *fillRaw(void *dest, const void *src, zu64 src_size, zu64 dest_count){
             for(zu64 i = 0; i < dest_count; ++i){
                 memcpy((unsigned char *)dest + i, src, src_size);
             }
@@ -18,77 +25,107 @@ public:
         }
     };
 
+
 public:
-    enum HashType {
-        hashType1 = 1
-    };
+    ZBinary() : _data(nullptr), _size(0){
 
-    typedef unsigned char zbinary_type;
+    }
+    ZBinary(const void *ptr, zu64 size) : ZBinary(){
+        if(ptr && size){
+            _size = size;
+            _data = new zbinary_type[_size];
+            memcpy(_data, ptr, _size);
+        }
+    }
+    ZBinary(const ZBinary &other) : ZBinary(other._data, other._size){
 
-    ZBinary();
-    ZBinary(const void *ptr, zu64 len);
+    }
+
+    ~ZBinary(){
+        clear();
+    }
+
+    ZBinary &operator=(const ZBinary &other){
+        clear();
+        if(other._data && other._size){
+            _size = other._size;
+            _data = new zbinary_type[_size];
+            memcpy(_data, other._data, _size);
+        }
+        return *this;
+    }
 
     bool operator==(const ZBinary &rhs) const {
-        if(size() != rhs.size())
+        if(_size != rhs._size)
             return false;
-        return data() == rhs.data();
-        //return memcmp(lhs.raw(), rhs.raw(), lhs.size());
+        return memcmp(_data, rhs._data, _size);
     }
     bool operator!=(const ZBinary &rhs) const {
         return !operator==(rhs);
     }
 
-
-    inline zbinary_type &operator[](zu64 inx){
+    zbinary_type &operator[](zu64 inx){
         return _data[inx];
     }
-    inline const zbinary_type &operator[](zu64 inx) const {
-        return _data.get(inx);
+    const zbinary_type &operator[](zu64 inx) const {
+        return _data[inx];
     }
 
-    ZBinary &resize(zu64 len){
-        _data.resize(len);
+    ZBinary &resize(zu64 size){
+        zbinary_type *tmp = new zbinary_type[size];
+        if(_data && tmp && _size && size)
+            memcpy(tmp, _data, MIN(_size, size));
+        _size = size;
+        delete[] _data;
+        _data = tmp;
         return *this;
     }
 
     ZBinary &fill(zbinary_type dat, zu64 size){
-        _data.clear();
-        for(zu64 i = 0; i < size; ++i){
-            _data.push(dat);
-        }
+        clear();
+        _size = size;
+        _data = new zbinary_type[_size];
+        memset(_data, dat, _size);
         return *this;
     }
 
-    void concat(const ZBinary &data){
-        _data.concat(data.data());
+    ZBinary &concat(const ZBinary &other){
+        zu64 old = _size;
+        resize(_size + other._size);
+        memcpy(_data + old, other._data, other._size);
+        return *this;
     }
 
     void reverse(){
-        ZArray<zbinary_type> buff;
-        for(zu64 i = _data.size(); i > 0; --i){
-            buff.push(_data[i]);
+        zbinary_type *buff = new zbinary_type[_size];
+        for(zu64 i = 0, j = _size; i <_size; ++i, --j){
+            buff[j] = _data[i];
         }
+        delete[] _data;
         _data = buff;
     }
 
+    void clear(){
+        _size = 0;
+        delete[] _data;
+        _data = nullptr;
+    }
+
     zu64 size() const{
-        return _data.size();
+        return _size;
     }
 
-    ZArray<zbinary_type> &data(){
+    zbinary_type *raw(){
         return _data;
     }
-    const ZArray<zbinary_type> &data() const {
-        return _data;
-    }
-
     const zbinary_type *raw() const {
-        return _data.ptr();
+        return _data;
     }
 
     static zu64 hash(HashType type, const ZBinary &data);
 private:
-    ZArray<zbinary_type> _data;
+    zbinary_type *_data;
+    zu64 _size;
 };
 
 }

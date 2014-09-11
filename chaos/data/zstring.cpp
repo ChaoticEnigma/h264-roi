@@ -11,21 +11,19 @@
 namespace LibChaos {
 
 ZString::ZString() : data(){
-    //data.clear();
+
 }
+ZString::ZString(const ZString &other) : data(other.data){
+
+}
+
 //ZString::~ZString(){
 //    //data.clear();
 //}
 
-ZString &ZString::operator=(ZString str_){
+ZString &ZString::operator=(const ZString &str_){
     data = str_.str();
     return *this;
-}
-bool ZString::operator==(ZString str_) const {
-    return data == str_.str();
-}
-bool ZString::operator!=(ZString str_) const {
-    return data != str_.str();
 }
 ZString ZString::concat(ZString str_) const {
     std::string tmp = data;
@@ -39,6 +37,9 @@ ZString &ZString::append(ZString str_){
 
 ZString::ZString(std::string str_) : data(str_){}
 std::string &ZString::str(){
+    return data;
+}
+const std::string &ZString::str() const {
     return data;
 }
 
@@ -690,6 +691,10 @@ bool ZString::alphaTest(ZString str1, ZString str2){
         return true;
     return false;
 }
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Non-member functions
+// ///////////////////////////////////////////////////////////////////////////////
 
 std::ostream &operator<<(std::ostream& lhs, ZString rhs){
     lhs << rhs.str();

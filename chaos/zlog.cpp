@@ -95,6 +95,9 @@ ZLog &ZLog::operator<<(zint num){
 ZLog &ZLog::operator<<(zuint num){
     return log(ZString(num));
 }
+ZLog &ZLog::operator<<(bool tf){
+    return log(ZString(tf ? "true" : "false"));
+}
 ZLog &ZLog::operator<<(double num){
     return log(ZString(num));
 }

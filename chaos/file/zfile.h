@@ -15,72 +15,75 @@
 namespace LibChaos {
 
 class ZFile {
-    public:
-        enum zfile_mode {
-            readonly    = 0x001,
-            writeonly   = 0x002,
-            readwrite   = 0x003,
+public:
+    enum zfile_mode {
+        readonly    = 0x001,
+        writeonly   = 0x002,
+        readwrite   = 0x003,
 
-            append      = 0x004,
-            create      = 0x008,
+        append      = 0x004,
+        create      = 0x008,
 
-            goodbit     = 0x064
-        };
+        goodbit     = 0x064
+    };
 
-        ZFile();
-        ZFile(ZPath, int = readonly);
-        ~ZFile();
+    ZFile();
+    ZFile(ZPath, int = readonly);
+    ~ZFile();
 
-        bool open(ZPath, int = readonly);
-        bool close();
+    bool open(ZPath, int = readonly);
+    bool close();
 
-        // does not work correctly
-        zu64 read(ZBinary &out, zu64 = -1);
+    // does not work correctly
+    zu64 read(ZBinary &out, zu64 size = -1);
 
-        zu64 write(const char *);
+    zu64 write(const char *);
 
-        //ZString readline();
+    zu64 flsize();
+    ZPath path(){ return _flpath; }
 
-        static ZString readFile(ZPath name);
-        static ZString readFile(ZPath name, bool&);
+    bool isOpen();
+    int getBits();
 
-        static ZBinary readBinary(ZPath name);
+    FILE *fp(){
+        return _fileh;
+    }
 
-        static zu64 writeFile(ZPath name, const ZString &data);
-        static zu64 writeFile(ZPath name, const ZBinary &data){ return writeBinary(name, data); }
+    static ZString readFile(ZPath name);
+    static ZString readFile(ZPath name, bool&);
 
-        static zu64 writeBinary(ZPath name, const ZBinary &data);
+    static ZBinary readBinary(ZPath name);
 
-        static zu64 copy(ZPath, ZPath);
-        static bool createDirsTo(ZPath);
+    static zu64 writeFile(ZPath name, const ZString &data);
+    static zu64 writeFile(ZPath name, const ZBinary &data){ return writeBinary(name, data); }
 
-        //bool append(ZString);
+    static zu64 writeBinary(ZPath name, const ZBinary &data);
 
-        bool remove();
-        static bool remove(ZPath);
-        static bool removeDir(ZPath);
+    static zu64 copy(ZPath, ZPath);
+    static bool createDirsTo(ZPath);
 
-        static bool rename(ZPath old, ZPath newfl);
+    //bool append(ZString);
 
-        bool exists();
-        static bool exists(ZPath);
+    bool remove();
+    static bool remove(ZPath);
+    static bool removeDir(ZPath);
 
-        // Path-related functions
-        static bool isDir(ZPath dir);
-        static bool isFile(ZPath dir);
-        static ZArray<ZPath> listFiles(ZPath dir, bool recurse = true);
-        static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false);
-        static zu64 dirSize(ZPath dir);
+    static bool rename(ZPath old, ZPath newfl);
 
-        zu64 flsize();
-        ZPath path(){ return _flpath; }
+    bool exists();
+    static bool exists(ZPath);
 
-        bool isOpen();
-        int getBits();
-    private:
-        int _bits;
-        ZPath _flpath;
-        FILE* _fileh;
+    // Path-related functions
+    static bool isDir(ZPath dir);
+    static bool isFile(ZPath dir);
+    static ZArray<ZPath> listFiles(ZPath dir, bool recurse = true);
+    static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false);
+    static zu64 dirSize(ZPath dir);
+
+private:
+    int _bits;
+    ZPath _flpath;
+    FILE *_fileh;
 };
 
 #define ZFILE_READ      ZFile::readonly

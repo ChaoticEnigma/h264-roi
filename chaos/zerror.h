@@ -26,15 +26,17 @@ public:
 
     typedef void (*signalHandler)(zerror_signal);
 
-    ZError(ZString desc = ZString(), int code = 0);
+    ZError(ZString desc = ZString(), int code = 0, bool trace = true);
 
-    ZString what();
-    int code();
-    ZString trace();
+    ZString what() const;
+    int code() const;
+    ZString trace() const;
 
-    explicit operator bool();
+    void clear();
 
-    void logStackTrace();
+    explicit operator bool() const;
+
+    void logStackTrace() const;
 
 public:
     static void registerSigSegv();

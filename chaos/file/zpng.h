@@ -12,28 +12,32 @@
 
 namespace LibChaos {
 
-class ZPNG : public ZImage {
+class ZPNG {
 public:
-    ZPNG(){
+    ZPNG() : channels(0){
 
     }
-    ZPNG(const ZBitmapRGBA &bmp) : bitmap(bmp){
+    ZPNG(const ZBitmapRGBA &bmp) : channels(0), bitmap(bmp){
 
     }
 
     bool read(ZPath path);
-    bool write(ZPath path) const;
+    bool write(ZPath path);
 
     static ZString libpngVersionInfo();
+
+    ZString &pngText(ZString key){
+        return text[key];
+    }
 
     ZBitmapRGBA toBitmap() const {
         return bitmap;
     }
 
 private:
-    struct PngData {
-        png_structp png_ptr;
-        png_infop info_ptr;
+    struct PngReadData {
+        png_structp png_ptr = NULL;
+        png_infop info_ptr = NULL;
 
         png_uint_32 width, height;
         int bit_depth, color_type;
@@ -41,52 +45,53 @@ private:
         unsigned char *image_data = NULL;
     };
 
-    struct mainprog_info {
-        double gamma;
-        long width;
-        long height;
-        time_t modtime;
-        FILE *infile;
+    struct PngWriteData {
+        png_struct *png_ptr = NULL;
+        png_info *info_ptr = NULL;
+
         FILE *outfile;
-        void *png_ptr;
-        void *info_ptr;
-        unsigned char *image_data;
-        unsigned char **row_pointers;
-        char *title;
-        char *author;
-        char *desc;
-        char *copyright;
-        char *email;
-        char *url;
-        int filter;    /* command-line-filter flag, not PNG row filter! */
-        int pnmtype;
-        int sample_depth;
-        int interlaced;
-        int have_bg;
-        int have_time;
-        int have_text;
-        jmp_buf jmpbuf;
+
+        png_uint_32 width, height;
+        int bit_depth, color_type;
+
+        unsigned char *image_data = NULL;
+        unsigned char **row_pointers = NULL;
+
+        double gamma;
+
+        bool interlaced;
+
+        bool have_bg;
         unsigned char bg_red;
         unsigned char bg_green;
         unsigned char bg_blue;
+
+        bool have_time;
+        time_t modtime;
+
+        jmp_buf jmpbuf;
     };
 
 private:
-    int readpng_init(PngData *data, FILE *infile, unsigned long *pWidth, unsigned long *pHeight);
-    unsigned char *readpng_get_image(PngData *data, double display_exponent, int *pChannels, unsigned long *pRowbytes);
-    void readpng_cleanup(PngData *data, int free_image_data);
+    static int readpng_init(PngReadData *data, FILE *infile, unsigned long *pWidth, unsigned long *pHeight);
+    static int readpng_get_bgcolor(PngReadData *data, unsigned char *red, unsigned char *green, unsigned char *blue);
+    static unsigned char *readpng_get_image(PngReadData *data, double display_exponent, int *pChannels, unsigned long *pRowbytes);
+    static void readpng_cleanup(PngReadData *data);
+    static void readpng_warning_handler(png_struct *png_ptr, png_const_charp msg);
+    static void readpng_error_handler(png_struct *png_ptr, png_const_charp msg);
 
-    int writepng_init(mainprog_info *mainprog_ptr);
-    int writepng_encode_image(mainprog_info *mainprog_ptr);
-    static void writepng_error_handler(png_structp png_ptr, png_const_charp msg);
+    static int writepng_init(PngWriteData *mainprog_ptr, const AsArZ &text);
+    static int writepng_encode_image(PngWriteData *mainprog_ptr);
+    static int writepng_encode_row(PngWriteData *mainprog_ptr);
+    static int writepng_encode_finish(PngWriteData *mainprog_ptr);
+    static void writepng_cleanup(PngWriteData *mainprog_ptr);
+    static void writepng_error_handler(png_struct *png_ptr, png_const_charp msg);
 
 private:
+    int channels;
     ZBitmapRGBA bitmap;
-
-//    int x, y;
-//    int width, height, rowbytes;
-//    int number_of_passes;
-//    png_bytep *row_pointers;
+    AsArZ text;
+    ZError error;
 };
 
 }

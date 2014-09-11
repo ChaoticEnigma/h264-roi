@@ -32,6 +32,6 @@ FUNCTION(configure_build NAME BUILD PLATFORM)
 
     SET(BUILD_STRING "${BUILD_STRING}" PARENT_SCOPE)
 
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -ansi -std=c++11" PARENT_SCOPE)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wpedantic -Wno-unused-parameter" PARENT_SCOPE)
 
 ENDFUNCTION(configure_build)

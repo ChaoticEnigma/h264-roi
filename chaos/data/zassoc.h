@@ -33,48 +33,71 @@ public:
 
     ~ZAssoc(){}
 
+    // Value at Index
     T &at(zu64 index){
-        return _data[index].val;
+        if(index < size())
+            return _data[index].val;
+        throw "Invalid ZAssoc key index";
     }
     T &operator[](zu64 index){
         return at(index);
     }
-
-    T &pos(zu64 index){
-        return _data[index].val;
+    const T &at(zu64 index) const {
+        if(index < size())
+            return _data[index].val;
+        throw "Invalid ZAssoc key index";
+    }
+    const T &operator[](zu64 index) const {
+        return at(index);
     }
 
+    // Value at Key
     T &at(K key_){
         for(zu64 i = 0; i < _data.size(); ++i){
             if(_data[i].key == key_)
                 return _data[i].val;
         }
         _data.push({ key_, T() });
-        //T temp = {};
-        //data.push({ key_, temp });
         return last();
     }
     T &operator[](K key_){
         return at(key_);
     }
-    const T &operator[](K key_) const {
+    const T &at(K key_) const {
         for(zu64 i = 0; i < _data.size(); ++i){
             if(_data[i].key == key_)
                 return _data[i].val;
         }
         throw "Invalid access to const ZAssoc";
     }
-
-    K &key(zu64 index){
-        if(index < size()){
-            return _data[index].key;
-        } else {
-            K temp[1] = {};
-            _empk = temp[0];
-            //empk = K();
-            return _empk;
-        }
+    const T &operator[](K key_) const {
+        return at(key_);
     }
+
+    // Key at Index
+    K &key(zu64 index){
+        if(index < size())
+            return _data[index].key;
+        throw "Invalid ZAssoc key index";
+    }
+    const K &key(zu64 index) const {
+        if(index < size())
+            return _data[index].key;
+        throw "Invalid access to const ZAssoc";
+    }
+
+    // Value at Index (alternate overload)
+    T &val(zu64 index){
+        if(index < size())
+            return _data[index].val;
+        throw "Invalid ZAssoc value index";
+    }
+    const T &val(zu64 index) const {
+        if(index < size())
+            return _data[index].val;
+        throw "Invalid ZAssoc value index";
+    }
+
 
     ZAssoc<K, T> &push(K key_, T value){
         _data.push({ key_, value });
@@ -149,9 +172,7 @@ public:
             if(_data[i].val == test)
                 return _data[i].key;
         }
-        K temp[1] = {};
-        _empk = temp[0];
-        return _empk;
+        return K();
     }
 
     T &first(){
@@ -184,7 +205,6 @@ public:
 
 private:
     ZArray<Data> _data;
-    K _empk;
 };
 
 }

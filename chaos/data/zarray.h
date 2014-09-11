@@ -44,21 +44,24 @@ public:
     T &at(zu64 index){
         if(index < size()){
             return _data[index];
-        } else {
-            //T tmp = {};
-            //T temp[1] = {};
-            //empv = temp[0];
-            return empv;
         }
+        throw "Invalid ZArray index";
     }
     T &operator[](zu64 index){
         return at(index);
     }
-    const T &get(zu64 index) const {
-        return _data[index];
+    const T &at(zu64 index) const {
+        if(index < size()){
+            return _data[index];
+        }
+        throw "Invalid ZArray index";
     }
     const T &operator[](zu64 index) const {
-        return get(index);
+        return at(index);
+    }
+    // Const-only overload
+    const T &get(zu64 index) const {
+        return at(index);
     }
 
     ZArray<T> &resize(zu64 len){
@@ -175,7 +178,6 @@ public:
 
 private:
     std::vector<T> _data;
-    T empv;
 };
 
 }

@@ -10,7 +10,6 @@ int array_block();
 int assoc_block();
 
 int string_block();
-int string_magic_block();
 int path_block();
 int path_windows_block();
 

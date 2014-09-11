@@ -33,30 +33,37 @@ namespace LibChaos {
 
 ZMap<int, ZError::sigset> ZError::sigmap;
 
-ZError::ZError(ZString str, int cd) : desc(str), err(cd){
-    stacktrace = getStackTrace(2);
+ZError::ZError(ZString str, int code, bool trace) : desc(str), err(code){
+    if(trace)
+        stacktrace = getStackTrace(2);
 }
 
-ZString ZError::what(){
+ZString ZError::what() const {
     return desc;
 }
-int ZError::code(){
+int ZError::code() const {
     return err;
 }
-ZString ZError::trace(){
+ZString ZError::trace() const {
     ZString str = "**************************************\n";
     for(zu64 i = 0; i < stacktrace.size(); ++i){
-        str += stacktrace[i] += "\n";
+        str += stacktrace[i] + "\n";
     }
     str += "**************************************";
     return str;
 }
 
-ZError::operator bool(){
+void ZError::clear(){
+    desc.clear();
+    err = 0;
+    stacktrace.clear();
+}
+
+ZError::operator bool() const {
     return (err == 0);
 }
 
-void ZError::logStackTrace(){
+void ZError::logStackTrace() const {
     ELOG(ZLog::raw << trace() << ZLog::newln);
 }
 
@@ -102,7 +109,7 @@ addr2line_parts addr2line(char const * const program_name, void const * const ad
 #else
     source.name = source.symbol;
 #endif
-    ArZ flp = tok[2].split(':');
+    ArZ flp = tok[1].split(':');
     source.file = flp[0] != "??" ? ZPath(flp[0]) : "";
     source.line = flp[1] != "??" ? flp[1].tint() : 0;
 

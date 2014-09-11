@@ -39,13 +39,13 @@ bool ZFile::open(ZPath path, int mode){
     // Set flags
     ZString modech;
     if(_bits & readwrite){ // read / write
-        modech << "r+";
+        modech += "r+";
     } else if(_bits & readonly){ // read
-        modech << "r";
+        modech += "r";
     } else if(_bits & writeonly){ // write
-        modech << "w";
+        modech += "w";
     }
-    modech << "b"; // binary
+    modech += "b"; // binary
 
     _fileh = fopen(_flpath.str().cc(), modech.cc());
     if(_fileh != NULL){

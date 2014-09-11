@@ -13,7 +13,6 @@ int main(int argc, char **argv){
         { "array", array_block },
         { "assoc", assoc_block },
         { "string", string_block },
-        { "string_magic", string_magic_block },
         { "path", path_block },
         { "path_windows", path_windows_block },
         { "number", number_block },

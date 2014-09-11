@@ -35,11 +35,13 @@ typedef ZAssoc<ZString, ZString> AsArZ;
 class ZString {
 public:
     ZString();
+    ZString(const ZString &other);
     //~ZString();
 
-    ZString &operator=(ZString);
-    bool operator==(ZString) const;
-    bool operator!=(ZString) const;
+    ZString &operator=(const ZString &rhs);
+    friend bool operator==(const ZString &lhs, const ZString &rhs);
+    friend bool operator!=(const ZString &lhs, const ZString &rhs);
+
     ZString concat(ZString str) const; // Concatenates this and <str> and returns result
     inline ZString operator+(ZString str) const { return concat(str); }
     ZString &append(ZString str); // Appends <str> to this
@@ -48,6 +50,7 @@ public:
 
     ZString(std::string);
     std::string &str();
+    const std::string &str() const;
 
     ZString(std::wstring);
     std::wstring wstr() const;
@@ -182,6 +185,13 @@ private:
     std::string data;
     char byte;
 };
+
+inline bool operator==(const ZString &lhs, const ZString &rhs){
+    return lhs.data == rhs.data;
+}
+inline bool operator!=(const ZString &lhs, const ZString &rhs){
+    return !operator==(lhs, rhs);
+}
 
 } // namespace LibChaos
 

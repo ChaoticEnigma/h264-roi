@@ -12,17 +12,17 @@ struct BitmapFileHeader {
 };
 
 struct BitmapInfoHeader {
-    unsigned int biSize         : 32;
-    unsigned int biWidth        : 32;
-    unsigned int biHeight       : 32;
-    unsigned short biPlanes     : 16;
-    unsigned short biBitCount   : 16;
-    unsigned int biCompression  : 32;
-    unsigned int biSizeImage    : 32;
-    unsigned int biXPelsPerMeter: 32;
-    unsigned int biYPelsPerMeter: 32;
-    unsigned int biClrUsed      : 32;
-    unsigned int biClrImportant : 32;
+    unsigned int biSize             : 32;
+    unsigned int biWidth            : 32;
+    unsigned int biHeight           : 32;
+    unsigned short biPlanes         : 16;
+    unsigned short biBitCount       : 16;
+    unsigned int biCompression      : 32;
+    unsigned int biSizeImage        : 32;
+    unsigned int biXPelsPerMeter    : 32;
+    unsigned int biYPelsPerMeter    : 32;
+    unsigned int biClrUsed          : 32;
+    unsigned int biClrImportant     : 32;
 };
 
 void readFileHeader(const unsigned char *start, BitmapFileHeader *fileh){
@@ -48,17 +48,36 @@ void readInfoHeader(const unsigned char *start, BitmapInfoHeader *infoh){
 
 bool ZBMP::read(ZPath path){
     ZBinary buffer = ZFile::readBinary(path);
+    if(buffer.size() < 54){
+        error = ZError("File too small", BMPError::badfile, false);
+        return false;
+    }
+
     BitmapFileHeader fileh;
     readFileHeader(buffer.raw(), &fileh);
+
+    if(fileh.bfType != 0x4d42){
+        error = ZError("Not a BMP file", BMPError::notabmp, false);
+        return false;
+    }
+    if(fileh.bfSize != buffer.size()){
+        error = ZError("Incorrect file size in file header", BMPError::incorrectsize, false);
+        return false;
+    }
+
     BitmapInfoHeader infoh;
     readInfoHeader(buffer.raw() + 14, &infoh);
 
-    if(fileh.bfType != 0x4d42){
-        throw ZError("Unknown BMP type");
+    if(infoh.biSize != 40){
+        error = ZError("Unsupported info header length", BMPError::badinfoheader, false);
         return false;
     }
     if(infoh.biCompression != BI_RGB){
-        throw ZError(ZString("Unsupported BMP compression ") << infoh.biCompression);
+        error = ZError(ZString("Unsupported compression: ") << infoh.biCompression, BMPError::badcompression, false);
+        return false;
+    }
+    if(infoh.biBitCount != 24){
+        error = ZError(ZString("Unsupported pixel bit count: ") << infoh.biBitCount, BMPError::badbitcount, false);
         return false;
     }
 
@@ -67,8 +86,8 @@ bool ZBMP::read(ZPath path){
     zu64 row = width * sizeof(Pixel);
     zu64 rowsize = row + (4 - (row % 4));
 
-    if(buffer.size() != (54 + rowsize * height)){
-        throw ZError("BMP file size mismacth or improperly aligned");
+    if((54 + rowsize * height) != fileh.bfSize){
+        error = ZError("Incorrect image height / width or improperly aligned", BMPError::incorrectdimensions, false);
         return false;
     }
 
