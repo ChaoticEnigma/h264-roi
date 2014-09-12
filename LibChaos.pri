@@ -138,7 +138,9 @@ OTHER_FILES += \
     $$PWD/LibChaos_Todo_Ideas.txt \
     $$PWD/util/CMakeLists.txt \
     $$PWD/source_hash.cmake \
-    $$PWD/hash.sh
+    $$PWD/hash.sh \
+    chaos/lib/libpng-1.2.37/CMakeLists.txt \
+    chaos/lib/zlib-1.2.8/CMakeLists.txt
 
 INCLUDEPATH += \
     $$PWD \

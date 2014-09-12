@@ -3,6 +3,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 PROJECT(LibChaos)
 
+IF(LIBCHAOS_WINDOWS)
+    ADD_SUBDIRECTORY(lib/zlib-1.2.8)
+    ADD_SUBDIRECTORY(lib/libpng-1.2.37)
+ENDIF()
+
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zclock.h
     zerror.h
@@ -99,22 +104,33 @@ ENDIF()
 
 ### =================== CONFIG =================== ###
 
+# Export Include Path
 SET(LibChaos_INCLUDE
     ${LibChaos_SOURCE_DIR}
     ${LibChaos_SOURCE_DIR}/data
     ${LibChaos_SOURCE_DIR}/file
     ${LibChaos_SOURCE_DIR}/net
-    PARENT_SCOPE
 )
+IF(LIBCHAOS_WINDOWS)
+    SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} ${libpng_INCLUDE})
+ENDIF()
 
+SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
+
+# Include Directories
 INCLUDE_DIRECTORIES(
     ${LibChaos_SOURCE_DIR}
     data
     file
     lib
     net
-    ${CMAKE_SOURCE_DIR}
+    ${libpng_INCLUDE}
 )
+IF(LIBCHAOS_WINDOWS)
+    INCLUDE_DIRECTORIES(
+        ${libpng_INCLUDE}
+    )
+ENDIF()
 
 #source_hash(${LibChaos_SOURCE_DIR})
 configure_build("Core" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
@@ -136,7 +152,7 @@ ADD_DEFINITIONS(-DBUILDING)
 ADD_LIBRARY(chaos ${LibChaos_SOURCES})
 TARGET_LINK_LIBRARIES(chaos pthread)
 IF(LIBCHAOS_UNIX)
-    TARGET_LINK_LIBRARIES(chaos z png)
+    TARGET_LINK_LIBRARIES(chaos png z)
     IF(IBERTY_DEMANGLE)
         TARGET_LINK_LIBRARIES(chaos iberty)
     ENDIF()
@@ -146,5 +162,5 @@ IF(LIBCHAOS_UNIX)
         TARGET_LINK_LIBRARIES(chaos dl)
     ENDIF()
 ELSEIF(LIBCHAOS_WINDOWS)
-    TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi version)
+    TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi version libpng zlib)
 ENDIF()

@@ -84,7 +84,7 @@ ZString::ZString(const wchar_t *wstr){
         int len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
         char *str = new char[len];
         WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
-        data = std::string(str, len);
+        _data = std::string(str, len);
     }
 }
 const wchar_t *ZString::wc() const {
