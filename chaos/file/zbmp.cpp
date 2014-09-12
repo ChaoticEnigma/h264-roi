@@ -26,24 +26,24 @@ struct BitmapInfoHeader {
 };
 
 void readFileHeader(const unsigned char *start, BitmapFileHeader *fileh){
-    fileh->bfType       = *(unsigned short*)(&start[0]);
-    fileh->bfSize       = *(unsigned int*)  (&start[2]);
-    fileh->bfReserved1  = *(unsigned short*)(&start[6]);
-    fileh->bfReserved2  = *(unsigned short*)(&start[8]);
-    fileh->bfOffBits    = *(unsigned int*)  (&start[10]);
+    fileh->bfType       = *(const unsigned short*)(&start[0]);
+    fileh->bfSize       = *(const unsigned int*)  (&start[2]);
+    fileh->bfReserved1  = *(const unsigned short*)(&start[6]);
+    fileh->bfReserved2  = *(const unsigned short*)(&start[8]);
+    fileh->bfOffBits    = *(const unsigned int*)  (&start[10]);
 }
 void readInfoHeader(const unsigned char *start, BitmapInfoHeader *infoh){
-    infoh->biSize           = *(unsigned int*)  (&start[0]);
-    infoh->biWidth          = *(unsigned int*)  (&start[4]);
-    infoh->biHeight         = *(unsigned int*)  (&start[8]);
-    infoh->biPlanes         = *(unsigned short*)(&start[12]);
-    infoh->biBitCount       = *(unsigned short*)(&start[14]);
-    infoh->biCompression    = *(unsigned int*)  (&start[16]);
-    infoh->biSizeImage      = *(unsigned int*)  (&start[20]);
-    infoh->biXPelsPerMeter  = *(unsigned int*)  (&start[24]);
-    infoh->biYPelsPerMeter  = *(unsigned int*)  (&start[28]);
-    infoh->biClrUsed        = *(unsigned int*)  (&start[32]);
-    infoh->biClrImportant   = *(unsigned int*)  (&start[36]);
+    infoh->biSize           = *(const unsigned int*)  (&start[0]);
+    infoh->biWidth          = *(const unsigned int*)  (&start[4]);
+    infoh->biHeight         = *(const unsigned int*)  (&start[8]);
+    infoh->biPlanes         = *(const unsigned short*)(&start[12]);
+    infoh->biBitCount       = *(const unsigned short*)(&start[14]);
+    infoh->biCompression    = *(const unsigned int*)  (&start[16]);
+    infoh->biSizeImage      = *(const unsigned int*)  (&start[20]);
+    infoh->biXPelsPerMeter  = *(const unsigned int*)  (&start[24]);
+    infoh->biYPelsPerMeter  = *(const unsigned int*)  (&start[28]);
+    infoh->biClrUsed        = *(const unsigned int*)  (&start[32]);
+    infoh->biClrImportant   = *(const unsigned int*)  (&start[36]);
 }
 
 bool ZBMP::read(ZPath path){

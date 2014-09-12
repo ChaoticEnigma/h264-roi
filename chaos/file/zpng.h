@@ -36,13 +36,20 @@ public:
 
 private:
     struct PngReadData {
-        png_structp png_ptr = NULL;
-        png_infop info_ptr = NULL;
+        FILE *infile = NULL;
+
+        png_struct *png_ptr = NULL;
+        png_info *info_ptr = NULL;
 
         png_uint_32 width, height;
+        unsigned char channels;
         int bit_depth, color_type;
+        unsigned char bg_red, bg_green, bg_blue;
+        double gamma;
 
-        unsigned char *image_data = NULL;
+        unsigned char *image_data = nullptr;
+
+        ZString err_str;
     };
 
     struct PngWriteData {
@@ -68,14 +75,12 @@ private:
 
         bool have_time;
         time_t modtime;
-
-        jmp_buf jmpbuf;
     };
 
 private:
-    static int readpng_init(PngReadData *data, FILE *infile, unsigned long *pWidth, unsigned long *pHeight);
-    static int readpng_get_bgcolor(PngReadData *data, unsigned char *red, unsigned char *green, unsigned char *blue);
-    static unsigned char *readpng_get_image(PngReadData *data, double display_exponent, int *pChannels, unsigned long *pRowbytes);
+    static int readpng_init(PngReadData *data);
+    static int readpng_get_bgcolor(PngReadData *data);
+    static int readpng_get_image(PngReadData *data, double display_exponent);
     static void readpng_cleanup(PngReadData *data);
     static void readpng_warning_handler(png_struct *png_ptr, png_const_charp msg);
     static void readpng_error_handler(png_struct *png_ptr, png_const_charp msg);

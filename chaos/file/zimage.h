@@ -9,12 +9,36 @@ namespace LibChaos {
 class ZImage {
 public:
 
-    //virtual ~ZImage(){}
+    ZImage() : _width(0), _height(0), _channels(0), _depth(0), _buffer(nullptr){}
 
-    virtual bool read(ZPath path) = 0;
-    virtual bool write(ZPath path) const = 0;
+    ~ZImage(){
+        delete[] _buffer;
+    }
 
-    //virtual ZBitmap toBitmap() const = 0;
+    zu64 width(){
+        return _width;
+    }
+
+    zu64 height(){
+        return _height;
+    }
+
+    zu8 channels(){
+        return _channels;
+    }
+
+    zu8 depth(){
+        return _depth;
+    }
+
+    unsigned char *buffer(){
+        return _buffer;
+    }
+
+public:
+    zu64 _width, _height;
+    zu8 _channels, _depth;
+    unsigned char *_buffer;
 };
 
 }

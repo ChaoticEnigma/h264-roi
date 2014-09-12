@@ -10,10 +10,10 @@
 
 namespace LibChaos {
 
-ZString::ZString() : data(){
+ZString::ZString() : _data(){
 
 }
-ZString::ZString(const ZString &other) : data(other.data){
+ZString::ZString(const ZString &other) : _data(other._data){
 
 }
 
@@ -22,30 +22,30 @@ ZString::ZString(const ZString &other) : data(other.data){
 //}
 
 ZString &ZString::operator=(const ZString &str_){
-    data = str_.str();
+    _data = str_.str();
     return *this;
 }
 ZString ZString::concat(ZString str_) const {
-    std::string tmp = data;
+    std::string tmp = _data;
     tmp.append(str_.str());
     return ZString(tmp);
 }
 ZString &ZString::append(ZString str_){
-    data = data.append(str_.str());
+    _data = _data.append(str_.str());
     return *this;
 }
 
-ZString::ZString(std::string str_) : data(str_){}
+ZString::ZString(std::string str_) : _data(str_){}
 std::string &ZString::str(){
-    return data;
+    return _data;
 }
 const std::string &ZString::str() const {
-    return data;
+    return _data;
 }
 
-ZString::ZString(std::wstring wide) : data(wide.begin(), wide.end()){}
+ZString::ZString(std::wstring wide) : _data(wide.begin(), wide.end()){}
 std::wstring ZString::wstr() const {
-    return std::wstring(data.begin(), data.end());
+    return std::wstring(_data.begin(), _data.end());
 }
 
 //ZString::ZString(char *str_){
@@ -60,18 +60,18 @@ std::wstring ZString::wstr() const {
 //    return strcpy(str_, data.c_str());
 //}
 
-ZString::ZString(const unsigned char *str_) : data(){
+ZString::ZString(const unsigned char *str_) : _data(){
     if(str_ != NULL){
-        data = std::string((const char *)str_, strlen((const char *)str_));
+        _data = std::string((const char *)str_, strlen((const char *)str_));
     }
 }
-ZString::ZString(const char *str_) : data(){
+ZString::ZString(const char *str_) : _data(){
     if(str_ != NULL){
-        data = std::string(str_, strlen(str_));
+        _data = std::string(str_, strlen(str_));
     }
 }
 const char *ZString::cc() const {
-    return data.c_str();
+    return _data.c_str();
 }
 
 #if PLATFORM == WINDOWS
@@ -96,18 +96,18 @@ const wchar_t *ZString::wc() const {
 #endif
 
 ZString::ZString(char ch, zu64 len){
-    data = std::string(len, ch);
+    _data = std::string(len, ch);
 }
 
-ZString::ZString(zu16 num){ data = ItoS((zu64)num, 10).str(); }
-ZString::ZString(zs16 num){ data = ItoS((zs64)num, 10).str(); }
-ZString::ZString(zu32 num){ data = ItoS((zu64)num, 10).str(); }
-ZString::ZString(zs32 num){ data = ItoS((zs64)num, 10).str(); }
-ZString::ZString(zint num){ data = ItoS((zs64)num, 10).str(); }
-ZString::ZString(zuint num){ data = ItoS((zu64)num, 10).str(); }
+ZString::ZString(zu16 num){ _data = ItoS((zu64)num, 10).str(); }
+ZString::ZString(zs16 num){ _data = ItoS((zs64)num, 10).str(); }
+ZString::ZString(zu32 num){ _data = ItoS((zu64)num, 10).str(); }
+ZString::ZString(zs32 num){ _data = ItoS((zs64)num, 10).str(); }
+ZString::ZString(zint num){ _data = ItoS((zs64)num, 10).str(); }
+ZString::ZString(zuint num){ _data = ItoS((zu64)num, 10).str(); }
 //ZString::ZString(zsint num){ data = ItoS((zs64)num, 10).str(); }
-ZString::ZString(zu64 num){ data = ItoS(num, 10).str(); }
-ZString::ZString(zs64 num){ data = ItoS(num, 10).str(); }
+ZString::ZString(zu64 num){ _data = ItoS(num, 10).str(); }
+ZString::ZString(zs64 num){ _data = ItoS(num, 10).str(); }
 
 ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad){
     std::string buf;
@@ -116,7 +116,7 @@ ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad){
     buf.reserve(35);
     zu64 quotient = value;
     do {
-        buf += "0123456789abcdef"[std::labs(quotient % base)];
+        buf += "0123456789abcdef"[std::labs(quotient % (zu64)base)];
         quotient /= base;
     } while(quotient);
     std::reverse(buf.begin(), buf.end());
@@ -133,7 +133,7 @@ ZString ZString::ItoS(zs64 value, unsigned base){
     buf.reserve(35);
     zs64 quotient = value;
     do {
-        buf += "0123456789abcdef"[std::labs(quotient % base)];
+        buf += "0123456789abcdef"[std::labs(quotient % (zs64)base)];
         quotient /= base;
     } while(quotient);
     if (value < 0) buf += '-';
@@ -142,18 +142,18 @@ ZString ZString::ItoS(zs64 value, unsigned base){
 }
 
 int ZString::tint() const {
-    const char *str_ = data.c_str();
+    const char *str_ = _data.c_str();
     return atoi(str_);
 }
 
 ZString::ZString(double num, unsigned places){
     std::ostringstream stream;
     stream << num;
-    if(places != (unsigned)-1){
+    if(places){
         ArZ arr = ZString(stream.str()).explode('.');
-        data = (arr[0] + '.' + arr[1].substr(0, places)).str();
+        _data = (arr[0] + '.' + arr[1].substr(0, places)).str();
     } else {
-        data = stream.str();
+        _data = stream.str();
     }
 }
 
@@ -162,19 +162,12 @@ ZString::ZString(ZArray<char> bin){
         append(bin[i]);
 }
 
-char &ZString::operator[](zu64 index){
-    if(index > size())
-        return byte;
-    else
-        return data[index];
-}
-
 zu64 ZString::size() const {
-    return data.size();
+    return _data.size();
 }
 
 zu64 ZString::count(ZString needle) const {
-    ZString haystack = data;
+    ZString haystack = _data;
     zu64 cnt = 0;
     for(zu64 i = 0; i < haystack.size(); ++i){
         if(haystack[i] == needle[0]){
@@ -194,22 +187,22 @@ zu64 ZString::count(ZString needle) const {
 
 char ZString::first() const {
     if(size() >= 1)
-        return data[0];
+        return _data[0];
     else
         return '\0';
 }
 char ZString::last() const {
     if(size() >= 1)
-        return data[size()-1];
+        return _data[size()-1];
     else
         return '\0';
 }
 
 void ZString::clear(){
-    data.clear();
+    _data.clear();
 }
 bool ZString::isEmpty() const {
-    return data.empty();
+    return _data.empty();
 }
 
 bool ZString::startsWith(ZString test, bool ignorews) const {
@@ -220,13 +213,13 @@ bool ZString::startsWith(ZString test, bool ignorews) const {
     else
         started = true;
     unsigned j = 0;
-    for(unsigned i = 0; i < data.size(); ++i){
-        if(data[i] == start[j]){
+    for(unsigned i = 0; i < _data.size(); ++i){
+        if(_data[i] == start[j]){
             if(j == test.size()-1)
                 return true;
             started = true;
             ++j;
-        } else if(data[i] == ' ' || data[i] == '\t'){
+        } else if(_data[i] == ' ' || _data[i] == '\t'){
             if(started)
                 return false;
         } else {
@@ -239,12 +232,12 @@ bool ZString::startsWith(ZString test, bool ignorews) const {
 bool ZString::endsWith(ZString test) const {
     if(test.size() > size())
         return false;
-    ZString end = data.substr(data.size() - test.size(), test.size());
+    ZString end = _data.substr(_data.size() - test.size(), test.size());
     return test == end;
 }
 
 ZString &ZString::insert(zu64 pos, ZString txt){
-    data.insert(pos, txt.str());
+    _data.insert(pos, txt.str());
     return *this;
 }
 ZString ZString::insert(ZString str, zu64 pos, ZString txt){
@@ -252,25 +245,21 @@ ZString ZString::insert(ZString str, zu64 pos, ZString txt){
 }
 
 ZString &ZString::substr(zu64 pos){
-    data = substr(data, pos).str();
+    _data = substr(pos, std::string::npos).str();
     return *this;
 }
 ZString ZString::substr(ZString str, zu64 pos){
-    if(str.size() < pos)
-        return ZString();
-    return ZString(str.str().substr(pos, std::string::npos));
+    return str.substr(pos);
 }
 
 ZString &ZString::substr(zu64 pos, zu64 len){
-    data = substr(data, pos, len).str();
+    _data = _data.substr(pos, len);
     return *this;
 }
 ZString ZString::substr(ZString str, zu64 pos, zu64 len){
-    if(str.size() < pos)
+    if(str.size() < pos || !len)
         return ZString();
-    if(str.size() < pos + len)
-        return substr(str, pos);
-    return ZString(str.str().substr(pos, len));
+    return str.substr(pos, len);
 }
 
 zu64 ZString::findFirst(ZString str, ZString find){
@@ -278,7 +267,7 @@ zu64 ZString::findFirst(ZString str, ZString find){
 }
 
 ZString &ZString::replace(zu64 pos, zu64 len, ZString after){
-    data = replace(data, pos, len, after).str();
+    _data = replace(_data, pos, len, after).str();
     return *this;
 }
 ZString ZString::replace(ZString str, zu64 pos, zu64 len, ZString after){
@@ -286,7 +275,7 @@ ZString ZString::replace(ZString str, zu64 pos, zu64 len, ZString after){
 }
 
 ZString &ZString::replaceRecursive(ZString before, ZString after, unsigned max){
-    data = replace(data, before, after, max).str();
+    _data = replace(_data, before, after, max).str();
     return *this;
 }
 ZString ZString::replaceRecursive(ZString str, ZString before, ZString after, unsigned max){
@@ -309,7 +298,7 @@ ZString ZString::replaceRecursive(ZString str, ZString before, ZString after, un
 }
 
 ZString &ZString::replace(ZString before, ZString after, unsigned max){
-    data = replace(data, before, after, max).str();
+    _data = replace(_data, before, after, max).str();
     return *this;
 }
 ZString ZString::replace(ZString str, ZString before, ZString after, unsigned max){
@@ -318,7 +307,7 @@ ZString ZString::replace(ZString str, ZString before, ZString after, unsigned ma
     if(before.isEmpty())
         return str;
     bool unlim = false;
-    if(max == (unsigned)-1)
+    if(max == 0)
         unlim = true;
 
     bool found = true;
@@ -327,7 +316,7 @@ ZString ZString::replace(ZString str, ZString before, ZString after, unsigned ma
     while(found && (count < max || unlim)){
         //unsigned long loc = findFirst(str, before);
         unsigned long loc = str.str().find(before.str(), last);
-        if(loc != (unsigned long)-1){
+        if(loc != std::string::npos){
             str.str().replace(loc, before.size(), after.str());
             last = loc + after.size();
             ++count;
@@ -348,7 +337,7 @@ ZString ZString::findFirstBetween(ZString opening_string, ZString closing_string
     std::string post = closing_string.str();
     if(pre.size() <= 0 || post.size() <= 0)
         return ZString();
-    std::string tmp = data;
+    std::string tmp = _data;
     ZString found;
     enum pos_type {
         outside, sopen, eopen, inside, sclose, eclose
@@ -437,7 +426,7 @@ ZString ZString::findFirstBetween(ZString opening_string, ZString closing_string
 }
 
 ZString ZString::replaceBetween(ZString opening_string, ZString closing_string, ZString after_string){
-    ZString tmp = data;
+    ZString tmp = _data;
     bool done = false;
     while(!done){
         ZString inside = tmp.findFirstBetween(opening_string, closing_string);
@@ -449,7 +438,7 @@ ZString ZString::replaceBetween(ZString opening_string, ZString closing_string, 
         old << inside << closing_string;
         tmp.replace(old, after_string);
     }
-    data = tmp.str();
+    _data = tmp.str();
     return tmp;
 }
 
@@ -471,45 +460,108 @@ ZString ZString::replaceXmlTagCont(ZString tag, ZString after){
 ZString ZString::label(AsArZ values, bool modify){
     for(unsigned i = 0; i < values.size(); ++i)
         label(values.key(i), values[i], modify);
-    return ZString(data);
+    return ZString(_data);
 }
 ZString ZString::label(ZString labeltxt, ZString value, bool modify){
     ZString txt = ZString("<?").append(labeltxt).append("?>");
     if(modify)
         return replace(txt, value);
     else
-        return replace(data, txt, value);
+        return replace(_data, txt, value);
 }
 
 ArZ ZString::split(ZString delim){
     ArZ out;
     zu64 pos = findFirst(*this, delim);
-    out.push(substr(data, 0, pos));
-    out.push(substr(data, pos + delim.size()));
+    out.push(substr(_data, 0, pos));
+    out.push(substr(_data, pos + delim.size()));
     return out;
 }
 
-ArZ ZString::explode(char delim){
+ArZ ZString::explode(char delim) const {
+    ArZ out;
+    zu64 counter = 0;
+    for(zu64 i = 0; i < size(); ++i){
+        if(operator[](i) == delim){
+            if(counter){
+                out.push(substr(*this, i - counter, counter));
+                counter = 0;
+            }
+            continue;
+        }
+        ++counter;
+    }
+    if(counter)
+        out.push(substr(*this, size() - counter, counter));
+    return out;
+}
+
+ArZ ZString::quotedExplode(char delim) const {
+    ArZ out;
+    zu64 counter = 0;
+    bool inquotes = false;
+    for(zu64 i = 0; i < size(); ++i){
+        if(operator[](i) == '\"'){
+            if(counter)
+                out.push(substr(*this, i - counter, counter));
+            inquotes = !inquotes;
+            counter = 0;
+            continue;
+        } else if(!inquotes && operator[](i) == delim){
+            if(counter){
+                out.push(substr(*this, i - counter, counter));
+                counter = 0;
+            }
+            continue;
+        }
+        ++counter;
+    }
+    if(counter)
+        out.push(substr(*this, size() - counter, counter));
+    return out;
+}
+
+/*
+ArZ ZString::quotedExplode(char delim) const {
     ArZ out;
     std::string str_ = data;
-    for(unsigned i = 0; i < str_.length(); ++i){
+    for(zu64 i = 0; i < str_.length(); ++i){
         if(str_[i] == '"'){
-            for(unsigned j = i; j < str_.length(); ++j){
+            for(zu64 j = i; j < str_.length(); ++j){
                 if(str_[j] == '"'){
                     out.push(str_.substr(0, j));
                     str_ = str_.substr(j+1, str_.length());
-                    i = -1;
+                    i = (zu64)-1;
                 }
             }
         } else if(str_[i] == delim){
             out.push(str_.substr(0, i));
             str_ = str_.substr(i+1, str_.length());
-            i = -1;
+            i = (zu64)-1;
         }
     }
     out.push(str_);
     return out;
 }
+*/
+
+ArZ ZString::strict_explode(char delim){
+    ArZ out;
+    std::string str_ = _data;
+    for(unsigned i = 0; i < str_.length(); ++i){
+        if(str_[i] == delim && str_[i-1] != '\\'){
+            std::string sub = str_.substr(0, i);
+            if(sub != ""){
+                out.push(sub);
+            }
+            str_ = str_.substr(i+1, str_.length());
+            i = (zu64)-1;
+        }
+    }
+    out.push(str_);
+    return out;
+}
+
 #ifndef BUILDING
     #define VAARGTYPE NULL
 #else
@@ -525,7 +577,7 @@ ArZ ZString::explodeList(unsigned nargs, ...){
     va_end(args);
 
     ArZ out;
-    std::string str_ = data;
+    std::string str_ = _data;
     for(zu64 i = 0; i < str_.length(); ++i){
         bool br = false;
         for(zu64 j = 0; j < delims.size(); ++j){
@@ -537,32 +589,26 @@ ArZ ZString::explodeList(unsigned nargs, ...){
         if(br){
             out.push(str_.substr(0, i));
             str_ = str_.substr(i+1, str_.length());
-            i = -1;
+            i = (zu64)-1;
         }
     }
     out.push(str_);
     return out;
 }
 #undef VAARGTYPE
-ArZ ZString::strict_explode(char delim){
-    ArZ out;
-    std::string str_ = data;
-    for(unsigned i = 0; i < str_.length(); ++i){
-        if(str_[i] == delim && str_[i-1] != '\\'){
-            std::string sub = str_.substr(0, i);
-            if(sub != ""){
-                out.push(sub);
-            }
-            str_ = str_.substr(i+1, str_.length());
-            i = -1;
-        }
+
+ZString ZString::compound(ArZ parts, ZString delim){
+    ZString name;
+    for(zu64 i = 0; i < parts.size(); ++i){
+        name += parts[i];
+        if(i < parts.size() - 1)
+            name += delim;
     }
-    out.push(str_);
-    return out;
+    return name;
 }
 
 ZString &ZString::strip(char target){
-    data = strip(data, target).str();
+    _data = strip(_data, target).str();
     return *this;
 }
 ZString ZString::strip(ZString str, char target){
@@ -599,20 +645,20 @@ ZString ZString::removeWhitespace(){
 
 ZString ZString::invert(bool modify){
     std::string buff;
-    for(unsigned i = data.length(); i > 0; --i){
-        buff += data[i];
+    for(unsigned i = _data.length(); i > 0; --i){
+        buff += _data[i];
     }
 
     if(modify){
-        data = buff;
-        return ZString(data);
+        _data = buff;
+        return ZString(_data);
     } else {
         return ZString(buff);
     }
 }
 
 ZString &ZString::toLower(){
-    data = toLower(data).str();
+    _data = toLower(_data).str();
     return *this;
 }
 ZString ZString::toLower(ZString str){
@@ -628,11 +674,11 @@ ZString ZString::toLower(ZString str){
 ZString ZString::duplicate(unsigned iter, bool modify){
     ZString tmp;
     for(unsigned i = 0; i < iter; ++i){
-        tmp << data;
+        tmp << _data;
     }
     if(modify){
-        data = tmp.str();
-        return ZString(data);
+        _data = tmp.str();
+        return ZString(_data);
     } else {
         return tmp;
     }
@@ -668,15 +714,6 @@ ZString ZString::duplicate(unsigned iter, bool modify){
 
 ZString ZString::popLast(){
     return substr(0, size()-1);
-}
-ZString ZString::compound(ArZ parts, ZString delim){
-    ZString name;
-    for(zu64 i = 0; i < parts.size(); ++i){
-        name << parts[i];
-        if(i < parts.size()-1)
-            name << delim;
-    }
-    return name;
 }
 
 bool ZString::alphaTest(ZString str1, ZString str2){

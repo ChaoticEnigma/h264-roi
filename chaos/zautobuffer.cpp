@@ -42,12 +42,12 @@ ZAutoBuffer &ZAutoBuffer::add(char *ptr, zu64 pos, zu64 len){
 }
 ZAutoBuffer &ZAutoBuffer::add(const char *ptr, zu64 len){
     // Pointer to existing memory (no offset) += 0 bytes
-    refs.push({ type_const_ptr, (char *)ptr, 0, len, 0 });
+    refs.push({ type_const_ptr, (const char *)ptr, 0, len, 0 });
     return *this;
 }
 ZAutoBuffer &ZAutoBuffer::add(const char *ptr, zu64 pos, zu64 len){
     // Pointer to existing memory += 0 bytes
-    refs.push({ type_const_ptr, (char*)(ptr + pos), 0, len, 0 });
+    refs.push({ type_const_ptr, (const char*)(ptr + pos), 0, len, 0 });
     return *this;
 }
 ZAutoBuffer &ZAutoBuffer::add(ZFile file){

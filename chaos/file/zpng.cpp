@@ -10,71 +10,74 @@
 #include "zlog.h"
 #include "zfile.h"
 
-//#define TEXT_TITLE    0x01
-//#define TEXT_AUTHOR   0x02
-//#define TEXT_DESC     0x04
-//#define TEXT_COPY     0x08
-//#define TEXT_EMAIL    0x10
-//#define TEXT_URL      0x20
-
-//#define TEXT_TITLE_OFFSET        0
-//#define TEXT_AUTHOR_OFFSET      72
-//#define TEXT_COPY_OFFSET     (2*72)
-//#define TEXT_EMAIL_OFFSET    (3*72)
-//#define TEXT_URL_OFFSET      (4*72)
-//#define TEXT_DESC_OFFSET     (5*72)
-
 namespace LibChaos {
 
 bool ZPNG::read(ZPath path){
-    FILE *infile = fopen(path.str().cc(), "rb");
     PngReadData *data = new PngReadData;
 
-    unsigned long width, height;
-    int result = readpng_init(data, infile, &width, &height);
-    if(result != 0){
-        fclose(infile);
+    try {
+        ZFile file(path, ZFile::writeonly);
+        data->infile = file.fp();
+
+        int result = readpng_init(data);
+        switch(result){
+        case 1:
+            throw ZError("ZPNG Read: signature read fail", 1);
+        case 2:
+            throw ZError("ZPNG Read: signature check fail", 2);
+        case 3:
+            throw ZError("ZPNG Read: read struct create fail", 3);
+        case 4:
+            throw ZError("ZPNG Read: info struct create fail", 4);
+        case 5:
+            throw ZError(ZString("ZPNG Read: ") + data->err_str, 5);
+        default:
+            break;
+        }
+
+        for(int i = 0; i < data->info_ptr->num_text; ++i){
+            //LOG(data->info_ptr->text[i].key << ": " << data->info_ptr->text[i].text);
+            text.push(data->info_ptr->text[i].key, data->info_ptr->text[i].text);
+        }
+
+        result = readpng_get_image(data, 1.0);
+        switch(result){
+        case 1:
+            throw ZError(ZString("ZPNG Read: ") + data->err_str, 6);
+            break;
+        case 2:
+            throw ZError("ZPNG Read: failed to alloc image data", 7);
+            break;
+        case 3:
+            throw ZError("ZPNG Read: failed to alloc row pointers", 8);
+            break;
+        default:
+            break;
+        }
+
+        if(!data->image_data){
+            throw ZError("readpng_get_image failed", 1, false);
+        }
+
+        if(channels == 3){
+            ZBitmapRGB tmp((PixelRGB*)data->image_data, data->width, data->height);
+            bitmap = tmp.recast<PixelRGBA>(0);
+        } else if(channels == 4){
+            bitmap = ZBitmapRGBA((PixelRGBA*)data->image_data, data->width, data->height);
+        } else {
+            throw ZError("Unsupported channel count", 1, false);
+        }
+
+    } catch(ZError e){
+        error = e;
+        ELOG("PNG Read error " << e.code() << ": " << e.what());
         readpng_cleanup(data);
         delete data;
-        error = ZError("readpng_init failed", 1, false);
         return false;
     }
 
-//    if(data->info_ptr->num_text == 0)
-//        LOG("No PNG Text");
-    for(int i = 0; i < data->info_ptr->num_text; ++i){
-        LOG(data->info_ptr->text[i].key << ": " << data->info_ptr->text[i].text);
-        text.push(data->info_ptr->text[i].key, data->info_ptr->text[i].text);
-    }
-
-    unsigned long row;
-    unsigned char *pixels = readpng_get_image(data, 1.0, &channels, &row);
-    if(pixels == NULL){
-        fclose(infile);
-        readpng_cleanup(data);
-        delete data;
-        error = ZError("readpng_get_image failed", 1, false);
-        return false;
-    }
-
-    LOG(path.last() <<" Channels: " << channels << ", " << width << "," << height << ", " << row);
-    if(channels == 3){
-        ZBitmapRGB tmp((PixelRGB*)pixels, width, height);
-        bitmap = tmp.recast<PixelRGBA>(0);
-    } else if(channels == 4){
-        bitmap = ZBitmapRGBA((PixelRGBA*)pixels, width, height);
-    } else {
-        fclose(infile);
-        readpng_cleanup(data);
-        delete data;
-        error = ZError("unsupported channel count", 1, false);
-        return false;
-    }
-
-    fclose(infile);
     readpng_cleanup(data);
     delete data;
-
     return true;
 }
 
@@ -154,115 +157,94 @@ ZString ZPNG::libpngVersionInfo(){
 // Private
 // ////////////////////////////////////////////////////////////////////////////
 
-int ZPNG::readpng_init(PngReadData *data, FILE *infile, unsigned long *pWidth, unsigned long *pHeight){
+int ZPNG::readpng_init(PngReadData *data){
+    // Check PNG signature
     unsigned char sig[8];
+    if(fread(sig, 1, 8, data->infile) != 8){
+        return 1;
+    }
+    if(png_sig_cmp(sig, 0, 1)){
+        return 2;
+    }
 
-    /* first do a quick check that the file really is a PNG image; could
-     * have used slightly more general png_sig_cmp() function instead */
-    fread(sig, 1, 8, infile);
-    if(!png_check_sig(sig, 8))
-        return 1;   /* bad signature */
-
-    /* could pass pointers to user-defined error handlers instead of NULLs: */
+    // Create PNG read struct
     data->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, readpng_error_handler, readpng_warning_handler);
-    if(!data->png_ptr)
-        return 4;   /* out of memory */
+    if(!data->png_ptr){
+        return 3;
+    }
 
+    // Create PNG info struct
     data->info_ptr = png_create_info_struct(data->png_ptr);
     if(!data->info_ptr){
-        png_destroy_read_struct(&data->png_ptr, NULL, NULL);
-        data->png_ptr = NULL;
-        return 4;   /* out of memory */
+        return 4;
     }
 
-    /* we could create a second info struct here (end_info), but it's only
-     * useful if we want to keep pre- and post-IDAT chunk info separated
-     * (mainly for PNG-aware image editors and converters) */
-
-    /* setjmp() must be called in every function that calls a PNG-reading
-     * libpng function */
+    // oh god somebody help
     if(setjmp(png_jmpbuf(data->png_ptr))){
-        png_destroy_read_struct(&data->png_ptr, &data->info_ptr, NULL);
-        data->png_ptr = NULL;
-        data->info_ptr = NULL;
-        return 2;
+        return 5;
     }
 
-    png_init_io(data->png_ptr, infile);
-    png_set_sig_bytes(data->png_ptr, 8);  /* we already read the 8 signature bytes */
+    // Read PNG info
+    png_init_io(data->png_ptr, data->infile);
+    png_set_sig_bytes(data->png_ptr, 8);
+    png_read_info(data->png_ptr, data->info_ptr);
 
-    png_read_info(data->png_ptr, data->info_ptr);  /* read all PNG info up to image data */
-
-    /* alternatively, could make separate calls to png_get_image_width(),
-     * etc., but want bit_depth and color_type for later [don't care about
-     * compression_type and filter_type => NULLs] */
+    // Retrieve PNG information
     png_get_IHDR(data->png_ptr, data->info_ptr, &data->width, &data->height, &data->bit_depth, &data->color_type, NULL, NULL, NULL);
-    *pWidth = data->width;
-    *pHeight = data->height;
 
-    /* OK, that's all we need for now; return happy */
     return 0;
 }
 
-int ZPNG::readpng_get_bgcolor(PngReadData *data, unsigned char *red, unsigned char *green, unsigned char *blue){
-    png_color_16p pBackground;
-
-    /* setjmp() must be called in every function that calls a PNG-reading
-     * libpng function */
+int ZPNG::readpng_get_bgcolor(PngReadData *data){
+    // i don't have a choice...
     if(setjmp(png_jmpbuf(data->png_ptr))){
-        png_destroy_read_struct(&data->png_ptr, &data->info_ptr, NULL);
-        data->png_ptr = NULL;
-        data->info_ptr = NULL;
+        return 1;
+    }
+
+    // Check that bKGD chuck is valid
+    if(!png_get_valid(data->png_ptr, data->info_ptr, PNG_INFO_bKGD)){
         return 2;
     }
 
-    if(!png_get_valid(data->png_ptr, data->info_ptr, PNG_INFO_bKGD))
-        return 1;
+    // Get background color
+    png_color_16 *background;
+    png_get_bKGD(data->png_ptr, data->info_ptr, &background);
 
-    /* it is not obvious from the libpng documentation, but this function
-     * takes a pointer to a pointer, and it always returns valid red, green
-     * and blue values, regardless of color_type: */
-    png_get_bKGD(data->png_ptr, data->info_ptr, &pBackground);
-
-    /* however, it always returns the raw bKGD data, regardless of any
-     * bit-depth transformations, so check depth and adjust if necessary */
+    // Adjust background colors for bit depth
+    // Expand to at least 8 bits
     if(data->bit_depth == 16){
-        *red   = pBackground->red   >> 8;
-        *green = pBackground->green >> 8;
-        *blue  = pBackground->blue  >> 8;
+        data->bg_red   = background->red   >> 8;
+        data->bg_green = background->green >> 8;
+        data->bg_blue  = background->blue  >> 8;
     } else if(data->color_type == PNG_COLOR_TYPE_GRAY && data->bit_depth < 8){
-        if (data->bit_depth == 1)
-            *red = *green = *blue = pBackground->gray ? 255 : 0;
+        if(data->bit_depth == 1)
+            data->bg_red = data->bg_green = data->bg_blue = background->gray ? 255 : 0;
         else if(data->bit_depth == 2)
-            *red = *green = *blue = (255 / 3) * pBackground->gray;
-        else /* bit_depth == 4 */
-            *red = *green = *blue = (255 / 15) * pBackground->gray;
+            data->bg_red = data->bg_green = data->bg_blue = background->gray * (255 / 3);
+        else if(data->bit_depth == 4)
+            data->bg_red = data->bg_green = data->bg_blue = background->gray * (255 / 15);
+        else
+            return 3;
     } else {
-        *red   = (unsigned char)pBackground->red;
-        *green = (unsigned char)pBackground->green;
-        *blue  = (unsigned char)pBackground->blue;
+        data->bg_red   = (unsigned char)background->red;
+        data->bg_green = (unsigned char)background->green;
+        data->bg_blue  = (unsigned char)background->blue;
     }
 
     return 0;
 }
 
-unsigned char *ZPNG::readpng_get_image(PngReadData *data, double display_exponent, int *pChannels, unsigned long *pRowbytes){
-    double  gamma;
-    png_uint_32  i, rowbytes;
-    png_bytepp  row_pointers = NULL;
-
-    /* setjmp() must be called in every function that calls a PNG-reading
-     * libpng function */
+int ZPNG::readpng_get_image(PngReadData *data, double display_exponent){
+    // plz no not the face
     if(setjmp(png_jmpbuf(data->png_ptr))){
-        png_destroy_read_struct(&data->png_ptr, &data->info_ptr, NULL);
-        data->png_ptr = NULL;
-        data->info_ptr = NULL;
-        return NULL;
+        return 1;
     }
 
-    /* expand palette images to RGB, low-bit-depth grayscale images to 8 bits,
-     * transparency chunks to full alpha channel; strip 16-bit-per-sample
-     * images to 8 bits per sample; and convert grayscale to RGB[A] */
+    // Palette to RGB
+    // <8-bit greyscale to 8-bit
+    // transparency chunks to full alpha channel
+    // strip 16-bit to 8-bit
+    // grayscale to RGBA
     if(data->color_type == PNG_COLOR_TYPE_PALETTE)
         png_set_expand(data->png_ptr);
     if(data->color_type == PNG_COLOR_TYPE_GRAY && data->bit_depth < 8)
@@ -275,55 +257,50 @@ unsigned char *ZPNG::readpng_get_image(PngReadData *data, double display_exponen
         data->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
         png_set_gray_to_rgb(data->png_ptr);
 
-    /* unlike the example in the libpng documentation, we have *no* idea where
-     * this file may have come from--so if it doesn't have a file gamma, don't
-     * do any correction ("do no harm") */
+    // Set gamma if file has gamma
+    double gamma;
     if(png_get_gAMA(data->png_ptr, data->info_ptr, &gamma))
         png_set_gamma(data->png_ptr, display_exponent, gamma);
 
-    /* all transformations have been registered; now update info_ptr data,
-     * get rowbytes and channels, and allocate image memory */
+    // Update PNG info data
     png_read_update_info(data->png_ptr, data->info_ptr);
 
-    *pRowbytes = rowbytes = png_get_rowbytes(data->png_ptr, data->info_ptr);
-    *pChannels = (int)png_get_channels(data->png_ptr, data->info_ptr);
+    // Get rowbytes and channels
+    png_uint_32 rowbytes = png_get_rowbytes(data->png_ptr, data->info_ptr);
+    data->channels = png_get_channels(data->png_ptr, data->info_ptr);
 
-    if((data->image_data = (unsigned char *)malloc(rowbytes * data->height)) == NULL){
-        png_destroy_read_struct(&data->png_ptr, &data->info_ptr, NULL);
-        data->png_ptr = NULL;
-        data->info_ptr = NULL;
-        return NULL;
-    }
-    if((row_pointers = (png_bytepp)malloc(data->height * sizeof(png_bytep))) == NULL){
-        png_destroy_read_struct(&data->png_ptr, &data->info_ptr, NULL);
-        data->png_ptr = NULL;
-        data->info_ptr = NULL;
-        free(data->image_data);
-        data->image_data = NULL;
-        return NULL;
+    // Alloc image data
+    data->image_data = new unsigned char[rowbytes * data->height];
+    if(!data->image_data){
+        return 2;
     }
 
-    /* set the individual row_pointers to point at the correct offsets */
-    for(i = 0;  i < data->height;  ++i)
-        row_pointers[i] = data->image_data + i*rowbytes;
+    // Alloc row pointers
+    png_byte **row_pointers = new png_byte *[data->height];
+    if(!row_pointers){
+        return 3;
+    }
 
-    /* now we can go ahead and just read the whole image */
+    // Point row pointers at image data
+    for(zu64 i = 0; i < data->height; ++i){
+        row_pointers[i] = data->image_data + (i * rowbytes);
+    }
+
+    // Read the image
     png_read_image(data->png_ptr, row_pointers);
 
-    /* and we're done!  (png_read_end() can be omitted if no processing of
-     * post-IDAT text/time/etc. is desired) */
-    free(row_pointers);
-    row_pointers = NULL;
+    delete[] row_pointers;
 
+    // End read
     png_read_end(data->png_ptr, NULL);
 
-    return data->image_data;
+    return 0;
 }
 
 void ZPNG::readpng_cleanup(PngReadData *data){
     if(data->image_data){
-        free(data->image_data);
-        data->image_data = NULL;
+        delete[] data->image_data;
+        data->image_data = nullptr;
     }
 
     if(data->png_ptr){
@@ -335,15 +312,17 @@ void ZPNG::readpng_cleanup(PngReadData *data){
         }
         data->png_ptr = NULL;
     }
-
-
 }
 
 void ZPNG::readpng_warning_handler(png_struct *png_ptr, png_const_charp msg){
     ELOG(ZLog::this_thread << "libpng read warning: " << msg);
 }
 void ZPNG::readpng_error_handler(png_struct *png_ptr, png_const_charp msg){
-    ELOG(ZLog::this_thread << "libpng read error: " << msg);
+    //ELOG(ZLog::this_thread << "libpng read error: " << msg);
+    PngReadData *data = (PngReadData *)png_get_error_ptr(png_ptr);
+    if(data){
+        data->err_str = ZString("libpng read error: ") + msg;
+    }
     longjmp(png_jmpbuf(png_ptr), 1);
 }
 
@@ -368,7 +347,7 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
      * libpng function, unless an alternate error handler was installed--
      * but compatible error handlers must either use longjmp() themselves
      * (as in this program) or exit immediately, so here we go: */
-    if (setjmp(data->jmpbuf)) {
+    if(setjmp(png_jmpbuf(data->png_ptr))){
         png_destroy_write_struct(&data->png_ptr, &data->info_ptr);
         data->png_ptr = NULL;
         data->info_ptr = NULL;
@@ -424,7 +403,7 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
         pngtext[i].key = (char *)texts.key(i).cc();
         pngtext[i].text = (char *)texts.val(i).cc();
     }
-    png_set_text(data->png_ptr, data->info_ptr, pngtext, texts.size());
+    png_set_text(data->png_ptr, data->info_ptr, pngtext, (int)texts.size());
     delete[] pngtext;
 
     /* write all chunks up to (but not including) first IDAT */
@@ -447,7 +426,7 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
 int ZPNG::writepng_encode_image(PngWriteData *data){
     /* as always, setjmp() must be called in every function that calls a
      * PNG-writing libpng function */
-    if (setjmp(data->jmpbuf)) {
+    if (setjmp(png_jmpbuf(data->png_ptr))) {
         png_destroy_write_struct(&data->png_ptr, &data->info_ptr);
         data->png_ptr = NULL;
         data->info_ptr = NULL;
@@ -469,7 +448,7 @@ int ZPNG::writepng_encode_image(PngWriteData *data){
 int ZPNG::writepng_encode_row(PngWriteData *data){
     /* as always, setjmp() must be called in every function that calls a
      * PNG-writing libpng function */
-    if(setjmp(data->jmpbuf)){
+    if(setjmp(png_jmpbuf(data->png_ptr))){
         png_destroy_write_struct(&data->png_ptr, &data->info_ptr);
         data->png_ptr = NULL;
         data->info_ptr = NULL;
@@ -485,7 +464,7 @@ int ZPNG::writepng_encode_row(PngWriteData *data){
 int ZPNG::writepng_encode_finish(PngWriteData *data){
     /* as always, setjmp() must be called in every function that calls a
      * PNG-writing libpng function */
-    if (setjmp(data->jmpbuf)) {
+    if (setjmp(png_jmpbuf(data->png_ptr))) {
         png_destroy_write_struct(&data->png_ptr, &data->info_ptr);
         data->png_ptr = NULL;
         data->info_ptr = NULL;
@@ -520,7 +499,7 @@ void ZPNG::writepng_error_handler(png_struct *png_ptr, png_const_charp msg){
         ELOG(ZLog::this_thread << "libpng write severe error: jmpbuf not recoverable; terminating.");
         exit(99);
     }
-    longjmp(mainprog_ptr->jmpbuf, 1);
+    longjmp(png_jmpbuf(png_ptr), 1);
 }
 
 }

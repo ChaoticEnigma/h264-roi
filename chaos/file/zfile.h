@@ -35,7 +35,7 @@ public:
     bool close();
 
     // does not work correctly
-    zu64 read(ZBinary &out, zu64 size = -1);
+    zu64 read(ZBinary &out, zu64 size = (zu64)-1);
 
     zu64 write(const char *);
 

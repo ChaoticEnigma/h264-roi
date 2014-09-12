@@ -48,6 +48,13 @@ public:
     inline ZString &operator+=(ZString str){ return append(str); }
     inline ZString &operator<<(ZString str){ return append(str); }
 
+    char &operator[](zu64 i){
+        return _data[i];
+    }
+    const char &operator[](zu64 i) const {
+        return _data[i];
+    }
+
     ZString(std::string);
     std::string &str();
     const std::string &str() const;
@@ -83,11 +90,10 @@ public:
     static ZString ItoS(zs64 num, unsigned base = 10);
     int tint() const;
 
-    ZString(double flt, unsigned places = -1);
+    // Creates string from double with <places> decimal points, 0 means all
+    ZString(double flt, unsigned places = 0);
 
     ZString(ZArray<char> bin);
-
-    char &operator[](zu64);
 
     zu64 size() const;
     inline zu64 length() const { return size(); }
@@ -132,8 +138,8 @@ public:
 
     // Replace up to <max> occurences of <before> with <after> in <str>
     // <max> = -1 for unlimited
-    ZString &replace(ZString before, ZString after, unsigned max = -1);
-    static ZString replace(ZString str, ZString before, ZString after, unsigned max = -1);
+    ZString &replace(ZString before, ZString after, unsigned max = 0);
+    static ZString replace(ZString str, ZString before, ZString after, unsigned max = 0);
 
     // Get sub-string of <str> before first occurence of <find> in <str>
     static ZString getUntil(ZString str, ZString find);
@@ -159,14 +165,16 @@ public:
 
     ZString duplicate(unsigned iterate, bool modify = true);
     ZString popLast();
-    static ZString compound(ArZ parts, ZString delim);
 
     ArZ split(ZString delim);
 
-    ArZ explode(char delim);
-    ArZ explodeList(unsigned nargs, ...);
+    ArZ explode(char delim) const;
+    ArZ quotedExplode(char delim) const;
     ArZ strict_explode(char delim);
-    ArZ explode();
+    ArZ explodeList(unsigned nargs, ...);
+    //ArZ explode();
+
+    static ZString compound(ArZ parts, ZString delim);
 
     bool isUtf8(ZString);
 
@@ -182,12 +190,11 @@ public:
     // Allows ZString to be used with std streams
     friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
 private:
-    std::string data;
-    char byte;
+    std::string _data;
 };
 
 inline bool operator==(const ZString &lhs, const ZString &rhs){
-    return lhs.data == rhs.data;
+    return lhs._data == rhs._data;
 }
 inline bool operator!=(const ZString &lhs, const ZString &rhs){
     return !operator==(lhs, rhs);

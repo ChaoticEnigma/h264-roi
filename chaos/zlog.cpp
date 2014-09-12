@@ -116,7 +116,7 @@ ZLog &ZLog::operator<<(ZPath text){
 ZLog &ZLog::operator<<(ZBinary bin){
     ZString text;
     for(zu64 i = 0; i < bin.size(); ++i){
-        char tmp = bin[i];
+        unsigned char tmp = bin[i];
         // If null character, show 0
         if(tmp == 0){
             tmp = '0';

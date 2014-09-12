@@ -147,8 +147,8 @@ public:
         return *this;
     }
 
-    ZAssoc<K, T> &insert(zu64 pos, K key, T val){
-        _data.insert(pos, { key, val });
+    ZAssoc<K, T> &insert(zu64 pos, K keyval, T value){
+        _data.insert(pos, { keyval, value });
         return *this;
     }
 

@@ -115,7 +115,7 @@ ZPath &ZPath::relTo(ZPath path){
         getAbs();
     if(!path.abs())
         path.getAbs();
-    int match_len = 0;
+    unsigned match_len = 0;
     for(unsigned i = 0; i < path.size() && i < _data.size(); ++i){
         if(path[i] != _data[i]){
             break;

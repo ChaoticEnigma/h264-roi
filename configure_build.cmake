@@ -32,6 +32,18 @@ FUNCTION(configure_build NAME BUILD PLATFORM)
 
     SET(BUILD_STRING "${BUILD_STRING}" PARENT_SCOPE)
 
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wpedantic -Wno-unused-parameter" PARENT_SCOPE)
+    SET(CXXF         "-std=c++11 -Wall -Wextra -Wpedantic ")
+    #SET(CXXF "${CXXF} -Wbloody_everything") # Some day...
+    SET(CXXF "${CXXF} -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization")
+    SET(CXXF "${CXXF} -Wformat=2 -Winit-self -Wlogical-op")
+    SET(CXXF "${CXXF} -Wmissing-include-dirs -Wnoexcept -Woverloaded-virtual")
+    SET(CXXF "${CXXF} -Wredundant-decls  -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel")
+    SET(CXXF "${CXXF} -Wstrict-overflow=5 -Wswitch-default -Wundef")
+
+    #SET(CXXF "${CXXF} -Wshadow -Wold-style-cast") # Some warnings are too verbose to be useful
+    #SET(CXXF "${CXXF} -Wmissing-declarations") # Not errors
+    SET(CXXF "${CXXF} -Wno-unused-parameter -Wno-unused") # Disabled
+
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXXF}" PARENT_SCOPE)
 
 ENDFUNCTION(configure_build)

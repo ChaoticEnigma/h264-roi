@@ -134,7 +134,24 @@ int string_block(){
 
 //    ArZ split(ZString delim);
 
-//    ArZ explode(char delim);
+    ZString strarr = "this!will!explode!";
+    ArZ arr1 = strarr.explode('!');
+    ZString cmp1 = ZString::compound(arr1, "-");
+    LOG(cmp1);
+    if(!(arr1.size() == 3 && arr1[0] == "this" && arr1[1] == "will" && arr1[2] == "explode"))
+        throw 45;
+    if(cmp1 != "this-will-explode")
+        throw 46;
+
+    ZString strarr2 = "this!will!\"sort!of\"!explode\"strstr\"!";
+    ArZ arr2 = strarr2.quotedExplode('!');
+    ZString cmp2 = ZString::compound(arr2, "-");
+    LOG(cmp2);
+    if(!(arr2.size() == 5 && arr2[0] == "this" && arr2[1] == "will" && arr2[2] == "sort!of" && arr2[3] == "explode" && arr2[4] == "strstr"))
+        throw 47;
+    if(cmp2 != "this-will-sort!of-explode-strstr")
+        throw 48;
+
 //    ArZ explodeList(unsigned nargs, ...);
 //    ArZ strict_explode(char delim);
 //    ArZ explode();

@@ -111,7 +111,7 @@ addr2line_parts addr2line(char const * const program_name, void const * const ad
 #endif
     ArZ flp = tok[1].split(':');
     source.file = flp[0] != "??" ? ZPath(flp[0]) : "";
-    source.line = flp[1] != "??" ? flp[1].tint() : 0;
+    source.line = flp[1] != "??" ? (unsigned)flp[1].tint() : 0;
 
     return source;
 }
@@ -123,7 +123,7 @@ ArZ ZError::getStackTrace(unsigned trim){
     char **strings = backtrace_symbols(buffer, nptrs);
     if(strings != NULL){
         ArZ strs;
-        for(int i = trim; i < nptrs; ++i){
+        for(int i = (int)trim; i < nptrs; ++i){
             strs.push(strings[i]);
         }
         //strs.popFrontCount(trim);

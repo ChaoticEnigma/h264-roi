@@ -37,7 +37,7 @@ private:
     };
     struct ref_set {
         ref_type type;
-        char *ptr;
+        const char *ptr;
         zu64 ptr_len;
         zu64 len;
         zu64 num;

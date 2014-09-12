@@ -8,7 +8,7 @@
 
 namespace LibChaos {
 
-class ZBMP : public ZImage {
+class ZBMP {
 public:
     struct BMPError {
         enum {
