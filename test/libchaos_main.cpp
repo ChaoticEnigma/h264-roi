@@ -29,6 +29,11 @@ int main(int argc, char **argv){
     };
 
     if(argc > 1){
+        if(ZString(argv[1]) == "sandbox"){
+            LOG("*** Starting Sandbox Test:");
+            return sandbox();
+        }
+
         ArZ run;
         ZString runstr;
         for(int i = 1; i < argc; ++i){

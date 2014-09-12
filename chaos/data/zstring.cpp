@@ -545,20 +545,21 @@ ArZ ZString::quotedExplode(char delim) const {
 }
 */
 
-ArZ ZString::strict_explode(char delim){
+ArZ ZString::escapedExplode(char delim) const {
     ArZ out;
-    std::string str_ = _data;
-    for(unsigned i = 0; i < str_.length(); ++i){
-        if(str_[i] == delim && str_[i-1] != '\\'){
-            std::string sub = str_.substr(0, i);
-            if(sub != ""){
-                out.push(sub);
+    zu64 counter = 0;
+    for(zu64 i = 0; i < size(); ++i){
+        if(operator[](i) == delim && i > 0 && operator[](i - 1) != '\\'){
+            if(counter){
+                out.push(substr(*this, i - counter, counter));
+                counter = 0;
             }
-            str_ = str_.substr(i+1, str_.length());
-            i = (zu64)-1;
+            continue;
         }
+        ++counter;
     }
-    out.push(str_);
+    if(counter)
+        out.push(substr(*this, size() - counter, counter));
     return out;
 }
 

@@ -124,7 +124,8 @@ SOURCES += \
     test/number_test.cpp \
     $$PWD/chaos/file/zpng.cpp \
     $$PWD/test/png_test.cpp \
-    $$PWD/chaos/file/zbmp.cpp
+    $$PWD/chaos/file/zbmp.cpp \
+    $$PWD/test/sandbox.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

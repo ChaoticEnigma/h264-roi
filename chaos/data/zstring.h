@@ -170,7 +170,7 @@ public:
 
     ArZ explode(char delim) const;
     ArZ quotedExplode(char delim) const;
-    ArZ strict_explode(char delim);
+    ArZ escapedExplode(char delim) const;
     ArZ explodeList(unsigned nargs, ...);
     //ArZ explode();
 

@@ -24,7 +24,7 @@ public:
     ZArray(T first) : ZArray(&first, 1){
 
     }
-    ZArray(const ZArray<T> &other) : ZArray(other.ptr(), other.size()){
+    ZArray(const ZArray<T> &other) : ZArray(other._data, other._size){
 
     }
 
@@ -32,17 +32,19 @@ public:
         clear();
     }
 
+    void clear(){
+        _size = 0;
+        delete[] _data;
+        _data = nullptr;
+    }
+
     ZArray<T> &operator=(const ZArray<T> &other){
         if(other.size() && other.ptr() != nullptr){
-            if(size() != other.size()){
-                clear();
-                _size = other.size();
-            }
-            if(_data == nullptr){
-                _data = new T[_size];
-            }
+            clear();
+            _size = other.size();
+            _data = new T[_size];
             for(zu64 i = 0; i < _size; ++i){
-                _data[i] = other.ptr()[i];
+                _data[i] = other._data[i];
             }
             //memcpy(_data, other.ptr(), _size * sizeof(T));
         } else {
@@ -55,7 +57,7 @@ public:
         if(size() != arr.size())
             return false;
         for(zu64 i = 0; i < size(); ++i){
-            if(!(get(i) == arr.get(i)))
+            if(!(operator[](i) == arr[i]))
                 return false;
         }
         return true;
@@ -64,23 +66,27 @@ public:
         return !operator==(arr);
     }
 
+    T &operator[](zu64 index){
+        return _data[index];
+    }
     T &at(zu64 index){
+        return operator[](index);
+    }
+
+    const T &operator[](zu64 index) const {
         return _data[index];
     }
-    inline T &operator[](zu64 index){
-        return at(index);
-    }
-    const T &get(zu64 index) const {
-        return _data[index];
+    const T &at(zu64 index) const {
+        return operator[](index);
     }
 
     ZArray<T> &resize(zu64 size){
         if(size){
-            T *tmp = _data;
-            _data = new T[size];
-            if(_size && tmp != nullptr)
-                memcpy(_data, tmp, MIN(_size, size) * sizeof(T));
-            delete[] tmp;
+            T *tmp = new T[size];
+            if(_size && tmp != nullptr && _data != nullptr)
+                memcpy(tmp, _data, MIN(size, _size) * sizeof(T));
+            operator delete[] _data;
+            _data = tmp;
             _size = size;
         } else {
             clear();
@@ -94,26 +100,29 @@ public:
 
     ZArray<T> &push(T value){
         resize(_size + 1);
-        _data[_size - 1] = value;
+        back() = value;
         return *this;
     }
 
-    ZArray<T> &pushFront(T in){
-        T *tmp = _data;
-        _data = new T[_size + 1];
-        _data[0] = in;
-        memcpy(_data + (sizeof(T), tmp, _size * sizeof(T)));
+    ZArray<T> &pushFront(const T &in){
+        T *tmp = new T[_size + 1];
+        tmp[0] = in;
+        if(_size && _data != nullptr)
+            memcpy(tmp + 1, _data, _size * sizeof(T));
+        delete[] _data;
+        _data = tmp;
         ++_size;
         return *this;
     }
 
     ZArray<T> &insert(zu64 pos, const T &in){
-        T *tmp = _data;
-        _data = new T[_size + 1];
-        _data[0] = in;
-        memcpy(_data, tmp, pos * sizeof(T));
+        T *tmp = new T[_size + 1];
+        tmp[0] = in;
+        memcpy(tmp, _data, pos * sizeof(T));
         _data[pos] = in;
-        memcpy(_data + ((pos + 1) * sizeof(T)), tmp + (pos * sizeof(T)), (_size - pos) * sizeof(T));
+        memcpy(tmp + pos + 1, _data + pos, (_size - pos) * sizeof(T));
+        delete[] _data;
+        _data = tmp;
         ++_size;
         return *this;
     }
@@ -126,12 +135,6 @@ public:
         }
         //memcpy(_data + (_size * sizeof(T)), in.ptr(), in.size() * sizeof(T));
         return *this;
-    }
-
-    void clear(){
-        _size = 0;
-        delete[] _data;
-        _data = nullptr;
     }
 
     ZArray<T> &erase(zu64 index, zu64 count){

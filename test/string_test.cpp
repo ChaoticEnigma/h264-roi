@@ -10,18 +10,25 @@ int string_block(){
     ZString str4("test4");
     ZString str5("test3test4");
 
+    LOG("-- Assign / Compare:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
+
     if(!(str1 != str2))
         throw 1;
 
     str1 = str2;
+    LOG(str1);
     if(!(str1 == str2))
         throw 2;
 
+    LOG("-- Concat / Append:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
+
     ZString str6 = str3.concat(str4);
+    LOG(str6);
     if(str6 != str5)
         throw 3;
 
     str3.append(str4);
+    LOG(str3);
     if(str3 != str5)
         throw 4;
 
@@ -134,6 +141,8 @@ int string_block(){
 
 //    ArZ split(ZString delim);
 
+    LOG("-- Explode / Compound:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
+
     ZString strarr = "this!will!explode!";
     ArZ arr1 = strarr.explode('!');
     ZString cmp1 = ZString::compound(arr1, "-");
@@ -152,9 +161,16 @@ int string_block(){
     if(cmp2 != "this-will-sort!of-explode-strstr")
         throw 48;
 
+    ZString strarr3 = "\\!\\!!!this!will\\!also!explode\"strstr\"!";
+    ArZ arr3 = strarr3.escapedExplode('!');
+    ZString cmp3 = ZString::compound(arr3, "-");
+    LOG(cmp3);
+    if(!(arr3.size() == 4 && arr3[0] == "\\!\\!" && arr3[1] == "this" && arr3[2] == "will\\!also" && arr3[3] == "explode\"strstr\""))
+        throw 49;
+    if(cmp3 != "\\!\\!-this-will\\!also-explode\"strstr\"")
+        throw 450;
+
 //    ArZ explodeList(unsigned nargs, ...);
-//    ArZ strict_explode(char delim);
-//    ArZ explode();
 
 //    bool isUtf8(ZString);
 
@@ -178,7 +194,7 @@ int string_block_old(){
     for(zu64 i = 0; i < words.size(); ++i)
         LOG('-' << words[i] << "- " << ZLog::noln);
     LOG(ZLog::newln);
-    words.concat(t3.strict_explode(' '));
+    //words.concat(t3.strict_explode(' '));
     for(zu64 i = 0; i < words.size(); ++i)
         LOG('-' << words[i] << "- " << ZLog::noln);
     LOG(ZLog::newln);

@@ -16,6 +16,7 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     json_test.cpp
     socket_test.cpp
     socket2_test.cpp
+    sandbox.cpp
 )
 
 ### =================== CONFIG =================== ###

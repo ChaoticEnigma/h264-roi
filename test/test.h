@@ -6,6 +6,8 @@
 using namespace std;
 using namespace LibChaos;
 
+int sandbox();
+
 int array_block();
 int assoc_block();
 
