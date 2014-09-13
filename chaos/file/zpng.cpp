@@ -89,31 +89,45 @@ bool ZPNG::read(ZPath path){
     return true;
 }
 
-bool ZPNG::write(ZPath path){
+bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
     PngWriteData *data = new PngWriteData;
-    data->image_data = NULL;
-    data->row_pointers = NULL;
-    data->bit_depth = 8;
-    data->have_bg = 0;
-    data->have_time = 0;
-    data->gamma = 0.0;
-    data->color_type = PNG_COLOR_TYPE_RGB_ALPHA;
-    data->width = image.width();
-    data->height = image.height();
-
-    data->interlaced = 0;
+    FILE *fp = NULL;
 
     try {
         if(!image.isLoaded())
             throw ZError("PNG Write: empty image", PNGError::emptyimage, false);
 
-        //ZFile file(path, ZFile::writeonly);
-        FILE *fp = fopen(path.str().cc(), "wb");
-        //if(!file.isOpen())
+        fp = fopen(path.str().cc(), "wb");
         if(!fp)
             throw ZError("PNG Read: cannot write file", PNGError::badwritefile, false);
-        //data->outfile = file.fp();
+
         data->outfile = fp;
+        data->image_data = NULL;
+        data->row_pointers = NULL;
+        data->have_time = false;
+        data->gamma = 0.0;
+
+        data->have_bg = false;
+        data->bg_red = 255;
+        data->bg_green = 0;
+        data->bg_blue = 0;
+
+        data->bit_depth = image.depth();
+        data->width = image.width();
+        data->height = image.height();
+
+        if(image.channels() == 1)
+            data->color_type = PNG_COLOR_TYPE_GRAY;
+        else if(image.channels() == 2)
+            data->color_type = PNG_COLOR_TYPE_GRAY_ALPHA;
+        else if(image.channels() == 3)
+            data->color_type = PNG_COLOR_TYPE_RGB;
+        else if(image.channels() == 4)
+            data->color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+        else
+            throw ZError("PNG Read: unsupported image channel count", PNGError::unsupportedchannelcount, false);
+
+        data->interlaced = options & PNGWrite::interlace;
 
         int result = writepng_init(data, text);
         switch(result){
@@ -164,11 +178,13 @@ bool ZPNG::write(ZPath path){
         error = e;
         ELOG("ZPNG Write error " << e.code() << ": " << e.what());
         writepng_cleanup(data);
+        fclose(fp);
         delete data;
         return false;
     }
 
     writepng_cleanup(data);
+    fclose(fp);
     delete data;
     return true;
 }
@@ -375,19 +391,33 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
     // Init I/O, outfile must be open in binary mode
     png_init_io(data->png_ptr, data->outfile);
 
-    // Set the compression levels
-    // we usually want to leave filtering turned on (except for palette images) and allow all of the filters (default)
-    // we want 32K zlib window, unless entire image buffer is 16K or smaller (unknown here) (default)
-    // we usually want max compression (NOT default)
-    // the remaining compression flags should be left alone
+    // Set filter heuristics
+    png_set_filter_heuristics(data->png_ptr, PNG_FILTER_HEURISTIC_UNWEIGHTED, 0, NULL, NULL);
+    //png_set_filter_heuristics(data->png_ptr, PNG_FILTER_HEURISTIC_WEIGHTED, 0, NULL, NULL);
+
+    // Enable all filters
+    //png_set_filter(data->png_ptr, 0, PNG_ALL_FILTERS);
+    // Filtering should be disabled on palette images
+    png_set_filter(data->png_ptr, 0, PNG_FILTER_NONE);
+    //png_set_filter(data->png_ptr, 0, PNG_FILTER_SUB);
+    //png_set_filter(data->png_ptr, 0, PNG_FILTER_UP);
+    //png_set_filter(data->png_ptr, 0, PNG_FILTER_AVG);
+    //png_set_filter(data->png_ptr, 0, PNG_FILTER_PAETH);
+
+    // We want max compression
     png_set_compression_level(data->png_ptr, Z_BEST_COMPRESSION);
 
-    // this is default for no filtering; Z_FILTERED is default otherwise:
     //png_set_compression_strategy(data->png_ptr, Z_DEFAULT_STRATEGY);
-    // these are all defaults:
-    //png_set_compression_mem_level(data->png_ptr, 8);
-    //png_set_compression_window_bits(data->png_ptr, 15);
-    //png_set_compression_method(data->png_ptr, 8);
+    png_set_compression_strategy(data->png_ptr, Z_FILTERED);
+
+    // Must be Z_DEFLATED
+    //png_set_compression_method(data->png_ptr, Z_DEFLATED);
+    // Maximum window size
+    png_set_compression_window_bits(data->png_ptr, 15);
+    // Maximum memory usage
+    png_set_compression_mem_level(data->png_ptr, 9);
+    // Compression buffer size
+    png_set_compression_buffer_size(data->png_ptr, 8192);
 
     // Select interlace type
     int interlace_type = data->interlaced ? PNG_INTERLACE_ADAM7 : PNG_INTERLACE_NONE;
@@ -396,11 +426,11 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
     png_set_IHDR(data->png_ptr, data->info_ptr, data->width, data->height, data->bit_depth, data->color_type, interlace_type, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
     // Set gamma
-    if (data->gamma > 0.0)
+    if(data->gamma > 0.0)
         png_set_gAMA(data->png_ptr, data->info_ptr, data->gamma);
 
     // Set background
-    if(data->have_bg){   /* we know it's RGBA, not gray+alpha */
+    if(data->have_bg){
         png_color_16 background;
         background.red = data->bg_red;
         background.green = data->bg_green;

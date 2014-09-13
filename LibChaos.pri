@@ -62,7 +62,8 @@ HEADERS += \
     chaos/data/znumber.h \
     $$PWD/chaos/file/zpng.h \
     $$PWD/chaos/file/zimage.h \
-    $$PWD/chaos/file/zbmp.h
+    $$PWD/chaos/file/zbmp.h \
+    $$PWD/chaos/file/zjpeg.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
@@ -125,7 +126,8 @@ SOURCES += \
     $$PWD/chaos/file/zpng.cpp \
     $$PWD/test/png_test.cpp \
     $$PWD/chaos/file/zbmp.cpp \
-    $$PWD/test/sandbox.cpp
+    $$PWD/test/sandbox.cpp \
+    $$PWD/chaos/file/zjpeg.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

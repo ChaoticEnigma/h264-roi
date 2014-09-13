@@ -16,7 +16,7 @@ namespace LibChaos {
 class ZPNG {
 public:
     struct PNGError {
-        enum {
+        enum pngerrors {
             none = 0,
             badfile = 1,
             sigreadfail = 2,
@@ -34,6 +34,13 @@ public:
             invaliddimensions = 14,
         };
     };
+    struct PNGWrite {
+        enum pngoptions {
+            none = 0,
+            interlace = 1
+        };
+    };
+
 public:
     ZPNG(){
 
@@ -43,7 +50,7 @@ public:
     }
 
     bool read(ZPath path);
-    bool write(ZPath path);
+    bool write(ZPath path, PNGWrite::pngoptions options = PNGWrite::none);
 
     static ZString libpngVersionInfo();
 
@@ -90,9 +97,7 @@ private:
         bool interlaced;
 
         bool have_bg;
-        unsigned char bg_red;
-        unsigned char bg_green;
-        unsigned char bg_blue;
+        unsigned char bg_red, bg_green, bg_blue;
 
         bool have_time;
         time_t modtime;

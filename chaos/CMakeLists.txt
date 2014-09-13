@@ -43,6 +43,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     file/database.h
     file/zbitmap.h
     file/zfile.h
+    file/zjpeg.h
     file/zpng.h
 
     net/zaddress.h
@@ -83,6 +84,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     file/database.cpp
     file/zbmp.cpp
     file/zfile.cpp
+    file/zjpeg.cpp
     file/zpng.cpp
 
     net/zaddress.cpp

@@ -43,7 +43,13 @@ public:
     }
 
     ~ZBinary(){
-        clear();
+        delete[] _data;
+        _data = nullptr;
+    }
+    void clear(){
+        _size = 0;
+        delete[] _data;
+        _data = nullptr;
     }
 
     ZBinary &operator=(const ZBinary &other){
@@ -106,10 +112,11 @@ public:
         _data = buff;
     }
 
-    void clear(){
-        _size = 0;
-        delete[] _data;
-        _data = nullptr;
+    zbinary_type &back(){
+        return _data[_size - 1];
+    }
+    const zbinary_type &back() const {
+        return _data[_size - 1];
     }
 
     zu64 size() const{

@@ -10,29 +10,60 @@ int png_block(){
 
     LOG("tmp4 bmp in");
     ZBMP bmp;
-    bmp.read("tmp4-Z.bmp");
+    LOG(bmp.read("tmp4-Z.bmp"));
     LOG(bmp.getImage().width() << " " << bmp.getImage().height() << " " << bmp.getImage().channels() << " " << bmp.getImage().depth());
+    ZImage imgh(bmp.getImage());
 
-    //bmp.getImage().height(bmp.getImage().height() / 2);
-    //bmp.getImage().height(bmp.getImage().height() * 2);
-    //bmp.getImage().width(bmp.getImage().width() / 2);
-    //bmp.getImage().width(bmp.getImage().width() * 2);
+    bmp.getImage().setHeight(bmp.getImage().height() / 2);
+    //bmp.getImage().setHeight(bmp.getImage().height() * 2);
+    bmp.getImage().setWidth(bmp.getImage().width() / 2);
+    //bmp.getImage().setWidth(bmp.getImage().width() * 2);
 
     LOG(bmp.getImage().width() << " " << bmp.getImage().height() << " " << bmp.getImage().channels() << " " << bmp.getImage().depth());
-
     LOG("tmp4 bmp out");
-    bmp.write("tmp4-out.bmp");
+    LOG(bmp.write("tmp4-out.bmp"));
+    LOG(bmp.read("tmp4-out.bmp"));
+    LOG(bmp.getImage().width() << " " << bmp.getImage().height() << " " << bmp.getImage().channels() << " " << bmp.getImage().depth());
 
+    LOG("tmp4 png out 3");
+    ZImage img;
+    img.transferImage(imgh);
+    ZPNG png(img);
+    LOG(png.write("tmp4-out3.png"));
+    LOG(png.read("tmp4-out3.png"));
+    LOG(png.getImage().width() << " " << png.getImage().height() << " " << png.getImage().channels() << " " << png.getImage().depth());
+
+    LOG("tmp4 png out 4");
+    ZBinary zero;
+    zero.fill(0, 4);
+    zero.back() = 127;
+    //img.setChannels(4);
+    img.setChannels(4, zero.raw());
+    ZPNG png1(img);
+    LOG(png1.write("tmp4-out4.png"));
+    LOG(png.read("tmp4-out4.png"));
+    LOG(png.getImage().width() << " " << png.getImage().height() << " " << png.getImage().channels() << " " << png.getImage().depth());
+
+    // Toucan
     LOG("toucan png in");
     ZPNG png2;
-    png2.read("toucan.png");
+    LOG(png2.read("toucan.png"));
     LOG(png2.getImage().width() << " " << png2.getImage().height() << " " << png2.getImage().channels() << " " << png2.getImage().depth());
+    ZImage imgh2(png2.getImage());
+
+    png2.getImage().setHeight(png2.getImage().height() / 2);
+    png2.getImage().setHeight(png2.getImage().height() * 2);
+    png2.getImage().setWidth(png2.getImage().width() / 2);
+    png2.getImage().setWidth(png2.getImage().width() * 2);
+
     LOG("toucan png out");
-    png2.write("toucan-out.png");
+    LOG(png2.write("toucan-out.png"));
 
     LOG("toucan bmp out");
-    //ZBMP bmp2(png2.getImage());
-    //bmp2.write("toucan-out.bmp");
+    imgh2.setChannels(3);
+    ZBMP bmp2(imgh2);
+    LOG(bmp2.write("toucan-out.bmp"));
+
 /*
     LOG("toucan bmp in");
     ZBMP bmp3;
