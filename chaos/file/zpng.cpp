@@ -101,7 +101,7 @@ bool ZPNG::write(ZPath path){
     data->width = image.width();
     data->height = image.height();
 
-    data->interlaced = 1;
+    data->interlaced = 0;
 
     try {
         if(!image.isLoaded())

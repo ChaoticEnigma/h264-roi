@@ -6,6 +6,7 @@
 //#include "zbitmap.h"
 //#include "zpath.h"
 //#include "zerror.h"
+#include "zarray.h"
 
 namespace LibChaos {
 
@@ -58,27 +59,12 @@ public:
         return *this;
     }
 
-//    ZImage &assign(const byte *data, zu64 width, zu64 height, zu8 channels, zu8 depth){
-//        zu64 newsize = width * height * ((channels * depth) / 8);
-//        if(newsize && data){
-//            if(newsize != size())
-//                destroy();
-//            _width = width;
-//            _height = height;
-//            _channels = channels;
-//            _depth = depth;
-//            if(!_buffer){
-//                _buffer = new byte[size()];
-//            }
-//            if(_buffer)
-//                memcpy(_buffer, data, size());
-//            else
-//                destroy();
-//        } else {
-//            destroy();
-//        }
-//        return *this;
-//    }
+    byte &operator[](zu64 i){
+        return _buffer[i];
+    }
+    const byte &operator[](zu64 i) const {
+        return _buffer[i];
+    }
 
     void setDimensions(zu64 width, zu64 height, zu8 channels, zu8 depth){
         // Basically, if new dimensions are invalid or result in a different *size()* changing, buffer is destroyed
@@ -114,6 +100,41 @@ public:
         if(validDimensions()){
             // We totally trust the user here. Could go reeeaaalllyyy bad.
             _buffer = data;
+        }
+    }
+
+    // Example: reformat({'R','G','B'}, {'R','G','B','A'});
+    // each arbitrary char corresponds to a channel component of a pixel before and after the transform, in the order they are packed in buffer
+    // the same char may not be used twice in <before>
+    // channels corresponding to a char in <before> and <after> are reordered according to <after> in every pixel
+    // channels corresponding to a char in <before> but not <after> are lost in every pixel
+    // channels corresponding to a char in <after> but not <before> are zero in every pixel
+    // after may be kept in the zimage as a hint about the image content
+    void reformat(ZArray<char> before, ZArray<char> after){
+        // we'll get to sub-byte channels later
+        if(_depth % 8 == 0){
+
+        }
+    }
+
+    void setChannels(zu8 channels, int fill = 0){
+        if(channels != _channels){
+            if(validDimensions()){
+                ZImage temp(_width, _height, channels, _depth);
+                if(temp.validDimensions()){
+                    temp.zeroData();
+                    if(_channels > channels){
+                        zu8 cycle = 0;
+                        for(zu64 i = 0, j = 0; i < temp.realSize() && j < realSize(); ++i, ++j, ++cycle){
+                            if(cycle >= _channels){
+                                j += _channels - channels;
+                            }
+                            temp[i] = _buffer[j];
+                        }
+                    }
+                }
+            }
+            _channels = channels;
         }
     }
 

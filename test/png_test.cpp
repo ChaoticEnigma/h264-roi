@@ -13,9 +13,9 @@ int png_block(){
     bmp.read("tmp4-Z.bmp");
     LOG(bmp.getImage().width() << " " << bmp.getImage().height() << " " << bmp.getImage().channels() << " " << bmp.getImage().depth());
 
-    bmp.getImage().height(bmp.getImage().height() / 2);
+    //bmp.getImage().height(bmp.getImage().height() / 2);
     //bmp.getImage().height(bmp.getImage().height() * 2);
-    bmp.getImage().width(bmp.getImage().width() / 2);
+    //bmp.getImage().width(bmp.getImage().width() / 2);
     //bmp.getImage().width(bmp.getImage().width() * 2);
 
     LOG(bmp.getImage().width() << " " << bmp.getImage().height() << " " << bmp.getImage().channels() << " " << bmp.getImage().depth());
@@ -26,8 +26,10 @@ int png_block(){
     LOG("toucan png in");
     ZPNG png2;
     png2.read("toucan.png");
-    //png2.read("whois.png");
     LOG(png2.getImage().width() << " " << png2.getImage().height() << " " << png2.getImage().channels() << " " << png2.getImage().depth());
+    LOG("toucan png out");
+    png2.write("toucan-out.png");
+
     LOG("toucan bmp out");
     //ZBMP bmp2(png2.getImage());
     //bmp2.write("toucan-out.bmp");
