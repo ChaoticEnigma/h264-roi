@@ -104,6 +104,9 @@ ZLog &ZLog::operator<<(double num){
 ZLog &ZLog::operator<<(char text){
     return log(ZString(text));
 }
+ZLog &ZLog::operator<<(unsigned char text){
+    return log((zuint)text);
+}
 ZLog &ZLog::operator<<(const char *text){
     return log(ZString(text));
 }

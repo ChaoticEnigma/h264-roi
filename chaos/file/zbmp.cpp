@@ -47,67 +47,67 @@ void readInfoHeader(const unsigned char *start, BitmapInfoHeader *infoh){
 }
 
 bool ZBMP::read(ZPath path){
-    ZBinary buffer = ZFile::readBinary(path);
-    if(buffer.size() < 54){
-        error = ZError("File too small", BMPError::badfile, false);
-        return false;
-    }
-
-    BitmapFileHeader fileh;
-    readFileHeader(buffer.raw(), &fileh);
-
-    if(fileh.bfType != 0x4d42){
-        error = ZError("Not a BMP file", BMPError::notabmp, false);
-        return false;
-    }
-    if(fileh.bfSize != buffer.size()){
-        error = ZError("Incorrect file size in file header", BMPError::incorrectsize, false);
-        return false;
-    }
-
-    BitmapInfoHeader infoh;
-    readInfoHeader(buffer.raw() + 14, &infoh);
-
-    if(infoh.biSize != 40){
-        error = ZError("Unsupported info header length", BMPError::badinfoheader, false);
-        return false;
-    }
-    if(infoh.biCompression != BI_RGB){
-        error = ZError(ZString("Unsupported compression: ") << infoh.biCompression, BMPError::badcompression, false);
-        return false;
-    }
-    if(infoh.biBitCount != 24){
-        error = ZError(ZString("Unsupported pixel bit count: ") << infoh.biBitCount, BMPError::badbitcount, false);
-        return false;
-    }
-
-    zu64 width = infoh.biWidth;
-    zu64 height = infoh.biHeight;
-    zu64 row = width * sizeof(Pixel);
-    zu64 rowsize = row + (4 - (row % 4));
-
-    if((54 + rowsize * height) != fileh.bfSize){
-        error = ZError("Incorrect image height / width or improperly aligned", BMPError::incorrectdimensions, false);
-        return false;
-    }
-
-    const unsigned char *data = buffer.raw() + fileh.bfOffBits;
-    Pixel *pixels = new Pixel[width * height];
-
-    for(zu64 i = 0, ir = height-1; i < height; ++i, --ir){
-        for(zu64 j = 0; j < width; ++j){
-            zu64 pos = (ir * rowsize) + (j * sizeof(Pixel));
-            pixels[i * width + j] = {
-                data[pos + 2],
-                data[pos + 1],
-                data[pos + 0]
-            };
+    try {
+        ZBinary buffer = ZFile::readBinary(path);
+        if(buffer.size() < 54){
+            throw ZError("File too small", BMPError::badfile, false);
         }
+
+        BitmapFileHeader fileh;
+        readFileHeader(buffer.raw(), &fileh);
+
+        if(fileh.bfType != 0x4d42){
+            throw ZError("Not a BMP file", BMPError::notabmp, false);
+        }
+        if(fileh.bfSize != buffer.size()){
+            throw ZError("Incorrect file size in file header", BMPError::incorrectsize, false);
+        }
+
+        BitmapInfoHeader infoh;
+        readInfoHeader(buffer.raw() + 14, &infoh);
+
+        if(infoh.biSize != 40){
+            throw ZError("Unsupported info header length", BMPError::badinfoheader, false);
+        }
+        if(infoh.biCompression != BI_RGB){
+            throw ZError(ZString("Unsupported compression: ") << infoh.biCompression, BMPError::badcompression, false);
+        }
+        if(infoh.biBitCount != 24){
+            throw ZError(ZString("Unsupported pixel bit count: ") << infoh.biBitCount, BMPError::badbitcount, false);
+        }
+
+        zu64 width = infoh.biWidth;
+        zu64 height = infoh.biHeight;
+        zu64 row = width * bmp_channels;
+        zu64 rowsize = row + (4 - (row % 4));
+
+        if((54 + rowsize * height) != fileh.bfSize){
+            throw ZError("Incorrect image height / width or improperly aligned", BMPError::incorrectdimensions, false);
+        }
+
+        image.setDimensions(width, height, bmp_channels, 8);
+
+        const unsigned char *data = buffer.raw() + fileh.bfOffBits;
+        unsigned char *pixels = new unsigned char[width * height * bmp_channels];
+
+        for(zu64 i = 0, ir = height-1; i < height; ++i, --ir){
+            for(zu64 j = 0; j < width; ++j){
+                zu64 datpos = (i * rowsize) + (j * image.pixelSize());
+                zu64 pixpos = (ir * image.rowSize()) + (j * image.pixelSize());
+
+                pixels[pixpos + 0] = data[datpos + 2];
+                pixels[pixpos + 1] = data[datpos + 1];
+                pixels[pixpos + 2] = data[datpos + 0];
+            }
+        }
+
+        image.takeData(pixels);
+
+    } catch(ZError e){
+        error = e;
+        //ELOG("BMP Read error " << e.code() << ": " << e.what());
+        return false;
     }
-
-    bitmap.load(pixels, width, height);
-
-    delete[] pixels;
 
     return true;
 }
@@ -142,9 +142,12 @@ ZBinary writeInfoHeader(const BitmapInfoHeader *infoh){
 bool ZBMP::write(ZPath path) const {
     ZBinary out;
 
-    zu32 row = sizeof(Pixel) * bitmap.width();
-    zu32 rowsize = row + (4 - (row % 4));
-    zu32 filesize = 54 + rowsize * bitmap.height();
+    if(image.channels() != 3 || image.depth() != 8){
+        throw ZError("BMP Write: Invalid channels depth");
+    }
+
+    zu32 rowsize = image.rowSize() + (4 - (image.rowSize() % 4));
+    zu32 filesize = 54 + rowsize * image.height();
 
     BitmapFileHeader fileh;
     memset(&fileh, 0, sizeof(BitmapFileHeader));
@@ -156,28 +159,31 @@ bool ZBMP::write(ZPath path) const {
     BitmapInfoHeader infoh;
     memset(&infoh, 0, sizeof(BitmapInfoHeader));
     infoh.biSize = 40;
-    infoh.biWidth = bitmap.width();
-    infoh.biHeight = bitmap.height();
+    infoh.biWidth = image.width();
+    infoh.biHeight = image.height();
     infoh.biPlanes = 1;
     infoh.biBitCount = 24;
     infoh.biCompression = 0;
     out.concat(writeInfoHeader(&infoh));
 
-    unsigned char *pixels = new unsigned char[rowsize * bitmap.height()];
-    memset(pixels, 0, rowsize * bitmap.height());
+    const unsigned char *pixels = image.buffer();
+    unsigned char *data = new unsigned char[rowsize * image.height()];
+    memset(data, 0, rowsize * image.height());
 
-    for(zu64 i = 0, ir = bitmap.height()-1; i < bitmap.height(); ++i, --ir){
-        for(zu64 j = 0; j < bitmap.width(); ++j){
-            zu64 pos = (i * rowsize) + (j * sizeof(Pixel));
-            pixels[pos + 0] = bitmap.buffer()[ir * bitmap.width() + j].b;
-            pixels[pos + 1] = bitmap.buffer()[ir * bitmap.width() + j].g;
-            pixels[pos + 2] = bitmap.buffer()[ir * bitmap.width() + j].r;
+    for(zu64 i = 0, ir = image.height()-1; i < image.height(); ++i, --ir){
+        for(zu64 j = 0; j < image.width(); ++j){
+            zu64 datpos = (i * rowsize) + (j * image.pixelSize());
+            zu64 pixpos = (ir * image.rowSize()) + (j * image.pixelSize());
+
+            data[datpos + 0] = pixels[pixpos + 2];
+            data[datpos + 1] = pixels[pixpos + 1];
+            data[datpos + 2] = pixels[pixpos + 0];
         }
     }
 
-    out.concat(ZBinary(pixels, rowsize * bitmap.height()));
+    out.concat(ZBinary(data, rowsize * image.height()));
 
-    delete[] pixels;
+    delete[] data;
 
     return ZFile::writeBinary(path, out);
 }

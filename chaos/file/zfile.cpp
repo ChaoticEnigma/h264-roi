@@ -111,9 +111,9 @@ ZString ZFile::readFile(ZPath filenm, bool &status){
     if(infile){
         std::string buffer;
         infile.seekg(0, std::ios::end);
-        buffer.resize(infile.tellg());
+        buffer.resize((unsigned long)infile.tellg());
         infile.seekg(0, std::ios::beg);
-        infile.read(&buffer[0], buffer.size());
+        infile.read(&buffer[0], (long)buffer.size());
         infile.close();
         status = true;
         return(ZString(buffer));
@@ -126,26 +126,26 @@ ZBinary ZFile::readBinary(ZPath file){
     struct stat st_buf;
     int ret = stat(file.str().cc(), &st_buf);
     if(ret != 0)
-        throw ZError("stat error");
+        throw ZError("ZFile: stat error");
     if(S_ISDIR(st_buf.st_mode))
-        throw ZError("file is directory");
+        throw ZError("ZFile: file is directory");
 
     FILE *fp = fopen(file.str().cc(), "rb");
     if(fp == NULL)
-        throw ZError("fopen error");
+        throw ZError("ZFile: fopen error");
 
     fseek(fp, 0, SEEK_END);
-    zu64 size = ftell(fp);
+    zu64 size = (zu64)ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
     unsigned char *buffer = new (std::nothrow) unsigned char[size];
     if(buffer == nullptr)
-        throw ZError("new alloc error");
+        throw ZError("ZFile: new alloc error");
 
     zu64 len = fread(buffer, 1, size, fp);
     fclose(fp);
     if(len != size)
-        throw ZError("fread error");
+        throw ZError("ZFile: fread error");
 
     ZBinary data(buffer, size);
     delete[] buffer;
@@ -502,8 +502,8 @@ zu64 ZFile::flsize(){
     if(!isOpen())
         return 0;
     fseek(_fileh, 0, SEEK_END);
-    zu64 flsz = ftell(_fileh);
-    rewind(_fileh);
+    zu64 flsz = (zu64)ftell(_fileh);
+    fseek(_fileh, 0, SEEK_SET);
     return flsz;
 }
 

@@ -6,6 +6,7 @@
 //#include "zbitmap.h"
 #include "zstring.h"
 #include "zpath.h"
+#include "zerror.h"
 
 #define PNG_DEBUG 3
 #include <png.h>
@@ -14,10 +15,30 @@ namespace LibChaos {
 
 class ZPNG {
 public:
-    ZPNG() : channels(0){
+    struct PNGError {
+        enum {
+            none = 0,
+            badfile = 1,
+            sigreadfail = 2,
+            sigcheckfail = 3,
+            readstructfail = 4,
+            infostructfail = 5,
+            libpngerror = 6,
+            imageallocfail = 7,
+            rowallocfail = 8,
+            badpointer = 9,
+            unsupportedchannelcount = 10,
+            emptyimage = 11,
+            writestructfail = 12,
+            badwritefile = 13,
+            invaliddimensions = 14,
+        };
+    };
+public:
+    ZPNG(){
 
     }
-    ZPNG(const ZBitmapRGBA &bmp) : channels(0), bitmap(bmp){
+    ZPNG(const ZImage &img) : image(img){
 
     }
 
@@ -30,16 +51,16 @@ public:
         return text[key];
     }
 
-    ZBitmapRGBA toBitmap() const {
-        return bitmap;
+    ZImage &getImage(){
+        return image;
     }
 
 private:
     struct PngReadData {
-        FILE *infile = NULL;
-
         png_struct *png_ptr = NULL;
         png_info *info_ptr = NULL;
+
+        FILE *infile = NULL;
 
         png_uint_32 width, height;
         unsigned char channels;
@@ -56,7 +77,7 @@ private:
         png_struct *png_ptr = NULL;
         png_info *info_ptr = NULL;
 
-        FILE *outfile;
+        FILE *outfile = NULL;
 
         png_uint_32 width, height;
         int bit_depth, color_type;
@@ -75,6 +96,8 @@ private:
 
         bool have_time;
         time_t modtime;
+
+        ZString err_str;
     };
 
 private:
@@ -87,14 +110,14 @@ private:
 
     static int writepng_init(PngWriteData *mainprog_ptr, const AsArZ &text);
     static int writepng_encode_image(PngWriteData *mainprog_ptr);
-    static int writepng_encode_row(PngWriteData *mainprog_ptr);
+    static int writepng_encode_row(PngWriteData *mainprog_ptr, unsigned char *row);
     static int writepng_encode_finish(PngWriteData *mainprog_ptr);
     static void writepng_cleanup(PngWriteData *mainprog_ptr);
+    static void writepng_warning_handler(png_struct *png_ptr, png_const_charp msg);
     static void writepng_error_handler(png_struct *png_ptr, png_const_charp msg);
 
 private:
-    int channels;
-    ZBitmapRGBA bitmap;
+    ZImage image;
     AsArZ text;
     ZError error;
 };

@@ -83,6 +83,7 @@ public:
     ZLog &operator<<(bool tf);
     ZLog &operator<<(double text);
     ZLog &operator<<(char text);
+    ZLog &operator<<(unsigned char text);
     ZLog &operator<<(const char *text);
     ZLog &operator<<(const unsigned char *text);
     ZLog &operator<<(ZPath text);

@@ -3,6 +3,7 @@
 
 #include "zimage.h"
 #include "zpath.h"
+#include "zerror.h"
 
 #define BI_RGB 0x0000
 
@@ -26,7 +27,7 @@ public:
     ZBMP(){
 
     }
-    ZBMP(const ZBitmap &image) : bitmap(image){
+    ZBMP(const ZImage &img) : image(img){
 
     }
 
@@ -39,13 +40,15 @@ public:
         return err;
     }
 
-    ZBitmap toBitmap() const {
-        return bitmap;
+    ZImage &getImage(){
+        return image;
     }
 
 private:
-    ZBitmap bitmap;
+    ZImage image;
     ZError error;
+
+    const zu8 bmp_channels = 3;
 };
 
 }

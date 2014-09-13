@@ -54,6 +54,7 @@ int main(int argc, char **argv){
                         result = err;
                     } catch(ZError err){
                         ELOG("!! Error: " << err.what());
+                        err.logStackTrace();
                         result = 255;
                     }
                     if(result != 0){

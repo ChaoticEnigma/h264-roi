@@ -116,7 +116,7 @@ ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad){
     buf.reserve(35);
     zu64 quotient = value;
     do {
-        buf += "0123456789abcdef"[std::labs(quotient % (zu64)base)];
+        buf += "0123456789abcdef"[std::labs((long)((zu64)quotient % (zu64)base))];
         quotient /= base;
     } while(quotient);
     std::reverse(buf.begin(), buf.end());
