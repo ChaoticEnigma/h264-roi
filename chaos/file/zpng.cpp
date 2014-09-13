@@ -16,10 +16,15 @@ bool ZPNG::read(ZPath path){
     PngReadData *data = new PngReadData;
 
     try {
-        ZFile file(path, ZFile::writeonly);
-        if(!file.isOpen())
-            throw ZError("PNG Read: cannot read file", PNGError::badfile, false);
-        data->infile = file.fp();
+//        ZFile file(path, ZFile::writeonly);
+//        if(!file.isOpen())
+//            throw ZError("PNG Read: cannot read file", PNGError::badfile, false);
+//        data->infile = file.fp();
+
+        data->filedata = ZFile::readBinary(path);
+        if(!data->filedata.size()){
+            throw ZError("PNG Read: empty read file", PNGError::badfile, false);
+        }
 
         int result = readpng_init(data);
         switch(result){
@@ -97,9 +102,9 @@ bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
         if(!image.isLoaded())
             throw ZError("PNG Write: empty image", PNGError::emptyimage, false);
 
-        fp = fopen(path.str().cc(), "wb");
-        if(!fp)
-            throw ZError("PNG Read: cannot write file", PNGError::badwritefile, false);
+//        fp = fopen(path.str().cc(), "wb");
+//        if(!fp)
+//            throw ZError("PNG Read: cannot write file", PNGError::badwritefile, false);
 
         data->outfile = fp;
         data->image_data = NULL;
@@ -174,17 +179,21 @@ bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
                 break;
             }
         }
+
+        if(!ZFile::writeBinary(path, data->filedata))
+            throw ZError("PNG Read: cannot write file", PNGError::badwritefile, false);
+
     } catch(ZError e){
         error = e;
         ELOG("ZPNG Write error " << e.code() << ": " << e.what());
         writepng_cleanup(data);
-        fclose(fp);
+        //fclose(fp);
         delete data;
         return false;
     }
 
     writepng_cleanup(data);
-    fclose(fp);
+    //fclose(fp);
     delete data;
     return true;
 }
@@ -199,10 +208,13 @@ ZString ZPNG::libpngVersionInfo(){
 
 int ZPNG::readpng_init(PngReadData *data){
     // Check PNG signature
-    unsigned char sig[8];
-    if(fread(sig, 1, 8, data->infile) != 8){
+    const zu8 sigbytes = 8;
+    unsigned char sig[sigbytes];
+    //if(fread(sig, 1, sigbytes, data->infile) != sigbytes){
+    if(data->filedata.read(sig, sigbytes) != sigbytes){
         return 1;
     }
+    //data->filedata.position += sigbytes;
     if(png_sig_cmp(sig, 0, 1)){
         return 2;
     }
@@ -225,14 +237,27 @@ int ZPNG::readpng_init(PngReadData *data){
     }
 
     // Read PNG info
-    png_init_io(data->png_ptr, data->infile);
-    png_set_sig_bytes(data->png_ptr, 8);
+    //png_init_io(data->png_ptr, data->infile);
+
+    png_set_read_fn(data->png_ptr, &data->filedata, readpng_read_fn);
+
+    png_set_sig_bytes(data->png_ptr, sigbytes);
     png_read_info(data->png_ptr, data->info_ptr);
 
     // Retrieve PNG information
     png_get_IHDR(data->png_ptr, data->info_ptr, &data->width, &data->height, &data->bit_depth, &data->color_type, NULL, NULL, NULL);
 
     return 0;
+}
+
+void ZPNG::readpng_read_fn(png_struct *png_ptr, png_byte *outbytes, png_size_t bytestoread){
+    if(!png_ptr->io_ptr)
+        return;
+
+    ZBinary *filedata = (ZBinary*)png_ptr->io_ptr;
+    filedata->read(outbytes, bytestoread);
+    //outbytes = filedata->data.raw() + filedata->position;
+    //filedata->position += bytestoread;
 }
 
 int ZPNG::readpng_get_bgcolor(PngReadData *data){
@@ -389,7 +414,8 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
     }
 
     // Init I/O, outfile must be open in binary mode
-    png_init_io(data->png_ptr, data->outfile);
+    //png_init_io(data->png_ptr, data->outfile);
+    png_set_write_fn(data->png_ptr, &data->filedata, writepng_write_fn, NULL);
 
     // Set filter heuristics
     png_set_filter_heuristics(data->png_ptr, PNG_FILTER_HEURISTIC_UNWEIGHTED, 0, NULL, NULL);
@@ -464,6 +490,13 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
     //png_set_shift(png_ptr, &sig_bit);  // to scale low-bit-depth values
 
     return 0;
+}
+
+void ZPNG::writepng_write_fn(png_struct *png_ptr, png_byte *inbytes, png_size_t length){
+    if(!png_ptr->io_ptr)
+        return;
+    ZBinary *filedata = (ZBinary *)png_ptr->io_ptr;
+    filedata->concat(ZBinary(inbytes, length));
 }
 
 int ZPNG::writepng_encode_image(PngWriteData *data){

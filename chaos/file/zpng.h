@@ -7,6 +7,7 @@
 #include "zstring.h"
 #include "zpath.h"
 #include "zerror.h"
+#include "zbinary.h"
 
 #define PNG_DEBUG 3
 #include <png.h>
@@ -77,6 +78,8 @@ private:
 
         unsigned char *image_data = nullptr;
 
+        ZBinary filedata;
+
         ZString err_str;
     };
 
@@ -102,11 +105,14 @@ private:
         bool have_time;
         time_t modtime;
 
+        ZBinary filedata;
+
         ZString err_str;
     };
 
 private:
     static int readpng_init(PngReadData *data);
+    static void readpng_read_fn(png_struct *png_ptr, png_byte *outbytes, png_size_t bytestoread);
     static int readpng_get_bgcolor(PngReadData *data);
     static int readpng_get_image(PngReadData *data, double display_exponent);
     static void readpng_cleanup(PngReadData *data);
@@ -114,6 +120,7 @@ private:
     static void readpng_error_handler(png_struct *png_ptr, png_const_charp msg);
 
     static int writepng_init(PngWriteData *mainprog_ptr, const AsArZ &text);
+    static void writepng_write_fn(png_struct *png_ptr, png_byte *inbytes, png_size_t length);
     static int writepng_encode_image(PngWriteData *mainprog_ptr);
     static int writepng_encode_row(PngWriteData *mainprog_ptr, unsigned char *row);
     static int writepng_encode_finish(PngWriteData *mainprog_ptr);

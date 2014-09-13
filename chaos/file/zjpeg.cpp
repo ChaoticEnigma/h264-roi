@@ -7,7 +7,7 @@ bool ZJPEG::read(ZPath path){
     return true;
 }
 
-bool ZJPEG::write(ZPath path, JPEGWrite::jpegoptions options = JPEGWrite::none){
+bool ZJPEG::write(ZPath path, JPEGWrite::jpegoptions options){
 
     return false;
 }
