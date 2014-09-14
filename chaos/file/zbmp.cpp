@@ -139,11 +139,12 @@ ZBinary writeInfoHeader(const BitmapInfoHeader *infoh){
     return out;
 }
 
-bool ZBMP::write(ZPath path) const {
+bool ZBMP::write(ZPath path){
     ZBinary out;
 
-    if(image.channels() != 3 || image.depth() != 8){
-        throw ZError("BMP Write: Invalid channels depth");
+    if(!image.isRGB24()){
+        error = ZError(ZString("BMP Write: Invalid channels / depth ") + image.channels() + " " + image.depth());
+        return false;
     }
 
     zu32 rowsize = image.rowSize() + (4 - (image.rowSize() % 4));
@@ -158,12 +159,12 @@ bool ZBMP::write(ZPath path) const {
 
     BitmapInfoHeader infoh;
     memset(&infoh, 0, sizeof(BitmapInfoHeader));
-    infoh.biSize = 40;
+    infoh.biSize = 40; // size of this header in file
     infoh.biWidth = image.width();
     infoh.biHeight = image.height();
     infoh.biPlanes = 1;
-    infoh.biBitCount = 24;
-    infoh.biCompression = 0;
+    infoh.biBitCount = image.channels() * image.depth(); // will always be 24, but still
+    infoh.biCompression = 0; // no compression
     out.concat(writeInfoHeader(&infoh));
 
     const unsigned char *pixels = image.buffer();
@@ -185,7 +186,12 @@ bool ZBMP::write(ZPath path) const {
 
     delete[] data;
 
-    return ZFile::writeBinary(path, out);
+    if(!ZFile::writeBinary(path, out)){
+        error = ZError("BMP Write: bad write file");
+        return false;
+    }
+
+    return true;
 }
 
 }

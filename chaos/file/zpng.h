@@ -33,6 +33,8 @@ public:
             writestructfail = 12,
             badwritefile = 13,
             invaliddimensions = 14,
+            invalidcolortype = 15,
+            invalidbkgddepth = 16
         };
     };
     struct PNGWrite {
@@ -50,6 +52,9 @@ public:
 
     }
 
+    bool decode(ZBinary &pngdata_in);
+    bool encode(ZBinary &pngdata_out, PNGWrite::pngoptions options = PNGWrite::none);
+
     bool read(ZPath path);
     bool write(ZPath path, PNGWrite::pngoptions options = PNGWrite::none);
 
@@ -59,35 +64,39 @@ public:
         return text[key];
     }
 
+    ZError getError(){
+        ZError err = error;
+        error.clear();
+        return err;
+    }
+
     ZImage &getImage(){
         return image;
     }
 
 private:
     struct PngReadData {
+        ZBinary *filedata;
+
         png_struct *png_ptr = NULL;
         png_info *info_ptr = NULL;
 
-        FILE *infile = NULL;
-
         png_uint_32 width, height;
-        unsigned char channels;
-        int bit_depth, color_type;
+        unsigned char channels, fchannels;
+        int bit_depth, fbit_depth, color_type;
         unsigned char bg_red, bg_green, bg_blue;
         double gamma;
 
         unsigned char *image_data = nullptr;
 
-        ZBinary filedata;
-
         ZString err_str;
     };
 
     struct PngWriteData {
+        ZBinary *filedata;
+
         png_struct *png_ptr = NULL;
         png_info *info_ptr = NULL;
-
-        FILE *outfile = NULL;
 
         png_uint_32 width, height;
         int bit_depth, color_type;
@@ -104,8 +113,6 @@ private:
 
         bool have_time;
         time_t modtime;
-
-        ZBinary filedata;
 
         ZString err_str;
     };

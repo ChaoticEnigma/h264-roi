@@ -98,18 +98,46 @@ int png_block(){
     png5.write("whois-reout.png");
 */
 
-//    ZPNG png4;
-//    ZArray<ZPath> files = ZFile::listFiles("png");
-//    for(zu64 i = 0; i < files.size(); ++i){
-//        if(png4.read(files[i])){
-//            ZBMP tmp(png4.toBitmap().recast<PixelRGB>());
-//            tmp.write(ZPath("bmp/") + files[i].last().replace(".png", ".bmp"));
-//        } else {
-//            LOG("Failed: " << files[i]);
-//        }
-//    }
-    //png4.read("png/basi0g01.png");
-    //png4.read("png/basi4a08.png");
+    ZArray<ZPath> files = ZFile::listFiles("png");
+    for(zu64 i = 0; i < files.size(); ++i){
+        LOG(files[i].last());
+
+        ZPNG png4;
+        if(!png4.read(files[i])){
+            LOG("    Read Failed: " << png4.getError().what());
+            continue;
+        }
+
+        LOG("    " << png4.getImage().width() << " " << png4.getImage().height() << " " << png4.getImage().channels() << " " << png4.getImage().depth());
+
+        if(!png4.getImage().isRGB24() && !png4.getImage().isRGBA32()){
+            LOG("    Cannot Write to BMP: " << png4.getImage().channels() << "," << png4.getImage().depth());
+            continue;
+        }
+
+        if(png4.getImage().isRGBA32()){
+            LOG("    Drop alpha channel");
+            png4.getImage().setChannels(3);
+        }
+
+        //LOG(files[i].last() << " " << png4.getImage().width() << " " << png4.getImage().height() << " " << png4.getImage().channels() << " " << png4.getImage().depth());
+        //png4.getImage().setDepth(8);
+        //LOG(files[i].last() << " " << png4.getImage().width() << " " << png4.getImage().height() << " " << png4.getImage().channels() << " " << png4.getImage().depth());
+
+        ZPath bmppath = ZPath("bmp/") + files[i].last().replace(".png", ".bmp");
+        ZBMP tmp(png4.getImage());
+        if(!tmp.write(bmppath)){
+            LOG("    Write Failed: " << tmp.getError().what());
+            continue;
+        }
+
+        ZBMP tmpin;
+        tmpin.read(bmppath);
+
+        LOG("    " << ((tmpin.getImage() == png4.getImage()) ? "match" : "no"));
+        LOG("    " << tmpin.getImage().width() << " " << tmpin.getImage().height() << " " << tmpin.getImage().channels() << " " << tmpin.getImage().depth());
+
+    }
 
     return 0;
 }

@@ -32,7 +32,7 @@ public:
     }
 
     bool read(ZPath path);
-    bool write(ZPath path) const;
+    bool write(ZPath path);
 
     ZError getError(){
         ZError err = error;

@@ -12,19 +12,11 @@
 
 namespace LibChaos {
 
-bool ZPNG::read(ZPath path){
+bool ZPNG::decode(ZBinary &pngdata_in){
     PngReadData *data = new PngReadData;
 
     try {
-//        ZFile file(path, ZFile::writeonly);
-//        if(!file.isOpen())
-//            throw ZError("PNG Read: cannot read file", PNGError::badfile, false);
-//        data->infile = file.fp();
-
-        data->filedata = ZFile::readBinary(path);
-        if(!data->filedata.size()){
-            throw ZError("PNG Read: empty read file", PNGError::badfile, false);
-        }
+        data->filedata = &pngdata_in;
 
         int result = readpng_init(data);
         switch(result){
@@ -43,21 +35,35 @@ bool ZPNG::read(ZPath path){
         }
 
         for(int i = 0; i < data->info_ptr->num_text; ++i){
-            //LOG(data->info_ptr->text[i].key << ": " << data->info_ptr->text[i].text);
             text.push(data->info_ptr->text[i].key, data->info_ptr->text[i].text);
         }
 
-        result = readpng_get_image(data, 1.0);
+//        result = readpng_get_bgcolor(data);
+//        switch(result){
+//        case 1:
+//            throw ZError(ZString("PNG Read: ") + data->err_str, PNGError::libpngerror, false);
+//        case 2:
+//            // No background chunk, ignore
+//            break;
+//        case 3:
+//            throw ZError("PNG Read: invalid bkgd color depth", PNGError::invalidbkgddepth, false);
+//        default:
+//            //png_set_background(data->png_ptr, );
+//            break;
+//        }
+
+        double default_display_exponent = 1.0;
+
+        result = readpng_get_image(data, default_display_exponent);
         switch(result){
         case 1:
             throw ZError(ZString("PNG Read: ") + data->err_str, PNGError::libpngerror, false);
-            break;
         case 2:
-            throw ZError("PNG Read: failed to alloc image data", PNGError::imageallocfail, false);
-            break;
+            throw ZError("PNG Read: invalid color type", PNGError::invalidcolortype, false);
         case 3:
+            throw ZError("PNG Read: failed to alloc image data", PNGError::imageallocfail, false);
+        case 4:
             throw ZError("PNG Read: failed to alloc row pointers", PNGError::rowallocfail, false);
-            break;
         default:
             break;
         }
@@ -68,45 +74,34 @@ bool ZPNG::read(ZPath path){
 
         image.setDimensions(data->width, data->height, data->channels, data->bit_depth);
         if(!image.validDimensions())
-            throw ZError("PNG Read: invalid dimensions", PNGError::invaliddimensions, false);
+            throw ZError(ZString("PNG Read: invalid dimensions ") + image.width() + "x" + image.height() + " " + image.channels() + "," + image.depth() + " " + data->color_type, PNGError::invaliddimensions, false);
         image.takeData(data->image_data);
         data->image_data = NULL;
 
-//        if(data->channels == 3){
-//            ZBitmapRGB tmp((PixelRGB*)data->image_data, data->width, data->height);
-//            bitmap = tmp.recast<PixelRGBA>(0);
-//        } else if(data->channels == 4){
-//            bitmap = ZBitmapRGBA((PixelRGBA*)data->image_data, data->width, data->height);
-//        } else {
-//            throw ZError("Unsupported channel count", PNGError::unsupportedchannelcount, false);
-//        }
-
     } catch(ZError e){
         error = e;
-        ELOG("ZPNG Read error " << e.code() << ": " << e.what());
+        //ELOG("ZPNG Read error " << e.code() << ": " << e.what());
+        pngdata_in.rewind();
         readpng_cleanup(data);
         delete data;
         return false;
     }
 
+    pngdata_in.rewind();
     readpng_cleanup(data);
     delete data;
     return true;
 }
 
-bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
+bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
     PngWriteData *data = new PngWriteData;
-    FILE *fp = NULL;
 
     try {
         if(!image.isLoaded())
             throw ZError("PNG Write: empty image", PNGError::emptyimage, false);
 
-//        fp = fopen(path.str().cc(), "wb");
-//        if(!fp)
-//            throw ZError("PNG Read: cannot write file", PNGError::badwritefile, false);
+        data->filedata = &pngdata_out;
 
-        data->outfile = fp;
         data->image_data = NULL;
         data->row_pointers = NULL;
         data->have_time = false;
@@ -180,21 +175,35 @@ bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
             }
         }
 
-        if(!ZFile::writeBinary(path, data->filedata))
-            throw ZError("PNG Read: cannot write file", PNGError::badwritefile, false);
-
     } catch(ZError e){
         error = e;
-        ELOG("ZPNG Write error " << e.code() << ": " << e.what());
+        //ELOG("ZPNG Write error " << e.code() << ": " << e.what());
         writepng_cleanup(data);
-        //fclose(fp);
         delete data;
         return false;
     }
 
     writepng_cleanup(data);
-    //fclose(fp);
     delete data;
+    return true;
+}
+
+bool ZPNG::read(ZPath path){
+    ZBinary data = ZFile::readBinary(path);
+    if(!data.size())
+        error = ZError("PNG Read: empty read file", PNGError::badfile, false);
+
+    return decode(data);
+}
+
+bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
+    ZBinary data;
+    if(!encode(data, options))
+        return false;
+
+    if(!ZFile::writeBinary(path, data))
+        error = ZError("PNG Read: cannot write file", PNGError::badwritefile, false);
+
     return true;
 }
 
@@ -210,11 +219,9 @@ int ZPNG::readpng_init(PngReadData *data){
     // Check PNG signature
     const zu8 sigbytes = 8;
     unsigned char sig[sigbytes];
-    //if(fread(sig, 1, sigbytes, data->infile) != sigbytes){
-    if(data->filedata.read(sig, sigbytes) != sigbytes){
+    if(data->filedata->read(sig, sigbytes) != sigbytes){
         return 1;
     }
-    //data->filedata.position += sigbytes;
     if(png_sig_cmp(sig, 0, 1)){
         return 2;
     }
@@ -236,11 +243,10 @@ int ZPNG::readpng_init(PngReadData *data){
         return 5;
     }
 
+    // Set custom reading function
+    png_set_read_fn(data->png_ptr, data->filedata, readpng_read_fn);
+
     // Read PNG info
-    //png_init_io(data->png_ptr, data->infile);
-
-    png_set_read_fn(data->png_ptr, &data->filedata, readpng_read_fn);
-
     png_set_sig_bytes(data->png_ptr, sigbytes);
     png_read_info(data->png_ptr, data->info_ptr);
 
@@ -251,13 +257,12 @@ int ZPNG::readpng_init(PngReadData *data){
 }
 
 void ZPNG::readpng_read_fn(png_struct *png_ptr, png_byte *outbytes, png_size_t bytestoread){
+    // Ugh
     if(!png_ptr->io_ptr)
-        return;
+        longjmp(png_jmpbuf(png_ptr), 1);
 
     ZBinary *filedata = (ZBinary*)png_ptr->io_ptr;
     filedata->read(outbytes, bytestoread);
-    //outbytes = filedata->data.raw() + filedata->position;
-    //filedata->position += bytestoread;
 }
 
 int ZPNG::readpng_get_bgcolor(PngReadData *data){
@@ -305,22 +310,67 @@ int ZPNG::readpng_get_image(PngReadData *data, double display_exponent){
         return 1;
     }
 
-    // Palette to RGB
-    // <8-bit greyscale to 8-bit
-    // transparency chunks to full alpha channel
-    // strip 16-bit to 8-bit
-    // grayscale to RGBA
-    if(data->color_type == PNG_COLOR_TYPE_PALETTE)
-        png_set_expand(data->png_ptr);
-    if(data->color_type == PNG_COLOR_TYPE_GRAY && data->bit_depth < 8)
-        png_set_expand(data->png_ptr);
-    if(png_get_valid(data->png_ptr, data->info_ptr, PNG_INFO_tRNS))
-        png_set_expand(data->png_ptr);
-    if(data->bit_depth == 16)
-        png_set_strip_16(data->png_ptr);
-    if(data->color_type == PNG_COLOR_TYPE_GRAY ||
-        data->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+    // Transform transparency chunks to full alpha channel
+    if(png_get_valid(data->png_ptr, data->info_ptr, PNG_INFO_tRNS)){
+        png_set_tRNS_to_alpha(data->png_ptr);
+    }
+
+    // Do some transformations based on the color type
+    // We ultimately want 8 or 16-bit RGB / RGBA
+    switch(data->color_type){
+    case PNG_COLOR_TYPE_PALETTE:
+        png_set_palette_to_rgb(data->png_ptr);
+        break;
+
+    case PNG_COLOR_TYPE_GRAY:
+        if(data->bit_depth < 8){
+            png_set_gray_1_2_4_to_8(data->png_ptr);
+        }
         png_set_gray_to_rgb(data->png_ptr);
+        break;
+
+    case PNG_COLOR_TYPE_GRAY_ALPHA:
+        png_set_gray_to_rgb(data->png_ptr);
+        break;
+
+    case PNG_COLOR_TYPE_RGB:
+    case PNG_COLOR_TYPE_RGB_ALPHA:
+        // No change
+        break;
+    default:
+        return 2;
+    }
+
+//    // Strip 16-bit samples to 8-bit
+//    if(data->bit_depth == 16){
+//        png_set_strip_16(data->png_ptr);
+//        //data->fbit_depth = 8;
+//    }
+
+//    // Palette to RGB
+//    if(data->color_type == PNG_COLOR_TYPE_PALETTE){
+//        png_set_expand(data->png_ptr);
+//        data->fchannels = 3;
+//        data->fbit_depth = 8;
+//    }
+
+//    // <8-bit greyscale to 8-bit
+//    if(data->color_type == PNG_COLOR_TYPE_GRAY && data->bit_depth < 8){
+//        png_set_expand(data->png_ptr);
+//        data->fchannels = 8;
+//    }
+
+//    // transparency chunks to full alpha channel
+//    if(png_get_valid(data->png_ptr, data->info_ptr, PNG_INFO_tRNS)){
+//        png_set_expand(data->png_ptr);
+//        data->fchannels += 1;
+//    }
+
+//    // grayscale to RGBA
+//    if(data->color_type == PNG_COLOR_TYPE_GRAY || data->color_type == PNG_COLOR_TYPE_GRAY_ALPHA){
+//        png_set_gray_to_rgb(data->png_ptr);
+//        data->fchannels = 4;
+//    }
 
     // Set gamma if file has gamma
     double gamma;
@@ -337,13 +387,13 @@ int ZPNG::readpng_get_image(PngReadData *data, double display_exponent){
     // Alloc image data
     data->image_data = new unsigned char[rowbytes * data->height];
     if(!data->image_data){
-        return 2;
+        return 3;
     }
 
     // Alloc row pointers
     png_byte **row_pointers = new png_byte *[data->height];
     if(!row_pointers){
-        return 3;
+        return 4;
     }
 
     // Point row pointers at image data
@@ -413,9 +463,8 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
         return 3;
     }
 
-    // Init I/O, outfile must be open in binary mode
-    //png_init_io(data->png_ptr, data->outfile);
-    png_set_write_fn(data->png_ptr, &data->filedata, writepng_write_fn, NULL);
+    // Set custom write function
+    png_set_write_fn(data->png_ptr, data->filedata, writepng_write_fn, NULL);
 
     // Set filter heuristics
     png_set_filter_heuristics(data->png_ptr, PNG_FILTER_HEURISTIC_UNWEIGHTED, 0, NULL, NULL);
@@ -493,8 +542,10 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
 }
 
 void ZPNG::writepng_write_fn(png_struct *png_ptr, png_byte *inbytes, png_size_t length){
+    // As much as I hate it, this handles errors
     if(!png_ptr->io_ptr)
-        return;
+        longjmp(png_jmpbuf(png_ptr), 1);
+
     ZBinary *filedata = (ZBinary *)png_ptr->io_ptr;
     filedata->concat(ZBinary(inbytes, length));
 }

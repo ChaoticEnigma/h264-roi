@@ -2,6 +2,7 @@
 #define ZJPEG_H
 
 #include "zimage.h"
+#include "zbinary.h"
 #include "zpath.h"
 #include "zerror.h"
 
@@ -12,6 +13,8 @@ public:
     struct JPEGError {
         enum jpegerrors {
             none = 0,
+            badreadfile = 1,
+            badwritefile = 2
         };
     };
     struct JPEGWrite {
@@ -27,6 +30,9 @@ public:
     ZJPEG(const ZImage &img) : image(img){
 
     }
+
+    bool decode(ZBinary &jpegdata_in);
+    bool encode(ZBinary &jepgdata_out, JPEGWrite::jpegoptions options = JPEGWrite::none);
 
     bool read(ZPath path);
     bool write(ZPath path, JPEGWrite::jpegoptions options = JPEGWrite::none);

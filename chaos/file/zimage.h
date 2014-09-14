@@ -68,6 +68,11 @@ public:
         return *this;
     }
 
+    bool operator==(const ZImage &other) const {
+        return _width == other._width && _height == other._height && _channels == other._channels && _depth == other._depth &&
+               ((_buffer == nullptr && other._buffer == nullptr) || (_buffer != nullptr && other._buffer != nullptr)) && memcmp(_buffer, other._buffer, size());
+    }
+
     // Accesses bytes NOT pixels
     byte &operator[](zu64 i){
         return _buffer[i];
@@ -109,6 +114,8 @@ public:
     }
     void takeData(byte *data){
         if(validDimensions()){
+            if(_buffer)
+                delete[] _buffer;
             // We totally trust the user here. Could go reeeaaalllyyy bad.
             _buffer = data;
         }
@@ -139,11 +146,11 @@ public:
     // expandmask must be at least the new pixel size
     void setChannels(zu8 channels, const unsigned char *expandmask = nullptr){
         if(channels != _channels){
-            if(validDimensions()){
+            if(isLoaded()){
                 ZImage temp(_width, _height, channels, _depth);
-                if(temp.validDimensions()){
+                temp.newData();
+                if(temp.isLoaded()){
                     bool copymask = channels > _channels && expandmask != nullptr;
-                    temp.newData();
                     for(zu64 i = 0, j = 0; i < temp.realSize() && j < realSize(); i += temp.pixelSize(), j += pixelSize()){
                         if(copymask)
                             memcpy(temp.buffer() + i, expandmask, temp.pixelSize());
@@ -157,19 +164,33 @@ public:
         }
     }
 
-    // Need bitwise operations to do this
+    // For now, can only deal with depths aligned to bytes (multiples of 8)
+    // This is dangerous / doesn't work (maybe)
     void setDepth(zu8 depth){
         if(depth != _depth){
-            if(validDimensions()){
+            if(isLoaded() && _depth % 8 == 0){
                 ZImage temp(_width, _height, _channels, depth);
-                if(temp.validDimensions()){
-                    temp.newData();
-                    for(zu64 i = 0, j = 0; i < temp.realSize() && j < realSize(); i += temp.pixelSize(), j += pixelSize()){
-                        memcpy(temp.buffer() + i, _buffer + j, MIN(temp.pixelSize(), pixelSize()));
+                temp.newData();
+                if(temp.isLoaded() && depth % 8 == 0){
+                    zu8 ibytes = depth / 8;
+                    zu8 jbytes = _depth / 8;
+                    bool ismall = ibytes < jbytes;
+                    zu8 offset = 0;
+                    if(ismall)
+                        offset = jbytes - ibytes;
+                    else
+                        offset = ibytes - jbytes;
+
+                    for(zu64 i = 0, j = 0; i < temp.realSize() && j < realSize(); i += ibytes, j += jbytes){
+                        if(ismall)
+                            memcpy(temp.buffer() + i, _buffer + j + offset, MIN(ibytes, jbytes));
+                        else
+                            memcpy(temp.buffer() + i + offset, _buffer + j, MIN(ibytes, jbytes));
                     }
                     transferImage(temp);
                     return;
                 }
+                setDimensions(_width, _height, _channels, depth);
             }
             _depth = depth;
         }
@@ -177,10 +198,10 @@ public:
 
     void setWidth(zu64 width){
         if(width != _width){
-            if(validDimensions()){
+            if(isLoaded()){
                 ZImage temp(width, _height, _channels, _depth);
-                if(temp.validDimensions()){
-                    temp.zeroData();
+                temp.zeroData();
+                if(temp.isLoaded()){
                     for(zu64 i = 0; i < height(); ++i){
                         memcpy(temp.buffer() + (i * temp.rowSize()), _buffer + (i * rowSize()), MIN(temp.rowSize(), rowSize()));
                     }
@@ -194,11 +215,11 @@ public:
 
     void setHeight(zu64 height){
         if(height != _height){
-            if(validDimensions()){
+            if(isLoaded()){
                 ZImage temp(_width, height, _channels, _depth);
-                if(temp.validDimensions()){
-                    temp.zeroData();
-                    memcpy(temp.buffer(), _buffer, MIN(temp.size(), size()));
+                temp.zeroData();
+                if(temp.isLoaded()){
+                    memcpy(temp.buffer(), _buffer, MIN(temp.realSize(), realSize()));
                     transferImage(temp);
                     return;
                 }
@@ -213,6 +234,20 @@ public:
 
     bool isLoaded() const {
         return validDimensions() && _buffer != nullptr;
+    }
+
+    bool isRGB24() const {
+        return _channels == 3 && _depth == 8;
+    }
+    bool isRGB48() const {
+        return _channels == 3 && _depth == 16;
+    }
+
+    bool isRGBA32() const {
+        return _channels == 4 && _depth == 8;
+    }
+    bool isRGBA64() const {
+        return _channels == 4 && _depth == 16;
     }
 
     zu64 width() const {
