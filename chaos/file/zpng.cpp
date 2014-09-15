@@ -16,6 +16,9 @@ bool ZPNG::decode(ZBinary &pngdata_in){
     PngReadData *data = new PngReadData;
 
     try {
+        if(!pngdata_in.size())
+            throw ZError("PNG Read: empty input", PNGError::emptyinput, false);
+
         data->filedata = &pngdata_in;
 
         int result = readpng_init(data);
@@ -38,6 +41,9 @@ bool ZPNG::decode(ZBinary &pngdata_in){
             text.push(data->info_ptr->text[i].key, data->info_ptr->text[i].text);
         }
 
+//        data->bg_red = 0;
+//        data->bg_green = 0;
+//        data->bg_blue = 0;
 //        result = readpng_get_bgcolor(data);
 //        switch(result){
 //        case 1:
@@ -189,9 +195,18 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
 }
 
 bool ZPNG::read(ZPath path){
-    ZBinary data = ZFile::readBinary(path);
-    if(!data.size())
+    ZBinary data;
+    try {
+        data = ZFile::readBinary(path);
+    } catch(ZError e){
+        error = e;
+        return false;
+    }
+
+    if(!data.size()){
         error = ZError("PNG Read: empty read file", PNGError::badfile, false);
+        return false;
+    }
 
     return decode(data);
 }
@@ -205,6 +220,56 @@ bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
         error = ZError("PNG Read: cannot write file", PNGError::badwritefile, false);
 
     return true;
+}
+
+ZArray<ZPNG::PngChunk> ZPNG::parsePNG(ZBinary &pngdata){
+    ZArray<PngChunk> chunks;
+    zu64 size = 0;
+    unsigned char *buffer = nullptr;
+
+    pngdata.read(nullptr, 8);
+
+    while(!pngdata.atEnd()){
+        PngChunk chunk;
+
+        // Size (big-endian in PNG chunks)
+        size = 4;
+        buffer = new unsigned char[size];
+        //pngdata.read((unsigned char *)&chunk.size, 4);
+        //chunk.size = chunk.size >> 24;
+        pngdata.read(buffer, size);
+        chunk.size = 0;
+        for(zu8 j = 0; j < size; ++j){
+            //chunk.size += (zu32)(*(zu8*)(&buffer[j])) << (j * 8);
+            ((unsigned char *)&chunk.size)[j] = buffer[size - 1 - j];
+        }
+        delete[] buffer;
+
+        // Name
+        size = 4;
+        buffer = new unsigned char[size];
+        pngdata.read(buffer, size);
+        chunk.name = ZString((const char *)buffer, size);
+        delete[] buffer;
+
+        // Data
+        size = chunk.size;
+        buffer = new unsigned char[size];
+        pngdata.read(buffer, size);
+        chunk.data = ZBinary(buffer, size);
+        delete[] buffer;
+
+        // CRC
+        //size = 4;
+        //buffer = new unsigned char[size];
+        pngdata.read((unsigned char *)&chunk.crc, 4);
+        //chunk.crc = *(zu32*)(&buffer[0]);
+        //delete[] buffer;
+
+        chunks.push(chunk);
+    }
+
+    return chunks;
 }
 
 ZString ZPNG::libpngVersionInfo(){
@@ -310,22 +375,31 @@ int ZPNG::readpng_get_image(PngReadData *data, double display_exponent){
         return 1;
     }
 
-    // Transform transparency chunks to full alpha channel
-    if(png_get_valid(data->png_ptr, data->info_ptr, PNG_INFO_tRNS)){
-        png_set_tRNS_to_alpha(data->png_ptr);
-    }
+//    // Transform transparency chunks to full alpha channel
+//    if(png_get_valid(data->png_ptr, data->info_ptr, PNG_INFO_tRNS)){
+//        png_set_tRNS_to_alpha(data->png_ptr);
+//    }
+
+    // Strip
+    png_set_strip_16(data->png_ptr);
+
+    bool needbg = false;
 
     // Do some transformations based on the color type
     // We ultimately want 8 or 16-bit RGB / RGBA
     switch(data->color_type){
     case PNG_COLOR_TYPE_PALETTE:
         png_set_palette_to_rgb(data->png_ptr);
+        if(png_get_valid(data->png_ptr, data->info_ptr, PNG_INFO_tRNS)){
+            png_set_tRNS_to_alpha(data->png_ptr);
+            needbg = true;
+        } else {
+            png_set_filler(data->png_ptr, 0xFF, PNG_FILLER_AFTER);
+        }
         break;
 
     case PNG_COLOR_TYPE_GRAY:
-        if(data->bit_depth < 8){
-            png_set_gray_1_2_4_to_8(data->png_ptr);
-        }
+        png_set_expand_gray_1_2_4_to_8(data->png_ptr);
         png_set_gray_to_rgb(data->png_ptr);
         break;
 
@@ -341,36 +415,18 @@ int ZPNG::readpng_get_image(PngReadData *data, double display_exponent){
         return 2;
     }
 
-//    // Strip 16-bit samples to 8-bit
-//    if(data->bit_depth == 16){
-//        png_set_strip_16(data->png_ptr);
-//        //data->fbit_depth = 8;
-//    }
-
-//    // Palette to RGB
-//    if(data->color_type == PNG_COLOR_TYPE_PALETTE){
-//        png_set_expand(data->png_ptr);
-//        data->fchannels = 3;
-//        data->fbit_depth = 8;
-//    }
-
-//    // <8-bit greyscale to 8-bit
-//    if(data->color_type == PNG_COLOR_TYPE_GRAY && data->bit_depth < 8){
-//        png_set_expand(data->png_ptr);
-//        data->fchannels = 8;
-//    }
-
-//    // transparency chunks to full alpha channel
-//    if(png_get_valid(data->png_ptr, data->info_ptr, PNG_INFO_tRNS)){
-//        png_set_expand(data->png_ptr);
-//        data->fchannels += 1;
-//    }
-
-//    // grayscale to RGBA
-//    if(data->color_type == PNG_COLOR_TYPE_GRAY || data->color_type == PNG_COLOR_TYPE_GRAY_ALPHA){
-//        png_set_gray_to_rgb(data->png_ptr);
-//        data->fchannels = 4;
-//    }
+    png_color_16 *image_background;
+    if(png_get_bKGD(data->png_ptr, data->info_ptr, &image_background)){
+        // set background color
+        png_set_background(data->png_ptr, image_background, PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
+    } else if(needbg){
+        // fallback white background
+        png_color_16 my_background;
+        my_background.red = 255;
+        my_background.green = 255;
+        my_background.blue = 255;
+        png_set_background(data->png_ptr, &my_background, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+    }
 
     // Set gamma if file has gamma
     double gamma;

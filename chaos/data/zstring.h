@@ -67,6 +67,7 @@ public:
 
     ZString(const unsigned char *);
     ZString(const char *);
+    ZString(const char *str, zu64 size);
     const char *cc() const;
 
 #if PLATFORM == WINDOWS

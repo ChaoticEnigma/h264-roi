@@ -45,6 +45,10 @@ public:
     }
 
 private:
+    unsigned char *convertBMPDatatoRGB(unsigned char *bmpbuffer, zu32 height, zu32 width);
+    unsigned char *convertRGBtoBMPData(unsigned char *rgbbuffer, zu32 height, zu32 width, zu64 &outsize);
+
+private:
     ZImage image;
     ZError error;
 

@@ -8,16 +8,21 @@ int png_block(){
 
     LOG(ZPNG::libpngVersionInfo());
 
+/*
     LOG("tmp4 bmp in");
     ZBMP bmp;
     LOG(bmp.read("tmp4-Z.bmp"));
     LOG(bmp.getImage().width() << " " << bmp.getImage().height() << " " << bmp.getImage().channels() << " " << bmp.getImage().depth());
     ZImage imgh(bmp.getImage());
 
+    LOG("Equal: " << (imgh == bmp.getImage()));
+
     bmp.getImage().setHeight(bmp.getImage().height() / 2);
     //bmp.getImage().setHeight(bmp.getImage().height() * 2);
     bmp.getImage().setWidth(bmp.getImage().width() / 2);
     //bmp.getImage().setWidth(bmp.getImage().width() * 2);
+
+    LOG("Equal: " << (imgh == bmp.getImage()));
 
     LOG(bmp.getImage().width() << " " << bmp.getImage().height() << " " << bmp.getImage().channels() << " " << bmp.getImage().depth());
     LOG("tmp4 bmp out");
@@ -63,6 +68,7 @@ int png_block(){
     imgh2.setChannels(3);
     ZBMP bmp2(imgh2);
     LOG(bmp2.write("toucan-out.bmp"));
+*/
 
 /*
     LOG("toucan bmp in");
@@ -98,44 +104,86 @@ int png_block(){
     png5.write("whois-reout.png");
 */
 
-    ZArray<ZPath> files = ZFile::listFiles("png");
+    ZArray<ZPath> files;
+    //files = ZFile::listFiles("png");
+    //files = { "png/f00n2c08.png" };
+    files = { "png/PngSuite.png", "toucan.png", "whois.png" };
+    //FOREACHIN(files, ZPath, file){
     for(zu64 i = 0; i < files.size(); ++i){
-        LOG(files[i].last());
+        ZPath file = files[i];
+        LOG(file.last());
 
-        ZPNG png4;
-        if(!png4.read(files[i])){
-            LOG("    Read Failed: " << png4.getError().what());
+        // PNG parse
+        ZBinary pngdata = ZFile::readBinary(file);
+        ZArray<ZPNG::PngChunk> chunks = ZPNG::parsePNG(pngdata);
+        zu64 sum = 8;
+        for(zu64 j = 0; j < chunks.size(); ++j){
+            LOG("    " << chunks[j].size << " " << chunks[j].name);
+            sum += 4 + 4 + chunks[j].size + 4;
+        }
+        LOG("    Total Size: " << sum);
+
+        continue;
+
+        // PNG read
+
+        ZPNG pngin;
+        if(!pngin.read(file)){
+            LOG("    Read Failed: " << pngin.getError().what());
             continue;
         }
 
-        LOG("    " << png4.getImage().width() << " " << png4.getImage().height() << " " << png4.getImage().channels() << " " << png4.getImage().depth());
+        ZImage imgin = pngin.getImage();
+        ZFile::writeBinary("imgin-dump.bin", ZBinary(imgin.buffer(), imgin.realSize()));
+        LOG("    " << imgin.width() << " " << imgin.height() << " " << imgin.channels() << " " << imgin.depth());
 
-        if(!png4.getImage().isRGB24() && !png4.getImage().isRGBA32()){
-            LOG("    Cannot Write to BMP: " << png4.getImage().channels() << "," << png4.getImage().depth());
-            continue;
+        // PNG write
+
+        ZPath pngpath = ZPath("pngout/") + file.last();
+        ZPNG pngout(imgin);
+        if(!pngout.write(pngpath)){
+            LOG("    PNG Write Failed: " << pngout.getError().what());
         }
 
-        if(png4.getImage().isRGBA32()){
+        ZPNG tmppngin;
+        tmppngin.read(pngpath);
+        LOG("    " << tmppngin.getImage().width() << " " << tmppngin.getImage().height() << " " << tmppngin.getImage().channels() << " " << tmppngin.getImage().depth());
+        LOG("    " << ((tmppngin.getImage() == imgin) ? "++++++++" : "--------"));
+
+        // BMP write
+
+        if(!imgin.isRGB24() && !imgin.isRGBA32()){
+            //if(imgin.isRGB48() || imgin.isRGBA64()){
+            //    LOG("    Strip 16 to 8");
+            //    imgin.strip16to8bit();
+            //} else {
+                LOG("    Cannot Write to BMP: " << imgin.channels() << "," << imgin.depth());
+                continue;
+            //}
+        }
+
+        if(imgin.isRGBA32()){
             LOG("    Drop alpha channel");
-            png4.getImage().setChannels(3);
+            imgin.setChannels(3);
         }
 
-        //LOG(files[i].last() << " " << png4.getImage().width() << " " << png4.getImage().height() << " " << png4.getImage().channels() << " " << png4.getImage().depth());
-        //png4.getImage().setDepth(8);
-        //LOG(files[i].last() << " " << png4.getImage().width() << " " << png4.getImage().height() << " " << png4.getImage().channels() << " " << png4.getImage().depth());
+        //LOG(files[i].last() << " " << imgin.width() << " " << imgin.height() << " " << imgin.channels() << " " << imgin.depth());
+        //imgin.setDepth(8);
+        //LOG(files[i].last() << " " << imgin.width() << " " << imgin.height() << " " << imgin.channels() << " " << imgin.depth());
 
-        ZPath bmppath = ZPath("bmp/") + files[i].last().replace(".png", ".bmp");
-        ZBMP tmp(png4.getImage());
+        ZPath bmppath = ZPath("bmpout") + file.last().replace(".png", ".bmp");
+        ZBMP tmp(imgin);
         if(!tmp.write(bmppath)){
-            LOG("    Write Failed: " << tmp.getError().what());
+            LOG("    BMP Write Failed: " << tmp.getError().what());
             continue;
         }
 
         ZBMP tmpin;
-        tmpin.read(bmppath);
-
-        LOG("    " << ((tmpin.getImage() == png4.getImage()) ? "match" : "no"));
+        if(!tmpin.read(bmppath)){
+            LOG("    BMP Read Failed: " << tmpin.getError().what());
+        }
         LOG("    " << tmpin.getImage().width() << " " << tmpin.getImage().height() << " " << tmpin.getImage().channels() << " " << tmpin.getImage().depth());
+        LOG("    " << ((tmpin.getImage() == imgin) ? "++++++++" : "--------"));
 
     }
 

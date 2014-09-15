@@ -116,6 +116,7 @@ ENDIF()
 # Export Include Path
 SET(LibChaos_INCLUDE
     ${LibChaos_SOURCE_DIR}
+    ${LibChaos_SOURCE_DIR}/abstract
     ${LibChaos_SOURCE_DIR}/data
     ${LibChaos_SOURCE_DIR}/file
     ${LibChaos_SOURCE_DIR}/net
@@ -129,6 +130,7 @@ SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
 # Include Directories
 INCLUDE_DIRECTORIES(
     ${LibChaos_SOURCE_DIR}
+    abstract
     data
     file
     lib

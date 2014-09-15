@@ -67,7 +67,7 @@
 
 // Signed Integer Encoding
 #define LIBCHAOS_COMPLEMENT (-1 & 3)
-#if LIBCHAOS_COMPLEMENT != 1 && LIBCHAOS_COMPLEMENT == 2 && LIBCHAOS_COMPLEMENT == 3
+#if LIBCHAOS_COMPLEMENT != 1 && LIBCHAOS_COMPLEMENT != 2 && LIBCHAOS_COMPLEMENT != 3
     #error Unknown signed integer encoding?
 #endif
 
@@ -80,6 +80,7 @@
 
 // Macros
 #define FOREACH(A) for(zu64 i = 0; i < A; ++i)
+#define FOREACHIN(A, B, C) zu64 iloopvar; B C; for(iloopvar = 0, C = A[iloopvar]; iloopvar < A.size(); ++iloopvar, C = A[iloopvar])
 #define MIN(A, B) ((A < B) ? A : B)
 #define MAX(A, B) ((A > B) ? A : B)
 

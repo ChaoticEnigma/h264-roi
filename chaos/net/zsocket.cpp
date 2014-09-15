@@ -144,8 +144,8 @@ zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
         return 0;
     sender = ZAddress(&from);
     //sender = ZAddress(ntohl(from.sin_addr.s_addr), ntohs(from.sin_port));
-    str = ZBinary(buffer, received);
-    return received;
+    str = ZBinary(buffer, (zu64)received);
+    return (zu64)received;
 }
 
 void ZSocket::receiveFunc(receiveCallback receivedFunc){

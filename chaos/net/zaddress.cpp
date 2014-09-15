@@ -103,12 +103,12 @@ ZAddress::ZAddress(zport port) : ZAddressData(ipv4, 0, 0, port){
 
 ZAddress::ZAddress(const sockaddr_storage *ptr) : ZAddressData(ipv4, 0, 0, 0){
     if(ptr->ss_family == ipv4){
-        const sockaddr_in *v4 = (sockaddr_in *)ptr;
+        const sockaddr_in *v4 = (const sockaddr_in *)ptr;
         _family = v4->sin_family;
         memcpy(_v4_addr, &(v4->sin_addr), sizeof(v4->sin_addr));
         _port = v4->sin_port;
     } else if(ptr->ss_family == ipv6){
-        const sockaddr_in6 *v6 = (sockaddr_in6 *)ptr;
+        const sockaddr_in6 *v6 = (const sockaddr_in6 *)ptr;
         _family = v6->sin6_family;
         memcpy(_v6_addr, &(v6->sin6_addr), sizeof(v6->sin6_addr));
         _port = v6->sin6_port;
@@ -138,7 +138,7 @@ int ZAddress::family() const {
 }
 
 ZString ZAddress::str() const {
-    int csz;
+    unsigned int csz;
     if(_family == ipv4){
         csz = IPV4_MAX;
     } else if(_family == ipv6){
@@ -147,8 +147,9 @@ ZString ZAddress::str() const {
         return _name;
     }
 
-    char str[csz];
+    char *str = new char[csz];
     inet_ntop(_family, &_v4_addr, str, csz);
+    delete[] str;
     return ZString(str);
 }
 

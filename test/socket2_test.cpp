@@ -29,7 +29,7 @@ int tcp_test(){
     LOG("connected " << conn.other().str());
 
     ZString str = "hi connection!";
-    ZBinary snddata((unsigned char *)str.cc(), str.size());
+    ZBinary snddata((const unsigned char *)str.cc(), str.size());
     conn.write(snddata);
     LOG("write (" << snddata.size() << "): \"" << snddata << "\"");
 
@@ -68,7 +68,7 @@ int tcpserver_test(){
         LOG("read (" << data.size() << "): \"" << data << "\"");
 
         ZString str = "hello back there!";
-        ZBinary snddata((unsigned char *)str.cc(), str.size());
+        ZBinary snddata((const unsigned char *)str.cc(), str.size());
         client.write(snddata);
         LOG("write (" << snddata.size() << "): \"" << snddata << "\"");
     }

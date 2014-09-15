@@ -69,8 +69,12 @@ public:
     }
 
     bool operator==(const ZImage &other) const {
-        return _width == other._width && _height == other._height && _channels == other._channels && _depth == other._depth &&
-               ((_buffer == nullptr && other._buffer == nullptr) || (_buffer != nullptr && other._buffer != nullptr)) && memcmp(_buffer, other._buffer, size());
+        return _width == other._width &&
+               _height == other._height &&
+               _channels == other._channels &&
+               _depth == other._depth &&
+               ((_buffer == nullptr && other._buffer == nullptr) || (_buffer != nullptr && other._buffer != nullptr)) &&
+               memcmp(_buffer, other._buffer, size()) == 0;
     }
 
     // Accesses bytes NOT pixels
@@ -228,6 +232,22 @@ public:
         }
     }
 
+    void strip16to8bit(){
+        if(isLoaded() && _depth == 16){
+            ZImage temp(_width, _height, _channels, 8);
+            temp.newData();
+            if(temp.isLoaded()){
+                for(zu64 i  = 0, j = 0; i < realSize() && j < temp.realSize(); i += 2, j += 1){
+                    zu16 chn = *(zu16*)(_buffer + i);
+                    chn = chn >> 8;
+                    temp[j] = (zu8)chn;
+                }
+                transferImage(temp);
+            }
+        }
+        _depth = 8;
+    }
+
     bool validDimensions() const {
         return validDimensions(_width, _height, _channels, _depth);
     }
@@ -304,7 +324,7 @@ private:
     // Number of bits per channel
     zu8 _depth;
     // Actual data
-    byte *_buffer;
+    unsigned char *_buffer;
 };
 
 }

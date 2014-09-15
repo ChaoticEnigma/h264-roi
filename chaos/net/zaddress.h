@@ -37,9 +37,9 @@ protected:
             zu8 _v6_addr[16];
             zu16 _v6_blocks[8];
             struct {
-                zu64 _v6_second;
-                zu64 _v6_first;
-            };
+                zu64 second;
+                zu64 first;
+            } _v6_parts;
         };
 
         // IPv4 32 bits
@@ -47,11 +47,11 @@ protected:
             zu8 _v4_addr[4];
             zu32 _v4_addr_32;
             struct {
-                zu8 _v4_a;
-                zu8 _v4_b;
-                zu8 _v4_c;
-                zu8 _v4_d;
-            };
+                zu8 a;
+                zu8 b;
+                zu8 c;
+                zu8 d;
+            } _v4_parts;
         };
     };
     zport _port;
@@ -92,8 +92,8 @@ public:
                 this->_type == rhs._type &&
                 this->_protocol == rhs._protocol &&
                 this->_name == rhs._name &&
-                this->_v6_first == rhs._v6_first &&
-                this->_v6_second == rhs._v6_second &&
+                this->_v6_parts.first == rhs._v6_parts.first &&
+                this->_v6_parts.second == rhs._v6_parts.second &&
                 this->_port == rhs._port
             )
             return true;

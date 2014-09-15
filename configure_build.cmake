@@ -40,8 +40,8 @@ FUNCTION(configure_build NAME BUILD PLATFORM)
     SET(CXXF "${CXXF} -Wredundant-decls  -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel")
     SET(CXXF "${CXXF} -Wstrict-overflow=5 -Wswitch-default -Wundef")
 
-    #SET(CXXF "${CXXF} -Wshadow -Wold-style-cast") # Some warnings are too verbose to be useful
-    #SET(CXXF "${CXXF} -Wmissing-declarations") # Not errors
+    #SET(CXXF "${CXXF} -Wshadow ") # Some warnings are too verbose to be useful
+    #SET(CXXF "${CXXF} -Wmissing-declarations -Wold-style-cast") # Not actually errors
     SET(CXXF "${CXXF} -Wno-unused-parameter -Wno-unused") # Disabled
 
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXXF}" PARENT_SCOPE)

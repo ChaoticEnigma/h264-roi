@@ -63,7 +63,8 @@ HEADERS += \
     $$PWD/chaos/file/zpng.h \
     $$PWD/chaos/file/zimage.h \
     $$PWD/chaos/file/zbmp.h \
-    $$PWD/chaos/file/zjpeg.h
+    $$PWD/chaos/file/zjpeg.h \
+    $$PWD/chaos/abstract/zreader.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
@@ -147,6 +148,7 @@ OTHER_FILES += \
 INCLUDEPATH += \
     $$PWD \
     $$PWD/chaos \
+    $$PWD/chaos/abstract \
     $$PWD/chaos/data \
     $$PWD/chaos/file \
     $$PWD/chaos/lib \

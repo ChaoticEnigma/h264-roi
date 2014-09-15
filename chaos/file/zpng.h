@@ -34,7 +34,8 @@ public:
             badwritefile = 13,
             invaliddimensions = 14,
             invalidcolortype = 15,
-            invalidbkgddepth = 16
+            invalidbkgddepth = 16,
+            emptyinput = 17,
         };
     };
     struct PNGWrite {
@@ -42,6 +43,21 @@ public:
             none = 0,
             interlace = 1
         };
+    };
+
+    struct PngChunk {
+        zu32 size;
+        ZString name;
+        ZBinary data;
+        zu32 crc;
+    };
+
+    struct PngInfo {
+        PngInfo() : interlaced(false), gamma(0.0){}
+
+        bool interlaced;
+        double gamma;
+
     };
 
 public:
@@ -57,6 +73,8 @@ public:
 
     bool read(ZPath path);
     bool write(ZPath path, PNGWrite::pngoptions options = PNGWrite::none);
+
+    static ZArray<PngChunk> parsePNG(ZBinary &pngdata);
 
     static ZString libpngVersionInfo();
 

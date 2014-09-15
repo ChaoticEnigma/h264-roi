@@ -4,10 +4,11 @@
 #include "ztypes.h"
 #include "zarray.h"
 #include <string.h>
+#include "zreader.h"
 
 namespace LibChaos {
 
-class ZBinary {
+class ZBinary : public ZReader {
 public:
     typedef unsigned char zbinary_type;
 
@@ -28,7 +29,7 @@ public:
 
 
 public:
-    ZBinary() : _data(nullptr), _size(0), _readpos(0){
+    ZBinary() : _data(nullptr), _size(0){
 
     }
     ZBinary(const void *ptr, zu64 size) : ZBinary(){
@@ -80,15 +81,16 @@ public:
 
     // Reading interface
     zu64 read(unsigned char *dest, zu64 length){
-        if(_readpos + length > _size){
-            length = _readpos + length - _size;
+        if(_readerpos + length > _size){
+            length = _readerpos + length - _size;
         }
-        memcpy(dest, _data + _readpos, length);
-        _readpos += length;
+        if(dest && length)
+            memcpy(dest, _data + _readerpos, length);
+        _readerpos += length;
         return length;
     }
-    void rewind(){
-        _readpos = 0;
+    bool atEnd() const {
+        return _readerpos == _size;
     }
 
     ZBinary &resize(zu64 size){
@@ -147,7 +149,6 @@ public:
 private:
     zbinary_type *_data;
     zu64 _size;
-    zu64 _readpos;
 };
 
 }

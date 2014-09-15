@@ -43,12 +43,12 @@ bool ZConnection::isOpen() const {
     return _socket != 0;
 }
 
-zu64 ZConnection::read(ZBinary &str){
+zu64 ZConnection::read(ZBinary &data){
     if(!isOpen()){
         ELOG("ZConnection: socket is not open");
         return 0;
     }
-        long bytes;
+    long bytes;
     if(buffer == NULL)
         buffer = new unsigned char[ZSOCKET_TCP_BUFFER_SIZE];
 
@@ -61,8 +61,10 @@ zu64 ZConnection::read(ZBinary &str){
         ELOG("ZSocket: read error: " << ZError::getSystemError());
         return 0;
     }
-    str = ZBinary(buffer, bytes);
-    return bytes;
+    if(bytes == 0)
+        return 0;
+    data = ZBinary(buffer, (zu64)bytes);
+    return (zu64)bytes;
 }
 
 bool ZConnection::write(const ZBinary &data){

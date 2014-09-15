@@ -70,6 +70,12 @@ ZString::ZString(const char *str_) : _data(){
         _data = std::string(str_, strlen(str_));
     }
 }
+ZString::ZString(const char *str, zu64 size) : _data(){
+    if(str && size){
+        _data = std::string(str, size);
+    }
+}
+
 const char *ZString::cc() const {
     return _data.c_str();
 }

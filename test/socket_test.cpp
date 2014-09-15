@@ -37,7 +37,7 @@ int udp_test(){
 
     for(zu64 i = 0; run && i < 5000; ++i){
         ZString str = dat + ZString::ItoS(i);
-        ZBinary data((unsigned char *)str.cc(), str.size());
+        ZBinary data((const unsigned char *)str.cc(), str.size());
         if(sock.send(addr, data)){
             LOG("to " << addr.debugStr() << " (" << data.size() << "): \"" << data << "\"");
 //            ZAddress sender;
