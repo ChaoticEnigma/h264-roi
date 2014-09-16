@@ -120,11 +120,13 @@ ZLog &ZLog::operator<<(ZBinary bin){
     ZString text;
     for(zu64 i = 0; i < bin.size(); ++i){
         unsigned char tmp = bin[i];
-        // If null character, show 0
-        if(tmp == 0){
-            tmp = '0';
-        }
-        text << tmp;
+        // Log in hexadecimal pairs
+        text += ZString::ItoS(tmp, 16, 2);
+//        // If null character, show 0
+//        if(tmp == 0){
+//            tmp = '0';
+//        }
+//        text += (char)tmp;
     }
     return log(text);
 }

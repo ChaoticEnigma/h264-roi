@@ -74,7 +74,8 @@ public:
     bool read(ZPath path);
     bool write(ZPath path, PNGWrite::pngoptions options = PNGWrite::none);
 
-    static ZArray<PngChunk> parsePNG(ZBinary &pngdata);
+    static ZArray<PngChunk> parsePngChunks(ZBinary pngdata);
+    static ZArray<PngChunk> parsePngAncillaryChunks(ZBinary pngdata);
 
     static ZString libpngVersionInfo();
 

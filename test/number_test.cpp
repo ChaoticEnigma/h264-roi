@@ -33,6 +33,16 @@ int number_block(){
     LOG("Number 1: " << number1.str() << " - " << number1.size() << " - " << number1.strBytes());
     number1 += num1;
     LOG("Number 1: " << number1.str() << " - " << number1.size() << " - " << number1.strBytes());
+    number1 += 1;
+    LOG("Number 1: " << number1.str() << " - " << number1.size() << " - " << number1.strBytes());
+
+    zu64 num2 = 8;
+    num2 >>= 4;
+    ZNumber number2 = num2;
+    LOG("Number 2: " << number2.str() << " - " << number2.size() << " - " << number2.strBytes());
+
+    ZNumber number3 = -1;
+    LOG("Number 3: " << number3.str() << " - " << number3.size() << " - " << number3.strBytes());
 //LOG("Factorial 1: " << number1.factorial().str());
 
     return 0;

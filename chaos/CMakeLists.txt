@@ -53,6 +53,8 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     net/zstreamsocket.h
     net/zstreamconnection.h
 
+    math/znumber.h
+
     lib/sqlite3.h
     #lib/demangle.h
 
@@ -94,6 +96,8 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     net/zstreamsocket.cpp
     net/zstreamconnection.cpp
 
+    #math/znumber.cpp
+
     lib/sqlite3.c
 
     net/zaddress.cpp
@@ -120,6 +124,7 @@ SET(LibChaos_INCLUDE
     ${LibChaos_SOURCE_DIR}/data
     ${LibChaos_SOURCE_DIR}/file
     ${LibChaos_SOURCE_DIR}/net
+    ${LibChaos_SOURCE_DIR}/math
 )
 IF(USE_INTERNAL_ZLIB_LIBPNG)
     SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} ${libpng_INCLUDE})
@@ -135,6 +140,7 @@ INCLUDE_DIRECTORIES(
     file
     lib
     net
+    math
     ${libpng_INCLUDE}
 )
 IF(USE_INTERNAL_ZLIB_LIBPNG)

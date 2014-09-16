@@ -222,7 +222,7 @@ bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
     return true;
 }
 
-ZArray<ZPNG::PngChunk> ZPNG::parsePNG(ZBinary &pngdata){
+ZArray<ZPNG::PngChunk> ZPNG::parsePngChunks(ZBinary pngdata){
     ZArray<PngChunk> chunks;
     zu64 size = 0;
     unsigned char *buffer = nullptr;
@@ -269,6 +269,19 @@ ZArray<ZPNG::PngChunk> ZPNG::parsePNG(ZBinary &pngdata){
         chunks.push(chunk);
     }
 
+    return chunks;
+}
+
+
+ZArray<ZPNG::PngChunk> ZPNG::parsePngAncillaryChunks(ZBinary pngdata){
+    ZArray<PngChunk> chunks = parsePngChunks(pngdata);
+    for(zu64 i = chunks.size(); i > 0; --i){
+        if(chunks[i-1].name == "IHDR" ||
+           chunks[i-1].name == "IDAT" ||
+           chunks[i-1].name == "IEND"){
+            chunks.erase(i-1);
+        }
+    }
     return chunks;
 }
 

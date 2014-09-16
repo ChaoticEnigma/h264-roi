@@ -115,13 +115,11 @@ int png_block(){
 
         // PNG parse
         ZBinary pngdata = ZFile::readBinary(file);
-        ZArray<ZPNG::PngChunk> chunks = ZPNG::parsePNG(pngdata);
-        zu64 sum = 8;
+        ZArray<ZPNG::PngChunk> chunks = ZPNG::parsePngAncillaryChunks(pngdata);
         for(zu64 j = 0; j < chunks.size(); ++j){
             LOG("    " << chunks[j].size << " " << chunks[j].name);
-            sum += 4 + 4 + chunks[j].size + 4;
+            //LOG("    " << chunks[j].size << " " << chunks[j].name << " " << chunks[j].data);
         }
-        LOG("    Total Size: " << sum);
 
         continue;
 

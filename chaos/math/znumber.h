@@ -9,9 +9,13 @@
 
 namespace LibChaos {
 
+// NOTES
+// Using twos-complement
+// -a = ~a + 1
+
 class ZNumber {
 public:
-    ZNumber() : _sign(true), _data(nullptr), _size(0){
+    ZNumber() : _data(nullptr), _size(0){
         //clear(); // Redundant?
     }
 
@@ -21,8 +25,19 @@ public:
 //        memcpy(_data, value, bytes);
 //    }
 
-    ZNumber(zs64 num) : ZNumber((num > 0) ? (zu64)num : (zu64)(num * -1)){
-        _sign = (num > 0);
+    ZNumber(zs64 num) : ZNumber(){
+        zu8 length = 0;
+        for(zu8 i = 0; i < sizeof(num); ++i){
+            if(((zbyte*)&num)[i] == 0){
+                length = i;
+                break;
+            }
+        }
+        if(!length)
+            return;
+        _size = length;
+        _data = new zbyte[_size];
+        memcpy(_data, &num, _size);
     }
     ZNumber(signed char num) : ZNumber((zs64)num){}
     ZNumber(char num) : ZNumber((zs64)num){}
@@ -43,15 +58,6 @@ public:
         }
         if(!length)
             return;
-
-        //        _size = length;
-//        _data = new zbyte[_size];
-//        zu8 j = length-1;
-//        for(zu8 i = 0; i < length; ++i){
-//            _data[i] = ((zbyte*)num)[j];
-//            --j;
-//        }
-
         _size = length;
         _data = new zbyte[_size];
         memcpy(_data, &num, _size);
@@ -66,7 +72,7 @@ public:
             _size = other._size;
             _data = new zbyte[_size];
             memcpy(_data, other._data, other._size);
-            _sign = other._sign;
+            //_sign = other._sign;
         }
     }
 
@@ -85,7 +91,7 @@ public:
             _size = other._size;
             _data = new zbyte[_size];
             memcpy(_data, other._data, other._size);
-            _sign = other._sign;
+            //_sign = other._sign;
         }
         return *this;
     }
@@ -103,10 +109,19 @@ public:
     friend ZNumber operator-(ZNumber lhs, const ZNumber &rhs);
     friend ZNumber operator*(ZNumber lhs, const ZNumber &rhs);
     friend ZNumber operator/(ZNumber lhs, const ZNumber &rhs);
+    friend ZNumber operator%(ZNumber lhs, const ZNumber &rhs);
 
-    void sum(zu8 lhs, zu8 rhs, zbyte *data){
+    // Unary
+    friend ZNumber operator+(ZNumber a);
+    friend ZNumber operator-(ZNumber a);
 
-    }
+    // Bitwise
+    friend ZNumber operator~(ZNumber a);
+    friend ZNumber operator&(ZNumber lhs, const ZNumber &rhs);
+    friend ZNumber operator|(ZNumber lhs, const ZNumber &rhs);
+    friend ZNumber operator^(ZNumber lhs, const ZNumber &rhs);
+    friend ZNumber operator<<(ZNumber lhs, const ZNumber &rhs);
+    friend ZNumber operator>>(ZNumber lhs, const ZNumber &rhs);
 
     // Arithmetic Assignment
     ZNumber &operator+=(const ZNumber &other){
@@ -114,7 +129,6 @@ public:
             throw ZError("wait");
             return *this;
         }
-
         if(other._size > _size){
             pad(other._size - _size);
         }
@@ -144,6 +158,34 @@ public:
         }
         return *this;
     }
+    ZNumber &operator%=(const ZNumber &other){
+        if(other == 0){
+            throw ZError("Division by zero");
+        }
+        return *this;
+    }
+
+    // Bitwise Assignment
+    ZNumber &operator&=(const ZNumber &other){
+
+        return *this;
+    }
+    ZNumber &operator|=(const ZNumber &other){
+
+        return *this;
+    }
+    ZNumber &operator^=(const ZNumber &other){
+
+        return *this;
+    }
+    ZNumber &operator<<=(const ZNumber &other){
+
+        return *this;
+    }
+    ZNumber &operator>>=(const ZNumber &other){
+
+        return *this;
+    }
 
     // Prefix Increment
     ZNumber &operator++(){
@@ -170,7 +212,7 @@ public:
     }
 
     void clear(){
-        _sign = true;
+        //_sign = true;
         _size = 0;
         delete[] _data;
         _data = nullptr;
@@ -187,30 +229,29 @@ public:
         return result;
     }
 
+    // Still working this out...
     ZString str(zu16 base = 10) const {
         if(_data == nullptr){
             return "0";
         }
-        if(base > 32){
+        if(base > 64){
             return "!";
         }
 
-        const char *digits = "01"       // Binary
-                             "234567"   // Octal
-                             "89"       // Decimal
-                             "abcdef"   // Hexadecimal
-                             "ghijklmnopqrstuv" // Base 32
-                             "wxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@";    // Base 64
+        const char *digits =
+            "01"       // Binary
+            "234567"   // Octal
+            "89"       // Decimal
+            "abcdef"   // Hexadecimal
+            "ghijklmnopqrstuv" // Base 32
+            "wxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@"; // Base 64
 
         ZString out;
-        //char buffer[100];
 
         bool bit = 0;
         for(zu64 i = 0; i < _size; ++i){
             for(zu8 j = 0, m = 1; j < 8; ++j, m <<= 1){
                 bit = _data[i] & m;
-
-                //buffer[];
 
                 //out += (bit ? "1" : "0");
                 out += digits[bit];
@@ -232,11 +273,12 @@ public:
         return out;
     }
 
+    // zero is positive (should it be negative too?)
     bool isPositive() const {
-        return _sign;
+        return !isNegative();
     }
     bool isNegative() const {
-        return !isPositive();
+        return _data[_size-1] & 128;
     }
 
     zbyte *data() const {
@@ -278,25 +320,19 @@ public:
     }
 
 private:
-    bool _sign;
     zbyte *_data;
     zu64 _size;
 };
 
 // Comparison
 inline bool operator==(const ZNumber &lhs, const ZNumber &rhs){
-    return (lhs._sign == rhs._sign &&
-            lhs._size == rhs._size &&
+    return (lhs._size == rhs._size &&
             memcmp(lhs._data, rhs._data, lhs._size) == 0);
 }
 inline bool operator!=(const ZNumber &lhs, const ZNumber &rhs){
     return !operator==(lhs,rhs);
 }
 inline bool operator<(const ZNumber &lhs, const ZNumber &rhs){
-    if(!lhs._sign && rhs._sign)
-        return true;
-    if(lhs._sign && !rhs._sign)
-        return false;
     if(lhs._size < rhs._size)
         return true;
     if(lhs._size > rhs._size)
@@ -329,6 +365,44 @@ inline ZNumber operator*(ZNumber lhs, const ZNumber &rhs){
 }
 inline ZNumber operator/(ZNumber lhs, const ZNumber &rhs){
     lhs /= rhs;
+    return lhs;
+}
+inline ZNumber operator%(ZNumber lhs, const ZNumber &rhs){
+    lhs %= rhs;
+    return lhs;
+}
+
+//Unary
+inline ZNumber operator+(ZNumber a){
+    return a;
+}
+inline ZNumber operator-(ZNumber a){
+    return a;
+}
+
+// Bitwise
+inline ZNumber operator~(ZNumber a){
+
+    return a;
+}
+inline ZNumber operator&(ZNumber lhs, const ZNumber &rhs){
+    lhs &= rhs;
+    return lhs;
+}
+inline ZNumber operator|(ZNumber lhs, const ZNumber &rhs){
+    lhs |= rhs;
+    return lhs;
+}
+inline ZNumber operator^(ZNumber lhs, const ZNumber &rhs){
+    lhs ^= rhs;
+    return lhs;
+}
+inline ZNumber operator<<(ZNumber lhs, const ZNumber &rhs){
+    lhs <<= rhs;
+    return lhs;
+}
+inline ZNumber operator>>(ZNumber lhs, const ZNumber &rhs){
+    lhs >>= rhs;
     return lhs;
 }
 

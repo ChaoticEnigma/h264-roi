@@ -8,6 +8,7 @@ HEADERS += \
     $$PWD/chaos/zerror.h \
     $$PWD/chaos/zautobuffer.h \
     $$PWD/chaos/zautobufferunit.h \
+    $$PWD/chaos/zcondition.h \
     $$PWD/chaos/zlog.h \
     $$PWD/chaos/zlogworker.h \
     $$PWD/chaos/zmutex.h \
@@ -17,6 +18,8 @@ HEADERS += \
     $$PWD/chaos/ztime.h \
     $$PWD/chaos/zclock.h \
     $$PWD/chaos/zret.h \
+    \
+    $$PWD/chaos/abstract/zreader.h \
     \
     $$PWD/chaos/data/zarray.h \
     $$PWD/chaos/data/zarray2.h \
@@ -33,8 +36,14 @@ HEADERS += \
     $$PWD/chaos/file/database.h \
     $$PWD/chaos/file/zbitmap.h \
     $$PWD/chaos/file/zfile.h \
+    $$PWD/chaos/file/zpng.h \
+    $$PWD/chaos/file/zimage.h \
+    $$PWD/chaos/file/zbmp.h \
+    $$PWD/chaos/file/zjpeg.h \
     \
     $$PWD/chaos/lib/sqlite3.h \
+    \
+    $$PWD/chaos/math/znumber.h \
     \
     $$PWD/chaos/net/zsocket.h \
     $$PWD/chaos/net/zconnection.h \
@@ -56,15 +65,7 @@ HEADERS += \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
     \
-    $$PWD/bbb/zbbb.h \
-    \
-    $$PWD/chaos/zcondition.h \
-    chaos/data/znumber.h \
-    $$PWD/chaos/file/zpng.h \
-    $$PWD/chaos/file/zimage.h \
-    $$PWD/chaos/file/zbmp.h \
-    $$PWD/chaos/file/zjpeg.h \
-    $$PWD/chaos/abstract/zreader.h
+    $$PWD/bbb/zbbb.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
@@ -85,8 +86,13 @@ SOURCES += \
     \
     $$PWD/chaos/file/database.cpp \
     $$PWD/chaos/file/zfile.cpp \
+    $$PWD/chaos/file/zpng.cpp \
+    $$PWD/chaos/file/zbmp.cpp \
+    $$PWD/chaos/file/zjpeg.cpp \
     \
     $$PWD/chaos/lib/sqlite3.c \
+    \
+    $$PWD/chaos/math/znumber.cpp \
     \
     $$PWD/chaos/net/zsocket.cpp \
     $$PWD/chaos/net/zconnection.cpp \
@@ -102,6 +108,9 @@ SOURCES += \
     $$PWD/test/array_test.cpp \
     $$PWD/test/file_test.cpp \
     $$PWD/test/error_test.cpp \
+    $$PWD/test/number_test.cpp \
+    $$PWD/test/png_test.cpp \
+    $$PWD/test/sandbox.cpp \
     $$PWD/test/socket_test.cpp \
     $$PWD/test/json_test.cpp \
     $$PWD/test/socket2_test.cpp \
@@ -121,14 +130,7 @@ SOURCES += \
     $$PWD/util/extensionfixer.cpp \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
-    $$PWD/util/duplicatefinder.cpp \
-    chaos/data/znumber.cpp \
-    test/number_test.cpp \
-    $$PWD/chaos/file/zpng.cpp \
-    $$PWD/test/png_test.cpp \
-    $$PWD/chaos/file/zbmp.cpp \
-    $$PWD/test/sandbox.cpp \
-    $$PWD/chaos/file/zjpeg.cpp
+    $$PWD/util/duplicatefinder.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -142,8 +144,8 @@ OTHER_FILES += \
     $$PWD/util/CMakeLists.txt \
     $$PWD/source_hash.cmake \
     $$PWD/hash.sh \
-    chaos/lib/libpng-1.2.37/CMakeLists.txt \
-    chaos/lib/zlib-1.2.8/CMakeLists.txt
+    $$PWD/chaos/lib/libpng-1.2.37/CMakeLists.txt \
+    $$PWD/chaos/lib/zlib-1.2.8/CMakeLists.txt
 
 INCLUDEPATH += \
     $$PWD \
@@ -152,6 +154,7 @@ INCLUDEPATH += \
     $$PWD/chaos/data \
     $$PWD/chaos/file \
     $$PWD/chaos/lib \
+    $$PWD/chaos/math \
     $$PWD/chaos/net \
     $$PWD/test \
     $$PWD/ui \
