@@ -82,6 +82,7 @@ public:
     ZAddress(zport port);
 
     ZAddress(const sockaddr_storage *);
+    ZAddress(const sockaddr *sa);
 
     ZAddress &operator=(ZAddress rhs);
 

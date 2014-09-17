@@ -115,6 +115,20 @@ ZAddress::ZAddress(const sockaddr_storage *ptr) : ZAddressData(ipv4, 0, 0, 0){
     }
 }
 
+ZAddress::ZAddress(const sockaddr *sa) : ZAddressData(ipv4, 0, 0, 0){
+    if(sa->sa_family == AF_INET){
+        const sockaddr_in *v4 = (const sockaddr_in *)sa;
+        _family = v4->sin_family;
+        memcpy(_v4_addr, &(v4->sin_addr), sizeof(v4->sin_addr));
+        _port = v4->sin_port;
+    } else if(sa->sa_family == AF_INET6){
+        const sockaddr_in6 *v6 = (const sockaddr_in6 *)sa;
+        _family = v6->sin6_family;
+        memcpy(_v6_addr, &(v6->sin6_addr), sizeof(v6->sin6_addr));
+        _port = v6->sin6_port;
+    }
+}
+
 ZAddress &ZAddress::operator=(ZAddress rhs){
     _family = rhs._family;
     _type = rhs._type;
