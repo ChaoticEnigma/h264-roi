@@ -9,6 +9,7 @@
 #include "ztypes.h"
 
 #include <vector>
+#include <initializer_list>
 
 #if ZARRAY_VERSION == 1
 

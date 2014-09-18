@@ -1,6 +1,7 @@
 #include "test.h"
 #include "zsocket.h"
 #include "zerror.h"
+#include "zfile.h"
 
 static bool run = true;
 
@@ -40,13 +41,15 @@ int tcp_test(){
     return 0;
 }
 
-int tcpserver_test2(){
+int tcpserver_test(){
     LOG("=== TCP Socket Server Test...");
     ZError::registerInterruptHandler(stopHandler2);
     ZError::registerSignalHandler(ZError::terminate, stopHandler2);
 
     ZSocket sock(ZSocket::stream);
-    if(!sock.open(ZAddress(8080))){
+    ZAddress bind(8080);
+    LOG(bind.debugStr());
+    if(!sock.open(bind)){
         ELOG("Socket Open Fail");
         return 2;
     }
@@ -61,16 +64,17 @@ int tcpserver_test2(){
         ZConnection client;
         if(!sock.accept(client))
             continue;
+
         LOG("accept " << client.other().debugStr());
 
         ZBinary data;
         client.read(data);
-        LOG("read (" << data.size() << "): \"" << data << "\"");
+        LOG("read (" << data.size() << "): \"" << data.printable().asChar() << "\"");
 
         ZString str = "hello back there!";
         ZBinary snddata((const unsigned char *)str.cc(), str.size());
         client.write(snddata);
-        LOG("write (" << snddata.size() << "): \"" << snddata << "\"");
+        LOG("write (" << snddata.size() << "): \"" << snddata.printable().asChar() << "\"");
     }
 
     return 0;
@@ -111,7 +115,7 @@ void *get_in_addr(struct sockaddr *sa){
     }
 }
 
-int tcpserver_test(){
+int tcpserver_test2(){
     int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address information
@@ -188,14 +192,144 @@ int tcpserver_test(){
         ZAddress addr((sockaddr *)&their_addr);
         LOG(addr.debugStr());
 
-        if(!fork()){ // this is the child process
-            close(sockfd); // child doesn't need the listener
+        ZBinary bin;
+        const long bufsize = 1024;
+        unsigned char *buffer[bufsize];
+        long len = 0;
+        zu64 currpos = 0;
+        AsArZ headers;
+        zu64 currentline = 0;
+
+        ArZ warnings;
+
+        enum parsestate {
+            beginning = 0,
+            requestline = 1,
+
+            stopparsing = 30,
+        };
+
+        parsestate state = beginning;
+        zu16 breakcounter = 0;
+
+        do {
+            len = recv(new_fd, buffer, bufsize, 0);
+            if(len < 0){
+                ELOG("recv: " << ZError::getSystemError());
+                state = stopparsing;
+                break;
+            } else  if(len == 0){
+                state = stopparsing;
+                break;
+            } else if(len > 0){
+                ZBinary newdata(buffer, (zu64)len);
+                LOG("Got " << newdata.size());
+
+                bin.concat(newdata);
+
+                // Parse request header
+                for(zu64 i = currpos; i < bin.size(); ++i){
+                    switch(bin[i]){
+                    case '\r':
+                        if(state == beginning){
+                            if(breakcounter == 0){
+                                ++breakcounter;
+                            } else {
+                                warnings.push(ZString("Bad CR in request line at ") + i + " " + breakcounter);
+                            }
+                        }
+                        break;
+
+                    case '\n':
+                        if(state == beginning){
+                            if(breakcounter == 1){
+                                ArZ requestparts = ZString(bin.getSub(0, i-2).asChar()).explode(' ');
+                                if(requestparts.size() == 3){
+                                    if(requestparts[2] != "HTTP/1.1" && requestparts[2] != "HTTP/1.0"){
+                                        warnings.push(ZString("Bad HTTP-Version"));
+                                        state = stopparsing;
+                                        break;
+                                    }
+                                    breakcounter = 0;
+                                    state = requestline;
+
+                                } else {
+                                    warnings.push(ZString("Bad Request-Line format"));
+                                    state = stopparsing;
+                                    break;
+                                }
+                            } else {
+                                warnings.push(ZString("Bad LF in request line at ") + i + " " + breakcounter);
+                            }
+                        }
+                        break;
+
+                    default:
+                        if(state == beginning){
+                            if(breakcounter != 0){
+                                warnings.push(ZString("Character inside CRLF in request line at ") + i + " " + breakcounter);
+                            }
+                        }
+                        break;
+                    }
+                }
+                if(state == stopparsing){
+                    break;
+                }
+
+                continue;
+
+                if(currpos == 0){ // first pass
+
+                    for(zu64 i = currpos; i < bin.size(); ++i){
+                        switch(bin[i]){
+                        case ' ':
+                        case '\n':
+                        case '\r':
+
+                        default:
+                            break;
+                        }
+                    }
+
+                    zu64 breakpos = bin.findFirst({0x0d, 0x0a, 0x0d, 0x0a});
+                    LOG(breakpos);
+
+                    if(breakpos != ZBinary::none){
+                        ZBinary head = bin.getSub(0, breakpos);
+                        head.nullTerm();
+                        ZString header = head.asChar();
+                        ArZ headers = header.strExplode("\r\n");
+                        for(zu64 i = 0; i < headers.size(); ++i){
+                            LOG(headers[i]);
+                        }
+                        break;
+                    }
+                } else { // continue parsing
+
+                }
+            }
+        } while(len > 0);
+
+        if(state == stopparsing){
+            close(new_fd);
+            break;
+        }
+
+        ZFile::writeBinary("tcpserver.bin", bin);
+        LOG("Done");
+        //bin.nullTerm();
+        //LOG(bin.size() << " !! " << bin.asChar());
+        //LOG(bin.findFirst({'H','T','T','P'}));
+
+        //if(!fork()){ // this is the child process
+            //close(sockfd); // child doesn't need the listener
             if(send(new_fd, "Hello, world!", 13, 0) == -1)
                 ELOG("send");
             close(new_fd);
-            exit(0);
-        }
-        close(new_fd);  // parent doesn't need this
+            //exit(0);
+        //}
+        //close(new_fd);  // parent doesn't need this
     }
 
     return 0;

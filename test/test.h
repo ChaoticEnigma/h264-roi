@@ -11,6 +11,8 @@ int sandbox();
 int array_block();
 int assoc_block();
 
+int binary_block();
+
 int string_block();
 int path_block();
 int path_windows_block();
@@ -29,6 +31,7 @@ int udpserver_test();
 
 int tcp_test();
 int tcpserver_test();
+int tcpserver_test2();
 
 int json_block();
 

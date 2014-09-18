@@ -268,8 +268,29 @@ ZString ZString::substr(ZString str, zu64 pos, zu64 len){
     return str.substr(pos, len);
 }
 
+zu64 ZString::findFirst(ZString find) const {
+    return _data.find(find.str());
+}
 zu64 ZString::findFirst(ZString str, ZString find){
-    return str.str().find(find.str());
+    return str.findFirst(find);
+}
+
+ZArray<zu64> ZString::findAll(ZString find) const {
+    ZArray<zu64> finds;
+    zu64 next = 0;
+    do {
+        zu64 pos = _data.find(find.str(), next);
+        if(pos == std::string::npos){
+            break;
+        }
+        finds.push(pos);
+        next = pos + find.size();
+    } while(next < size());
+    return finds;
+}
+
+ZArray<zu64> ZString::findAll(ZString str, ZString find){
+    return str.findAll(find);
 }
 
 ZString &ZString::replace(zu64 pos, zu64 len, ZString after){
@@ -476,7 +497,7 @@ ZString ZString::label(ZString labeltxt, ZString value, bool modify){
         return replace(_data, txt, value);
 }
 
-ArZ ZString::split(ZString delim){
+ArZ ZString::split(ZString delim) const {
     ArZ out;
     zu64 pos = findFirst(*this, delim);
     out.push(substr(_data, 0, pos));
@@ -499,6 +520,18 @@ ArZ ZString::explode(char delim) const {
     }
     if(counter)
         out.push(substr(*this, size() - counter, counter));
+    return out;
+}
+
+ArZ ZString::strExplode(ZString delim) const {
+    ZArray<zu64> pos = findAll(delim);
+    ArZ out;
+    zu64 startpos = 0;
+    for(zu64 i = 0; i < pos.size(); ++i){
+        out.push(substr(*this, startpos, pos[i] - startpos));
+        startpos = pos[i] + delim.size();
+    }
+    out.push(substr(*this, startpos));
     return out;
 }
 
@@ -574,7 +607,7 @@ ArZ ZString::escapedExplode(char delim) const {
 #else
     #define VAARGTYPE int
 #endif
-ArZ ZString::explodeList(unsigned nargs, ...){
+ArZ ZString::explodeList(unsigned nargs, ...) const {
     va_list args;
     va_start(args, nargs);
     ZArray<char> delims;

@@ -15,21 +15,22 @@
 
 namespace LibChaos {
 
-ZConnection::ZConnection() : _socket(0), buffer(NULL){
+ZConnection::ZConnection() : _socket(0), buffer(nullptr){
 
 }
 
-ZConnection::ZConnection(int fd, ZAddress addr) : _socket(fd), _addr(addr), buffer(NULL){
+ZConnection::ZConnection(int fd, ZAddress addr) : _socket(fd), _addr(addr), buffer(nullptr){
 
 }
 
 ZConnection::~ZConnection(){
-    close();
+    //close();
     delete buffer;
 }
 
 void ZConnection::close(){
     if(isOpen()){
+        LOG("Closing socket " << _socket);
 #if PLATFORM == LINUX
         ::close(_socket);
 #elif PLATFORM == WINDOWS
@@ -49,7 +50,7 @@ zu64 ZConnection::read(ZBinary &data){
         return 0;
     }
     long bytes;
-    if(buffer == NULL)
+    if(!buffer)
         buffer = new unsigned char[ZSOCKET_TCP_BUFFER_SIZE];
 
 #if PLATFORM == LINUX

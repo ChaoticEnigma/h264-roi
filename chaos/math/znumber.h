@@ -10,6 +10,7 @@
 namespace LibChaos {
 
 // NOTES
+// Numbers stored in little endian
 // Using twos-complement
 // -a = ~a + 1
 

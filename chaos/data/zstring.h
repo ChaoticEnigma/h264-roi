@@ -127,7 +127,12 @@ public:
     static ZString substr(ZString str, zu64 pos, zu64 len);
 
     // Get location of first character of first occurrence of <find> in <str>
+    zu64 findFirst(ZString find) const;
     static zu64 findFirst(ZString str, ZString find);
+
+    // Get locations of first characters of all non-overlapping occurrences of <find> in <str>
+    ZArray<zu64> findAll(ZString find) const;
+    static ZArray<zu64> findAll(ZString str, ZString find);
 
     // Replace section <len> characters long at <pos> with <after> in <str>
     ZString &replace(zu64 pos, zu64 len, ZString after);
@@ -167,12 +172,13 @@ public:
     ZString duplicate(unsigned iterate, bool modify = true);
     ZString popLast();
 
-    ArZ split(ZString delim);
+    ArZ split(ZString delim) const;
 
     ArZ explode(char delim) const;
+    ArZ strExplode(ZString delim) const;
     ArZ quotedExplode(char delim) const;
     ArZ escapedExplode(char delim) const;
-    ArZ explodeList(unsigned nargs, ...);
+    ArZ explodeList(unsigned nargs, ...) const;
     //ArZ explode();
 
     static ZString compound(ArZ parts, ZString delim);

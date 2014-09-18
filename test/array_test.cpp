@@ -3,7 +3,6 @@
 #include "zerror.h"
 
 int array_block(){
-    LOG("=== Array Test...");
     ZArray<int> tst;
     tst.push(10);
     tst.pushFront(45);

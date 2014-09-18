@@ -11,7 +11,6 @@ void intHandle(ZError::zerror_signal sig){
 }
 
 int error_block(){
-    LOG("=== Error Test...");
     ZError::registerSigSegv();
     ZError::registerInterruptHandler(intHandle);
     ZError::registerSignalHandler(ZError::terminate, intHandle);

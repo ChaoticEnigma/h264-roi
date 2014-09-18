@@ -80,6 +80,8 @@ bool ZSocket::open(ZAddress addr){
         }
         ok = true;
         _bound = addrs[i];
+
+        LOG("Bound socket " << _socket);
     }
     if(!ok){
         ELOG("ZSocket: could not create and bind socket on any address");
@@ -90,6 +92,7 @@ bool ZSocket::open(ZAddress addr){
 
 void ZSocket::close(){
     if(isOpen()){
+        LOG("Closing socket " << _socket);
 #if PLATFORM == LINUX
         ::close(_socket);
 #elif PLATFORM == WINDOWS
@@ -202,9 +205,11 @@ bool ZSocket::accept(ZConnection &conn){
     socklen_t sin_size = sizeof(client_sin);
     int client = ::accept(_socket, (struct sockaddr *)&client_sin, &sin_size);
     if(client <= 0){
-        ELOG("ZSocket: failed to accept socket");
+        ELOG("ZSocket: failed to accept socket: " << ZError::getSystemError());
         return false;
     }
+
+    LOG("Accepted socket " << client << " on " << _socket);
 
     ZAddress client_addr(&client_sin);
     conn = ZConnection(client, client_addr);

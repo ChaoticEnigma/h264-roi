@@ -163,8 +163,9 @@ ZString ZAddress::str() const {
 
     char *str = new char[csz];
     inet_ntop(_family, &_v4_addr, str, csz);
+    ZString out = str;
     delete[] str;
-    return ZString(str);
+    return out;
 }
 
 ZArray<ZAddress> ZAddress::lookUp(ZAddress addr){
@@ -177,8 +178,13 @@ ZArray<ZAddress> ZAddress::lookUp(ZAddress addr){
     hints.ai_socktype = addr.type();
 
     ZString name = addr.str();
-    if((status = getaddrinfo(name.cc(), NULL, &hints, &result)) != 0){
-        ELOG("ZSocket: getaddrinfo: " << ZError::getSystemError());
+    const char *aptr = name.isEmpty() ? NULL : name.cc();
+
+    ZString serv = ZString::ItoS((zu64)addr.port());
+    const char *sptr = serv.isEmpty() ? NULL : serv.cc();
+
+    if((status = getaddrinfo(aptr, sptr, &hints, &result)) != 0){
+        ELOG("ZSocket: getaddrinfo for " << name << " " << addr.port() << ": " << status <<": " << gai_strerror(status));
         return ZArray<ZAddress>();
     }
 

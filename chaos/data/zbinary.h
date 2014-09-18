@@ -16,6 +16,8 @@ public:
         hashType1 = 1
     };
 
+    static const zu64 none = (zu64)-1;
+
 public:
     class RAW {
     public:
@@ -37,6 +39,20 @@ public:
             _size = size;
             _data = new zbinary_type[_size];
             memcpy(_data, ptr, _size);
+        }
+    }
+    ZBinary(ZArray<zbinary_type> arr) : ZBinary(){
+        if(arr.size()){
+            _size = arr.size();
+            _data = new zbinary_type[_size];
+            memcpy(_data, arr.ptr(), _size);
+        }
+    }
+    ZBinary(std::initializer_list<zbinary_type> list) : ZBinary(){
+        resize(list.size());
+        zu64 i = 0;
+        for(auto it = list.begin(); it < list.end(); ++it, ++i){
+            _data[i] = *it;
         }
     }
     ZBinary(const ZBinary &other) : ZBinary(other._data, other._size){
@@ -125,6 +141,62 @@ public:
         }
         delete[] _data;
         _data = buff;
+    }
+
+    zu64 findFirst(const ZBinary &find) const {
+        if(find.size() > _size){
+            return none;
+        }
+        zu64 j = 0;
+        zu64 start = none;
+        for(zu64 i = 0; i < _size; ++i){
+            if(_data[i] == find[j]){
+                if(j == find.size() - 1)
+                    return start;
+                if(j == 0)
+                    start = i;
+                ++j;
+            } else {
+                if(j){
+                    j = 0;
+                    i = start + 1;
+                }
+            }
+        }
+        return start;
+    }
+
+    ZBinary getSub(zu64 start, zu64 len) const {
+        if(start >= _size)
+            return ZBinary();
+        if(start + len >= _size)
+            len = _size - start;
+        return ZBinary(_data + start, len);
+    }
+
+    ZBinary &nullTerm(){
+        if(_size && _data[_size - 1] != 0){
+            resize(_size + 1);
+            _data[_size - 1] = 0;
+        }
+        return *this;
+    }
+
+    ZBinary printable() const {
+        ZBinary tmp = *this;
+        if(_size){
+            tmp.nullTerm();
+            for(zu64 i = 0; i < _size - 1; ++i){
+                if(_data[i] == 0){
+                    _data[i] = '0';
+                }
+            }
+        }
+        return tmp;
+    }
+
+    const char *asChar() const {
+        return (char *)_data;
     }
 
     zbinary_type &back(){

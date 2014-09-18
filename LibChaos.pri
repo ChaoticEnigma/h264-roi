@@ -130,7 +130,8 @@ SOURCES += \
     $$PWD/util/extensionfixer.cpp \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
-    $$PWD/util/duplicatefinder.cpp
+    $$PWD/util/duplicatefinder.cpp \
+    $$PWD/test/binary_test.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

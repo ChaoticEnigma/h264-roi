@@ -4,7 +4,6 @@
 #include "zerror.h"
 
 int file_block(){
-    LOG("=== File Test...");
 //    ZPath near = ZString("here");
 //    LOG(ZPath::makeDir(near));
 

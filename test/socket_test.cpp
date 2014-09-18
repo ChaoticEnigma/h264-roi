@@ -66,7 +66,9 @@ int udpserver_test(){
 
     ZSocket sock(ZSocket::datagram);
     sock.allowRebind(true);
-    if(!sock.open(ZAddress(8998))){
+    ZAddress bind(8080);
+    ELOG(bind.debugStr());
+    if(!sock.open(bind)){
         ELOG("Socket Open Fail");
         return 2;
     }

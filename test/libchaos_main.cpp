@@ -1,6 +1,8 @@
 #include "test.h"
 #include "zerror.h"
 
+int runTests(ZAssoc<ZString, test_func> tests);
+
 int main(int argc, char **argv){
     ZLog::formatStdout(ZLogSource::normal, "%time% %thread% - %log%");
     ZLog::formatStderr(ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
@@ -9,8 +11,9 @@ int main(int argc, char **argv){
     ZLog::addLogFile(lgf, ZLogSource::debug, "%time% %thread% %function% (%file%:%line%) - %log%");
     ZLog::addLogFile(lgf, ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
 
-    ZAssoc<ZString, test_func> tests = {
+    ZAssoc<ZString, test_func> defaulttests = {
         { "array", array_block },
+        { "binary", binary_block },
         { "assoc", assoc_block },
         { "string", string_block },
         { "path", path_block },
@@ -21,76 +24,63 @@ int main(int argc, char **argv){
         { "thread", thread_block },
         { "autobuffer", autobuffer_block },
         { "json", json_block },
+    };
+
+    ZAssoc<ZString, test_func> tests = defaulttests;
+    tests.concat({
         { "udp", udp_test },
         { "udpserver", udpserver_test },
         { "tcp", tcp_test },
         { "tcpserver", tcpserver_test },
-        { "error", error_block }
-    };
+        { "tcpserver2", tcpserver_test2 },
+
+        { "sandbox", sandbox },
+
+        { "error", error_block },
+    });
 
     if(argc > 1){
-        if(ZString(argv[1]) == "sandbox"){
-            LOG("*** Starting Sandbox Test:");
-            return sandbox();
-        }
-
-        ArZ run;
+        ZAssoc<ZString, test_func> runtests;
         ZString runstr;
         for(int i = 1; i < argc; ++i){
-            run.push(argv[i]);
-            runstr << "'" << argv[i] << "',";
+            if(ZString(argv[1]) == "all"){
+                runtests = defaulttests;
+                runstr = "All";
+            } else if(tests.exists(argv[i])){
+                runtests.push(argv[i], tests[argv[i]]);
+                runstr << argv[i] << ",";
+            } else {
+                LOG("No Test " << argv[i] << ", Ignoring");
+            }
         }
-        runstr.substr(0, runstr.size()-1);
+        runstr.strip(',');
 
-        LOG("*** Starting Tests " << runstr);
-        for(zu64 i = 0; i < run.size(); ++i){
-            bool ok = false;
-            for(zu64 j = 0; j < tests.size(); ++j){
-                if(tests.key(j) == run[i].toLower()){
-                    int result = -1;
-                    try {
-                        result = tests[j]();
-                    } catch(int err){
-                        result = err;
-                    } catch(ZError err){
-                        ELOG("!! Error: " << err.what());
-                        err.logStackTrace();
-                        result = 255;
-                    }
-                    if(result != 0){
-                        ELOG("!!! Test '" << tests.key(j) << "' Failed: " << result);
-                        ok = true;
-                        break;
-                    } else {
-                        LOG("=== Finished Test '" << tests.key(j) << "'");
-                        ok = true;
-                        break;
-                    }
-                }
-            }
-            if(!ok)
-                LOG("No such test '" << run[i] << "'!");
+        LOG("*** Starting Tests \"" << runstr << "\"");
+        int ret = runTests(runtests);
+        LOG("*** Finished Tests \"" << runstr << "\"");
+        return ret;
+    }
+    return 0;
+}
+
+int runTests(ZAssoc<ZString, test_func> tests){
+    for(zu64 i = 0; i < tests.size(); ++i){
+        LOG("=== Starting " << tests.key(i) << " Test...");
+        int result = -1;
+        try {
+            result = tests[i]();
+        } catch(int err){
+            result = err;
+        } catch(ZError err){
+            ELOG("!! Error: " << err.what());
+            err.logStackTrace();
+            result = -2;
         }
-        LOG("*** Finished Tests " << runstr);
-    } else {
-        LOG("*** Starting All LibChaos Tests");
-        for(zu64 i = 0; i < tests.size(); ++i){
-            int result = -1;
-            try {
-                result = tests[i]();
-            } catch(int err){
-                result = err;
-            } catch(ZError err){
-                ELOG("!! Error: " << err.what());
-                result = 255;
-            }
-            if(result != 0){
-                LOG("!!! Test '" << tests.key(i) << "' Failed: " << result);
-                return i;
-            }
+        if(result != 0){
+            ELOG("!!! Test '" << tests.key(i) << "' Failed: " << result);
+        } else {
             LOG("=== Finished Test '" << tests.key(i) << "'");
         }
-        LOG("*** All LibChaos Tests Done.");
     }
     return 0;
 }

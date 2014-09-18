@@ -100,6 +100,40 @@ int string_block(){
 //    // Get location of first character of first occurrence of <find> in <str>
 //    static zu64 findFirst(ZString str, ZString find);
 
+    LOG("-- Find:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ZString find1("someInterestingString");
+    zu64 pos1 = find1.findFirst("est");
+    LOG(pos1);
+    if(pos1 != 9)
+        throw 31;
+
+    ZString find2("someInterestingString");
+    zu64 pos2 = ZString::findFirst(find1, "est");
+    LOG(pos2);
+    if(pos2 != 9)
+        throw 32;
+
+    ZString find3("anotherInterestingStringWithInterestingThings");
+    ZArray<zu64> pos3 = find3.findAll("est");
+    LOG("" << ZLog::noln);
+    FOREACH(pos3.size()){
+        RLOG(pos3[i] << " ");
+    }
+    RLOG(ZLog::newln);
+    if(pos3.size() != 2 || pos3[0] != 12 || pos3[1] != 33)
+        throw 33;
+
+    ZString find4("anotherInterestesteingStringWithInterestesteingThings");
+    ZArray<zu64> pos4 = ZString::findAll(find4, "este");
+    LOG("" << ZLog::noln);
+    FOREACH(pos4.size()){
+        RLOG(pos4[i] << " ");
+    }
+    RLOG(ZLog::newln);
+    if(pos4.size() != 2 || pos4[0] != 12 || pos4[1] != 37)
+        throw 34;
+
 //    // Replace section <len> characters long at <pos> with <after> in <str>
 //    ZString &replace(zu64 pos, zu64 len, ZString after);
 //    static ZString replace(ZString str, zu64 pos, zu64 len, ZString after);
@@ -168,7 +202,16 @@ int string_block(){
     if(!(arr3.size() == 4 && arr3[0] == "\\!\\!" && arr3[1] == "this" && arr3[2] == "will\\!also" && arr3[3] == "explode\"strstr\""))
         throw 49;
     if(cmp3 != "\\!\\!-this-will\\!also-explode\"strstr\"")
-        throw 450;
+        throw 50;
+
+    ZString strarr4 = "this!.!will!.!explode!.!differently\"strstr\"";
+    ArZ arr4 = strarr4.strExplode("!.!");
+    ZString cmp4 = ZString::compound(arr4, "---");
+    LOG(cmp4);
+    if(!(arr4.size() == 4 && arr4[0] == "this" && arr4[1] == "will" && arr4[2] == "explode" && arr4[3] == "differently\"strstr\""))
+        throw 51;
+    if(cmp4 != "this---will---explode---differently\"strstr\"")
+        throw 52;
 
 //    ArZ explodeList(unsigned nargs, ...);
 
