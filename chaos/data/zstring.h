@@ -11,42 +11,140 @@
 
 #include <string>
 
-//#if PLATFORM == WINDOWS && ! ZSTRING_NO_WINDOWS_H
-//    #include <windows.h>
-//    #define ZSTRING_WCHAR
-//#endif
-
 namespace LibChaos {
+//namespace ZStringInternal {
 
-//#define ZSTRING_UNICODEs
-//#ifdef ZSTRING_UNICODE
-//    typedef std::wstring zstring_stl;
-//    typedef wchar_t zstring_char;
-//#else
-//    typedef std::string zstring_stl;
-//    typedef char zstring_char;
-//#endif
+template <typename chartype> class ZStringT {
+public:
+    ZStringT() : _size(0), _data(nullptr){}
+    ZStringT(const chartype *ptr, zu64 size) : _size(size), _data(new chartype[_size]){
+        memcpy(_data, ptr, strSize());
+    }
+    ZStringT(const ZStringT<chartype> &other) : ZStringT(other._data, other._size){}
+    ZStringT(const ZArray<chartype> &array) : ZStringT(array.ptr(), array.size()){}
 
-class ZString;
-//typedef AssocArray<ZString> AsArZ;
+    ~ZStringT(){
+        delete[] _data;
+    }
+
+    // Assignment
+    ZStringT<chartype> &operator=(const ZStringT<chartype> &rhs){
+        clear();
+        _size = rhs._size;
+        _data = new chartype[_size];
+        memcpy(_data, rhs._data, strSize());
+    }
+
+    // Comparison
+    template <typename chartype2>
+    friend bool operator==(const ZStringT<chartype2> &lhs, const ZStringT<chartype2> &rhs);
+    template <typename chartype2>
+    friend bool operator!=(const ZStringT<chartype2> &lhs, const ZStringT<chartype2> &rhs);
+
+    // Concatenates this and <str> and returns result
+    ZStringT<chartype> concat(const ZStringT<chartype> &str) const {
+        ZStringT<chartype> out = *this;
+        out.append(str);
+        return out;
+    }
+    inline ZStringT<chartype> operator+(const ZStringT<chartype> &str) const { return concat(str); }
+
+    // Appends <str> to this and returns this
+    ZStringT<chartype> &append(const ZStringT<chartype> &str){
+        chartype *buff = new chartype[_size + str._size];
+        memcpy(buff, _data, strSize());
+        memcpy(buff + _size, str._data, str.strSize());
+        _size += str._size;
+        delete[] _data;
+        _data = buff;
+    }
+    inline ZStringT<chartype> &operator+=(const ZStringT<chartype> &str){ return append(str); }
+    inline ZStringT<chartype> &operator<<(const ZStringT<chartype> &str){ return append(str); }
+
+    void clear(){
+        _size = 0;
+        delete[] _data;
+        _data = nullptr;
+    }
+
+    zu64 size() const {
+        return _size;
+    }
+    zu64 strSize() const {
+        return _size * sizeof(chartype);
+    }
+
+    char first() const {
+        if(_size < 1)
+            throw "Invalid index";
+        return _data[0];
+    }
+    char last() const {
+        if(_size < 1)
+            throw "Invalid index";
+        return _data[_size-1];
+    }
+
+private:
+    zu64 _size;
+    chartype *_data;
+};
+
+template <typename chartype>
+inline bool operator==(const ZStringT<chartype> &lhs, const ZStringT<chartype> &rhs){
+    if(lhs.size() != rhs.size())
+        return false;
+    return memcmp(lhs._data, rhs._data, lhs.strSize());
+}
+template <typename chartype>
+inline bool operator!=(const ZStringT<chartype> &lhs, const ZStringT<chartype> &rhs){
+    return !operator==(lhs, rhs);
+}
+
+typedef ZStringT<char> ZString;
+
 typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
-class ZString {
+template <>
+class ZStringT<char> : public ZStringT<char> {
 public:
-    ZString();
-    ZString(const ZString &other);
-    //~ZString();
+    ZStringT(std::string);
+    std::string &str();
+    const std::string &str() const;
 
-    ZString &operator=(const ZString &rhs);
-    friend bool operator==(const ZString &lhs, const ZString &rhs);
-    friend bool operator!=(const ZString &lhs, const ZString &rhs);
+    ZStringT(std::wstring);
+    std::wstring wstr() const;
 
-    ZString concat(ZString str) const; // Concatenates this and <str> and returns result
-    inline ZString operator+(ZString str) const { return concat(str); }
-    ZString &append(ZString str); // Appends <str> to this
-    inline ZString &operator+=(ZString str){ return append(str); }
-    inline ZString &operator<<(ZString str){ return append(str); }
+    //ZString(char*);
+    //char *c();
+
+    ZStringT(const unsigned char *);
+    ZStringT(const char *);
+    ZStringT(const char *str, zu64 size);
+    const char *cc() const;
+
+#if PLATFORM == WINDOWS
+    ZString(const wchar_t*);
+    const wchar_t *wc() const;
+#endif
+
+    ZStringT(char, zu64 len = 1);
+
+    static ZString ItoS(zu64 num, unsigned base = 10, zu64 pad = 0);
+    static ZString ItoS(zs64 num, unsigned base = 10);
+    ZStringT(zu16);
+    ZStringT(zs16);
+    ZStringT(zu32);
+    ZStringT(zs32);
+    ZStringT(zint);
+    ZStringT(zuint);
+    ZStringT(zu64);
+    ZStringT(zs64);
+    int tint() const;
+
+    // Construct from double with <places> decimal points, 0 means all
+    ZStringT(double flt, unsigned places = 0);
 
     char &operator[](zu64 i){
         return _data[i];
@@ -55,53 +153,9 @@ public:
         return _data[i];
     }
 
-    ZString(std::string);
-    std::string &str();
-    const std::string &str() const;
-
-    ZString(std::wstring);
-    std::wstring wstr() const;
-
-    //ZString(char*);
-    //char *c();
-
-    ZString(const unsigned char *);
-    ZString(const char *);
-    ZString(const char *str, zu64 size);
-    const char *cc() const;
-
-#if PLATFORM == WINDOWS
-    ZString(const wchar_t*);
-    const wchar_t *wc() const;
-#endif
-
-    ZString(char, zu64 len = 1);
-
-    ZString(zu16);
-    ZString(zs16);
-    ZString(zu32);
-    ZString(zs32);
-    ZString(zint);
-    ZString(zuint);
-    //explicit ZString(zsint);
-    ZString(zu64);
-    ZString(zs64);
-
-    static ZString ItoS(zu64 num, unsigned base = 10, zu64 pad = 0);
-    static ZString ItoS(zs64 num, unsigned base = 10);
-    int tint() const;
-
-    // Creates string from double with <places> decimal points, 0 means all
-    ZString(double flt, unsigned places = 0);
-
-    ZString(ZArray<char> bin);
-
     zu64 size() const;
     inline zu64 length() const { return size(); }
     zu64 count(ZString) const;
-
-    char first() const;
-    char last() const;
 
     void clear();
     bool isEmpty() const;
@@ -197,15 +251,14 @@ public:
     // Allows ZString to be used with std streams
     friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
 private:
-    std::string _data;
+    //std::string _data;
+
 };
 
-inline bool operator==(const ZString &lhs, const ZString &rhs){
-    return lhs._data == rhs._data;
-}
-inline bool operator!=(const ZString &lhs, const ZString &rhs){
-    return !operator==(lhs, rhs);
-}
+//} // namespace ZStringInternal
+
+//typedef ZStringInternal::ZString<char> ZString;
+//template <class T> using ZStringT = ZStringInternal::ZString<T>;
 
 } // namespace LibChaos
 

@@ -10,17 +10,6 @@
 
 namespace LibChaos {
 
-ZString::ZString() : _data(){
-
-}
-ZString::ZString(const ZString &other) : _data(other._data){
-
-}
-
-//ZString::~ZString(){
-//    //data.clear();
-//}
-
 ZString &ZString::operator=(const ZString &str_){
     _data = str_.str();
     return *this;
