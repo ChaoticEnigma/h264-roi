@@ -8,12 +8,9 @@ HEADERS += \
     $$PWD/chaos/zerror.h \
     $$PWD/chaos/zautobuffer.h \
     $$PWD/chaos/zautobufferunit.h \
-    $$PWD/chaos/zcondition.h \
     $$PWD/chaos/zlog.h \
     $$PWD/chaos/zlogworker.h \
-    $$PWD/chaos/zmutex.h \
     $$PWD/chaos/zsocket.h \
-    $$PWD/chaos/zthread.h \
     $$PWD/chaos/ztypes.h \
     $$PWD/chaos/ztime.h \
     $$PWD/chaos/zclock.h \
@@ -52,6 +49,10 @@ HEADERS += \
     $$PWD/chaos/net/zstreamconnection.h \
     $$PWD/chaos/net/zaddress.h \
     \
+    $$PWD/chaos/thread/zcondition.h \
+    $$PWD/chaos/thread/zmutex.h \
+    $$PWD/chaos/thread/zthread.h \
+    \
     $$PWD/test/test.h \
     \
     $$PWD/ui/zui.h \
@@ -73,7 +74,6 @@ SOURCES += \
     $$PWD/chaos/zlog.cpp \
     $$PWD/chaos/zlogworker.cpp \
     $$PWD/chaos/zsocket.cpp \
-    $$PWD/chaos/zthread.cpp \
     $$PWD/chaos/ztime.cpp \
     $$PWD/chaos/zclock.cpp \
     \
@@ -100,6 +100,8 @@ SOURCES += \
     $$PWD/chaos/net/zdatagramsocket.cpp \
     $$PWD/chaos/net/zstreamconnection.cpp \
     $$PWD/chaos/net/zaddress.cpp \
+    \
+    $$PWD/chaos/thread/zthread.cpp \
     \
     $$PWD/test/libchaos_main.cpp \
     $$PWD/test/autobuffer_test.cpp \

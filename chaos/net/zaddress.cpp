@@ -184,7 +184,7 @@ ZArray<ZAddress> ZAddress::lookUp(ZAddress addr){
     const char *sptr = serv.isEmpty() ? NULL : serv.cc();
 
     if((status = getaddrinfo(aptr, sptr, &hints, &result)) != 0){
-        ELOG("ZSocket: getaddrinfo for " << name << " " << addr.port() << ": " << status <<": " << gai_strerror(status));
+        ELOG("ZSocket: getaddrinfo for " << name << " " << (zuint)addr.port() << ": " << status <<": " << gai_strerror(status));
         return ZArray<ZAddress>();
     }
 

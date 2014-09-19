@@ -20,11 +20,9 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zerror.h
     zlog.h
     zlogworker.h
-    zmutex.h
     zautobuffer.h
     zautobufferunit.h
     zret.h
-    zthread.h
     ztime.h
     ztypes.h
 
@@ -58,12 +56,8 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     lib/sqlite3.h
     #lib/demangle.h
 
-    net/zaddress.h
-    net/zconnection.h
-    net/zsocket.h
-    net/zdatagramsocket.h
-    net/zstreamsocket.h
-    net/zstreamconnection.h
+    thread/zmutex.h
+    thread/zthread.h
 )
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
@@ -72,8 +66,6 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zerror.cpp
     zlog.cpp
     zlogworker.cpp
-
-    zthread.cpp
     #ztime.cpp
 
     data/zbinary.cpp
@@ -89,6 +81,8 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     file/zjpeg.cpp
     file/zpng.cpp
 
+    lib/sqlite3.c
+
     net/zaddress.cpp
     net/zconnection.cpp
     net/zsocket.cpp
@@ -98,14 +92,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
 
     #math/znumber.cpp
 
-    lib/sqlite3.c
-
-    net/zaddress.cpp
-    net/zconnection.cpp
-    net/zsocket.cpp
-    net/zdatagramsocket.cpp
-    net/zstreamsocket.cpp
-    net/zstreamconnection.cpp
+    thread/zthread.cpp
 )
 
 IF(LIBCHAOS_WINDOWS)
@@ -125,6 +112,7 @@ SET(LibChaos_INCLUDE
     ${LibChaos_SOURCE_DIR}/file
     ${LibChaos_SOURCE_DIR}/net
     ${LibChaos_SOURCE_DIR}/math
+    ${LibChaos_SOURCE_DIR}/thread
 )
 IF(USE_INTERNAL_ZLIB_LIBPNG)
     SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} ${libpng_INCLUDE})
@@ -141,6 +129,7 @@ INCLUDE_DIRECTORIES(
     lib
     net
     math
+    thread
     ${libpng_INCLUDE}
 )
 IF(USE_INTERNAL_ZLIB_LIBPNG)
