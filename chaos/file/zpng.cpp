@@ -593,8 +593,8 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
     png_text *pngtext = new png_text[texts.size()];
     for(zu64 i = 0; i < texts.size(); ++i){
         pngtext[i].compression = PNG_TEXT_COMPRESSION_NONE;
-        pngtext[i].key = (char *)texts.key(i).cc();
-        pngtext[i].text = (char *)texts.val(i).cc();
+        pngtext[i].key = texts.key(i).c();
+        pngtext[i].text = texts.val(i).c();
     }
     png_set_text(data->png_ptr, data->info_ptr, pngtext, (int)texts.size());
     delete[] pngtext;

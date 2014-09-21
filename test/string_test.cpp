@@ -35,9 +35,6 @@ int string_block(){
 //    ZString(std::string);
 //    std::string &str();
 
-//    ZString(std::wstring);
-//    std::wstring wstr() const;
-
 //    //ZString(char*);
 //    //char *c();
 
@@ -85,36 +82,47 @@ int string_block(){
 //    // Tests if <str> ends with <test>
 //    bool endsWith(ZString test) const;
 
-//    // Insert character at direction
-//    ZString &insert(zu64 pos, ZString txt);
-//    static ZString insert(ZString str, zu64 pos, ZString txt);
+    LOG("-- Insert:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//    // Get portion of <str> from <pos> to end
-//    ZString &substr(zu64 pos);
-//    static ZString substr(ZString str, zu64 pos);
+    ZString insert1 = "youShouldThisSentence";
+    ZString ins1 = ZString::insert(insert1, 9, "Complete");
+    ZString ins1_1 = insert1.insert(9, "Complete");
+    LOG(ins1);
+    if(ins1 != "youShouldCompleteThisSentence" || ins1 != ins1_1)
+        throw 11;
 
-//    // Get <len> characters after <pos> of <str>
-//    ZString &substr(zu64 pos, zu64 len);
-//    static ZString substr(ZString str, zu64 pos, zu64 len);
+    LOG("-- Substr:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//    // Get location of first character of first occurrence of <find> in <str>
-//    static zu64 findFirst(ZString str, ZString find);
+    ZString substr1 = "youShouldTakeTheRestOfThisString";
+    ZString sub1 = ZString::substr(substr1, 16);
+    ZString sub1_1 = substr1.substr(16);
+    LOG(sub1);
+    if(sub1 != "RestOfThisString" || sub1 != sub1_1)
+        throw 21;
+
+    ZString substr2 = "youShouldTakeME!InThisString";
+    ZString sub2 = ZString::substr(substr2, 13, 3);
+    ZString sub2_1 = substr2.substr(13, 3);
+    LOG(sub2);
+    if(sub2 != "ME!" || sub2 != sub2_1)
+        throw 22;
 
     LOG("-- Find:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ZString find1("someInterestingString");
     zu64 pos1 = find1.findFirst("est");
+    zu64 pos1_1 = ZString::findFirst(find1, "est");
     LOG(pos1);
-    if(pos1 != 9)
+    if(pos1 != 9 || pos1 != pos1_1)
         throw 31;
 
-    ZString find2("someInterestingString");
-    zu64 pos2 = ZString::findFirst(find1, "est");
+    ZString find2 = "someInterestingStringIsInteresting";
+    zu64 pos2 = ZString::findFirst(find2, "Int", 20);
     LOG(pos2);
-    if(pos2 != 9)
-        throw 32;
+    if(pos2 != 23)
+        throw 33;
 
-    ZString find3("anotherInterestingStringWithInterestingThings");
+    ZString find3 = "anotherInterestingStringWithInterestingThings";
     ZArray<zu64> pos3 = find3.findAll("est");
     LOG("" << ZLog::noln);
     FOREACH(pos3.size()){
@@ -122,9 +130,9 @@ int string_block(){
     }
     RLOG(ZLog::newln);
     if(pos3.size() != 2 || pos3[0] != 12 || pos3[1] != 33)
-        throw 33;
+        throw 34;
 
-    ZString find4("anotherInterestesteingStringWithInterestesteingThings");
+    ZString find4 = "anotherInterestesteingStringWithInterestesteingThings";
     ZArray<zu64> pos4 = ZString::findAll(find4, "este");
     LOG("" << ZLog::noln);
     FOREACH(pos4.size()){
@@ -132,15 +140,42 @@ int string_block(){
     }
     RLOG(ZLog::newln);
     if(pos4.size() != 2 || pos4[0] != 12 || pos4[1] != 37)
-        throw 34;
+        throw 35;
 
-//    // Replace section <len> characters long at <pos> with <after> in <str>
-//    ZString &replace(zu64 pos, zu64 len, ZString after);
-//    static ZString replace(ZString str, zu64 pos, zu64 len, ZString after);
+    LOG("-- Replace:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//    // Replace the first occurrence of <before> in <str> with <after>, up to <max> times
-//    ZString &replaceRecursive(ZString before, ZString after, unsigned max = 1000);
-//    static ZString replaceRecursive(ZString str, ZString before, ZString after, unsigned max = 1000);
+    ZString replace1 = "anotherInterestingStringWithInterestingThings";
+    ZString rep1 = ZString::replace(replace1, 5, 20, "!!!!!");
+    LOG(rep1);
+    if(rep1 != "anoth!!!!!ithInterestingThings")
+        throw 36;
+
+    replace1.replace(0, 15, "!!!");
+    LOG(replace1);
+    if(replace1 != "!!!ingStringWithInterestingThings")
+        throw 37;
+
+    ZString replace2 = "strposposposposdddddddd";
+    ZString rep2 = ZString::replaceRecursive(replace2, "strpos", "bbbstr");
+    LOG(rep2);
+    if(rep2 != "bbbbbbbbbbbbstrdddddddd")
+        throw 38;
+
+    ZString replace2_1 = "a";
+    ZString rep2_1 = ZString::replaceRecursive(replace2_1, "a", "bad", 5);
+    LOG(rep2_1);
+    if(rep2_1 != "bbbbbaddddd")
+        throw 39;
+
+    LOG(replace2);
+    replace2.replaceRecursive("strpos", "posstr", 1);
+    LOG(replace2);
+    replace2.replaceRecursive("strpos", "posstr", 1);
+    LOG(replace2);
+    replace2.replaceRecursive("strpos", "posstr", 1);
+    LOG(replace2);
+
+    throw __LINE__;
 
 //    // Replace up to <max> occurences of <before> with <after> in <str>
 //    // <max> = -1 for unlimited

@@ -9,168 +9,181 @@
 #include "zassoc.h"
 #include "ztypes.h"
 
+#include <cstring>
+
+//#include <bits/stringfwd.h>
 #include <string>
+#include <iosfwd>
 
 namespace LibChaos {
-//namespace ZStringInternal {
 
-template <typename chartype> class ZStringT {
-public:
-    ZStringT() : _size(0), _data(nullptr){}
-    ZStringT(const chartype *ptr, zu64 size) : _size(size), _data(new chartype[_size]){
-        memcpy(_data, ptr, strSize());
-    }
-    ZStringT(const ZStringT<chartype> &other) : ZStringT(other._data, other._size){}
-    ZStringT(const ZArray<chartype> &array) : ZStringT(array.ptr(), array.size()){}
-
-    ~ZStringT(){
-        delete[] _data;
-    }
-
-    // Assignment
-    ZStringT<chartype> &operator=(const ZStringT<chartype> &rhs){
-        clear();
-        _size = rhs._size;
-        _data = new chartype[_size];
-        memcpy(_data, rhs._data, strSize());
-    }
-
-    // Comparison
-    template <typename chartype2>
-    friend bool operator==(const ZStringT<chartype2> &lhs, const ZStringT<chartype2> &rhs);
-    template <typename chartype2>
-    friend bool operator!=(const ZStringT<chartype2> &lhs, const ZStringT<chartype2> &rhs);
-
-    // Concatenates this and <str> and returns result
-    ZStringT<chartype> concat(const ZStringT<chartype> &str) const {
-        ZStringT<chartype> out = *this;
-        out.append(str);
-        return out;
-    }
-    inline ZStringT<chartype> operator+(const ZStringT<chartype> &str) const { return concat(str); }
-
-    // Appends <str> to this and returns this
-    ZStringT<chartype> &append(const ZStringT<chartype> &str){
-        chartype *buff = new chartype[_size + str._size];
-        memcpy(buff, _data, strSize());
-        memcpy(buff + _size, str._data, str.strSize());
-        _size += str._size;
-        delete[] _data;
-        _data = buff;
-    }
-    inline ZStringT<chartype> &operator+=(const ZStringT<chartype> &str){ return append(str); }
-    inline ZStringT<chartype> &operator<<(const ZStringT<chartype> &str){ return append(str); }
-
-    void clear(){
-        _size = 0;
-        delete[] _data;
-        _data = nullptr;
-    }
-
-    zu64 size() const {
-        return _size;
-    }
-    zu64 strSize() const {
-        return _size * sizeof(chartype);
-    }
-
-    char first() const {
-        if(_size < 1)
-            throw "Invalid index";
-        return _data[0];
-    }
-    char last() const {
-        if(_size < 1)
-            throw "Invalid index";
-        return _data[_size-1];
-    }
-
-private:
-    zu64 _size;
-    chartype *_data;
-};
-
-template <typename chartype>
-inline bool operator==(const ZStringT<chartype> &lhs, const ZStringT<chartype> &rhs){
-    if(lhs.size() != rhs.size())
-        return false;
-    return memcmp(lhs._data, rhs._data, lhs.strSize());
-}
-template <typename chartype>
-inline bool operator!=(const ZStringT<chartype> &lhs, const ZStringT<chartype> &rhs){
-    return !operator==(lhs, rhs);
-}
-
-typedef ZStringT<char> ZString;
+class ZString;
 
 typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
-template <>
-class ZStringT<char> : public ZStringT<char> {
+class ZString {
 public:
-    ZStringT(std::string);
-    std::string &str();
-    const std::string &str() const;
+    typedef char chartype;
 
-    ZStringT(std::wstring);
-    std::wstring wstr() const;
+    enum {
+        none = (zu64)-1
+    };
 
-    //ZString(char*);
-    //char *c();
+public:
+    ZString() : _size(0), _data(nullptr){
+        resize(0);
+    }
+    ZString(const chartype *ptr, zu64 size) : ZString(){
+        if(size && ptr){
+            resize(size);
+            copy(_data, ptr, size);
+        }
+    }
+    ZString(const ZString &other) : ZString(other._data, other.size()){}
 
-    ZStringT(const unsigned char *);
-    ZStringT(const char *);
-    ZStringT(const char *str, zu64 size);
-    const char *cc() const;
+    // char ZArray constructor
+    ZString(const ZArray<chartype> &array) : ZString(array.ptr(), array.size()){}
 
-#if PLATFORM == WINDOWS
-    ZString(const wchar_t*);
-    const wchar_t *wc() const;
-#endif
+    // std::string constructor
+    ZString(std::string);
+    std::string str() const;
 
-    ZStringT(char, zu64 len = 1);
+    // C-string constructor
+    ZString(const chartype *str) : ZString(){
+        zu64 i = 0;
+        while(str[i] != 0){
+            ++i;
+        }
+        operator=(ZString(str, i));
+    }
 
+    // Pointer to data
+    inline const chartype *cc() const {
+        return _data;
+    }
+    inline chartype *c() const {
+        return _data;
+    }
+
+//    ZString(std::wstring);
+//    std::wstring wstr() const;
+//    ZString(const wchar_t*);
+//    const wchar_t *wc() const;
+
+    // Fill constructor
+    ZString(chartype ch, zu64 len = 1) : ZString(){
+        if(len){
+            resize(len);
+            for(zu64 i = 0; i < len; ++i){
+                _data[i] = ch;
+            }
+        }
+    }
+
+    // Interger to string
     static ZString ItoS(zu64 num, unsigned base = 10, zu64 pad = 0);
     static ZString ItoS(zs64 num, unsigned base = 10);
-    ZStringT(zu16);
-    ZStringT(zs16);
-    ZStringT(zu32);
-    ZStringT(zs32);
-    ZStringT(zint);
-    ZStringT(zuint);
-    ZStringT(zu64);
-    ZStringT(zs64);
+
+    ZString(zu64 num) : ZString(){
+        operator=(ItoS(num, 10));
+    }
+    ZString(zs64 num) : ZString(){
+        operator=(ItoS(num, 10));
+    }
+
+    ZString(zu16 num) : ZString((zu64)num){}
+    ZString(zs16 num) : ZString((zs64)num){}
+    ZString(zu32 num) : ZString((zu64)num){}
+    ZString(zs32 num) : ZString((zs64)num){}
+    ZString(zuint num) : ZString((zu64)num){}
+    ZString(zint num) : ZString((zs64)num){}
+
+    // String to int
     int tint() const;
 
     // Construct from double with <places> decimal points, 0 means all
-    ZStringT(double flt, unsigned places = 0);
+    ZString(double flt, unsigned places = 0);
 
-    char &operator[](zu64 i){
-        return _data[i];
-    }
-    const char &operator[](zu64 i) const {
-        return _data[i];
+    // Destructor
+    ~ZString(){
+        delete[] _data;
     }
 
-    zu64 size() const;
-    inline zu64 length() const { return size(); }
+    // Assignment
+    ZString &assign(const ZString &other){
+        resize(other.size());
+        copy(_data, other._data, other.size());
+        return *this;
+    }
+    inline ZString &operator=(const ZString &rhs){
+        return assign(rhs);
+    }
+
+    // Comparison
+    friend bool operator==(const ZString &lhs, const ZString &rhs);
+    friend bool operator!=(const ZString &lhs, const ZString &rhs);
+
+    // Resize (IMPORTANT: memory is only allocated and initialized here)
+    // _data must always have null terminator
+    ZString &resize(zu64 len){
+        chartype *buff = new chartype[len + 1];
+        copy(buff, _data, MIN(len, _size));
+        buff[len] = 0;
+        _size = len;
+        delete[] _data;
+        _data = buff;
+        return *this;
+    }
+
+    // Clear
+    ZString &clear(){
+        resize(0);
+        return *this;
+    }
+
+    // Concatenates this and <str> and returns result
+    ZString concat(const ZString &str) const {
+        ZString out = *this;
+        out.append(str);
+        return out;
+    }
+    friend ZString operator+(const ZString &lhs, const ZString &rhs);
+
+    // Appends <str> to this and returns this
+    ZString &append(const ZString &str){
+        if(str.size()){
+            zu64 oldsize = size();
+            resize(oldsize + str.size());
+            copy(_data + oldsize, str._data, str.size());
+        }
+        return *this;
+    }
+    inline ZString &operator+=(const ZString &str){ return append(str); }
+    inline ZString &operator<<(const ZString &str){ return append(str); }
+
+    inline char &operator[](zu64 i){
+        return _data[i];
+    }
+    inline const char &operator[](zu64 i) const {
+        return _data[i];
+    }
+
     zu64 count(ZString) const;
 
-    void clear();
-    bool isEmpty() const;
-
     // Tests if <str> begins with <test>. Ignores whitespace at beginning of string if <ignore_whitespace>
-    bool startsWith(ZString test, bool ignore_whitespace = true) const;
+    bool startsWith(const ZString &test, bool ignore_whitespace = true) const;
+    static bool startsWith(const ZString &str, const ZString &test, bool ignore_whitespace = true);
+
     // Alias for startsWith, always ignores whitespace
     inline bool beginsWith(ZString test) const { return startsWith(test, false); }
 
     // Tests if <str> ends with <test>
     bool endsWith(ZString test) const;
 
-    // Insert character at direction
-    ZString &insert(zu64 pos, ZString txt);
-    static ZString insert(ZString str, zu64 pos, ZString txt);
+    // Insert string at position
+    ZString &insert(zu64 pos, const ZString &txt);
+    static ZString insert(ZString str, zu64 pos, const ZString &txt);
 
     // Get portion of <str> from <pos> to end
     ZString &substr(zu64 pos);
@@ -181,28 +194,29 @@ public:
     static ZString substr(ZString str, zu64 pos, zu64 len);
 
     // Get location of first character of first occurrence of <find> in <str>
-    zu64 findFirst(ZString find) const;
-    static zu64 findFirst(ZString str, ZString find);
+    zu64 findFirst(const ZString &find, zu64 start = 0) const;
+    static zu64 findFirst(const ZString &str, const ZString &find, zu64 start = 0);
 
     // Get locations of first characters of all non-overlapping occurrences of <find> in <str>
-    ZArray<zu64> findAll(ZString find) const;
-    static ZArray<zu64> findAll(ZString str, ZString find);
+    ZArray<zu64> findAll(const ZString &find) const;
+    static ZArray<zu64> findAll(const ZString &str, const ZString &find);
 
     // Replace section <len> characters long at <pos> with <after> in <str>
-    ZString &replace(zu64 pos, zu64 len, ZString after);
-    static ZString replace(ZString str, zu64 pos, zu64 len, ZString after);
+    ZString &replace(zu64 pos, zu64 len, const ZString &after);
+    static ZString replace(ZString str, zu64 pos, zu64 len, const ZString &after);
 
     // Replace the first occurrence of <before> in <str> with <after>, up to <max> times
-    ZString &replaceRecursive(ZString before, ZString after, unsigned max = 1000);
-    static ZString replaceRecursive(ZString str, ZString before, ZString after, unsigned max = 1000);
+    // <max> = 0 for unlimited
+    ZString &replaceRecursive(const ZString &before, const ZString &after, zu64 max = 1000);
+    static ZString replaceRecursive(ZString str, const ZString &before, const ZString &after, zu64 max = 1000);
 
     // Replace up to <max> occurences of <before> with <after> in <str>
-    // <max> = -1 for unlimited
-    ZString &replace(ZString before, ZString after, unsigned max = 0);
-    static ZString replace(ZString str, ZString before, ZString after, unsigned max = 0);
+    // <max> = 0 for unlimited
+    ZString &replace(const ZString &before, const ZString &after, zu64 max = 0);
+    static ZString replace(ZString str, const ZString &before, const ZString &after, zu64 max = 0);
 
     // Get sub-string of <str> before first occurence of <find> in <str>
-    static ZString getUntil(ZString str, ZString find);
+    static ZString getUntil(ZString str, const ZString &find);
 
     ZString findFirstBetween(ZString, ZString);
     ZString replaceBetween(ZString start, ZString end, ZString after);
@@ -212,26 +226,27 @@ public:
     ZString label(AsArZ, bool modify = true);
 
     // Strip occurences of <target> from beginning and end of <str>
-    ZString &strip(char target);
-    static ZString strip(ZString str, char target);
+    ZString &strip(chartype target);
+    static ZString strip(ZString str, chartype target);
 
     ZString removeWhitespace();
 
-    ZString invert(bool modify = true);
+    ZString &invert();
+    static ZString invert(ZString str);
 
     // Convert UPPERCASE characters to lowercase equivalents in <str>
     ZString &toLower();
     static ZString toLower(ZString str);
 
-    ZString duplicate(unsigned iterate, bool modify = true);
-    ZString popLast();
+    // What is this for...?
+    ZString &duplicate(zu64 iterate);
 
     ArZ split(ZString delim) const;
 
-    ArZ explode(char delim) const;
+    ArZ explode(chartype delim) const;
     ArZ strExplode(ZString delim) const;
-    ArZ quotedExplode(char delim) const;
-    ArZ escapedExplode(char delim) const;
+    ArZ quotedExplode(chartype delim) const;
+    ArZ escapedExplode(chartype delim) const;
     ArZ explodeList(unsigned nargs, ...) const;
     //ArZ explode();
 
@@ -239,26 +254,65 @@ public:
 
     bool isUtf8(ZString);
 
-    //ZString toJSON(AsArZ, bool modify = true);
-    //bool validJSON();
-    //AsArZ fromJSON();
-
     //ZString format(ZString fmt_str, ...);
     //ZString &format(...);
 
     static bool alphaTest(ZString str1, ZString str2);
 
     // Allows ZString to be used with std streams
-    friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
+    friend std::ostream &operator<<(std::ostream &lhs, ZString rhs);
+
+    bool isEmpty() const {
+        return size() == 0;
+    }
+
+    zu64 size() const {
+        return _size;
+    }
+    inline zu64 length() const { return size(); }
+
+    zu8 charSize() const {
+        return sizeof(chartype);
+    }
+    zu64 strSize() const {
+        return size() * charSize();
+    }
+
+    chartype &first(){
+        return _data[0];
+    }
+    const chartype &first() const {
+        return _data[0];
+    }
+    chartype &last(){
+        return _data[size() - 1];
+    }
+    const chartype &last() const {
+        return _data[size() - 1];
+    }
+
 private:
-    //std::string _data;
+    static void copy(chartype *dest, const chartype *src, zu64 size);
+    static bool charIsWhitespace(chartype ch);
+
+private:
+    zu64 _size;
+    chartype *_data;
 
 };
 
-//} // namespace ZStringInternal
+inline ZString operator+(const ZString &lhs, const ZString &rhs){
+    return lhs.concat(rhs);
+}
 
-//typedef ZStringInternal::ZString<char> ZString;
-//template <class T> using ZStringT = ZStringInternal::ZString<T>;
+inline bool operator==(const ZString &lhs, const ZString &rhs){
+    if(lhs.size() != rhs.size())
+        return false;
+    return memcmp(lhs._data, rhs._data, lhs.strSize()) == 0;
+}
+inline bool operator!=(const ZString &lhs, const ZString &rhs){
+    return !operator==(lhs, rhs);
+}
 
 } // namespace LibChaos
 

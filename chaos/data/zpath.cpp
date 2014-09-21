@@ -276,11 +276,7 @@ ZString ZPath::str(char delim){
 #endif
         tmp << delim;
     }
-    for(unsigned i = 0; i < _data.size(); ++i){
-        tmp << _data[i] << delim;
-    }
-    if(_data.size() > 0)
-        tmp.popLast();
+    tmp = ZString::compound(_data, delim);
     return tmp;
 }
 

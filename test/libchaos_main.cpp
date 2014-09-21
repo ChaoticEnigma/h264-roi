@@ -42,15 +42,18 @@ int main(int argc, char **argv){
     if(argc > 1){
         ZAssoc<ZString, test_func> runtests;
         ZString runstr;
-        for(int i = 1; i < argc; ++i){
-            if(ZString(argv[1]) == "all"){
-                runtests = defaulttests;
-                runstr = "All";
-            } else if(tests.exists(argv[i])){
-                runtests.push(argv[i], tests[argv[i]]);
-                runstr << argv[i] << ",";
-            } else {
-                LOG("No Test " << argv[i] << ", Ignoring");
+        if(ZString(argv[1]) == "all"){
+            runtests = defaulttests;
+            runstr = "All";
+        } else {
+            for(int i = 1; i < argc; ++i){
+                ZString key = argv[i];
+                 if(tests.exists(key)){
+                    runtests.push(key, tests[key]);
+                    runstr << key << ",";
+                } else {
+                    LOG("No Test " << key << ", Ignoring");
+                }
             }
         }
         runstr.strip(',');

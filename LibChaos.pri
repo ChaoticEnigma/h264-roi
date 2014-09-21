@@ -159,6 +159,7 @@ INCLUDEPATH += \
     $$PWD/chaos/lib \
     $$PWD/chaos/math \
     $$PWD/chaos/net \
+    $$PWD/chaos/thread \
     $$PWD/test \
     $$PWD/ui \
     $$PWD/bbb \

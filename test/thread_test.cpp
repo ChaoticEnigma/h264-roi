@@ -35,8 +35,8 @@ int thread_block(){
     LOG("killed " << thr.tid());
     */
 
-    const char *txt = "hello there from here";
-    ZThread thr2(thread_func2, (void *)txt);
+    ZString txt = "hello there from here";
+    ZThread thr2(thread_func2, txt.c());
     LOG("thread " << thr2.tid() << " created");
     sleep(5);
     LOG("waited 5 " << ZThread::thisTid());
