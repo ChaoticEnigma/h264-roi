@@ -134,7 +134,7 @@ bool ZString::startsWith(const ZString &test, bool ignorews) const {
                 return true;
             started = true;
             ++j;
-        } else if(charIsWhitespace(_data[i])){
+        } else if(_charIsWhitespace(_data[i])){
             if(started)
                 return false;
         } else {
@@ -192,18 +192,17 @@ ZString ZString::substr(ZString str, zu64 pos, zu64 len){
 zu64 ZString::findFirst(const ZString &find, zu64 start) const {
     if(find.size() && find.size() <= size() && start < size()){
         zu64 startpos = 0;
-        zu64 fpos = 0;
+        zu64 j = 0;
         for(zu64 i = start; i < size(); ++i){
-            if(_data[i] == find[fpos]){
-                if(fpos == 0){
+            if(_data[i] == find[j]){
+                if(j == 0)
                     startpos = i;
-                }
-                ++fpos;
-                if(fpos == find.size()){
+                ++j;
+                if(j == find.size())
                     return startpos;
-                }
-            } else {
-                fpos = 0;
+            } else if(j != 0){
+                --i;
+                j = 0;
             }
         }
     }
@@ -231,34 +230,25 @@ ZArray<zu64> ZString::findAll(const ZString &str, const ZString &find){
     return str.findAll(find);
 }
 
-ZString &ZString::replace(zu64 pos, zu64 len, const ZString &after){
+ZString &ZString::replacePos(zu64 pos, zu64 len, const ZString &after){
     len = MIN(len, size() - pos);
     ZString part2 = substr(*this, pos + len);
     resize(pos);
     append(after).append(part2);
     return *this;
 }
-ZString ZString::replace(ZString str, zu64 pos, zu64 len, const ZString &after){
-    return str.replace(pos, len, after);
+ZString ZString::replacePos(ZString str, zu64 pos, zu64 len, const ZString &after){
+    return str.replacePos(pos, len, after);
 }
 
-ZString &ZString::replaceRecursive(const ZString &before, const ZString &after, zu64 max){
+ZString &ZString::replaceFirst(const ZString &before, const ZString &after, zu64 start){
     if(before.size() > size() || before == after)
         return *this;
-
-    bool unlim = max == 0 ? true : false;
-    zu64 count = 0;
-    while(unlim || count < max){
-        zu64 loc = findFirst(before);
-        if(loc == none)
-            break;
-        replace(loc, before.size(), after);
-        ++count;
-    }
+    _strReplace(before, after, start);
     return *this;
 }
-ZString ZString::replaceRecursive(ZString str, const ZString &before, const ZString &after, zu64 max){
-    return str.replaceRecursive(before, after, max);
+ZString ZString::replaceFirst(ZString str, const ZString &before, const ZString &after, zu64 start){
+    return str.replaceFirst(before, after, start);
 }
 
 ZString &ZString::replace(const ZString &before, const ZString &after, zu64 max){
@@ -269,17 +259,32 @@ ZString &ZString::replace(const ZString &before, const ZString &after, zu64 max)
     zu64 count = 0;
     zu64 last = 0;
     while(unlim || count < max){
-        zu64 loc = findFirst(before, last);
-        if(loc == none)
+        last = _strReplace(before, after, last);
+        if(last == none)
             break;
-        replace(loc, before.size(), after);
-        last = loc + after.size();
         ++count;
     }
     return *this;
 }
 ZString ZString::replace(ZString str, const ZString &before, const ZString &after, zu64 max){
     return str.replace(before, after, max);
+}
+
+ZString &ZString::replaceRecursive(const ZString &before, const ZString &after, zu64 max){
+    if(before.size() > size() || before == after)
+        return *this;
+
+    bool unlim = max == 0 ? true : false;
+    zu64 count = 0;
+    while(unlim || count < max){
+        if(_strReplace(before, after, 0) == none)
+            break;
+        ++count;
+    }
+    return *this;
+}
+ZString ZString::replaceRecursive(ZString str, const ZString &before, const ZString &after, zu64 max){
+    return str.replaceRecursive(before, after, max);
 }
 
 ZString ZString::getUntil(ZString str, const ZString &find){
@@ -411,17 +416,15 @@ ZString ZString::replaceXmlTagCont(ZString tag, ZString after){
     return replaceBetween(open, close, after);
 }
 
-ZString ZString::label(AsArZ values, bool modify){
-    for(unsigned i = 0; i < values.size(); ++i)
-        label(values.key(i), values[i], modify);
-    return ZString(_data);
+ZString &ZString::label(const ZString &labeltxt, const ZString &value){
+    ZString txt = "<?" + labeltxt + "?>";
+    replace(txt, value);
+    return *this;
 }
-ZString ZString::label(ZString labeltxt, ZString value, bool modify){
-    ZString txt = ZString("<?").append(labeltxt).append("?>");
-    if(modify)
-        return replace(txt, value);
-    else
-        return replace(_data, txt, value);
+ZString &ZString::label(const AsArZ &values){
+    for(zu64 i = 0; i < values.size(); ++i)
+        label(values.key(i), values[i]);
+    return *this;
 }
 
 ArZ ZString::split(ZString delim) const {
@@ -688,13 +691,20 @@ bool ZString::alphaTest(ZString str1, ZString str2){
 // Private functions
 // ///////////////////////////////////////////////////////////////////////////////
 
-void ZString::copy(chartype *dest, const chartype *src, zu64 size){
+void ZString::_copy(chartype *dest, const chartype *src, zu64 size){
     if(size && dest && src)
         memcpy(dest, src, size * sizeof(chartype));
 }
 
-bool ZString::charIsWhitespace(chartype ch){
+bool ZString::_charIsWhitespace(chartype ch){
     return ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t';
+}
+
+zu64 ZString::_strReplace(const ZString &before, const ZString &after, zu64 startpos){
+    zu64 pos = findFirst(before, startpos);
+    if(pos != none)
+        replacePos(pos, before.size(), after);
+    return pos;
 }
 
 // ///////////////////////////////////////////////////////////////////////////////

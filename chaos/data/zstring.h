@@ -37,7 +37,7 @@ public:
     ZString(const chartype *ptr, zu64 size) : ZString(){
         if(size && ptr){
             resize(size);
-            copy(_data, ptr, size);
+            _copy(_data, ptr, size);
         }
     }
     ZString(const ZString &other) : ZString(other._data, other.size()){}
@@ -113,7 +113,7 @@ public:
     // Assignment
     ZString &assign(const ZString &other){
         resize(other.size());
-        copy(_data, other._data, other.size());
+        _copy(_data, other._data, other.size());
         return *this;
     }
     inline ZString &operator=(const ZString &rhs){
@@ -128,7 +128,7 @@ public:
     // _data must always have null terminator
     ZString &resize(zu64 len){
         chartype *buff = new chartype[len + 1];
-        copy(buff, _data, MIN(len, _size));
+        _copy(buff, _data, MIN(len, _size));
         buff[len] = 0;
         _size = len;
         delete[] _data;
@@ -155,7 +155,7 @@ public:
         if(str.size()){
             zu64 oldsize = size();
             resize(oldsize + str.size());
-            copy(_data + oldsize, str._data, str.size());
+            _copy(_data + oldsize, str._data, str.size());
         }
         return *this;
     }
@@ -202,18 +202,21 @@ public:
     static ZArray<zu64> findAll(const ZString &str, const ZString &find);
 
     // Replace section <len> characters long at <pos> with <after> in <str>
-    ZString &replace(zu64 pos, zu64 len, const ZString &after);
-    static ZString replace(ZString str, zu64 pos, zu64 len, const ZString &after);
+    ZString &replacePos(zu64 pos, zu64 len, const ZString &after);
+    static ZString replacePos(ZString str, zu64 pos, zu64 len, const ZString &after);
 
-    // Replace the first occurrence of <before> in <str> with <after>, up to <max> times
-    // <max> = 0 for unlimited
-    ZString &replaceRecursive(const ZString &before, const ZString &after, zu64 max = 1000);
-    static ZString replaceRecursive(ZString str, const ZString &before, const ZString &after, zu64 max = 1000);
+    ZString &replaceFirst(const ZString &before, const ZString &after, zu64 start = 0);
+    static ZString replaceFirst(ZString str, const ZString &before, const ZString &after, zu64 start = 0);
 
     // Replace up to <max> occurences of <before> with <after> in <str>
     // <max> = 0 for unlimited
     ZString &replace(const ZString &before, const ZString &after, zu64 max = 0);
     static ZString replace(ZString str, const ZString &before, const ZString &after, zu64 max = 0);
+
+    // Replace the first occurrence of <before> in <str> with <after>, up to <max> times
+    // <max> = 0 for unlimited
+    ZString &replaceRecursive(const ZString &before, const ZString &after, zu64 max = 1000);
+    static ZString replaceRecursive(ZString str, const ZString &before, const ZString &after, zu64 max = 1000);
 
     // Get sub-string of <str> before first occurence of <find> in <str>
     static ZString getUntil(ZString str, const ZString &find);
@@ -222,8 +225,9 @@ public:
     ZString replaceBetween(ZString start, ZString end, ZString after);
     ZString findFirstXmlTagCont(ZString tag);
     ZString replaceXmlTagCont(ZString tag, ZString after);
-    ZString label(ZString label, ZString value, bool modify = true);
-    ZString label(AsArZ, bool modify = true);
+
+    ZString &label(const ZString &label, const ZString &value);
+    ZString &label(const AsArZ &values);
 
     // Strip occurences of <target> from beginning and end of <str>
     ZString &strip(chartype target);
@@ -292,8 +296,10 @@ public:
     }
 
 private:
-    static void copy(chartype *dest, const chartype *src, zu64 size);
-    static bool charIsWhitespace(chartype ch);
+    static void _copy(chartype *dest, const chartype *src, zu64 size);
+    static bool _charIsWhitespace(chartype ch);
+
+    zu64 _strReplace(const ZString &before, const ZString &after, zu64 startpos);
 
 private:
     zu64 _size;
