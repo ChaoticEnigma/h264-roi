@@ -13,30 +13,27 @@ int string_block(){
     LOG("-- Assign / Compare:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if(!(str1 != str2))
-        throw 1;
+        throw __LINE__;
 
     str1 = str2;
     LOG(str1);
     if(!(str1 == str2))
-        throw 2;
+        throw __LINE__;
 
     LOG("-- Concat / Append:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ZString str6 = str3.concat(str4);
     LOG(str6);
     if(str6 != str5)
-        throw 3;
+        throw __LINE__;
 
     str3.append(str4);
     LOG(str3);
     if(str3 != str5)
-        throw 4;
+        throw __LINE__;
 
 //    ZString(std::string);
 //    std::string &str();
-
-//    ZString(std::wstring);
-//    std::wstring wstr() const;
 
 //    //ZString(char*);
 //    //char *c();
@@ -85,36 +82,47 @@ int string_block(){
 //    // Tests if <str> ends with <test>
 //    bool endsWith(ZString test) const;
 
-//    // Insert character at direction
-//    ZString &insert(zu64 pos, ZString txt);
-//    static ZString insert(ZString str, zu64 pos, ZString txt);
+    LOG("-- Insert:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//    // Get portion of <str> from <pos> to end
-//    ZString &substr(zu64 pos);
-//    static ZString substr(ZString str, zu64 pos);
+    ZString insert1 = "youShouldThisSentence";
+    ZString ins1 = ZString::insert(insert1, 9, "Complete");
+    ZString ins1_1 = insert1.insert(9, "Complete");
+    LOG(ins1);
+    if(ins1 != "youShouldCompleteThisSentence" || ins1 != ins1_1)
+        throw __LINE__;
 
-//    // Get <len> characters after <pos> of <str>
-//    ZString &substr(zu64 pos, zu64 len);
-//    static ZString substr(ZString str, zu64 pos, zu64 len);
+    LOG("-- Substr:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//    // Get location of first character of first occurrence of <find> in <str>
-//    static zu64 findFirst(ZString str, ZString find);
+    ZString substr1 = "youShouldTakeTheRestOfThisString";
+    ZString sub1 = ZString::substr(substr1, 16);
+    ZString sub1_1 = substr1.substr(16);
+    LOG(sub1);
+    if(sub1 != "RestOfThisString" || sub1 != sub1_1)
+        throw __LINE__;
+
+    ZString substr2 = "youShouldTakeME!InThisString";
+    ZString sub2 = ZString::substr(substr2, 13, 3);
+    ZString sub2_1 = substr2.substr(13, 3);
+    LOG(sub2);
+    if(sub2 != "ME!" || sub2 != sub2_1)
+        throw __LINE__;
 
     LOG("-- Find:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ZString find1("someInterestingString");
     zu64 pos1 = find1.findFirst("est");
+    zu64 pos1_1 = ZString::findFirst(find1, "est");
     LOG(pos1);
-    if(pos1 != 9)
-        throw 31;
+    if(pos1 != 9 || pos1 != pos1_1)
+        throw __LINE__;
 
-    ZString find2("someInterestingString");
-    zu64 pos2 = ZString::findFirst(find1, "est");
+    ZString find2 = "someInterestingStringIsInteresting";
+    zu64 pos2 = ZString::findFirst(find2, "Int", 20);
     LOG(pos2);
-    if(pos2 != 9)
-        throw 32;
+    if(pos2 != 23)
+        throw __LINE__;
 
-    ZString find3("anotherInterestingStringWithInterestingThings");
+    ZString find3 = "anotherInterestingStringWithInterestingThings";
     ZArray<zu64> pos3 = find3.findAll("est");
     LOG("" << ZLog::noln);
     FOREACH(pos3.size()){
@@ -122,9 +130,9 @@ int string_block(){
     }
     RLOG(ZLog::newln);
     if(pos3.size() != 2 || pos3[0] != 12 || pos3[1] != 33)
-        throw 33;
+        throw __LINE__;
 
-    ZString find4("anotherInterestesteingStringWithInterestesteingThings");
+    ZString find4 = "anotherInterestesteingStringWithInterestesteingThings";
     ZArray<zu64> pos4 = ZString::findAll(find4, "este");
     LOG("" << ZLog::noln);
     FOREACH(pos4.size()){
@@ -132,20 +140,49 @@ int string_block(){
     }
     RLOG(ZLog::newln);
     if(pos4.size() != 2 || pos4[0] != 12 || pos4[1] != 37)
-        throw 34;
+        throw __LINE__;
 
-//    // Replace section <len> characters long at <pos> with <after> in <str>
-//    ZString &replace(zu64 pos, zu64 len, ZString after);
-//    static ZString replace(ZString str, zu64 pos, zu64 len, ZString after);
+    LOG("-- Replace:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//    // Replace the first occurrence of <before> in <str> with <after>, up to <max> times
-//    ZString &replaceRecursive(ZString before, ZString after, unsigned max = 1000);
-//    static ZString replaceRecursive(ZString str, ZString before, ZString after, unsigned max = 1000);
+    ZString replace1 = "anotherInterestingStringWithInterestingThings";
+    ZString rep1 = ZString::replacePos(replace1, 5, 20, "!!!!!");
+    LOG(rep1);
+    if(rep1 != "anoth!!!!!ithInterestingThings")
+        throw __LINE__;
 
-//    // Replace up to <max> occurences of <before> with <after> in <str>
-//    // <max> = -1 for unlimited
-//    ZString &replace(ZString before, ZString after, unsigned max = -1);
-//    static ZString replace(ZString str, ZString before, ZString after, unsigned max = -1);
+    replace1.replacePos(0, 15, "!!!");
+    LOG(replace1);
+    if(replace1 != "!!!ingStringWithInterestingThings")
+        throw __LINE__;
+
+    ZString replace2 = "strposposposposdddddddd";
+    ZString rep2 = ZString::replaceRecursive(replace2, "strpos", "bbbstr");
+    LOG(rep2);
+    if(rep2 != "bbbbbbbbbbbbstrdddddddd")
+        throw __LINE__;
+
+    ZString replace3 = "a";
+    ZString rep3 = ZString::replaceRecursive(replace3, "a", "bad", 5);
+    LOG(rep3);
+    if(rep3 != "bbbbbaddddd")
+        throw __LINE__;
+
+    replace2.replaceRecursive("strpos", "posstr", 3);
+    LOG(replace2);
+    if(replace2 != "posposposstrposdddddddd")
+        throw __LINE__;
+
+    ZString repalce4 = "strstrsstrstrsstrs";
+    ZString rep4 = ZString::replace(repalce4, "strs", "aaaa");
+    LOG(rep4);
+    if(rep4 != "aaaatrsaaaatrsaaaa")
+        throw __LINE__;
+
+    ZString replace5 = "ssssssssssssss";
+    ZString rep5 = replace5.replace("ss", "t", 4);
+    LOG(rep5);
+    if(rep5 != "ttttssssss")
+        throw __LINE__;
 
 //    // Get sub-string of <str> before first occurence of <find> in <str>
 //    static ZString getUntil(ZString str, ZString find);
@@ -182,36 +219,36 @@ int string_block(){
     ZString cmp1 = ZString::compound(arr1, "-");
     LOG(cmp1);
     if(!(arr1.size() == 3 && arr1[0] == "this" && arr1[1] == "will" && arr1[2] == "explode"))
-        throw 45;
+        throw __LINE__;
     if(cmp1 != "this-will-explode")
-        throw 46;
+        throw __LINE__;
 
     ZString strarr2 = "this!will!\"sort!of\"!explode\"strstr\"!";
     ArZ arr2 = strarr2.quotedExplode('!');
     ZString cmp2 = ZString::compound(arr2, "-");
     LOG(cmp2);
     if(!(arr2.size() == 5 && arr2[0] == "this" && arr2[1] == "will" && arr2[2] == "sort!of" && arr2[3] == "explode" && arr2[4] == "strstr"))
-        throw 47;
+        throw __LINE__;
     if(cmp2 != "this-will-sort!of-explode-strstr")
-        throw 48;
+        throw __LINE__;
 
     ZString strarr3 = "\\!\\!!!this!will\\!also!explode\"strstr\"!";
     ArZ arr3 = strarr3.escapedExplode('!');
     ZString cmp3 = ZString::compound(arr3, "-");
     LOG(cmp3);
     if(!(arr3.size() == 4 && arr3[0] == "\\!\\!" && arr3[1] == "this" && arr3[2] == "will\\!also" && arr3[3] == "explode\"strstr\""))
-        throw 49;
+        throw __LINE__;
     if(cmp3 != "\\!\\!-this-will\\!also-explode\"strstr\"")
-        throw 50;
+        throw __LINE__;
 
     ZString strarr4 = "this!.!will!.!explode!.!differently\"strstr\"";
     ArZ arr4 = strarr4.strExplode("!.!");
     ZString cmp4 = ZString::compound(arr4, "---");
     LOG(cmp4);
     if(!(arr4.size() == 4 && arr4[0] == "this" && arr4[1] == "will" && arr4[2] == "explode" && arr4[3] == "differently\"strstr\""))
-        throw 51;
+        throw __LINE__;
     if(cmp4 != "this---will---explode---differently\"strstr\"")
-        throw 52;
+        throw __LINE__;
 
 //    ArZ explodeList(unsigned nargs, ...);
 
@@ -263,7 +300,7 @@ int string_magic_block(){
     //tst2.replaceEach("that", "taat", 1);
     //LOG(tst2);
     ZString tst3 = "sdfgdfgdfgdfgdfgdfg";
-    tst3.replace(3, 5, "ZZZZ");
+    tst3.replacePos(3, 5, "ZZZZ");
     LOG(tst3);
     return 0;
 }

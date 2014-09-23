@@ -4,6 +4,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(LibChaos)
 
 OPTION(IBERTY_DEMANGLE "Use libiberty to demangle symbols" OFF)
+OPTION(USE_ZLIB_LIBPNG "Link against and use zlib and libpng" ON)
 OPTION(FORCE_INTERNAL_ZLIB_LIBPNG "Use internal version of zlib and libpng" OFF)
 
 IF(LIBCHAOS_WINDOWS OR FORCE_INTERNAL_ZLIB_LIBPNG)
@@ -20,11 +21,9 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zerror.h
     zlog.h
     zlogworker.h
-    zmutex.h
     zautobuffer.h
     zautobufferunit.h
     zret.h
-    zthread.h
     ztime.h
     ztypes.h
 
@@ -58,12 +57,8 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     lib/sqlite3.h
     #lib/demangle.h
 
-    net/zaddress.h
-    net/zconnection.h
-    net/zsocket.h
-    net/zdatagramsocket.h
-    net/zstreamsocket.h
-    net/zstreamconnection.h
+    thread/zmutex.h
+    thread/zthread.h
 )
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
@@ -72,8 +67,6 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zerror.cpp
     zlog.cpp
     zlogworker.cpp
-
-    zthread.cpp
     #ztime.cpp
 
     data/zbinary.cpp
@@ -89,6 +82,8 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     file/zjpeg.cpp
     file/zpng.cpp
 
+    lib/sqlite3.c
+
     net/zaddress.cpp
     net/zconnection.cpp
     net/zsocket.cpp
@@ -98,14 +93,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
 
     #math/znumber.cpp
 
-    lib/sqlite3.c
-
-    net/zaddress.cpp
-    net/zconnection.cpp
-    net/zsocket.cpp
-    net/zdatagramsocket.cpp
-    net/zstreamsocket.cpp
-    net/zstreamconnection.cpp
+    thread/zthread.cpp
 )
 
 IF(LIBCHAOS_WINDOWS)
@@ -125,6 +113,7 @@ SET(LibChaos_INCLUDE
     ${LibChaos_SOURCE_DIR}/file
     ${LibChaos_SOURCE_DIR}/net
     ${LibChaos_SOURCE_DIR}/math
+    ${LibChaos_SOURCE_DIR}/thread
 )
 IF(USE_INTERNAL_ZLIB_LIBPNG)
     SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} ${libpng_INCLUDE})
@@ -141,6 +130,7 @@ INCLUDE_DIRECTORIES(
     lib
     net
     math
+    thread
     ${libpng_INCLUDE}
 )
 IF(USE_INTERNAL_ZLIB_LIBPNG)
@@ -158,6 +148,9 @@ ADD_DEFINITIONS(-DZLOG_USE_THREAD)
 IF(IBERTY_DEMANGLE)
     ADD_DEFINITIONS(-DIBERTY_DEMANGLE)
 ENDIF()
+IF(NOT USE_ZLIB_LIBPNG)
+    ADD_DEFINITIONS(-DDISABLE_LIBPNG)
+ENDIF()
 
 #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -ansi -std=c++11")
 #SET_SOURCE_FILES_PROPERTIES(sqlite3.c PROPERTIES COMPILE_FLAGS -std=c99)
@@ -169,10 +162,12 @@ ADD_DEFINITIONS(-DBUILDING)
 ADD_LIBRARY(chaos ${LibChaos_SOURCES})
 TARGET_LINK_LIBRARIES(chaos pthread)
 IF(LIBCHAOS_UNIX)
-    IF(USE_INTERNAL_ZLIB_LIBPNG)
-        TARGET_LINK_LIBRARIES(chaos libpng zlib)
-    ELSE()
-        TARGET_LINK_LIBRARIES(chaos png z)
+    IF(USE_ZLIB_LIBPNG)
+        IF(USE_INTERNAL_ZLIB_LIBPNG)
+            TARGET_LINK_LIBRARIES(chaos libpng zlib)
+        ELSE()
+            TARGET_LINK_LIBRARIES(chaos png z)
+        ENDIF()
     ENDIF()
 
     IF(IBERTY_DEMANGLE)
