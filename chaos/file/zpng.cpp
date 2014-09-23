@@ -13,6 +13,9 @@
 namespace LibChaos {
 
 bool ZPNG::decode(ZBinary &pngdata_in){
+#ifdef DISABLE_LIBPNG
+    throw ZError("FUCK");
+#else
     PngReadData *data = new PngReadData;
 
     try {
@@ -97,9 +100,13 @@ bool ZPNG::decode(ZBinary &pngdata_in){
     readpng_cleanup(data);
     delete data;
     return true;
+#endif
 }
 
 bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
+#ifdef DISABLE_LIBPNG
+    throw ZError("FUCK");
+#else
     PngWriteData *data = new PngWriteData;
 
     try {
@@ -192,6 +199,7 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
     writepng_cleanup(data);
     delete data;
     return true;
+#endif
 }
 
 bool ZPNG::read(ZPath path){
@@ -286,8 +294,14 @@ ZArray<ZPNG::PngChunk> ZPNG::parsePngAncillaryChunks(ZBinary pngdata){
 }
 
 ZString ZPNG::libpngVersionInfo(){
+#ifdef DISABLE_LIBPNG
+    return "No libpng or zlib";
+#else
     return ZString("Compiled libpng: ") << PNG_LIBPNG_VER_STRING << ", Using libpng: " << png_libpng_ver << ", Compiled zlib: " << ZLIB_VERSION << ", Using zlib: " << zlib_version;
+#endif
 }
+
+#ifndef DISABLE_LIBPNG
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // //////// Private
@@ -681,5 +695,7 @@ void ZPNG::writepng_error_handler(png_struct *png_ptr, png_const_charp msg){
     }
     longjmp(png_jmpbuf(png_ptr), 1);
 }
+
+#endif
 
 }
