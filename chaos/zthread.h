@@ -28,9 +28,14 @@ class ZThread {
 public:
     typedef void *(*funcType)(void *);
 
+public:
     ZThread();
     ZThread(funcType);
     ZThread(funcType, void *);
+    ZThread(const ZThread &other) :_param(other._param), _stop((bool)other._stop), ret(other.ret), thread(other.thread), _alive(other._alive), copyable(other.copyable){
+
+    }
+
     ~ZThread();
 
     bool run(funcType fnc);
@@ -44,19 +49,24 @@ public:
 
     static void *entry(void *ptr);
 
+    void setCopyable();
+
     ztid tid();
     bool alive();
     static ztid thisTid();
 
+private:
     struct zthreadparam {
         funcType funcptr;
         ZThreadArg zarg;
-    } _param;
+    };
 private:
+    zthreadparam _param;
     std::atomic<bool> _stop;
     int ret;
     pthread_t thread;
     bool _alive;
+    bool copyable;
 };
 
 typedef ZThread ZThreadA;

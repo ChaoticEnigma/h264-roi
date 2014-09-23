@@ -259,7 +259,10 @@ ZString ZString::substr(ZString str, zu64 pos){
 }
 
 ZString &ZString::substr(zu64 pos, zu64 len){
-    _data = _data.substr(pos, len);
+    if(pos < size())
+        _data = _data.substr(pos, len);
+    else
+        clear();
     return *this;
 }
 ZString ZString::substr(ZString str, zu64 pos, zu64 len){

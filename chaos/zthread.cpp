@@ -12,20 +12,19 @@ bool ZThreadArg::stop(){
     return (bool)*_stop;
 }
 
-ZThread::ZThread() : _stop(false), thread(0), _alive(false){
-    _param.zarg._stop = &_stop;
+ZThread::ZThread() : _stop(false), thread(0), _alive(false), copyable(false){
+
 }
-ZThread::ZThread(funcType func) : _stop(false), thread(0){
-    _param.zarg._stop = &_stop;
+ZThread::ZThread(funcType func) : ZThread(){
     run(func);
 }
-ZThread::ZThread(funcType func, void *argptr) : _stop(false), thread(0){
-    _param.zarg._stop = &_stop;
+ZThread::ZThread(funcType func, void *argptr) : ZThread(){
     run(func, argptr);
 }
 
 ZThread::~ZThread(){
-    detach();
+    if(!copyable)
+        detach();
 }
 
 void *ZThread::entry(void *ptr){
@@ -40,6 +39,7 @@ bool ZThread::run(funcType func){
     return run(func, NULL);
 }
 bool ZThread::run(funcType func, void *argptr){
+    _param.zarg._stop = &_stop;
     _param.funcptr = func;
     _param.zarg.arg = argptr;
 
@@ -74,6 +74,10 @@ void ZThread::stop(){
 void ZThread::detach(){
     if(_alive)
         ret = pthread_detach(thread);
+}
+
+void ZThread::setCopyable(){
+    copyable = true;
 }
 
 ztid ZThread::tid(){

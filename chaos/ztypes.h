@@ -72,11 +72,11 @@
 #endif
 
 // Constants
-#ifdef NULL
+//#ifdef NULL
     #undef NULL
-    //#define NULL (void *)0
-    #define NULL nullptr
-#endif
+//#endif
+//#define NULL (void *)0
+#define NULL nullptr
 
 // Macros
 #define FOREACH(A) for(zu64 i = 0; i < A; ++i)

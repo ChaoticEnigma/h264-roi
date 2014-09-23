@@ -106,7 +106,7 @@ ZPath ZPath::pwd(){
     char *ptr = new char[sz];
     getcwd(ptr, sz);
     ZPath path(ptr);
-    delete ptr;
+    delete[] ptr;
     return path;
 }
 

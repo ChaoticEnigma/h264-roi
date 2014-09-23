@@ -65,7 +65,8 @@ HEADERS += \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
     \
-    $$PWD/bbb/zbbb.h
+    $$PWD/bbb/zbbb.h \
+    $$PWD/chaos/abstract/zserializer.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \

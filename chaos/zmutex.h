@@ -25,6 +25,9 @@ public:
     ZMutex() : locker_tid(0){
         pthread_mutex_init(&mutex, NULL);
     }
+    ZMutex(const ZMutex &other) : mutex(other.mutex), locker_tid((pthread_t)other.locker_tid){
+
+    }
     ~ZMutex(){
         pthread_mutex_destroy(&mutex);
     }
