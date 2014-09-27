@@ -5,12 +5,12 @@
 #include "zaddress.h"
 #include "zbinary.h"
 #include "zstring.h"
-
-#define ZSOCKET_TCP_BUFFER_SIZE 1024
+#include "zsocket.h"
 
 namespace LibChaos {
 
-class ZConnection {
+// For TCP connections
+class ZConnection : private ZSocket {
 public:
     ZConnection();
     ZConnection(int fd, ZAddress addr);
@@ -23,7 +23,15 @@ public:
     zu64 read(ZBinary &str);
     bool write(const ZBinary &data);
 
+    void setBufferSize(zu32 size){
+        ZSocket::setBufferSize(size);
+    }
+
     ZAddress other();
+
+    ZError getError() const {
+        return ZSocket::getError();
+    }
 
 private:
     int _socket;

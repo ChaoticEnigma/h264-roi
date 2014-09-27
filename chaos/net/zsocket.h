@@ -2,28 +2,31 @@
 #define ZSOCKET_H
 
 #include "ztypes.h"
-#include "zaddress.h"
-#include "zbinary.h"
 #include "zstring.h"
-#include "zconnection.h"
+#include "zbinary.h"
+#include "zerror.h"
+#include "zaddress.h"
 
 #define ZSOCKET_UDP_BUFFER  1024 * 64
 #define ZSOCKET_UDP_MAX     1024 * 64 - 9
 
 namespace LibChaos {
 
-class ZConnection;
-
 class ZSocket {
 public:
-    typedef void (*receiveCallback)(ZSocket *_socket, const ZAddress &sender, const ZBinary &data);
-
     enum socket_type {
         stream = SOCK_STREAM,
         datagram = SOCK_DGRAM,
         raw = SOCK_RAW
     };
+    struct SocketOptions {
+        enum socketoption {
+            reuseaddr = 1,
+            recvtimeout = 2,
+        };
+    };
 
+public:
     ZSocket(socket_type type);
     ~ZSocket();
 
@@ -34,40 +37,53 @@ public:
     // UDP
     bool send(ZAddress destination, const ZBinary &data);
     zu32 receive(ZAddress &sender, ZBinary &str);
-    void receiveFunc(receiveCallback receivedFunc);
 
     // TCP
-    bool connect(ZAddress addr, ZConnection &conn);
+    bool connect(ZAddress addr, int &connfd, ZAddress &connaddr);
     bool listen();
-    bool accept(ZConnection &conn);
+    bool accept(int &connfd, ZAddress &connaddr);
+    zu64 read(ZBinary &data);
+    bool write(const ZBinary &data);
+
+    bool setSocketOption(SocketOptions::socketoption option, int value);
 
     // Default is blocking
     bool setBlocking(bool block = true);
-
     // Default is non-rebind
     void allowRebind(bool rebind = false);
+
+    void setBufferSize(zu32 size);
 
     int getHandle() const {
         return _socket;
     }
 
-    ZAddress getBound(){
+    ZAddress getBound() const {
         return _bound;
     }
+
+    ZError getError() const {
+        return error;
+    }
+
+protected:
+    ZSocket(socket_type type, int fd);
 
 private:
     static bool InitializeSockets();
     static void ShutdownSockets();
+    bool getSocket(int &fd, ZAddress addr);
 
+private:
     static zu32 socket_count;
 
     int _socket;
-    const socket_type _type;
+    socket_type _type;
     unsigned char *buffer;
-
+    zu32 buffersize;
     bool reuseaddr;
-
     ZAddress _bound;
+    ZError error;
 };
 
 }

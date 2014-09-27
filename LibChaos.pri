@@ -46,7 +46,6 @@ HEADERS += \
     $$PWD/chaos/net/zconnection.h \
     $$PWD/chaos/net/zstreamsocket.h \
     $$PWD/chaos/net/zdatagramsocket.h \
-    $$PWD/chaos/net/zstreamconnection.h \
     $$PWD/chaos/net/zaddress.h \
     \
     $$PWD/chaos/thread/zcondition.h \
@@ -99,7 +98,6 @@ SOURCES += \
     $$PWD/chaos/net/zconnection.cpp \
     $$PWD/chaos/net/zstreamsocket.cpp \
     $$PWD/chaos/net/zdatagramsocket.cpp \
-    $$PWD/chaos/net/zstreamconnection.cpp \
     $$PWD/chaos/net/zaddress.cpp \
     \
     $$PWD/chaos/thread/zthread.cpp \
@@ -134,7 +132,8 @@ SOURCES += \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
     $$PWD/util/duplicatefinder.cpp \
-    $$PWD/test/binary_test.cpp
+    $$PWD/test/binary_test.cpp \
+    $$PWD/test/path_test.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

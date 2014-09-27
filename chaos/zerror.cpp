@@ -83,26 +83,31 @@ struct addr2line_parts {
     unsigned line;
 };
 
-addr2line_parts addr2line(char const * const program_name, void const * const addr){
-    char addr2line_cmd[512];
-    sprintf(addr2line_cmd, "addr2line -f -p -e %.256s %p", program_name, addr);
+addr2line_parts addr2line(ZPath program, const void *addr){
+    //char addr2line_cmd[512];
+    //sprintf(addr2line_cmd, "addr2line -f -p -e %.256s %p", program_name, addr);
+
+    ZString addrcmd = "addr2line -f -p -e " + program.str() + " " + ZString::ItoS((zu64)addr, 16);
 
     char path[1024];
     ZString str;
 
-    FILE *fp = popen(addr2line_cmd, "r");
+    FILE *fp = popen(addrcmd.cc(), "r");
     if(fp == NULL){
-        return {ZString(), ZString(), ZPath(), 0};
+        return { ZString(), ZString(), ZPath(), 0 };
     }
     while(fgets(path, sizeof(path)-1, fp) != NULL){
-      str += path;
+        str += path;
     }
     pclose(fp);
 
     addr2line_parts source;
 
     str.removeWhitespace();
-    ArZ tok = str.explode(' ');
+    ArZ tok = str.split(' ');
+    if(tok.size() < 2){
+        return { "??", "??", "??", 0};
+    }
     source.symbol = tok[0];
 #ifdef IBERTY_DEMANGLE
     source.name = cplus_demangle(source.symbol.cc(), 0);
@@ -110,8 +115,8 @@ addr2line_parts addr2line(char const * const program_name, void const * const ad
     source.name = source.symbol;
 #endif
     ArZ flp = tok[1].split(':');
-    source.file = flp[0] != "??" ? ZPath(flp[0]) : "";
-    source.line = flp[1] != "??" ? (unsigned)flp[1].tint() : 0;
+    source.file = (flp.size() > 0 && flp[0] != "??") ? ZPath(flp[0]) : "";
+    source.line = (flp.size() > 1 && flp[1] != "??") ? (unsigned)flp[1].tint() : 0;
 
     return source;
 }
@@ -152,7 +157,7 @@ ArZ ZError::getStackTrace(unsigned trim){
             frame.addr = tmp;
             frame.addr.strip('[').strip(']');
 
-            addr2line_parts source = addr2line(frame.exec.str().cc(), buffer[i+trim]);
+            addr2line_parts source = addr2line(frame.exec, buffer[i+trim]);
 
             ZString frstr = i;
             frstr << " - " << frame.exec.last() << " - (";

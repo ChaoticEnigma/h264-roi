@@ -1,5 +1,5 @@
 #include "test.h"
-#include "zsocket.h"
+#include "zdatagramsocket.h"
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
@@ -17,8 +17,7 @@ int udp_test(){
     ZError::registerInterruptHandler(stopHandler);
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
-    ZSocket sock(ZSocket::datagram);
-    sock.allowRebind(true);
+    ZDatagramSocket sock;
     ZAddress bound(8998);
     if(!sock.open(bound)){
         ELOG("Socket Open Fail");
@@ -64,8 +63,7 @@ int udpserver_test(){
     ZError::registerInterruptHandler(stopHandler);
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
-    ZSocket sock(ZSocket::datagram);
-    sock.allowRebind(true);
+    ZDatagramSocket sock;
     ZAddress bind(8080);
     ELOG(bind.debugStr());
     if(!sock.open(bind)){

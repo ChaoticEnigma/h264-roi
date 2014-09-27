@@ -15,11 +15,11 @@
 
 namespace LibChaos {
 
-ZConnection::ZConnection() : _socket(0), buffer(nullptr){
+ZConnection::ZConnection() : ZSocket(stream), buffer(nullptr){
 
 }
 
-ZConnection::ZConnection(int fd, ZAddress addr) : _socket(fd), _addr(addr), buffer(nullptr){
+ZConnection::ZConnection(int fd, ZAddress addr) : ZSocket(stream, fd), _addr(addr), buffer(nullptr){
 
 }
 
@@ -29,65 +29,19 @@ ZConnection::~ZConnection(){
 }
 
 void ZConnection::close(){
-    if(isOpen()){
-        LOG("Closing socket " << _socket);
-#if PLATFORM == LINUX
-        ::close(_socket);
-#elif PLATFORM == WINDOWS
-        ::closesocket(_socket);
-#endif
-        _socket = 0;
-    }
+    close();
 }
 
 bool ZConnection::isOpen() const {
-    return _socket != 0;
+    return ZSocket::isOpen();
 }
 
 zu64 ZConnection::read(ZBinary &data){
-    if(!isOpen()){
-        ELOG("ZConnection: socket is not open");
-        return 0;
-    }
-    long bytes;
-    if(!buffer)
-        buffer = new unsigned char[ZSOCKET_TCP_BUFFER_SIZE];
-
-#if PLATFORM == LINUX
-    bytes = ::read(_socket, buffer, ZSOCKET_TCP_BUFFER_SIZE);
-#elif PLATFORM == WINDOWS
-    bytes = ::recv(_socket, (char *)buffer, ZSOCKET_TCP_BUFFER_SIZE, 0);
-#endif
-    if(bytes <= -1){
-        ELOG("ZSocket: read error: " << ZError::getSystemError());
-        return 0;
-    }
-    if(bytes == 0)
-        return 0;
-    data = ZBinary(buffer, (zu64)bytes);
-    return (zu64)bytes;
+    return ZSocket::read(data);
 }
 
 bool ZConnection::write(const ZBinary &data){
-    if(!isOpen()){
-        ELOG("ZConnection: socket is not open");
-        return false;
-    }
-    if(data.size() <= 0){
-        ELOG("ZConnection: empty write data");
-        return false;
-    }
-    long bytes;
-#if PLATFORM == LINUX
-    bytes = ::write(_socket, data.raw(), data.size());
-#elif PLATFORM == WINDOWS
-    bytes = ::send(_socket, (const char *)data.raw(), data.size(), 0);
-#endif
-    if(bytes <= 0){
-        ELOG("ZSocket: write error: " << ZError::getSystemError());
-        return false;
-    }
-    return true;
+    return ZSocket::write(data);
 }
 
 ZAddress ZConnection::other(){

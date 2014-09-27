@@ -50,7 +50,6 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     net/zsocket.h
     net/zdatagramsocket.h
     net/zstreamsocket.h
-    net/zstreamconnection.h
 
     math/znumber.h
 
@@ -89,7 +88,6 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     net/zsocket.cpp
     net/zdatagramsocket.cpp
     net/zstreamsocket.cpp
-    net/zstreamconnection.cpp
 
     #math/znumber.cpp
 

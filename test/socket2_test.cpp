@@ -1,5 +1,5 @@
 #include "test.h"
-#include "zsocket.h"
+#include "zstreamsocket.h"
 #include "zerror.h"
 #include "zfile.h"
 
@@ -14,7 +14,7 @@ int tcp_test(){
     ZError::registerInterruptHandler(stopHandler2);
     ZError::registerSignalHandler(ZError::terminate, stopHandler2);
 
-    ZSocket sock(ZSocket::stream);
+    ZStreamSocket sock;
 
     //ZAddress addr("::1", 8998);
     ZAddress addr("127.0.0.1", 8998);
@@ -46,7 +46,7 @@ int tcpserver_test(){
     ZError::registerInterruptHandler(stopHandler2);
     ZError::registerSignalHandler(ZError::terminate, stopHandler2);
 
-    ZSocket sock(ZSocket::stream);
+    ZStreamSocket sock;
     ZAddress bind(8080);
     LOG(bind.debugStr());
     if(!sock.open(bind)){

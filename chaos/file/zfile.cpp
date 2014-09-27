@@ -367,7 +367,7 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
                 if(recurse)
                     files.concat(listFiles(flnm));
             } else {
-                files.push(flnm.getAbs());
+                files.push(flnm.getAbsolute());
             }
         }
         closedir(dr);
@@ -392,7 +392,7 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
             lstat(flnm.str().cc(), &st);
 #endif
             if(S_ISDIR(st.st_mode)){
-                dirs.push(flnm.getAbs());
+                dirs.push(flnm.getAbsolute());
                 if(recurse){
                     dirs.concat(listDirs(flnm)); // Unsafe, stack overflow possibility
                 }
