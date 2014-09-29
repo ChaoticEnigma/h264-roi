@@ -42,7 +42,7 @@ FUNCTION(configure_build NAME BUILD PLATFORM)
 
     #SET(CXXF "${CXXF} -Wshadow ") # Some warnings are too verbose to be useful
     #SET(CXXF "${CXXF} -Wmissing-declarations -Wold-style-cast") # Not actually errors
-    SET(CXXF "${CXXF} -Wno-unused-parameter -Wno-unused") # Disabled
+    SET(CXXF "${CXXF} -Wno-unused-parameter -Wno-unused -Wno-comment") # Disabled Warnings
 
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXXF}" PARENT_SCOPE)
 
