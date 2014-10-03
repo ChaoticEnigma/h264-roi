@@ -8,6 +8,9 @@
     #include <execinfo.h>
     #include <signal.h>
     #include <cstring>
+    #include <stdio.h>
+    #include <cstdlib>
+    #include <errno.h>
     #define HAVE_DECL_BASENAME 1
     #ifdef IBERTY_DEMANGLE
         #include "demangle.h"
@@ -743,7 +746,7 @@ bool ZError::registerSignalHandler(zerror_signal sigtype, signalHandler handler)
     stack_t ss;
      /* malloc is usually used here, I'm not 100% sure my static allocation
      is valid but it seems to work just fine. */
-    ss.ss_sp = (void*)alternate_stack;
+    ss.ss_sp = (char*)alternate_stack;
     ss.ss_size = SIGSTKSZ;
     ss.ss_flags = 0;
 

@@ -1,21 +1,34 @@
 #include "test.h"
 #include "zpointer.h"
 
-ZPointer<ZString> sptr;
+struct AnObject {
+    AnObject(ZString s){
+        str = s;
+        LOG("Object created!");
+    }
+    ~AnObject(){
+        LOG("Object destroyed!");
+    }
 
-void a(ZPointer<ZString> ptr){
-    sptr.swap(ptr);
+    ZString str;
+};
+
+void a(ZPointer<AnObject> &sptr, ZPointer<AnObject> ptr){
+    sptr = ptr;
+    //sptr.swap(ptr);
 }
 
 int pointer_block(){
 
+    ZPointer<AnObject> sptr;
+
     {
-        ZPointer<ZString> ptr(new ZString("this is a string"));
-        LOG(*ptr.ptr());
-        a(ptr);
+        ZPointer<AnObject> ptr(new AnObject("this is a string"));
+        LOG(ptr.ptr()->str);
+        a(sptr, ptr);
     }
 
-    LOG(*sptr.ptr());
+    LOG(sptr.ptr()->str);
 
     return 0;
 }
