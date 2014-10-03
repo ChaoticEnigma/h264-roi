@@ -17,6 +17,11 @@ namespace LibChaos {
 
 template <typename T> class ZArray {
 public:
+    enum {
+        none = (zu64)-1
+    };
+
+public:
     ZArray(){}
     ZArray(T first){
         push(first);
@@ -150,12 +155,24 @@ public:
         return _data.back();
     }
 
+    zu64 indexOf(T test) const {
+        for(zu64 i = 0; i < size(); ++i){
+            if(_data[i] == test)
+                return i;
+        }
+        return none;
+    }
+
     bool contains(T test){
         for(unsigned i = 0; i < size(); ++i){
             if(_data[i] == test)
                 return true;
         }
         return false;
+    }
+
+    void swap(ZArray<T>& other){
+        _data.swap(other._data);
     }
 
     bool empty() const {

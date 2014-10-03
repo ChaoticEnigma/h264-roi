@@ -12,6 +12,11 @@ namespace LibChaos {
 
 template <class K, class T> class ZMap {
 public:
+    enum {
+        none = (zu64)-1
+    };
+
+public:
     struct Data {
         K key;
         T val;
@@ -46,6 +51,18 @@ public:
             push(in.position(i).key, in.position(i).val);
         }
         return *this;
+    }
+
+    void erase(K test){
+        data.erase(indexOf(test));
+    }
+
+    zu64 indexOf(K test) const {
+        for(zu64 i = 0; i < size(); ++i){
+            if(data[i].key == test)
+                return i;
+        }
+        return none;
     }
 
     bool exists(K test){

@@ -23,7 +23,7 @@ int udp_test(){
         ELOG("Socket Open Fail");
         return 2;
     }
-    LOG("Bound to " << sock.getBound().debugStr());
+    LOG("Bound to " << sock.getBoundAddress().debugStr());
     LOG("Sending...");
 
     ZAddress addr("127.0.0.1", 8998);

@@ -12,6 +12,8 @@
 
 namespace LibChaos {
 
+typedef int zsocktype;
+
 class ZSocket {
 public:
     enum socket_type {
@@ -54,11 +56,11 @@ public:
 
     void setBufferSize(zu32 size);
 
-    int getHandle() const {
+    zsocktype getSocket() const {
         return _socket;
     }
 
-    ZAddress getBound() const {
+    ZAddress getBoundAddress() const {
         return _bound;
     }
 
@@ -77,7 +79,7 @@ private:
 private:
     static zu32 socket_count;
 
-    int _socket;
+    zsocktype _socket;
     socket_type _type;
     unsigned char *buffer;
     zu32 buffersize;

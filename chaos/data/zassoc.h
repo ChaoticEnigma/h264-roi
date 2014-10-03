@@ -14,6 +14,11 @@ namespace LibChaos {
 
 template <class K, class T> class ZAssoc {
 public:
+    enum {
+        none = (zu64)-1
+    };
+
+public:
     struct Data {
         K key;
         T val;
@@ -116,6 +121,11 @@ public:
         return pushFront(K(), value);
     }
 
+    ZAssoc<K, T> &erase(K key){
+        pop(indexOf(key));
+        return *this;
+    }
+
     ZAssoc<K, T> &pop(unsigned index){
         _data.pop(index);
         return *this;
@@ -143,13 +153,21 @@ public:
     }
 
     ZAssoc<K, T> &concat(ZAssoc<K, T> in){
-        _data.concat(in.dat());
+        _data.concat(in.data());
         return *this;
     }
 
     ZAssoc<K, T> &insert(zu64 pos, K keyval, T value){
         _data.insert(pos, { keyval, value });
         return *this;
+    }
+
+    zu64 indexOf(K test) const {
+        for(zu64 i = 0; i < size(); ++i){
+            if(_data[i].key == test)
+                return i;
+        }
+        return none;
     }
 
     bool exists(K test) const {
@@ -181,10 +199,10 @@ public:
     T &last(){
         return _data.back().val;
     }
-    T &firstKey(){
+    K &firstKey(){
         return _data.front().key;
     }
-    T &lastKey(){
+    K &lastKey(){
         return _data.back().key;
     }
 
@@ -199,7 +217,7 @@ public:
     unsigned size() const {
         return _data.size();
     }
-    ZArray<Data> &dat(){
+    ZArray<Data> &data(){
         return _data;
     }
 

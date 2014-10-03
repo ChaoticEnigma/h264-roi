@@ -29,6 +29,10 @@ public:
 
     ZAddress other();
 
+    zsocktype getSocket() const {
+        return ZSocket::getSocket();
+    }
+
     ZError getError() const {
         return ZSocket::getError();
     }

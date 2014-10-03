@@ -22,8 +22,12 @@ public:
     bool listen();
     bool accept(ZConnection &conn);
 
-    ZAddress getBound() const {
-        return ZSocket::getBound();
+    zsocktype getSocket() const {
+        return ZSocket::getSocket();
+    }
+
+    ZAddress getBoundAddress() const {
+        return ZSocket::getBoundAddress();
     }
 
     ZError getError() const {

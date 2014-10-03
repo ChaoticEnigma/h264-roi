@@ -23,8 +23,8 @@ public:
     zu32 receive(ZAddress &sender, ZBinary &str);
     void receiveFunc(receiveCallback receivedFunc);
 
-    ZAddress getBound() const {
-        return ZSocket::getBound();
+    ZAddress getBoundAddress() const {
+        return ZSocket::getBoundAddress();
     }
 
     ZError getError() const {

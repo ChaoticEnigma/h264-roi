@@ -344,3 +344,147 @@ int tcpserver_test2(){
 }
 
 #endif
+
+int tcpserver_test3(){
+    fd_set master;    // master file descriptor list
+    fd_set read_fds;  // temp file descriptor list for select()
+    int fdmax;        // maximum file descriptor number
+
+    int listener;     // listening socket descriptor
+    int newfd;        // newly accept()ed socket descriptor
+    struct sockaddr_storage remoteaddr; // client address
+    socklen_t addrlen;
+
+    char buffer[256];
+    int nbytes;
+
+    //char remoteIP[INET6_ADDRSTRLEN];
+
+    int yes = 1;        // for setsockopt() SO_REUSEADDR, below
+    int rv;
+
+    struct addrinfo hints, *ai, *p;
+
+    FD_ZERO(&master);    // clear the master and temp sets
+    FD_ZERO(&read_fds);
+
+//    // get us a socket and bind it
+//    memset(&hints, 0, sizeof hints);
+//    hints.ai_family = AF_UNSPEC;
+//    hints.ai_socktype = SOCK_STREAM;
+//    hints.ai_flags = AI_PASSIVE;
+//    if ((rv = getaddrinfo(NULL, PORT, &hints, &ai)) != 0) {
+//        ELOG("Selectserver Error: " << gai_strerror(rv));
+//        return 1;
+//    }
+
+//    for(p = ai; p != NULL; p = p->ai_next) {
+//        listener = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+//        if (listener < 0) {
+//            continue;
+//        }
+
+//        // lose the pesky "address already in use" error message
+//        setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+
+//        if (bind(listener, p->ai_addr, p->ai_addrlen) < 0) {
+//            close(listener);
+//            continue;
+//        }
+
+//        break;
+//    }
+
+//    // if we got here, it means we didn't get bound
+//    if(p == NULL){
+//        ELOG("selectserver: failed to bind");
+//        return 2;
+//    }
+
+//    freeaddrinfo(ai); // all done with this
+
+//    // listen
+//    if(listen(listener, 10) == -1){
+//        ELOG("listen");
+//        return 3;
+//    }
+
+    ZSocket listensock(ZSocket::stream);
+    if(!listensock.open(ZAddress(8080))){
+        ELOG("Open fail");
+        return 5;
+    }
+    if(!listensock.listen()){
+        ELOG("Listen fail");
+        return 6;
+    }
+
+    listener = listensock.getSocket();
+
+    LOG("Listening");
+
+    // add the listener to the master set
+    FD_SET(listener, &master);
+
+    // keep track of the biggest file descriptor
+    fdmax = listener; // so far, it's this one
+
+    // main loop
+    while(true){
+        read_fds = master; // copy it
+        if(select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1){
+            ELOG("Select Error");
+            return 4;
+        }
+
+        // run through the existing connections looking for data to read
+        for(int i = 0; i <= fdmax; ++i){
+            if(FD_ISSET(i, &read_fds)){
+                // Found a socket with available data
+
+                if(i == listener){
+                    // Data on listening socket, so accept new connection
+
+                    addrlen = sizeof(remoteaddr);
+                    newfd = accept(listener, (struct sockaddr *)&remoteaddr, &addrlen);
+
+                    if(newfd == -1){
+                        ELOG("Accept Error");
+                    } else {
+                        FD_SET(newfd, &master); // add to master set
+                        if (newfd > fdmax) {    // keep track of the max
+                            fdmax = newfd;
+                        }
+                        ZAddress addr(&remoteaddr);
+                        LOG("New connection " << addr.debugStr() << " on " << newfd);
+                    }
+
+                } else {
+                    // Data data from existing socket
+
+                    if((nbytes = recv(i, buffer, sizeof(buffer), 0)) <= 0){
+                        // got error or connection closed by client
+                        if(nbytes == 0){
+                            // connection closed
+                            LOG("Remote socket " << i << " hung up");
+                        } else {
+                            ELOG("Recv Error");
+                        }
+
+                        close(i);
+                        FD_CLR(i, &master); // remove from master set
+
+                    } else {
+                        LOG("Read " << nbytes);
+                        // we got some data from a client
+
+
+                    }
+
+                }
+            }
+        }
+    }
+
+    return 0;
+}

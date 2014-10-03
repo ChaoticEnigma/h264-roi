@@ -12,7 +12,7 @@ public:
     ZArray() : _size(0), _data(nullptr){
 
     }
-    ZArray(const T *raw, zu64 size) : _size(size), _data(nullptr){
+    ZArray(const T *raw, zu64 size) : _size(size + (_size % 2)), _data(nullptr){
         if(_size && raw != nullptr){
             _data = new T[_size];
             for(zu64 i = 0; i < _size; ++i){
@@ -21,7 +21,7 @@ public:
             //memcpy(_data, raw, _size * sizeof(T));
         }
     }
-    ZArray(T first) : ZArray(&first, 1){
+    ZArray(const T &first) : ZArray(&first, 1){
 
     }
     ZArray(const ZArray<T> &other) : ZArray(other._data, other._size){
@@ -202,6 +202,7 @@ public:
 
 private:
     zu64 _size;
+    zu64 _realsize;
     T *_data;
 };
 

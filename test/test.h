@@ -17,12 +17,14 @@ int string_block();
 int path_block();
 int path_windows_block();
 
+int pointer_block();
+
+int thread_block();
+
 int number_block();
 
 int file_block();
 int png_block();
-
-int thread_block();
 
 int autobuffer_block();
 
@@ -32,6 +34,7 @@ int udpserver_test();
 int tcp_test();
 int tcpserver_test();
 int tcpserver_test2();
+int tcpserver_test3();
 
 int json_block();
 

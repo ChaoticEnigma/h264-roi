@@ -66,7 +66,10 @@ HEADERS += \
     $$PWD/ui/align.h \
     \
     $$PWD/bbb/zbbb.h \
-    $$PWD/chaos/abstract/zserializer.h
+    $$PWD/chaos/abstract/zserializer.h \
+    $$PWD/chaos/abstract/zaccessor.h \
+    $$PWD/chaos/data/zallocator.h \
+    $$PWD/chaos/data/zpointer.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
@@ -133,7 +136,8 @@ SOURCES += \
     $$PWD/util/imagedownloader.cpp \
     $$PWD/util/duplicatefinder.cpp \
     $$PWD/test/binary_test.cpp \
-    $$PWD/test/path_test.cpp
+    $$PWD/test/path_test.cpp \
+    $$PWD/test/pointer_test.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

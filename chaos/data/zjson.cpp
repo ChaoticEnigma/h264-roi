@@ -9,7 +9,7 @@ ZJSON::ZJSON(ZString str){
     decode(str);
 }
 ZJSON::ZJSON(AsArZ arr){
-    dat() = arr.dat();
+    data() = arr.data();
 }
 
 ZJSON &ZJSON::operator=(ZString str){
@@ -173,7 +173,7 @@ ZJSON ZJSON::fromJSON(ZString s){
 
 ZJSON &ZJSON::decode(ZString str){
     json = str;
-    dat() = fromJSON(str).dat();
+    data() = fromJSON(str).data();
     return *this;
 }
 
@@ -192,7 +192,7 @@ ZString ZJSON::encode(){
 
 AsArZ ZJSON::toZAssoc(){
     AsArZ tmp;
-    tmp.dat() = dat();
+    tmp.data() = data();
     return tmp;
 }
 

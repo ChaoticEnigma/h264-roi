@@ -18,10 +18,11 @@ int main(int argc, char **argv){
         { "string", string_block },
         { "path", path_block },
         { "path_windows", path_windows_block },
+        { "pointer", pointer_block },
+        { "thread", thread_block },
         { "number", number_block },
         { "file", file_block },
         { "png", png_block },
-        { "thread", thread_block },
         { "autobuffer", autobuffer_block },
         { "json", json_block },
     };
@@ -33,6 +34,7 @@ int main(int argc, char **argv){
         { "tcp", tcp_test },
         { "tcpserver", tcpserver_test },
         { "tcpserver2", tcpserver_test2 },
+        { "tcpserver3", tcpserver_test3 },
 
         { "sandbox", sandbox },
 
