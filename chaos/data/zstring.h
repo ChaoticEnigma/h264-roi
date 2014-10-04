@@ -51,11 +51,13 @@ public:
 
     // C-string constructor
     ZString(const chartype *str) : ZString(){
-        zu64 i = 0;
-        while(str[i] != 0){
-            ++i;
+        if(str != nullptr){
+            zu64 i = 0;
+            while(str[i] != 0){
+                ++i;
+            }
+            operator=(ZString(str, i));
         }
-        operator=(ZString(str, i));
     }
 
     // Pointer to data

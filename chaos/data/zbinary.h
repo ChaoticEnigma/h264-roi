@@ -5,6 +5,7 @@
 #include "zarray.h"
 #include <string.h>
 #include "zreader.h"
+#include "zstorage.h"
 
 namespace LibChaos {
 
@@ -221,6 +222,7 @@ public:
 private:
     zbinary_type *_data;
     zu64 _size;
+    ZStorage *_stor;
 };
 
 }
