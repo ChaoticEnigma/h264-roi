@@ -13,6 +13,7 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     file_test.cpp
     path_test.cpp
     pointer_test.cpp
+    allocator_test.cpp
     thread_test.cpp
     png_test.cpp
     autobuffer_test.cpp

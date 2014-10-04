@@ -19,6 +19,8 @@ int path_windows_block();
 
 int pointer_block();
 
+int allocator_block();
+
 int thread_block();
 
 int number_block();

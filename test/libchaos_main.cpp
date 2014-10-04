@@ -19,6 +19,7 @@ int main(int argc, char **argv){
         { "path", path_block },
         { "path_windows", path_windows_block },
         { "pointer", pointer_block },
+        { "allocator", allocator_block },
         { "thread", thread_block },
         { "number", number_block },
         { "file", file_block },
