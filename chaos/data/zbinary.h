@@ -9,8 +9,13 @@
 
 namespace LibChaos {
 
-class ZBinary : public ZReader {
+namespace ZBinaryInternal {
+
+template <class S = ZDefaultStorage> class ZBinary : public ZReader {
 public:
+
+    static_assert(std::is_base_of<ZStorage, S>::value, "ZBinary template parameter is not derived from ZStorage");
+
     typedef unsigned char zbinary_type;
 
     enum HashType {
@@ -32,7 +37,7 @@ public:
 
 
 public:
-    ZBinary() : _data(nullptr), _size(0){
+    ZBinary() : _data(nullptr), _size(0), _stor(new S){
 
     }
     ZBinary(const void *ptr, zu64 size) : ZBinary(){
@@ -56,7 +61,7 @@ public:
             _data[i] = *it;
         }
     }
-    ZBinary(const ZBinary &other) : ZBinary(other._data, other._size){
+    ZBinary(const ZBinary<> &other) : ZBinary(other._data, other._size){
 
     }
 
@@ -70,7 +75,7 @@ public:
         _data = nullptr;
     }
 
-    ZBinary &operator=(const ZBinary &other){
+    ZBinary<> &operator=(const ZBinary<> &other){
         clear();
         if(other._data && other._size){
             _size = other._size;
@@ -80,12 +85,12 @@ public:
         return *this;
     }
 
-    bool operator==(const ZBinary &rhs) const {
+    bool operator==(const ZBinary<> &rhs) const {
         if(_size != rhs._size)
             return false;
         return memcmp(_data, rhs._data, _size);
     }
-    bool operator!=(const ZBinary &rhs) const {
+    bool operator!=(const ZBinary<> &rhs) const {
         return !operator==(rhs);
     }
 
@@ -110,7 +115,7 @@ public:
         return _readerpos == _size;
     }
 
-    ZBinary &resize(zu64 size){
+    ZBinary<> &resize(zu64 size){
         zbinary_type *tmp = new zbinary_type[size];
         if(_data && tmp && _size && size)
             memcpy(tmp, _data, MIN(_size, size));
@@ -120,7 +125,7 @@ public:
         return *this;
     }
 
-    ZBinary &fill(zbinary_type dat, zu64 size){
+    ZBinary<> &fill(zbinary_type dat, zu64 size){
         clear();
         _size = size;
         _data = new zbinary_type[_size];
@@ -128,7 +133,7 @@ public:
         return *this;
     }
 
-    ZBinary &concat(const ZBinary &other){
+    ZBinary<> &concat(const ZBinary<> &other){
         zu64 old = _size;
         resize(_size + other._size);
         memcpy(_data + old, other._data, other._size);
@@ -144,7 +149,7 @@ public:
         _data = buff;
     }
 
-    zu64 findFirst(const ZBinary &find) const {
+    zu64 findFirst(const ZBinary<> &find) const {
         if(find.size() > _size){
             return none;
         }
@@ -167,15 +172,15 @@ public:
         return start;
     }
 
-    ZBinary getSub(zu64 start, zu64 len) const {
+    ZBinary<> getSub(zu64 start, zu64 len) const {
         if(start >= _size)
-            return ZBinary();
+            return ZBinary<>();
         if(start + len >= _size)
             len = _size - start;
-        return ZBinary(_data + start, len);
+        return ZBinary<>(_data + start, len);
     }
 
-    ZBinary &nullTerm(){
+    ZBinary<> &nullTerm(){
         if(_size && _data[_size - 1] != 0){
             resize(_size + 1);
             _data[_size - 1] = 0;
@@ -183,8 +188,8 @@ public:
         return *this;
     }
 
-    ZBinary printable() const {
-        ZBinary tmp = *this;
+    ZBinary<> printable() const {
+        ZBinary<> tmp = *this;
         if(_size){
             tmp.nullTerm();
             for(zu64 i = 0; i < _size - 1; ++i){
@@ -218,12 +223,29 @@ public:
         return _data;
     }
 
-    static zu64 hash(HashType type, const ZBinary &data);
+    static zu64 hash(HashType type, const ZBinary<> &data){
+        switch(type){
+        case hashType1: {
+            zu64 hash = 5381;
+            for(zu64 i = 0; i < data.size(); ++i){
+                hash = ((hash << 5) + hash) + data[i]; /* hash * 33 + c */
+            }
+            return hash;
+        }
+        default:
+            return 0;
+        }
+    }
+
 private:
     zbinary_type *_data;
     zu64 _size;
     ZStorage *_stor;
 };
+
+}
+
+typedef ZBinaryInternal::ZBinary<> ZBinary;
 
 }
 
