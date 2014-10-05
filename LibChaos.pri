@@ -16,7 +16,10 @@ HEADERS += \
     $$PWD/chaos/zclock.h \
     $$PWD/chaos/zret.h \
     \
+    $$PWD/chaos/abstract/zaccessor.h \
     $$PWD/chaos/abstract/zreader.h \
+    $$PWD/chaos/abstract/zserializer.h \
+    $$PWD/chaos/abstract/zstorage.h \
     \
     $$PWD/chaos/data/zarray.h \
     $$PWD/chaos/data/zarray2.h \
@@ -66,11 +69,10 @@ HEADERS += \
     $$PWD/ui/align.h \
     \
     $$PWD/bbb/zbbb.h \
-    $$PWD/chaos/abstract/zserializer.h \
-    $$PWD/chaos/abstract/zaccessor.h \
     $$PWD/chaos/data/zallocator.h \
     $$PWD/chaos/data/zpointer.h \
-    $$PWD/chaos/data/zstorage.h
+    $$PWD/chaos/data/zdefaultstorage.h \
+    $$PWD/chaos/data/zfilestorage.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
