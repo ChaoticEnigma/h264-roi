@@ -9,6 +9,9 @@
 #include "zassoc.h"
 #include "ztypes.h"
 
+#include "zstorage.h"
+#include "zdefaultstorage.h"
+
 #include <cstring>
 
 //#include <bits/stringfwd.h>
@@ -34,6 +37,13 @@ public:
     ZString() : _size(0), _data(nullptr){
         resize(0);
     }
+    ZString(ZStorage *stor) : ZString(){
+        if(stor != nullptr){
+            resize(stor->size());
+            stor->copyBlockTo(0, stor->size(), (zbyte *)_data);
+        }
+    }
+
     ZString(const chartype *ptr, zu64 size) : ZString(){
         if(size && ptr){
             resize(size);

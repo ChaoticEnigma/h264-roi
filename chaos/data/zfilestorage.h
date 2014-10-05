@@ -21,7 +21,7 @@ public:
     void copy(const ZStorage *other){
 
     }
-    void copyFrom(const zbyte *data, zu64 size){
+    void copyToBlock(const zbyte *data, zu64 index, zu64 size){
 
     }
     void copyBlockTo(zu64 index, zu64 size, zbyte *data) const {

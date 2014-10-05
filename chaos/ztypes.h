@@ -92,11 +92,12 @@
 
 namespace LibChaos {
 
-// At least 8 bits (1 byte)
+// Exactly 8 bits (1 byte)
 typedef unsigned char zu8;
 typedef signed char zs8;
 typedef char zchar;
 typedef zu8 zbyte;
+typedef zbyte zoctet; // I blame the IETF
 
 // At least 16 bits (2 bytes)
 typedef unsigned short zu16;

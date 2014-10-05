@@ -10,7 +10,7 @@ public:
     virtual ~ZStorage(){}
 
     virtual void copy(const ZStorage *other) = 0;
-    virtual void copyFrom(const zbyte *data, zu64 size) = 0;
+    virtual void copyToBlock(const zbyte *data, zu64 index, zu64 size) = 0;
     virtual void copyBlockTo(zu64 index, zu64 size, zbyte *data) const = 0;
     virtual ZStorage *newCopy() const = 0;
 

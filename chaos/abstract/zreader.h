@@ -7,23 +7,15 @@ namespace LibChaos {
 
 class ZReader {
 public:
-    ZReader() : _readerpos(0){}
-
-    //virtual ~ZReader(){}
+    virtual ~ZReader(){}
 
     virtual zu64 read(unsigned char *dest, zu64 length) = 0;
+
+    virtual void rewind() = 0;
+
     virtual bool atEnd() const = 0;
-
-    virtual void rewind(){
-        _readerpos = 0;
-    }
-
-    virtual zu64 readPos() const {
-        return _readerpos;
-    }
-
-protected:
-    zu64 _readerpos;
+    virtual void setReadPos(zu64 pos) = 0;
+    virtual zu64 readPos() const = 0;
 };
 
 }

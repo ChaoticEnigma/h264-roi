@@ -2,6 +2,7 @@
 #define ZDEFAULTSTORAGE_H
 
 #include "zstorage.h"
+#include <cstring>
 
 namespace LibChaos {
 
@@ -31,11 +32,10 @@ public:
         }
     }
 
-
-    void copyFrom(const zbyte *data, zu64 size){
-        resize(size);
+    void copyToBlock(const zbyte *data, zu64 index, zu64 size){
+        resize(index + size);
         if(size != 0 && data != nullptr){
-            _copy(data, _data, size);
+            _copy(data, _data + index, size);
         }
     }
 
@@ -73,7 +73,7 @@ public:
         if(_size != other->size())
             return false;
         if(other->storageType() == type){
-            return (memcmp(_data, ((const ZMemoryStorage *)other)->_data, _size) == 0);
+            return memcmp(_data, ((const ZMemoryStorage *)other)->_data, _size) == 0;
         } else {
             for(zu64 i = 0; i < _size; ++i){
                 if(get(i) != other->get(i))

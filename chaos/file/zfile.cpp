@@ -164,7 +164,9 @@ zu64 ZFile::writeBinary(ZPath file, const ZBinary &data){
     if(fp == NULL)
         throw ZError("fopen error");
 
-    zu64 wrt = fwrite(data.raw(), sizeof(char), data.size(), fp);
+    zbyte *ptr = data.storage()->getBlock(0, data.size());
+    zu64 wrt = fwrite(ptr, sizeof(char), data.size(), fp);
+    data.storage()->freeBlock(ptr);
     fclose(fp);
     if(wrt != data.size())
         throw ZError("fwrite error");

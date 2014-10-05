@@ -4,13 +4,16 @@
 #include "ztypes.h"
 #include "zarray.h"
 #include <string.h>
+
 #include "zreader.h"
+#include "zwriter.h"
+
 #include "zstorage.h"
 #include "zdefaultstorage.h"
 
 namespace LibChaos {
 
-class ZBinary : public ZReader {
+class ZBinary : public ZReader, public ZWriter {
 public:
 
     typedef zbyte zbinary_type;
@@ -34,18 +37,21 @@ public:
 
 
 public:
-    ZBinary() : _stor(new ZDefaultStorage){
+    ZBinary() : _stor(new ZDefaultStorage), _rwpos(0){
 
     }
-    ZBinary(ZStorage *stor) : _stor(stor->newCopy()){
+    ZBinary(ZStorage *stor) : _stor(stor->newCopy()), _rwpos(0){
+
+    }
+    ZBinary(const ZBinary &other) : _stor(other.storage()->newCopy()), _rwpos(0){
 
     }
 
     ZBinary(const void *ptr, zu64 size) : ZBinary(){
-        _stor->copyFrom((const zbyte *)ptr, size);
+        _stor->copyToBlock((const zbyte *)ptr, 0, size);
     }
     ZBinary(ZArray<zbinary_type> arr) : ZBinary(){
-        _stor->copyFrom((const zbyte *)arr.ptr(), arr.size());
+        _stor->copyToBlock((const zbyte *)arr.ptr(), 0, arr.size());
     }
     ZBinary(std::initializer_list<zbinary_type> list) : ZBinary(){
         _stor->resize(list.size());
@@ -53,9 +59,6 @@ public:
         for(auto it = list.begin(); it < list.end(); ++it, ++i){
             _stor->get(i) = *it;
         }
-    }
-    ZBinary(const ZBinary &other) : _stor(other.storage()->newCopy()){
-
     }
 
     ~ZBinary(){
@@ -82,20 +85,6 @@ public:
     }
     const zbinary_type &operator[](zu64 index) const {
         return _stor->get(index);
-    }
-
-    // ZReader interface
-    zu64 read(unsigned char *dest, zu64 length){
-        if(_readerpos + length > size()){
-            length = _readerpos + length - size();
-        }
-        if(dest && length)
-            _stor->copyBlockTo(_readerpos, length, dest);
-        _readerpos += length;
-        return length;
-    }
-    bool atEnd() const {
-        return _readerpos == size();
     }
 
     ZBinary &resize(zu64 size){
@@ -161,7 +150,7 @@ public:
         ZBinary tmp;
         tmp.resize(len);
         zbyte *src = _stor->getBlock(start, len);
-        tmp.storage()->copyFrom(src, len);
+        tmp.storage()->copyToBlock(src, 0, len);
         _stor->freeBlock(src);
         return tmp;
     }
@@ -216,8 +205,39 @@ public:
         }
     }
 
+    // ZReader interface
+    zu64 read(unsigned char *dest, zu64 length){
+        if(_rwpos + length > size()){
+            length = _rwpos + length - size();
+        }
+        if(dest && length)
+            _stor->copyBlockTo(_rwpos, length, dest);
+        _rwpos += length;
+        return length;
+    }
+    void rewind(){
+        _rwpos = 0;
+    }
+    bool atEnd() const {
+        return _rwpos == size();
+    }
+    void setReadPos(zu64 pos){
+        _rwpos = pos;
+    }
+    zu64 readPos() const {
+        return _rwpos;
+    }
+
+    // ZWrite interface
+    zu64 write(const zbyte *data, zu64 size){
+        _stor->copyToBlock(data, _rwpos, size);
+        _rwpos += size;
+        return size;
+    }
+
 private:
     ZStorage *_stor;
+    zu64 _rwpos;
 };
 
 }

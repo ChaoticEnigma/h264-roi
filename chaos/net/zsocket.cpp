@@ -111,11 +111,17 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
     dest.setType(_type);
     dest = ZAddress::lookUp(dest)[0];
     dest.populate(&addrstorage);
+
+    zbyte *ptr = data.storage()->getBlock(0, data.size());
+
 #if PLATFORM == LINUX
-    long sent = ::sendto(_socket, data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
+    long sent = ::sendto(_socket, ptr, data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
 #elif PLATFORM == WINDOWS
-    long sent = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
+    long sent = ::sendto(_socket, (const char *)ptr, data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
 #endif
+
+    data.storage()->freeBlock(ptr);
+
     if(sent < 0)
         error = ZError("ZSocket: sendto error " + ZError::getSystemError());
     return (zu64)sent == data.size();
@@ -207,32 +213,25 @@ zu64 ZSocket::read(ZBinary &data){
         return 0;
     }
 
-    long bytes;
-    unsigned char *buff;
-    zu64 maxsize;
-    if(data.size() > 0){
-        buff = data.raw();
-        maxsize = data.size();
-    } else {
-        if(!buffer)
-            buffer = new unsigned char[buffersize];
-        buff = buffer;
-        maxsize = buffersize;
+    if(!data.size()){
+        return 0;
     }
 
+    zbyte *ptr = data.storage()->getBlock(0, data.size());
+
 #if PLATFORM == LINUX
-    bytes = ::read(_socket, buff, maxsize);
+    long bytes = ::read(_socket, ptr, data.size());
 #elif PLATFORM == WINDOWS
-    bytes = ::recv(_socket, (char *)buff, maxsize, 0);
+    long bytes = ::recv(_socket, (char *)ptr, data.size(), 0);
 #endif
+
+    data.storage()->commitBlock(ptr);
+
     if(bytes <= -1){
         error = ZError("ZSocket: read error: " + ZError::getSystemError());
         return 0;
     }
-    if(bytes == 0)
-        return 0;
-    if(data.size() == 0)
-        data = ZBinary(buffer, (zu64)bytes);
+
     return (zu64)bytes;
 }
 
@@ -245,12 +244,15 @@ bool ZSocket::write(const ZBinary &data){
         error = ZError("ZConnection: empty write data");
         return false;
     }
-    long bytes;
+
+    zbyte *ptr = data.storage()->getBlock(0, data.size());
 #if PLATFORM == LINUX
-    bytes = ::write(_socket, data.raw(), data.size());
+    long bytes = ::write(_socket, ptr, data.size());
 #elif PLATFORM == WINDOWS
-    bytes = ::send(_socket, (const char *)data.raw(), data.size(), 0);
+    long bytes = ::send(_socket, (const char *)ptr, data.size(), 0);
 #endif
+    data.storage()->freeBlock(ptr);
+
     if(bytes <= 0){
         error = ZError("ZSocket: write error: " + ZError::getSystemError());
         return false;

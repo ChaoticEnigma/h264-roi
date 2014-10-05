@@ -72,7 +72,8 @@ HEADERS += \
     $$PWD/chaos/data/zallocator.h \
     $$PWD/chaos/data/zpointer.h \
     $$PWD/chaos/data/zdefaultstorage.h \
-    $$PWD/chaos/data/zfilestorage.h
+    $$PWD/chaos/data/zfilestorage.h \
+    $$PWD/chaos/abstract/zwriter.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
