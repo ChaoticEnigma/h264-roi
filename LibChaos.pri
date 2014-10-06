@@ -142,7 +142,8 @@ SOURCES += \
     $$PWD/test/binary_test.cpp \
     $$PWD/test/path_test.cpp \
     $$PWD/test/pointer_test.cpp \
-    $$PWD/test/allocator_test.cpp
+    $$PWD/test/allocator_test.cpp \
+    $$PWD/test/storage_test.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

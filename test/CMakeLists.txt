@@ -6,22 +6,31 @@ PROJECT(LibChaos_Test)
 SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES =================== ###
     libchaos_main.cpp
 
-    array_test.cpp
-    binary_test.cpp
-    string_test.cpp
-    number_test.cpp
-    file_test.cpp
-    path_test.cpp
     pointer_test.cpp
     allocator_test.cpp
+    storage_test.cpp
+
+    binary_test.cpp
+
+    array_test.cpp
+
+    string_test.cpp
+    path_test.cpp
+    number_test.cpp
+
     thread_test.cpp
-    png_test.cpp
+
+    file_test.cpp
     autobuffer_test.cpp
-    error_test.cpp
     json_test.cpp
+
+    png_test.cpp
+
     socket_test.cpp
     socket2_test.cpp
+
     sandbox.cpp
+    error_test.cpp
 )
 
 ### =================== CONFIG =================== ###

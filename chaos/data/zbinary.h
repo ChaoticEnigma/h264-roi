@@ -64,7 +64,8 @@ public:
     ~ZBinary(){
         delete _stor;
     }
-    void clear(){
+
+    inline void clear(){
         _stor->clear();
     }
 
@@ -73,17 +74,17 @@ public:
         return *this;
     }
 
-    bool operator==(const ZBinary &rhs) const {
+    inline bool operator==(const ZBinary &rhs) const {
         return _stor->compare(rhs.storage());
     }
-    bool operator!=(const ZBinary &rhs) const {
+    inline bool operator!=(const ZBinary &rhs) const {
         return !operator==(rhs);
     }
 
-    zbinary_type &operator[](zu64 index){
+    inline zbinary_type &operator[](zu64 index){
         return _stor->get(index);
     }
-    const zbinary_type &operator[](zu64 index) const {
+    inline const zbinary_type &operator[](zu64 index) const {
         return _stor->get(index);
     }
 
@@ -166,12 +167,12 @@ public:
     ZBinary printable() const {
         ZBinary tmp = *this;
         if(size()){
-            tmp.nullTerm();
             for(zu64 i = 0; i < size() - 1; ++i){
                 if(_stor->get(i) == 0){
-                    _stor->get(i) = '0';
+                    tmp[i] = '0';
                 }
             }
+            tmp.nullTerm();
         }
         return tmp;
     }

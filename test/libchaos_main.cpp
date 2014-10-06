@@ -12,20 +12,27 @@ int main(int argc, char **argv){
     ZLog::addLogFile(lgf, ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
 
     ZAssoc<ZString, test_func> defaulttests = {
-        { "array", array_block },
+        { "pointer", pointer_block },
+        { "allocator", allocator_block },
+        { "storage", storage_block },
+
         { "binary", binary_block },
+
+        { "array", array_block },
         { "assoc", assoc_block },
+
         { "string", string_block },
         { "path", path_block },
         { "path_windows", path_windows_block },
-        { "pointer", pointer_block },
-        { "allocator", allocator_block },
+
         { "thread", thread_block },
         { "number", number_block },
+
         { "file", file_block },
-        { "png", png_block },
         { "autobuffer", autobuffer_block },
         { "json", json_block },
+
+        { "png", png_block },
     };
 
     ZAssoc<ZString, test_func> tests = defaulttests;

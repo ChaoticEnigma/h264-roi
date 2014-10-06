@@ -8,8 +8,7 @@ struct AnObject {
         LOG("Object created!");
     }
     ~AnObject(){
-        //LOG("Object destroyed!");
-        printf("Object destroyed!\n");
+        LOG("Object destroyed!");
     }
 
     ZString str;
