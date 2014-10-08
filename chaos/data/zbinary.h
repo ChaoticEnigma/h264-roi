@@ -57,7 +57,7 @@ public:
         _stor->resize(list.size());
         zu64 i = 0;
         for(auto it = list.begin(); it < list.end(); ++it, ++i){
-            _stor->get(i) = *it;
+            _stor->set(i, *it);
         }
     }
 
@@ -96,7 +96,7 @@ public:
     ZBinary &fill(zbinary_type dat, zu64 size){
         resize(size);
         for(zu64 i = 0; i < size; ++i){
-            _stor->get(i) = dat;
+            _stor->set(i, dat);
         }
         return *this;
     }
@@ -115,7 +115,7 @@ public:
     void reverse(){
         ZStorage *buff = _stor->newCopy();
         for(zu64 i = 0, j = size(); i < buff->size(); ++i, --j){
-            _stor->get(j) = buff->get(i);
+            _stor->set(j, buff->get(i));
         }
         delete buff;
     }
@@ -159,7 +159,7 @@ public:
     ZBinary &nullTerm(){
         if(size() && _stor->get(size() - 1) != 0){
             resize(size() + 1);
-            _stor->get(size() - 1) = 0;
+            _stor->set(size()-1, 0);
         }
         return *this;
     }
@@ -175,6 +175,13 @@ public:
             tmp.nullTerm();
         }
         return tmp;
+    }
+
+    inline zbinary_type &front(){
+        return _stor->get(0);
+    }
+    inline const zbinary_type &front() const {
+        return _stor->get(0);
     }
 
     inline zbinary_type &back(){
