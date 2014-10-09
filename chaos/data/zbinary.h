@@ -82,9 +82,10 @@ public:
     }
 
     inline zbinary_type &operator[](zu64 index){
-        return _stor->get(index);
+        zbyte *ptr = _stor->getBlock(index, 1);
+        return *ptr;
     }
-    inline const zbinary_type &operator[](zu64 index) const {
+    inline zbinary_type operator[](zu64 index) const {
         return _stor->get(index);
     }
 
@@ -178,17 +179,19 @@ public:
     }
 
     inline zbinary_type &front(){
-        return _stor->get(0);
+        zbyte *ptr = _stor->getBlock(0, 1);
+        return *ptr;
     }
-    inline const zbinary_type &front() const {
+    inline zbinary_type front() const {
         return _stor->get(0);
     }
 
     inline zbinary_type &back(){
-        return _stor->get(size() - 1);
+        zbyte *ptr = _stor->getBlock(size()-1, 1);
+        return *ptr;
     }
-    inline const zbinary_type &back() const {
-        return _stor->get(size() - 1);
+    inline zbinary_type back() const {
+        return _stor->get(size()-1);
     }
 
     inline zu64 size() const {

@@ -17,34 +17,34 @@ int storage_block(){
     stor->resize(10);
     LOG(stor->size() << " " << ((ZDefaultStorage*)stor)->realSize());
     for(zu64 i = 0; i < stor->size(); ++i)
-        stor->get(i) = (zbyte)i;
+        stor->set(i, (zbyte)i);
     print();
 
     stor->resize(11);
     LOG(stor->size() << " " << ((ZDefaultStorage*)stor)->realSize());
     for(zu64 i = 10; i < stor->size(); ++i)
-        stor->get(i) = 252;
+        stor->set(i, 252);
     print();
 
     stor->resize(12);
     LOG(stor->size() << " " << ((ZDefaultStorage*)stor)->realSize());
     for(zu64 i = 11; i < stor->size(); ++i)
-        stor->get(i) = 253;
+        stor->set(i, 253);
     print();
 
     stor->resize(21);
     LOG(stor->size() << " " << ((ZDefaultStorage*)stor)->realSize());
     for(zu64 i = 12; i < stor->size(); ++i)
-        stor->get(i) = 254;
+        stor->set(i, 254);
     print();
     for(zu64 i = 0; i < stor->size(); ++i)
-        stor->get(i) = (zbyte)i;
+        stor->set(i, (zbyte)i);
     print();
 
     stor->resize(90);
     LOG(stor->size() << " " << ((ZDefaultStorage*)stor)->realSize());
     for(zu64 i = 21; i < stor->size(); ++i)
-        stor->get(i) = 255;
+        stor->set(i, 255);
     print();
 
     stor->resize(40);
@@ -54,7 +54,7 @@ int storage_block(){
     stor->resize(350);
     LOG(stor->size() << " " << ((ZDefaultStorage*)stor)->realSize());
     for(zu64 i = 0; i < stor->size(); ++i)
-        stor->get(i) = (zbyte)i;
+        stor->set(i, (zbyte)i);
     print();
 
     delete stor;

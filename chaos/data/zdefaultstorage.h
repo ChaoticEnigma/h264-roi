@@ -58,14 +58,14 @@ public:
         _data[index] = byte;
     }
 
-    template <typename T>
-    inline T getType(zu64 index) const {
-        return ((T*)_data)[index];
-    }
-    template <typename T>
-    inline void setType(zu64 index, T data){
-        ((T*)_data)[index] = data;
-    }
+//    template <typename T>
+//    inline T getType(zu64 index) const {
+//        return ((T*)_data)[index];
+//    }
+//    template <typename T>
+//    inline void setType(zu64 index, T data){
+//        ((T*)_data)[index] = data;
+//    }
 
     zbyte *getBlock(zu64 index, zu64 size){
         return _data + index;
