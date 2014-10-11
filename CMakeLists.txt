@@ -46,6 +46,15 @@ SET(LibChaos_CONFIGURE_CMAKE "${CMAKE_CURRENT_SOURCE_DIR}/configure_build.cmake"
 SET(LibChaos_BUILD_STRING "LibChaos -")
 ADD_SUBDIRECTORY(chaos)
 SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} '${LibChaosCore_BUILD_STRING}'")
+SET(LibChaos_INCLUDE ${LibChaos_INCLUDE})
+
+# LibChaos Extern
+IF(LIBCHAOS_EXTERN)
+    ADD_SUBDIRECTORY(extern)
+    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} '${LibChaosExtern_BUILD_STRING}'")
+    SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} ${LibChaosExtern_INCLUDE})
+ENDIF()
+
 SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
 
 # LibChaos Test

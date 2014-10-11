@@ -41,10 +41,8 @@ HEADERS += \
     $$PWD/chaos/file/database.h \
     $$PWD/chaos/file/zbitmap.h \
     $$PWD/chaos/file/zfile.h \
-    $$PWD/chaos/file/zpng.h \
     $$PWD/chaos/file/zimage.h \
     $$PWD/chaos/file/zbmp.h \
-    $$PWD/chaos/file/zjpeg.h \
     \
     $$PWD/chaos/lib/sqlite3.h \
     \
@@ -59,6 +57,9 @@ HEADERS += \
     $$PWD/chaos/thread/zcondition.h \
     $$PWD/chaos/thread/zmutex.h \
     $$PWD/chaos/thread/zthread.h \
+    \
+    $$PWD/extern/zjpeg.h \
+    $$PWD/extern/zpng.h \
     \
     $$PWD/test/test.h \
     \
@@ -93,9 +94,7 @@ SOURCES += \
     \
     $$PWD/chaos/file/database.cpp \
     $$PWD/chaos/file/zfile.cpp \
-    $$PWD/chaos/file/zpng.cpp \
     $$PWD/chaos/file/zbmp.cpp \
-    $$PWD/chaos/file/zjpeg.cpp \
     \
     $$PWD/chaos/lib/sqlite3.c \
     \
@@ -108,6 +107,9 @@ SOURCES += \
     $$PWD/chaos/net/zaddress.cpp \
     \
     $$PWD/chaos/thread/zthread.cpp \
+    \
+    $$PWD/extern/zpng.cpp \
+    $$PWD/extern/zjpeg.cpp \
     \
     $$PWD/test/libchaos_main.cpp \
     $$PWD/test/autobuffer_test.cpp \
@@ -147,21 +149,24 @@ SOURCES += \
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
-    $$PWD/ui/CMakeLists.txt \
     $$PWD/bbb/CMakeLists.txt \
     $$PWD/chaos/CMakeLists.txt \
-    $$PWD/test/CMakeLists.txt \
-    $$PWD/configure_build.cmake \
-    $$PWD/todo.txt \
-    $$PWD/LibChaos_Todo_Ideas.txt \
-    $$PWD/util/CMakeLists.txt \
-    $$PWD/source_hash.cmake \
-    $$PWD/hash.sh \
     $$PWD/chaos/lib/libpng-1.2.37/CMakeLists.txt \
-    $$PWD/chaos/lib/zlib-1.2.8/CMakeLists.txt
+    $$PWD/chaos/lib/zlib-1.2.8/CMakeLists.txt \
+    $$PWD/extern/CMakeLists.txt \
+    $$PWD/test/CMakeLists.txt \
+    $$PWD/ui/CMakeLists.txt \
+    $$PWD/util/CMakeLists.txt \
+    \
+    $$PWD/configure_build.cmake \
+    $$PWD/hash.sh \
+    $$PWD/LibChaos_Todo_Ideas.txt \
+    $$PWD/source_hash.cmake \
+    $$PWD/todo.txt
 
 INCLUDEPATH += \
     $$PWD \
+    $$PWD/bbb \
     $$PWD/chaos \
     $$PWD/chaos/abstract \
     $$PWD/chaos/data \
@@ -172,7 +177,6 @@ INCLUDEPATH += \
     $$PWD/chaos/thread \
     $$PWD/test \
     $$PWD/ui \
-    $$PWD/bbb \
     $$PWD/util
 
 # Build

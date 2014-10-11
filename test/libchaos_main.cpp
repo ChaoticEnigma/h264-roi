@@ -32,7 +32,9 @@ int main(int argc, char **argv){
         { "autobuffer", autobuffer_block },
         { "json", json_block },
 
+#ifdef LIBCHAOS_EXTERN
         { "png", png_block },
+#endif
     };
 
     ZAssoc<ZString, test_func> tests = defaulttests;

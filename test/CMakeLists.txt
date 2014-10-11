@@ -24,8 +24,6 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     autobuffer_test.cpp
     json_test.cpp
 
-    png_test.cpp
-
     socket_test.cpp
     socket2_test.cpp
 
@@ -33,10 +31,15 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     error_test.cpp
 )
 
+IF(LIBCHAOS_EXTERN)
+    SET(LibChaosTest_SOURCES ${LibChaosTest_SOURCES}
+        png_test.cpp
+    )
+ENDIF()
+
 ### =================== CONFIG =================== ###
 
 INCLUDE_DIRECTORIES(
-    ${LibChaos_Test_SOURCE_DIR}
     ${LibChaos_INCLUDE}
 )
 
@@ -48,9 +51,13 @@ IF(DISABLE_LIBPNG)
     ADD_DEFINITIONS(-DDISABLE_LIBPNG)
 ENDIF()
 
+IF(LIBCHAOS_EXTERN)
+    ADD_DEFINITIONS(-DLIBCHAOS_EXTERN)
+ENDIF()
+
 ### =================== BUILD =================== ###
 
 ADD_DEFINITIONS(-DBUILDING)
 
 ADD_EXECUTABLE(testchaos ${LibChaosTest_SOURCES})
-TARGET_LINK_LIBRARIES(testchaos chaos)
+TARGET_LINK_LIBRARIES(testchaos chaos chaosextern)
