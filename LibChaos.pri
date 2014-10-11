@@ -20,16 +20,21 @@ HEADERS += \
     $$PWD/chaos/abstract/zreader.h \
     $$PWD/chaos/abstract/zserializer.h \
     $$PWD/chaos/abstract/zstorage.h \
+    $$PWD/chaos/abstract/zwriter.h \
     \
+    $$PWD/chaos/data/zallocator.h \
     $$PWD/chaos/data/zarray.h \
     $$PWD/chaos/data/zarray2.h \
     $$PWD/chaos/data/zassoc.h \
     $$PWD/chaos/data/zassoc2.h \
     $$PWD/chaos/data/zbinary.h \
     $$PWD/chaos/data/zdata.h \
+    $$PWD/chaos/data/zdefaultstorage.h \
+    $$PWD/chaos/data/zfilestorage.h \
     $$PWD/chaos/data/zjson.h \
     $$PWD/chaos/data/zmap.h \
     $$PWD/chaos/data/zpath.h \
+    $$PWD/chaos/data/zpointer.h \
     $$PWD/chaos/data/zstring.h \
     $$PWD/chaos/data/zxml.h \
     \
@@ -68,12 +73,7 @@ HEADERS += \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
     \
-    $$PWD/bbb/zbbb.h \
-    $$PWD/chaos/data/zallocator.h \
-    $$PWD/chaos/data/zpointer.h \
-    $$PWD/chaos/data/zdefaultstorage.h \
-    $$PWD/chaos/data/zfilestorage.h \
-    $$PWD/chaos/abstract/zwriter.h
+    $$PWD/bbb/zbbb.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
@@ -122,6 +122,11 @@ SOURCES += \
     $$PWD/test/socket_test.cpp \
     $$PWD/test/json_test.cpp \
     $$PWD/test/socket2_test.cpp \
+    $$PWD/test/binary_test.cpp \
+    $$PWD/test/path_test.cpp \
+    $$PWD/test/pointer_test.cpp \
+    $$PWD/test/allocator_test.cpp \
+    $$PWD/test/storage_test.cpp \
     \
     $$PWD/ui/win32/window_win32.cpp \
     $$PWD/ui/win32/windowproc_win32.cpp \
@@ -138,12 +143,7 @@ SOURCES += \
     $$PWD/util/extensionfixer.cpp \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
-    $$PWD/util/duplicatefinder.cpp \
-    $$PWD/test/binary_test.cpp \
-    $$PWD/test/path_test.cpp \
-    $$PWD/test/pointer_test.cpp \
-    $$PWD/test/allocator_test.cpp \
-    $$PWD/test/storage_test.cpp
+    $$PWD/util/duplicatefinder.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
