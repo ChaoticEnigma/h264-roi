@@ -1,6 +1,9 @@
 //include <roxlu/core/Log.h>
 //#include <roxlu/core/Utils.h>
+#include "Utils.h"
 #include "X264Encoder.h"
+
+#include "zlog.h"
 
 X264Encoder::X264Encoder() 
   :in_width(0)
@@ -37,12 +40,12 @@ bool X264Encoder::open(std::string filename, bool datapath) {
 
   // @todo add validate which checks if all params are set (in/out width/height, fps,etc..);
   if(encoder) {
-    RX_ERROR("Already opened. first call close()");
+    ELOG("Already opened. first call close()");
     return false;
   }
 
   if(out_pixel_format != AV_PIX_FMT_YUV420P) {
-    RX_ERROR("At this moment the output format must be AV_PIX_FMT_YUV420P");
+    ELOG("At this moment the output format must be AV_PIX_FMT_YUV420P");
     return false;
   }
 
@@ -51,7 +54,7 @@ bool X264Encoder::open(std::string filename, bool datapath) {
                        SWS_FAST_BILINEAR, NULL, NULL, NULL);
 
   if(!sws) {
-    RX_ERROR("Cannot create SWS context");
+    ELOG("Cannot create SWS context");
     ::exit(EXIT_FAILURE);
   }
    
@@ -61,7 +64,7 @@ bool X264Encoder::open(std::string filename, bool datapath) {
 
   fp = fopen(filename.c_str(), "w+b");
   if(!fp) {
-    RX_ERROR("Cannot open the h264 destination file");
+    ELOG("Cannot open the h264 destination file");
     goto error;
   }
 
@@ -73,20 +76,20 @@ bool X264Encoder::open(std::string filename, bool datapath) {
   // create the encoder using our params
   encoder = x264_encoder_open(&params);
   if(!encoder) {
-    RX_ERROR("Cannot open the encoder");
+    ELOG("Cannot open the encoder");
     goto error;
   }
 
   // write headers
   r = x264_encoder_headers(encoder, &nals, &nheader);
   if(r < 0) {
-    RX_ERROR("x264_encoder_headers() failed");
+    ELOG("x264_encoder_headers() failed");
     goto error;
   }
 
   header_size = nals[0].i_payload + nals[1].i_payload +nals[2].i_payload;
   if(!fwrite(nals[0].p_payload, header_size, 1, fp)) {
-    RX_ERROR("Cannot write headers");
+    ELOG("Cannot write headers");
     goto error;
   }
 
@@ -101,14 +104,14 @@ bool X264Encoder::open(std::string filename, bool datapath) {
 
 bool X264Encoder::encode(char* pixels) {
   if(!sws) {
-    RX_ERROR("Not initialized, so cannot encode");
+    ELOG("Not initialized, so cannot encode");
     return false;
   }
 
   // copy the pixels into our "raw input" container.
   int bytes_filled = avpicture_fill(&pic_raw, (uint8_t*)pixels, in_pixel_format, in_width, in_height);
   if(!bytes_filled) {
-    RX_ERROR("Cannot fill the raw input buffer");
+    ELOG("Cannot fill the raw input buffer");
     return false;
   }
 
@@ -117,7 +120,7 @@ bool X264Encoder::encode(char* pixels) {
                     in_height, pic_in.img.plane, pic_in.img.i_stride);
 
   if(h != out_height) {
-    RX_ERROR("scale failed: %d", h);
+    ELOG("scale failed: " << h);
     return false;
   }
   
@@ -127,7 +130,7 @@ bool X264Encoder::encode(char* pixels) {
   int frame_size = x264_encoder_encode(encoder, &nals, &num_nals, &pic_in, &pic_out);
   if(frame_size) {
     if(!fwrite(nals[0].p_payload, frame_size, 1, fp)) {
-      RX_ERROR("Error while trying to write nal");
+      ELOG("Error while trying to write nal");
       return false;
     }
   }
@@ -171,27 +174,27 @@ void X264Encoder::setParams() {
 
 bool X264Encoder::validateSettings() {
   if(!in_width) {
-    RX_ERROR("No in_width set");
+    ELOG("No in_width set");
     return false;
   }
   if(!in_height) {
-    RX_ERROR("No in_height set");
+    ELOG("No in_height set");
     return false;
   }
   if(!out_width) {
-    RX_ERROR("No out_width set");
+    ELOG("No out_width set");
     return false;
   }
   if(!out_height) {
-    RX_ERROR("No out_height set");
+    ELOG("No out_height set");
     return false;
   }
   if(in_pixel_format == AV_PIX_FMT_NONE) {
-    RX_ERROR("No in_pixel_format set");
+    ELOG("No in_pixel_format set");
     return false;
   }
   if(out_pixel_format == AV_PIX_FMT_NONE) {
-    RX_ERROR("No out_pixel_format set");
+    ELOG("No out_pixel_format set");
     return false;
   }
   return true;
