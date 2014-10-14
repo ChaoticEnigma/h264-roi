@@ -59,8 +59,6 @@ class H264_Decoder {
   int frame;                                                                             /* the number of decoded frames */
   h264_decoder_callback cb_frame;                                                        /* the callback function which will receive the frame/packet data */
   void* cb_user;                                                                         /* the void* with user data that is passed into the set callback */
-  uint64_t frame_timeout;                                                                /* timeout when we need to parse a new frame */
-  uint64_t frame_delay;                                                                  /* delay between frames (in ns) */
   std::vector<uint8_t> buffer;                                                           /* buffer we use to keep track of read/unused bitstream data */
 };
 

@@ -8,8 +8,6 @@ H264_Decoder::H264_Decoder(h264_decoder_callback frameCallback, void* user)
   ,frame(0)
   ,cb_frame(frameCallback)
   ,cb_user(user)
-  ,frame_timeout(0)
-  ,frame_delay(0)
 {
   avcodec_register_all();
 }
@@ -40,7 +38,6 @@ H264_Decoder::~H264_Decoder() {
   cb_frame = NULL;
   cb_user = NULL;
   frame = 0;
-  frame_timeout = 0;
 }
 
 bool H264_Decoder::load(std::string filepath, float fps) {
@@ -77,45 +74,20 @@ bool H264_Decoder::load(std::string filepath, float fps) {
     return false;
   }
 
-  if(fps > 0.0001f) {
-    frame_delay = (1.0f/fps) * 1000ull * 1000ull * 1000ull;
-    frame_timeout = rx_hrtime() + frame_delay;
-  }
-
   // kickoff reading...
   readBuffer();
 
   return true;
 }
 
-bool H264_Decoder::readFrame() {
-
-  uint64_t now = rx_hrtime();
-  if(now < frame_timeout) {
-    return false;
-  }
-
-  bool needs_more = false;
-
-  while(!update(needs_more)) {
-    if(needs_more) {
-      readBuffer();
+bool H264_Decoder::readFrame(){
+    bool needs_more = false;
+    while(!update(needs_more)){
+        if(needs_more) {
+            readBuffer();
+        }
     }
-  }
-
-  // it may take some 'reads' before we can set the fps
-  if(frame_timeout == 0 && frame_delay == 0) {
-    double fps = av_q2d(codec_context->time_base);
-    if(fps > 0.0) {
-      frame_delay = fps * 1000ull * 1000ull * 1000ull;
-    }
-  }
-
-  if(frame_delay > 0) {
-    frame_timeout = rx_hrtime() + frame_delay;
-  }
-
-  return true;
+    return true;
 }
 
 void H264_Decoder::decodeFrame(uint8_t* data, int size) {
