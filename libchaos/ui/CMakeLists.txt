@@ -3,7 +3,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 PROJECT(LibChaosUI)
 
-SET(LibChaosUI_HEADERS ### =================== HEADERS =================== ###
+#ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../chaos ${CMAKE_CURRENT_BINARY_DIR}/chaos)
+
+SET(LibChaosUI_HEADERS ### =================== HEADERS =================== ###S
     zui.h
     align.h
     base.h
