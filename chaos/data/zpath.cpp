@@ -40,8 +40,8 @@ bool ZPath::operator==(ZPath pth){
 void ZPath::fromStr(ZString path){
 #if PLATFORM == WINDOWS
     if(path.size() > 2 && path[1] == ':'){
-        absolute = true;
-        prefix = ZString::substr(0, 2) + ZPATH_DEFAULT_DELIM;
+        _absolute = true;
+        prefix = ZString::substr(path, 0, 2) + ZPATH_DEFAULT_DELIM;
     }
 #else
     _absolute = path.startsWith(prefix, false);

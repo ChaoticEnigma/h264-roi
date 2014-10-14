@@ -345,6 +345,8 @@ int tcpserver_test2(){
 
 #endif
 
+#if PLATFORM != WINDOWS
+
 int tcpserver_test3(){
     fd_set master;    // master file descriptor list
     fd_set read_fds;  // temp file descriptor list for select()
@@ -488,3 +490,11 @@ int tcpserver_test3(){
 
     return 0;
 }
+
+#else
+
+int tcpserver_test3(){
+    return 0;
+}
+
+#endif

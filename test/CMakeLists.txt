@@ -60,4 +60,7 @@ ENDIF()
 ADD_DEFINITIONS(-DBUILDING)
 
 ADD_EXECUTABLE(testchaos ${LibChaosTest_SOURCES})
-TARGET_LINK_LIBRARIES(testchaos chaos chaosextern)
+TARGET_LINK_LIBRARIES(testchaos chaos)
+IF(LIBCHAOS_EXTERN)
+    TARGET_LINK_LIBRARIES(testchaos chaosextern)
+ENDIF()
