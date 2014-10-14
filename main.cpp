@@ -12,11 +12,20 @@ int main(){
 
     H264_Decoder decoder((h264_decoder_callback)decoderCallback, NULL);
 
+#if PLATFORM == LINUX
+    //decoder.load("/home/chaos/Shared/bf4 hs2.mp4");
+    decoder.load("/home/chaos/Shared/sao1.h264");
+#else
     decoder.load("F:\\Video\\bf4 hs2.mp4");
+#endif
 
     LOG("Reading frames...");
 
-    decoder.readFrame();
+    bool ok = true;
+    while(ok){
+        ok = decoder.readFrame();
+        LOG(ok);
+    }
 
     //X264Encoder encoder;
 

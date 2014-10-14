@@ -26,8 +26,10 @@ INCLUDE(${LibChaos_CONFIGURE_CMAKE})
 configure_build("H264_ROI" ${LibChaos_BUILD} ${LibChaos_PLATFORM})
 MESSAGE(STATUS ${BUILD_STRING})
 
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wno-pedantic -Wno-sign-conversion -Wno-sign-compare -Wno-cast-qual")
-#SET_SOURCE_FILES_PROPERTIES(roxlu/Utils.cpp COMPILE_FLAGS " -Wno-pedantic")
+IF(PLATFORM_WINDOWS)
+    SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wno-pedantic -Wno-sign-conversion -Wno-sign-compare -Wno-cast-qual")
+    #SET_SOURCE_FILES_PROPERTIES(roxlu/Utils.cpp COMPILE_FLAGS " -Wno-pedantic")
+ENDIF()
 
 INCLUDE_DIRECTORIES(
     ${H264_ROI_SOURCE_DIR}
@@ -63,6 +65,6 @@ IF(PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavutil/libavutil.a)
 
 ELSE()
-    TARGET_LINK_LIBRARIES(h264_roi uv x264 avcodec swscale avutil)
+    TARGET_LINK_LIBRARIES(h264_roi uv avformat avcodec x264 avdevice avutil swscale swresample z)
 ENDIF()
 TARGET_LINK_LIBRARIES(h264_roi glxw)

@@ -10,7 +10,8 @@ HEADERS += \
     roxlu/H264_Decoder.h \
     roxlu/Utils.h \
     roxlu/tinylib-2.h \
-    roxlu/tinylib.h
+    roxlu/tinylib.h \
+    roxlu/dirent-win.h
 
 SOURCES += \
     main.cpp \
