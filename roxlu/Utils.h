@@ -277,6 +277,8 @@ static std::string rx_get_exe_path() {
   return std::string(buffer).substr(0, pos) +"\\";
 }
 
+typedef unsigned long long rx_int64;
+
 static rx_int64 rx_millis(void) {
   static LARGE_INTEGER s_frequency;
   static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);

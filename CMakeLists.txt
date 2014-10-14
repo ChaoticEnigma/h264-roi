@@ -35,7 +35,8 @@ INCLUDE_DIRECTORIES(
 IF(PLATFORM_WINDOWS)
     INCLUDE_DIRECTORIES(
         ${CMAKE_SOURCE_DIR}/../x264
-    ${CMAKE_SOURCE_DIR}/../libuv/include
+        ${CMAKE_SOURCE_DIR}/../libuv/include
+        ${CMAKE_SOURCE_DIR}/../ffmpeg
     )
 ENDIF()
 
@@ -47,7 +48,14 @@ ADD_DEFINITIONS(-DBUILDING)
 ADD_EXECUTABLE(h264_roi ${H264_ROI_SOURCES})
 TARGET_LINK_LIBRARIES(h264_roi chaos)
 IF(PLATFORM_WINDOWS)
-    TARGET_LINK_LIBRARIES(h264_roi ../x264/libx264.a)
-    TARGET_LINK_LIBRARIES(h264_roi ../libuv/libuv.a)
-    #TARGET_LINK_LIBRARIES(h264_roi uv x264 avcodec swscale avutil glxw)
+    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../libuv/libuv.a)
+    TARGET_LINK_LIBRARIES(h264_roi iphlpapi)
+
+    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../x264/libx264.a)
+    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavcodec/libavcodec.a)
+    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libswscale/libswscale.a)
+    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavutil/libavutil.a)
+ELSE()
+    TARGET_LINK_LIBRARIES(h264_roi uv x264 avcodec swscale avutil)
 ENDIF()
+TARGET_LINK_LIBRARIES(h264_roi glxw)

@@ -240,19 +240,19 @@
 // UTILS
 // ---------------------------------------------------------------------------
 #if defined(_WIN32) // rx_get_exe_path()
-static std::string rx_get_exe_path() {
-  char buffer[MAX_PATH];
+//static std::string rx_get_exe_path() {
+//  char buffer[MAX_PATH];
 
-  // Try to get the executable path with a buffer of MAX_PATH characters.
-  DWORD result = ::GetModuleFileNameA(nullptr, buffer, static_cast<DWORD>(MAX_PATH));
-  if(result == 0) {
-    return "";
-  }
+//  // Try to get the executable path with a buffer of MAX_PATH characters.
+//  DWORD result = ::GetModuleFileNameA(nullptr, buffer, static_cast<DWORD>(MAX_PATH));
+//  if(result == 0) {
+//    return "";
+//  }
 
-  std::string::size_type pos = std::string(buffer).find_last_of( "\\/" );
+//  std::string::size_type pos = std::string(buffer).find_last_of( "\\/" );
 
-  return std::string(buffer).substr(0, pos) +"\\";
-}
+//  return std::string(buffer).substr(0, pos) +"\\";
+//}
 #elif defined(__APPLE__) // rx_get_exe_path()
 static std::string rx_get_exe_path() {
   char buffer[1024];

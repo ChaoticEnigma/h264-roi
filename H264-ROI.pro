@@ -24,6 +24,9 @@ OTHER_FILES += \
 
 INCLUDEPATH += \
     roxlu \
+    $$PWD/../x264 \
+    $$PWD/../libuv/include \
+    $$PWD/../ffmpeg \
     $$OUT_PWD/glxw/include
 
 include(libchaos/LibChaos.pri)

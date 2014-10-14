@@ -10,7 +10,7 @@
 
 #define ZLOG_DEBUG_DEPTH 100
 
-#define ZLOG_FILE_PREPROC LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::file, ZPath(__FILE__).last().str())
+#define ZLOG_FILE_PREPROC LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::file, LibChaos::ZPath(__FILE__).last().str())
 #define ZLOG_LINE_PREPROC LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::line, __LINE__)
 #define ZLOG_FUNC_PREPROC LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::function, __FUNCTION__)
 
