@@ -78,7 +78,7 @@
 #include <algorithm>                                /* std::replace() */
 
 #if defined(_WIN32)
-#  include <utils/dirent.h>                         /* for stat() */  
+#  include "dirent.h"                         /* for stat() */
 #  include <direct.h>                               /* _mkdir */
 #  include <Shlwapi.h>
 #  include <stdarg.h>
