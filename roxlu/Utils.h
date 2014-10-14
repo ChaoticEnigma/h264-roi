@@ -107,7 +107,7 @@
 #endif
 
 extern "C" {
-#  include <uv.h>                                    /* we depend on libuv */
+#include <uv.h>                                    /* we depend on libuv */
 }
 
 
@@ -193,8 +193,8 @@ extern "C" {
 
 // ---------------------------------------------------------------
 
-static std::string rx_get_file_ext(std::string filepath);
-static bool rx_file_exists(std::string filepath);
+//static std::string rx_get_file_ext(std::string filepath);
+//static bool rx_file_exists(std::string filepath);
 
 // as suggested: http://stackoverflow.com/questions/4100657/problem-with-my-clamp-macro
 template <typename T> 
@@ -263,34 +263,34 @@ static std::string rx_join(const std::vector<T>& entries, std::string sep) {
 // -------------------------------------- WIN ---------------------------------------
 #ifdef _WIN32
 
-static std::string rx_get_exe_path() {
-  char buffer[MAX_PATH];
+//static std::string rx_get_exe_path() {
+//  char buffer[MAX_PATH];
 
-  // Try to get the executable path with a buffer of MAX_PATH characters.
-  DWORD result = ::GetModuleFileNameA(nullptr, buffer, static_cast<DWORD>(MAX_PATH));
-  if(result == 0) {
-    return "";
-  }
+//  // Try to get the executable path with a buffer of MAX_PATH characters.
+//  DWORD result = ::GetModuleFileNameA(nullptr, buffer, static_cast<DWORD>(MAX_PATH));
+//  if(result == 0) {
+//    return "";
+//  }
 
-  std::string::size_type pos = std::string(buffer).find_last_of( "\\/" );
+//  std::string::size_type pos = std::string(buffer).find_last_of( "\\/" );
 
-  return std::string(buffer).substr(0, pos) +"\\";
-}
+//  return std::string(buffer).substr(0, pos) +"\\";
+//}
 
-typedef unsigned long long rx_int64;
+//typedef unsigned long long rx_int64;
 
-static rx_int64 rx_millis(void) {
-  static LARGE_INTEGER s_frequency;
-  static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
-  if (s_use_qpc) {
-    LARGE_INTEGER now;
-    QueryPerformanceCounter(&now);
-    return (1000LL * now.QuadPart) / s_frequency.QuadPart;
-  } 
-  else {
-    return GetTickCount();
-  }
-}
+//static rx_int64 rx_millis(void) {
+//  static LARGE_INTEGER s_frequency;
+//  static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
+//  if (s_use_qpc) {
+//    LARGE_INTEGER now;
+//    QueryPerformanceCounter(&now);
+//    return (1000LL * now.QuadPart) / s_frequency.QuadPart;
+//  }
+//  else {
+//    return GetTickCount();
+//  }
+//}
 
 /* returns epoch timestamp */
 static time_t rx_time() {
@@ -382,64 +382,64 @@ static time_t rx_time() {
 #endif
 
 // ---------------------------------------------------------------------------------
-static bool rx_is_dir(std::string filepath) {
-  struct stat st;
-  int result = stat(filepath.c_str(), &st);
+//static bool rx_is_dir(std::string filepath) {
+//  struct stat st;
+//  int result = stat(filepath.c_str(), &st);
 
-  if(result < 0) {
-    if(errno == EACCES) {
-      printf("EACCESS: no permission for: %s", filepath.c_str());
-    }
-    else if(errno == EFAULT) {
-      printf("EFAULT: bad address, for: %s", filepath.c_str());
-    }
-    else if(errno == ELOOP) {
-      printf("ELOOP: too many links, for: %s", filepath.c_str());
-    }
-    else if(errno == ENAMETOOLONG) {
-      printf("ENAMETOOLONG: for: %s", filepath.c_str());
-    }
-    else if(errno == ENOENT) {
-      // we expect this when the dir doesn't exist
-      return false;
-    }
-    else if(errno == ENOMEM) {
-      printf("ENOMEM: for: %s", filepath.c_str());
-    }
-    else if(errno == ENOTDIR) {
-      printf("ENOTDIR: for: %s", filepath.c_str());
-    }
-    else if(errno == EOVERFLOW) {
-      printf("EOVERFLOW: for: %s", filepath.c_str());
-    }
+//  if(result < 0) {
+//    if(errno == EACCES) {
+//      printf("EACCESS: no permission for: %s", filepath.c_str());
+//    }
+//    else if(errno == EFAULT) {
+//      printf("EFAULT: bad address, for: %s", filepath.c_str());
+//    }
+//    else if(errno == ELOOP) {
+//      printf("ELOOP: too many links, for: %s", filepath.c_str());
+//    }
+//    else if(errno == ENAMETOOLONG) {
+//      printf("ENAMETOOLONG: for: %s", filepath.c_str());
+//    }
+//    else if(errno == ENOENT) {
+//      // we expect this when the dir doesn't exist
+//      return false;
+//    }
+//    else if(errno == ENOMEM) {
+//      printf("ENOMEM: for: %s", filepath.c_str());
+//    }
+//    else if(errno == ENOTDIR) {
+//      printf("ENOTDIR: for: %s", filepath.c_str());
+//    }
+//    else if(errno == EOVERFLOW) {
+//      printf("EOVERFLOW: for: %s", filepath.c_str());
+//    }
 
-    return false;
-  }
+//    return false;
+//  }
 
-#if defined(__APPLE__) or defined(__linux__)
-  return S_ISDIR(st.st_mode);
-#else 
-  return result == 0;
-#endif  
+//#if defined(__APPLE__) or defined(__linux__)
+//  return S_ISDIR(st.st_mode);
+//#else
+//  return result == 0;
+//#endif
 
-}
+//}
 
-static std::string rx_to_data_path(const std::string filename) {
-  std::string exepath = rx_get_exe_path();
+//static std::string rx_to_data_path(const std::string filename) {
+//  std::string exepath = rx_get_exe_path();
 
-#if defined(__APPLE__)
-  if(rx_is_dir(exepath +"data")) {
-    exepath += "data/" +filename;
-  }
-  else if(rx_is_dir(exepath +"../MacOS")) {
-    exepath += "../../../data/" +filename;
-  }
-#else 
-  exepath += "data/" +filename;
-#endif  
+//#if defined(__APPLE__)
+//  if(rx_is_dir(exepath +"data")) {
+//    exepath += "data/" +filename;
+//  }
+//  else if(rx_is_dir(exepath +"../MacOS")) {
+//    exepath += "../../../data/" +filename;
+//  }
+//#else
+//  exepath += "data/" +filename;
+//#endif
 
-  return exepath;
-}
+//  return exepath;
+//}
 
 static std::string rx_to_exe_path(std::string filename) {
   return rx_get_exe_path() +filename;

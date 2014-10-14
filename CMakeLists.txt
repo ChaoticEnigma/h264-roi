@@ -13,8 +13,8 @@ ADD_SUBDIRECTORY(glxw)
 SET(H264_ROI_SOURCES ### =================== SOURCES =================== ###
     main.cpp
 
-    roxlu/Utils.cpp
-
+    roxlu/H264_Decoder.cpp
+#    roxlu/Utils.cpp
     roxlu/X264Encoder.cpp
 #    roxlu/X264EncoderThreaded.cpp
 #    roxlu/YUV420P.cpp
@@ -25,6 +25,9 @@ SET(H264_ROI_SOURCES ### =================== SOURCES =================== ###
 INCLUDE(${LibChaos_CONFIGURE_CMAKE})
 configure_build("H264_ROI" ${LibChaos_BUILD} ${LibChaos_PLATFORM})
 MESSAGE(STATUS ${BUILD_STRING})
+
+SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wno-pedantic -Wno-sign-conversion -Wno-sign-compare -Wno-cast-qual")
+#SET_SOURCE_FILES_PROPERTIES(roxlu/Utils.cpp COMPILE_FLAGS " -Wno-pedantic")
 
 INCLUDE_DIRECTORIES(
     ${H264_ROI_SOURCE_DIR}
@@ -51,10 +54,14 @@ IF(PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../libuv/libuv.a)
     TARGET_LINK_LIBRARIES(h264_roi iphlpapi)
 
-    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../x264/libx264.a)
+    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavformat/libavformat.a)
     TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavcodec/libavcodec.a)
+    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../fdk-aac/.libs/libfdk-aac.a)
+    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../x264/libx264.a)
     TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libswscale/libswscale.a)
+    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libswresample/libswresample.a)
     TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavutil/libavutil.a)
+
 ELSE()
     TARGET_LINK_LIBRARIES(h264_roi uv x264 avcodec swscale avutil)
 ENDIF()

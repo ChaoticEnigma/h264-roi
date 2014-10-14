@@ -3,13 +3,14 @@ CONFIG += console
 CONFIG -= qt
 
 HEADERS += \
+    main.h \
     roxlu/X264Encoder.h \
     roxlu/X264EncoderThreaded.h \
     roxlu/YUV420P.h \
-    roxlu/main.h \
     roxlu/H264_Decoder.h \
-    roxlu/tinylib.h \
-    roxlu/Utils.h
+    roxlu/Utils.h \
+    roxlu/tinylib-2.h \
+    roxlu/tinylib.h
 
 SOURCES += \
     main.cpp \

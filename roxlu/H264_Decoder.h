@@ -26,7 +26,8 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#include <tinylib.h>
+
+#include "tinylib.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>

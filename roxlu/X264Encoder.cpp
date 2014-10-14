@@ -1,6 +1,9 @@
 //include <roxlu/core/Log.h>
 //#include <roxlu/core/Utils.h>
-#include "Utils.h"
+//#include "Utils.h"
+
+#include "tinylib.h"
+
 #include "X264Encoder.h"
 
 #include "zlog.h"
