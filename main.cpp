@@ -16,7 +16,8 @@ int main(){
     //decoder.load("/home/chaos/Shared/bf4 hs2.mp4");
     decoder.load("/home/chaos/Shared/sao1.h264");
 #else
-    decoder.load("F:\\Video\\bf4 hs2.mp4");
+    //decoder.load("F:\\Video\\bf4 hs2.mp4");
+    decoder.load("E:\\Users\\Chaos\\Shared\\sao1.h264");
 #endif
 
     LOG("Reading frames...");
