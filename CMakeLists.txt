@@ -9,6 +9,10 @@ ADD_SUBDIRECTORY(libchaos)
 
 SET(H264_ROI_SOURCES ### =================== SOURCES =================== ###
     main.cpp
+
+    roxlu/X264Encoder.cpp
+#    roxlu/X264EncoderThreaded.cpp
+#    roxlu/YUV420P.cpp
 )
 
 ### =================== CONFIG =================== ###
@@ -16,6 +20,7 @@ SET(H264_ROI_SOURCES ### =================== SOURCES =================== ###
 INCLUDE_DIRECTORIES(
     ${H264_ROI_SOURCE_DIR}
     ${LibChaos_INCLUDE}
+    roxlu
 )
 
 INCLUDE(${LibChaos_CONFIGURE_CMAKE})
@@ -28,4 +33,4 @@ ADD_DEFINITIONS(-DBUILDING)
 
 # Extension Fixer
 ADD_EXECUTABLE(h264_roi ${H264_ROI_SOURCES})
-TARGET_LINK_LIBRARIES(h264_roi chaos)
+TARGET_LINK_LIBRARIES(h264_roi chaos x264 avcodec)
