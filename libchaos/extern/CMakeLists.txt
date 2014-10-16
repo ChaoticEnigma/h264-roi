@@ -3,8 +3,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 PROJECT(LibChaos_Extern)
 
-OPTION(USE_ZLIB_LIBPNG "Link against and use zlib and libpng" ON)
+OPTION(USE_ZLIB_LIBPNG "Link against and use zlib and libpng" OFF)
 OPTION(FORCE_INTERNAL_ZLIB_LIBPNG "Use internal version of zlib and libpng" OFF)
+
+OPTION(ENABLE_ZWEBP "Link libwebp and build ZWebP" OFF)
 
 IF(LIBCHAOS_WINDOWS OR FORCE_INTERNAL_ZLIB_LIBPNG)
     SET(USE_INTERNAL_ZLIB_LIBPNG TRUE)

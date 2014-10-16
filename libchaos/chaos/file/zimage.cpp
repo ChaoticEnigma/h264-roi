@@ -66,66 +66,19 @@ void ZImage::takeData(byte *data){
     }
 }
 
-void ZImage::convertYUV420toRGB24(zu64 height, const byte *ydata, zu64 ylen, const byte *udata, zu64 ulen, const byte *vdata, zu64 vlen){
-    setDimensions(ylen, height, 3, 8);
+void ZImage::convertYUV420toRGB24(zu64 width, zu64 height, const byte *ydata, const byte *udata, const byte *vdata){
+    setDimensions(width, height, 3, 8);
     zeroData();
 
-    byte *yuv = new byte[ylen * height + ulen * height / 2 + vlen * height / 2];
-    memcpy(yuv,                                     ydata, ylen * height);
-    memcpy(yuv + ylen * height,                     udata, ulen * height / 2);
-    memcpy(yuv + ylen * height + ulen * height / 2, vdata, vlen * height / 2);
-
-    auto getY = [&](zu64 i){
-        return (float)ydata[i];
-    };
-    auto getU = [&](zu64 i){
-        return (float)udata[i / 2];
-    };
-    auto getV = [&](zu64 i){
-        return (float)vdata[i / 2];
-    };
     auto clamp = [](float in){
         return (unsigned char)(in < 0.0f ? 0 : (in > 255.0f ? 255 : in));
     };
 
-    float y, u, v;
-    byte r, g, b;
-
-    zu64 width = ylen;
-    zu64 total = width * height;
-
-    //for(zu64 i = 0; i < pixels(); ++i){
-    for(zu64 px = 0; px < width; ++px){
-        for(zu64 py = 0; py < height; ++py){
-            //pixelAt(i)[0] = clamp(getY(i) + 1.402 * (getV(i) - 128));
-            //pixelAt(i)[1] = clamp(getY(i) - 0.34414 * (getU(i) - 128) - 0.71414 * (getV(i) - 128));
-            //pixelAt(i)[2] = clamp(getY(i) + 1.772 * (getU(i) - 128));
-
-//            y = getY(i);
-//            u = getU(i);
-//            v = getV(i);
-
-//            zu64 px = i % width;
-//            zu64 py = i / width;
-
-            y = yuv[py * width + px];
-            u = yuv[(py / 2) * (width / 2) + (px / 2) + total];
-            v = yuv[(py / 2) * (width / 2) + (px / 2) + total + (total / 4)];
-
-            r = clamp(y + (1.370705 * (v - 128.0)));
-            g = clamp(y - (0.698001 * (v - 128.0)) - (0.337633 * (u - 128.0)));
-            b = clamp(y + (1.732446 * (u - 128.0)));
-
-            //pixelAt(i)[0] = ydata[i];
-
-            pixelAt(px, py)[0] = r;
-            pixelAt(px, py)[1] = g;
-            pixelAt(px, py)[2] = b;
-
-            //pixelAt(i)[0] = clamp(1.164 * (getY(i) - 16) + 1.596 * (getV(i) - 128));
-            //pixelAt(i)[1] = clamp(1.164 * (getY(i) - 16) - 0.813 * (getV(i) - 128) - 0.391 * (getU(i) - 128));
-            //pixelAt(i)[2] = clamp(1.164 * (getY(i) - 16) + 2.018 * (getU(i) - 128));
-        }
+    for(zu64 i = 0; i < pixels(); ++i){
+        zu64 uvpos = (i / width / 2) * (width / 2) + (i % width / 2);
+        pixelAt(i)[0] = clamp((float)ydata[i] + (1.370705f * ((float)vdata[uvpos] - 128.0f)));
+        pixelAt(i)[1] = clamp((float)ydata[i] - (0.698001f * ((float)vdata[uvpos] - 128.0f)) - (0.337633f * ((float)udata[uvpos] - 128.0f)));
+        pixelAt(i)[2] = clamp((float)ydata[i] + (1.732446f * ((float)udata[uvpos] - 128.0f)));
     }
 }
 

@@ -15,7 +15,7 @@ bool ZPPM::write(ZPath path){
     fprintf(file, "P6\n%llu %llu\n255\n", image.width(), image.height());
 
     for(zu64 y = 0; y < image.height(); ++y)
-        fwrite(image.buffer() + y * image.rowSize(), 1, image.width() * 3, file);
+        fwrite(image.buffer() + (y * image.rowSize()), 1, image.rowSize(), file);
 
     fclose(file);
     return true;

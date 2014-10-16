@@ -82,7 +82,9 @@ public:
     void copyData(const byte *data);
     void takeData(byte *data);
 
-    void convertYUV420toRGB24(zu64 height, const zbyte *y, zu64 ylen, const zbyte *u, zu64 ulen, const zbyte *v, zu64 vlen);
+    // Takes Y, U, and V planes separately
+    // Planes are expected unpadded and packed width * height or width * height / 4
+    void convertYUV420toRGB24(zu64 width, zu64 height, const byte *ydata, const byte *udata, const byte *vdata);
 
     void transferImage(ZImage &other);
 

@@ -11,8 +11,9 @@ public:
     ZPPM(){
 
     }
-    ZPPM(const ZImage &img) : image(img){
-
+    ZPPM(const ZImage &img){
+        if(img.isRGB24())
+            image = img;
     }
 
     bool read(ZPath path);
