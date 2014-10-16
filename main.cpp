@@ -119,13 +119,16 @@ int main(){
 
     float *quants = new float[xblocks * yblocks];
 
-    for(zu64 x = 0; x < xblocks; ++x){
-        for(zu64 y = 0; y < yblocks; ++y){
+    for(zu64 y = 0; y < yblocks; ++y){
+        //RLOG("Quant " << y << ": ");
+        for(zu64 x = 0; x < xblocks; ++x){
             if(x < xblocks / 2)
-                quants[x + y * xblocks] = 20;
+                quants[x + y * xblocks] = 10;
             else
-                quants[x + y * xblocks] = 60;
+                quants[x + y * xblocks] = 200;
+            //RLOG(quants[x + y * xblocks] << " ");
         }
+        //RLOG(ZLog::newln);
     }
 
     LOG("Blocks: " << xblocks << " " << yblocks);
