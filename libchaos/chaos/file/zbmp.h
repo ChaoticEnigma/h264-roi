@@ -5,8 +5,6 @@
 #include "zpath.h"
 #include "zerror.h"
 
-#define BI_RGB 0x0000
-
 namespace LibChaos {
 
 class ZBMP {

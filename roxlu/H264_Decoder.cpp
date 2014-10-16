@@ -144,8 +144,7 @@ bool H264_Decoder::update(bool& needsMoreBytes) {
 
   uint8_t* data = NULL;
   int size = 0;
-  int len = av_parser_parse2(parser, codec_context, &data, &size,
-                             &buffer[0], buffer.size(), 0, 0, AV_NOPTS_VALUE);
+  int len = av_parser_parse2(parser, codec_context, &data, &size, &buffer[0], buffer.size(), 0, 0, AV_NOPTS_VALUE);
 
   if(size == 0 && len >= 0) {
     needsMoreBytes = true;

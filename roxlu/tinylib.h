@@ -3134,6 +3134,9 @@ extern uint32_t rx_string_id(const std::string& v) {
     case 1: hash += *data;
       hash ^= hash << 10;
       hash += hash >> 1;
+      break;
+    default:
+        break;
   }
 
   /* Force "avalanching" of final 127 bits */

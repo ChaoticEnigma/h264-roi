@@ -1,6 +1,12 @@
 #include "zbmp.h"
 #include "zfile.h"
 
+#ifdef BI_RGB
+    #undef BI_RGB
+#endif
+
+#define BI_RGB 0x0000
+
 namespace LibChaos {
 
 struct BitmapFileHeader {
