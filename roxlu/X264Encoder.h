@@ -23,7 +23,7 @@ public:
     X264Encoder();
     ~X264Encoder();
     bool open(std::string filename, bool datapath);               /* open for encoding */
-    bool encode(char* pixels);                                    /* encode the given data */
+    bool encode(uint8_t* pixels[], int lines[]);                                    /* encode the given data */
     bool close();                                                 /* close the encoder and file, frees all memory */
 
 private:
@@ -36,7 +36,7 @@ public:
     int in_height;
     int out_width;
     int out_height;
-    int fps;                                                       /* e.g. 25, 60, etc.. */
+    int fps;                                                      /* e.g. 25, 60, etc.. */
     AVPixelFormat in_pixel_format;
     AVPixelFormat out_pixel_format;
 

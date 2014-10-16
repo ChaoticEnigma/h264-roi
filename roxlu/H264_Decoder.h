@@ -34,7 +34,9 @@ extern "C" {
 #include <libavutil/avutil.h>
 }
 
-typedef void(*h264_decoder_callback)(AVFrame* frame, AVPacket* pkt, void* user);         /* the decoder callback, which will be called when we have decoded a frame */
+class H264_Decoder;
+
+typedef void(*h264_decoder_callback)(AVFrame* frame, AVPacket* pkt, const H264_Decoder *decode, void* user);         /* the decoder callback, which will be called when we have decoded a frame */
 
 class H264_Decoder {
 

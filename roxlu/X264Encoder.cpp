@@ -7,6 +7,7 @@
 #include "X264Encoder.h"
 
 #include "zlog.h"
+using namespace LibChaos;
 
 X264Encoder::X264Encoder() 
   :in_width(0)
@@ -105,41 +106,42 @@ bool X264Encoder::open(std::string filename, bool datapath) {
   return false;
 }
 
-bool X264Encoder::encode(char* pixels) {
-  if(!sws) {
-    ELOG("Not initialized, so cannot encode");
-    return false;
-  }
-
-  // copy the pixels into our "raw input" container.
-  int bytes_filled = avpicture_fill(&pic_raw, (uint8_t*)pixels, in_pixel_format, in_width, in_height);
-  if(!bytes_filled) {
-    ELOG("Cannot fill the raw input buffer");
-    return false;
-  }
-
-  // convert to I420 for x264
-  int h = sws_scale(sws, pic_raw.data, pic_raw.linesize, 0,
-                    in_height, pic_in.img.plane, pic_in.img.i_stride);
-
-  if(h != out_height) {
-    ELOG("scale failed: " << h);
-    return false;
-  }
-  
-  // and encode and store into pic_out
-  pic_in.i_pts = pts;
-
-  int frame_size = x264_encoder_encode(encoder, &nals, &num_nals, &pic_in, &pic_out);
-  if(frame_size) {
-    if(!fwrite(nals[0].p_payload, frame_size, 1, fp)) {
-      ELOG("Error while trying to write nal");
-      return false;
+bool X264Encoder::encode(uint8_t* pixels[], int lines[]) {
+    if(!sws) {
+        ELOG("Not initialized, so cannot encode");
+        return false;
     }
-  }
-  ++pts;
 
-  return true;
+//    // copy the pixels into our "raw input" container.
+//    int bytes_filled = avpicture_fill(&pic_raw, (uint8_t*)pixels, in_pixel_format, in_width, in_height);
+//    if(!bytes_filled) {
+//        ELOG("Cannot fill the raw input buffer");
+//        return false;
+//    }
+
+//    // convert to I420 for x264
+//    int h = sws_scale(sws, pic_raw.data, pic_raw.linesize, 0, in_height, pic_in.img.plane, pic_in.img.i_stride);
+
+    int h = sws_scale(sws, pixels, lines, 0, in_height, pic_in.img.plane, pic_in.img.i_stride);
+
+    if(h != out_height) {
+        ELOG("scale failed: " << h);
+        return false;
+    }
+
+    // and encode and store into pic_out
+    pic_in.i_pts = pts;
+
+    int frame_size = x264_encoder_encode(encoder, &nals, &num_nals, &pic_in, &pic_out);
+    if(frame_size) {
+        if(!fwrite(nals[0].p_payload, frame_size, 1, fp)) {
+            ELOG("Error while trying to write nal");
+            return false;
+        }
+    }
+    ++pts;
+
+    return true;
 }
 
 bool X264Encoder::close() {

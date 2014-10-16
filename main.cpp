@@ -6,6 +6,9 @@
 #include <libavcodec/avcodec.h>
 #include <libavutil/avutil.h>
 
+bool brear = false;
+bool cont = true;
+
 void saveFrame(AVFrame *pFrame, int width, int height){
     FILE *pFile;
     char szFilename[32];
@@ -28,9 +31,15 @@ void saveFrame(AVFrame *pFrame, int width, int height){
     fclose(pFile);
 }
 
-void decoderCallback(AVFrame *frame, AVPacket *pkt, void *user){
-    AVPixelFormat fmt = ((H264_Decoder*)user)->codec_context->pix_fmt;
+void decoderCallback(AVFrame *frame, AVPacket *pkt, const H264_Decoder *decode, void *user){
+    AVPixelFormat fmt = decode->codec_context->pix_fmt;
     if(fmt == AV_PIX_FMT_YUV420P){
+        if(user != nullptr){
+            X264Encoder *encoder = (X264Encoder*)user;
+            encoder->encode(frame->data, frame->linesize);
+        }
+        //LOG("Read frame: " << frame->coded_picture_number);
+
         if(frame->coded_picture_number == 350){
             LOG("Read frame: "
                 << frame->width << "x" << frame->height << " "
@@ -64,33 +73,83 @@ void decoderCallback(AVFrame *frame, AVPacket *pkt, void *user){
 
 //            ZPPM ppm2(image2);
 //            LOG(ppm2.write("outppm2.ppm"));
+
+            if(brear)
+                cont = false;
         }
     }
+
+    if(frame->coded_picture_number == 34118)
+        cont = false;
 }
 
 int main(){
     ZLog::formatStdout(ZLogSource::normal, "%time% %thread% - %log%");
     ZLog::formatStderr(ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
+    ZLog::init();
     LOG("Starting H264-ROI");
 
-    H264_Decoder decoder(decoderCallback, &decoder);
+    X264Encoder encoder;
+
+    H264_Decoder decoder(decoderCallback, &encoder);
 
 #if PLATFORM == LINUX
     //LOG("Load: " << decoder.load("/home/chaos/Shared/bf4 hs2.mp4"));
     LOG("Load: " << decoder.load("/home/chaos/Shared/sao1.h264"));
 #else
     //LOG("Load: " << decoder.load("F:\\Video\\bf4 hs2.mp4"));
-    LOG("Load: " << decoder.load("E:\\Users\\Chaos\\Shared\\sao1.h264"));
+    //LOG("Load: " << decoder.load("E:\\Users\\Chaos\\Shared\\sao1.h264"));
+    LOG("Load: " << decoder.load("sao1.h264"));
     //LOG("Load: " << decoder.load(rx_to_data_path("sao1.h264"), 30.0f));
 #endif
 
-    LOG("Reading frames...");
+    encoder.in_width = 1280;
+    encoder.in_height = 720;
+    encoder.in_pixel_format = AV_PIX_FMT_YUV420P;
+    encoder.fps = 24;
+    encoder.out_width = 1280;
+    encoder.out_height = 720;
+    encoder.out_pixel_format = AV_PIX_FMT_YUV420P;
 
-    while(decoder.readFrame()){
+    zu32 xblocks, yblocks;
+    xblocks = encoder.out_width / 16;
+    if(encoder.out_width % 16) ++xblocks;
+    yblocks = encoder.out_height / 16;
+    if(encoder.out_height % 16) ++yblocks;
 
+    float *quants = new float[xblocks * yblocks];
+
+    for(zu64 x = 0; x < xblocks; ++x){
+        for(zu64 y = 0; y < yblocks; ++y){
+            if(x < xblocks / 2)
+                quants[x + y * xblocks] = 20;
+            else
+                quants[x + y * xblocks] = 60;
+        }
     }
 
-    //X264Encoder encoder;
+    LOG("Blocks: " << xblocks << " " << yblocks);
+
+    LOG("Open: " << encoder.open("sao1-2.h264", false));
+
+    encoder.pic_in.prop.quant_offsets = quants;
+
+    LOG("Reading frames...");
+
+    brear = true;
+    while(cont){
+        decoder.readFrame();
+    }
+
+    encoder.close();
+
+    cont = true;
+    brear = true;
+    H264_Decoder decoder2(decoderCallback, nullptr);
+    LOG(decoder2.load("sao1-2.h264"));
+    while(cont){
+        decoder2.readFrame();
+    }
 
     LOG("Finished H264-ROI");
     return 0;
