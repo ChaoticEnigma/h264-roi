@@ -40,7 +40,7 @@ void decoderCallback(AVFrame *frame, AVPacket *pkt, const H264_Decoder *decode, 
         }
         //LOG("Read frame: " << frame->coded_picture_number);
 
-        if(frame->coded_picture_number == 350){
+        if(frame->coded_picture_number == 1000){
             LOG("Read frame: "
                 << frame->width << "x" << frame->height << " "
                 << frame->coded_picture_number << " " << frame->display_picture_number << " " << pkt->stream_index << " "
@@ -83,10 +83,15 @@ void decoderCallback(AVFrame *frame, AVPacket *pkt, const H264_Decoder *decode, 
         cont = false;
 }
 
+void freeQuants(void *ptr){
+    LOG("Free quantizer offsets");
+    //delete[] (float*)ptr;
+}
+
 int main(){
     ZLog::formatStdout(ZLogSource::normal, "%time% %thread% - %log%");
     ZLog::formatStderr(ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
-    ZLog::init();
+    //ZLog::init();
     LOG("Starting H264-ROI");
 
     X264Encoder encoder;
@@ -120,22 +125,25 @@ int main(){
     float *quants = new float[xblocks * yblocks];
 
     for(zu64 y = 0; y < yblocks; ++y){
-        //RLOG("Quant " << y << ": ");
         for(zu64 x = 0; x < xblocks; ++x){
-            if(x < xblocks / 2)
-                quants[x + y * xblocks] = 10;
-            else
-                quants[x + y * xblocks] = 200;
-            //RLOG(quants[x + y * xblocks] << " ");
+            if(x > xblocks / 4 && x < xblocks * 3 / 4 &&
+               y > yblocks / 4 && y < yblocks * 3 / 4){
+                quants[x + y * xblocks] = 0;
+            } else {
+                quants[x + y * xblocks] = 20;
+            }
+            //quants[x + y * xblocks] = 20;
         }
-        //RLOG(ZLog::newln);
     }
 
     LOG("Blocks: " << xblocks << " " << yblocks);
 
-    LOG("Open: " << encoder.open("sao1-2.h264", false));
+    LOG("Open: " << encoder.open("sao1-roi1.h264", false));
 
+    encoder.pic_in.param->rc.i_aq_mode = X264_AQ_VARIANCE;
     encoder.pic_in.prop.quant_offsets = quants;
+    //encoder.pic_in.prop.quant_offsets = NULL;
+    //encoder.pic_in.prop.quant_offsets_free = freeQuants;
 
     LOG("Reading frames...");
 
@@ -146,13 +154,15 @@ int main(){
 
     encoder.close();
 
-    cont = true;
-    brear = true;
-    H264_Decoder decoder2(decoderCallback, nullptr);
-    LOG(decoder2.load("sao1-2.h264"));
-    while(cont){
-        decoder2.readFrame();
-    }
+    delete[] quants;
+
+//    cont = true;
+//    brear = true;
+//    H264_Decoder decoder2(decoderCallback, nullptr);
+//    LOG(decoder2.load("sao1-2.h264"));
+//    while(cont){
+//        decoder2.readFrame();
+//    }
 
     LOG("Finished H264-ROI");
     return 0;

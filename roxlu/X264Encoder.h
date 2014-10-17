@@ -34,11 +34,13 @@ public:
     /* params the user should set */
     int in_width;
     int in_height;
+    AVPixelFormat in_pixel_format;
+
     int out_width;
     int out_height;
-    int fps;                                                      /* e.g. 25, 60, etc.. */
-    AVPixelFormat in_pixel_format;
     AVPixelFormat out_pixel_format;
+
+    int fps;                                                      /* e.g. 25, 60, etc.. */
 
     /* x264 */
     AVPicture pic_raw;                                            /* used for our "raw" input container */
