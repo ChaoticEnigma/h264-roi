@@ -25,6 +25,8 @@ public:
     bool open(ZPath path);
     void close();
 
+    bool ready() const { return encoder_ready; }
+
     bool encode(ZImage &image);
 
     // Takes YUV420P data
@@ -39,6 +41,7 @@ private:
     x264_param_t *param;        // x264 param
     SwsContext *sws;            // Sws scaling context
     ZFile file;                 // File to write h264 data
+    bool encoder_ready;
 
     // Repeatedly used data
     x264_nal_t *nals;           // NAL array

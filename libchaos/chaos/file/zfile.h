@@ -19,21 +19,29 @@ namespace LibChaos {
 class ZFile : public ZReader, public ZWriter {
 public:
     enum zfile_mode {
-        readonly    = 0x001,
-        writeonly   = 0x002,
-        readwrite   = 0x003,
+        moderead        = 0x001,
+        modewrite       = 0x002,
+        modereadwrite   = 0x003,
+    };
 
-        append      = 0x004,
-        create      = 0x008,
+    enum zfile_bits {
+        readbit         = 0x001,
+        writebit        = 0x002,
+        readwritebits   = 0x003,
 
-        goodbit     = 0x064
+        appendbit       = 0x004,
+        createbit       = 0x008,
+
+        goodbit         = 0x064
     };
 
     ZFile();
-    ZFile(ZPath, int = readonly);
+    ZFile(ZPath path, zfile_mode mode = moderead);
     ~ZFile();
 
-    bool open(ZPath, int = readonly);
+    void setMode(zfile_mode mode);
+    bool open(ZPath path);
+    bool open(ZPath path, zfile_mode mode);
     bool close();
 
     // ZPosition
@@ -55,7 +63,7 @@ public:
     ZPath path(){ return _flpath; }
 
     bool isOpen();
-    int getBits();
+    int &bits(){ return _bits; }
 
     FILE *fp(){
         return _fileh;

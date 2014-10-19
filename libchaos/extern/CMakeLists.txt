@@ -10,7 +10,7 @@ OPTION(ENABLE_ZWEBP "Link libwebp and build ZWebP" OFF)
 
 OPTION(ENABLE_ZH264 "Link libavcodec and libx264 and build ZH264Decoder and ZH264Encoder" OFF)
 
-IF(LIBCHAOS_WINDOWS OR FORCE_INTERNAL_ZLIB_LIBPNG)
+IF(PLATFORM_WINDOWS OR FORCE_INTERNAL_ZLIB_LIBPNG)
     SET(USE_INTERNAL_ZLIB_LIBPNG TRUE)
 ENDIF()
 
@@ -81,7 +81,7 @@ ADD_LIBRARY(chaosextern ${LibChaos_Extern_SOURCES})
 TARGET_LINK_LIBRARIES(chaosextern chaos)
 
 IF(USE_ZLIB_LIBPNG)
-    IF(USE_INTERNAL_ZLIB_LIBPNG OR LIBCHAOS_WINDOWS)
+    IF(USE_INTERNAL_ZLIB_LIBPNG)
         TARGET_LINK_LIBRARIES(chaosextern libpng zlib)
     ELSE()
         TARGET_LINK_LIBRARIES(chaosextern png z)
@@ -90,5 +90,10 @@ ENDIF()
 
 # Link x264 and libavcodec
 IF(ENABLE_ZH264)
-    TARGET_LINK_LIBRARIES(chaosextern x264 avcodec avutil swscale)
+    TARGET_LINK_LIBRARIES(chaosextern avcodec avutil swscale)
+    IF(PLATFORM_WINDOWS)
+        TARGET_LINK_LIBRARIES(chaosextern C:/bin/TDMGCC/MinGW64/lib/libx264.a)
+    ELSE()
+        TARGET_LINK_LIBRARIES(chaosextern x264)
+    ENDIF()
 ENDIF()

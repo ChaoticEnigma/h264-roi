@@ -3,7 +3,7 @@
 
 namespace LibChaos {
 
-ZH264Encoder::ZH264Encoder() : encoder(NULL), param(nullptr), sws(NULL), nals(NULL), nalcount(0),
+ZH264Encoder::ZH264Encoder() : encoder(NULL), param(nullptr), sws(NULL), encoder_ready(false), nals(NULL), nalcount(0),
     inwidth(0), inheight(0), infps(0),
     outwidth(0), outheight(0), outfps(0){
 
@@ -22,9 +22,6 @@ bool ZH264Encoder::inputSetup(zu64 width, zu64 height, zu32 fps){
     if(!validSettings())
         return false;
 
-    if(!updateScaling())
-        return false;
-
     return true;
 }
 
@@ -35,24 +32,6 @@ bool ZH264Encoder::outputSetup(zu64 width, zu64 height, zu32 fps){
 
     if(!validSettings())
         return false;
-
-    if(!updateScaling())
-        return false;
-
-    delete param;
-    param = new x264_param_t;
-    int ret = x264_param_default_preset(param, "fast", "zerolatency");
-    if(ret < 0)
-        return false;
-
-    param->i_threads = 1;
-    param->i_width = outwidth;
-    param->i_height = outheight;
-    param->i_fps_num = outfps;
-    param->i_fps_den = 1;
-
-    x264_picture_alloc(&inpicture, X264_CSP_I420, outwidth, outheight);
-    inpicture.param = param;
 
     return true;
 }
@@ -65,11 +44,44 @@ bool ZH264Encoder::validSettings(){
 }
 
 bool ZH264Encoder::open(ZPath path){
-    if(!validSettings())
+    if(!validSettings()){
+        ELOG("Encoder settings are invalid");
+        return false;
+    }
+
+    if(ready()){
+        ELOG("Encoder is already ready");
+        return false;
+    }
+
+    if(!file.open(path, ZFile::modewrite)){
+        ELOG("Cannot open output file");
+        return false;
+    }
+
+    // setup x264 param
+    delete param;
+    param = new x264_param_t;
+    int ret = x264_param_default_preset(param, "fast", "zerolatency");
+    if(ret < 0)
         return false;
 
-    if(!file.open(path, ZFile::readwrite))
+    param->i_threads = 1;
+    param->i_width = outwidth;
+    param->i_height = outheight;
+    param->i_fps_num = outfps;
+    param->i_fps_den = 1;
+
+    // alloc picture buffer
+    x264_picture_alloc(&inpicture, X264_CSP_I420, outwidth, outheight);
+    inpicture.param = param;
+
+    // get the scaling context
+    sws = sws_getContext(inwidth, inheight, AV_PIX_FMT_YUV420P, outwidth, outheight, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+    if(!sws){
+        ELOG("Cannot create SWS context");
         return false;
+    }
 
     // Open the encoder
     encoder = x264_encoder_open(param);
@@ -92,10 +104,14 @@ bool ZH264Encoder::open(ZPath path){
         }
     }
 
+    encoder_ready = true;
+
     return true;
 }
 
 void ZH264Encoder::close(){
+    encoder_ready = false;
+
     if(encoder) {
         x264_picture_clean(&inpicture);
         memset((char*)&inpicture, 0, sizeof(inpicture));
@@ -119,6 +135,14 @@ bool ZH264Encoder::encode(ZImage &image){
 }
 
 bool ZH264Encoder::encode(uint8_t *data[], const int linesize[]){
+    if(!validSettings()){
+        ELOG("Encoder settings are invalid");
+        return false;
+    }
+    if(!ready()){
+        ELOG("Encoder is not ready");
+        return false;
+    }
 
     int scaleheight = sws_scale(sws, data, linesize, 0, inheight, inpicture.img.plane, inpicture.img.i_stride);
     if((zu64)scaleheight != outheight) {
@@ -142,8 +166,10 @@ bool ZH264Encoder::encode(uint8_t *data[], const int linesize[]){
 }
 
 bool ZH264Encoder::updateScaling(){
-    if(!validSettings())
+    if(!validSettings()){
+        ELOG("Encoder settings are invalid");
         return false;
+    }
 
     if(sws) {
         sws_freeContext(sws);

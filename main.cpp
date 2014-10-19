@@ -35,7 +35,9 @@ void decoderCallback(AVFrame *frame, AVPacket *pkt, const H264_Decoder *decode, 
     AVPixelFormat fmt = decode->codec_context->pix_fmt;
     if(fmt == AV_PIX_FMT_YUV420P){
         if(user != nullptr){
-            X264Encoder *encoder = (X264Encoder*)user;
+//            X264Encoder *encoder = (X264Encoder*)user;
+//            encoder->encode(frame->data, frame->linesize);
+            ZH264Encoder *encoder = (ZH264Encoder*)user;
             encoder->encode(frame->data, frame->linesize);
         }
         //LOG("Read frame: " << frame->coded_picture_number);
@@ -94,7 +96,7 @@ int main(){
     //ZLog::init();
     LOG("Starting H264-ROI");
 
-    X264Encoder encoder;
+    ZH264Encoder encoder;
 
     H264_Decoder decoder(decoderCallback, &encoder);
 
@@ -108,34 +110,39 @@ int main(){
     //LOG("Load: " << decoder.load(rx_to_data_path("sao1.h264"), 30.0f));
 #endif
 
-    encoder.in_width = 1280;
-    encoder.in_height = 720;
-    encoder.in_pixel_format = AV_PIX_FMT_YUV420P;
-    encoder.fps = 24;
-    encoder.out_width = 1280;
-    encoder.out_height = 720;
-    encoder.out_pixel_format = AV_PIX_FMT_YUV420P;
+//    encoder.in_width = 1280;
+//    encoder.in_height = 720;
+//    encoder.in_pixel_format = AV_PIX_FMT_YUV420P;
+//    encoder.fps = 24;
+//    encoder.out_width = 1280;
+//    encoder.out_height = 720;
+//    encoder.out_pixel_format = AV_PIX_FMT_YUV420P;
 
-    zu32 xblocks = encoder.out_width / 16 + (encoder.out_width % 16 ? 1 : 0);
-    zu32 yblocks = encoder.out_height / 16 + (encoder.out_height % 16 ? 1 : 0);
-    float *quants = new float[xblocks * yblocks];
+     LOG(encoder.inputSetup(1280, 720, 0));
+     LOG(encoder.outputSetup(1280, 720, 24));
 
-    for(zu64 i = 0; i < xblocks * yblocks; ++i){
-        quants[i] = 20.0f;
-    }
+//    zu32 xblocks = encoder.out_width / 16 + (encoder.out_width % 16 ? 1 : 0);
+//    zu32 yblocks = encoder.out_height / 16 + (encoder.out_height % 16 ? 1 : 0);
+//    float *quants = new float[xblocks * yblocks];
 
-    for(zu64 y = yblocks / 4; y < yblocks * 3 / 4; ++y){
-        for(zu64 x = xblocks / 4; x < xblocks * 3 / 4; ++x){
-            quants[x + y * xblocks] = 0.0f;
-        }
-    }
+//    for(zu64 i = 0; i < xblocks * yblocks; ++i){
+//        quants[i] = 20.0f;
+//    }
 
-    LOG("Blocks: " << xblocks << " " << yblocks);
+//    for(zu64 y = yblocks / 4; y < yblocks * 3 / 4; ++y){
+//        for(zu64 x = xblocks / 4; x < xblocks * 3 / 4; ++x){
+//            quants[x + y * xblocks] = 0.0f;
+//        }
+//    }
 
-    LOG("Open: " << encoder.open("sao1-roi1.h264", false));
+//    LOG("Blocks: " << xblocks << " " << yblocks);
 
-    encoder.pic_in.param->rc.i_aq_mode = X264_AQ_VARIANCE;
-    encoder.pic_in.prop.quant_offsets = quants;
+//    LOG("Open: " << encoder.open("sao1-roi1.h264", false));
+
+    LOG("Open: " << encoder.open("sao1-test.h264"));
+
+    //encoder.pic_in.param->rc.i_aq_mode = X264_AQ_VARIANCE;
+    //encoder.pic_in.prop.quant_offsets = quants;
     //encoder.pic_in.prop.quant_offsets = NULL;
     //encoder.pic_in.prop.quant_offsets_free = freeQuants;
 
@@ -148,7 +155,7 @@ int main(){
 
     encoder.close();
 
-    delete[] quants;
+    //delete[] quants;
 
 //    cont = true;
 //    brear = true;

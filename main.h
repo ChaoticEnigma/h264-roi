@@ -4,6 +4,8 @@
 #include "zlog.h"
 using namespace LibChaos;
 
+#include "zh264encoder.h"
+
 #include <x264.h>
 
 //#define ROXLU_USE_MATH

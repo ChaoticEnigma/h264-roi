@@ -25,7 +25,6 @@ SET(H264_ROI_SOURCES ### =================== SOURCES =================== ###
 
 ### =================== CONFIG =================== ###
 
-INCLUDE(${LibChaos_CONFIGURE_CMAKE})
 configure_build("H264_ROI" ${LibChaos_BUILD} ${LibChaos_PLATFORM})
 MESSAGE(STATUS ${BUILD_STRING})
 
@@ -59,15 +58,21 @@ IF(PLATFORM_WINDOWS)
     #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../libuv/libuv.a)
     #TARGET_LINK_LIBRARIES(h264_roi iphlpapi)
 
+    TARGET_LINK_LIBRARIES(h264_roi avformat avcodec avdevice avutil swscale swresample)
+
+    TARGET_LINK_LIBRARIES(h264_roi C:/bin/TDMGCC/MinGW64/lib/libfdk-aac.a)
+    TARGET_LINK_LIBRARIES(h264_roi C:/bin/TDMGCC/MinGW64/lib/libx264.a)
+
     #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavformat/libavformat.a)
     #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavcodec/libavcodec.a)
-    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../fdk-aac/.libs/libfdk-aac.a)
-    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../x264/libx264.a)
     #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libswscale/libswscale.a)
     #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libswresample/libswresample.a)
     #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavutil/libavutil.a)
 
-    TARGET_LINK_LIBRARIES(h264_roi avcodec avutil swscale swresample fdk-aac x264)
+    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../fdk-aac/.libs/libfdk-aac.a)
+    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../x264/libx264.a)
+
+    #TARGET_LINK_LIBRARIES(h264_roi avformat avcodec avdevice avutil swscale swresample fdk-aac x264)
 
 ELSE()
     TARGET_LINK_LIBRARIES(h264_roi uv avformat avcodec avdevice avutil swscale swresample x264)
