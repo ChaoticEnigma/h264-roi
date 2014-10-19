@@ -2,6 +2,28 @@
 
 namespace LibChaos {
 
+//const ZArray<ZImage::ImageType> ZImage::types = {
+//    { ZImage::rgb24,    3,  8   },
+//    { ZImage::rgba32,   4,  8   },
+//    { ZImage::rgb48,    3,  16  },
+//    { ZImage::rgba64,   4,  16  },
+//    { ZImage::g8,       1,  8   },
+//    { ZImage::ga16,     2,  8   },
+//    { ZImage::g16,      1,  16  },
+//    { ZImage::ga32,     2,  16  }
+//};
+
+const ZMap<ZImage::imagetype, ZImage::ImageType> ZImage::types = {
+    { ZImage::rgb24,    { 3, 8  } },
+    { ZImage::rgba32,   { 4, 8  } },
+    { ZImage::rgb48,    { 3, 16 } },
+    { ZImage::rgba64,   { 4, 16 } },
+    { ZImage::g8,       { 1, 8  } },
+    { ZImage::ga16,     { 2, 8  } },
+    { ZImage::g16,      { 1, 16 } },
+    { ZImage::ga32,     { 2, 16 } },
+};
+
 void ZImage::destroy(){
     _width = 0;
     _height = 0;

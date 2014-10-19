@@ -23,6 +23,8 @@ public:
     };
 
     ZMap(){}
+    ZMap(std::initializer_list<Data> list) : data(list){}
+
     ~ZMap(){}
 
     T &at(K key_){

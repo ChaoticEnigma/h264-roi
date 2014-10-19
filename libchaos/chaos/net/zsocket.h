@@ -12,7 +12,11 @@
 
 namespace LibChaos {
 
-typedef int zsocktype;
+#if PLATFORM == WINDOWS
+    typedef unsigned long long int zsocktype;
+#else
+    typedef int zsocktype;
+#endif
 
 class ZSocket {
 public:
@@ -38,12 +42,12 @@ public:
 
     // UDP
     bool send(ZAddress destination, const ZBinary &data);
-    zu32 receive(ZAddress &sender, ZBinary &str);
+    zu64 receive(ZAddress &sender, ZBinary &str);
 
     // TCP
-    bool connect(ZAddress addr, int &connfd, ZAddress &connaddr);
+    bool connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr);
     bool listen();
-    bool accept(int &connfd, ZAddress &connaddr);
+    bool accept(zsocktype &connfd, ZAddress &connaddr);
     zu64 read(ZBinary &data);
     bool write(const ZBinary &data);
 
@@ -69,12 +73,12 @@ public:
     }
 
 protected:
-    ZSocket(socket_type type, int fd);
+    ZSocket(socket_type type, zsocktype fd);
 
 private:
     static bool InitializeSockets();
     static void ShutdownSockets();
-    bool getSocket(int &fd, ZAddress addr);
+    bool getSocket(zsocktype &fd, ZAddress addr);
 
 private:
     static zu32 socket_count;

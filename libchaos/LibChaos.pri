@@ -75,7 +75,10 @@ HEADERS += \
     $$PWD/ui/align.h \
     \
     $$PWD/bbb/zbbb.h \
-    libchaos/chaos/file/zppm.h
+    libchaos/chaos/file/zppm.h \
+    libchaos/extern/zh264decoder.h \
+    libchaos/extern/zh264encoder.h \
+    libchaos/chaos/abstract/zposition.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
@@ -148,7 +151,9 @@ SOURCES += \
     $$PWD/util/imagedownloader.cpp \
     $$PWD/util/duplicatefinder.cpp \
     libchaos/chaos/file/zppm.cpp \
-    libchaos/chaos/file/zimage.cpp
+    libchaos/chaos/file/zimage.cpp \
+    libchaos/extern/zh264decoder.cpp \
+    libchaos/extern/zh264encoder.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

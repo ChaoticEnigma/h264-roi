@@ -58,7 +58,7 @@ int inet_pton(int af, const char *src, void *dst){
     strncpy(src_copy, src, INET6_ADDRSTRLEN+1);
     src_copy[INET6_ADDRSTRLEN] = 0;
 
-    if(WSAStringToAddress(src_copy, af, NULL, (struct sockaddr *)&ss, &size) == 0) {
+    if(WSAStringToAddress(src_copy, af, NULL, (struct sockaddr *)&ss, &size) == 0){
         switch(af) {
         case AF_INET:
             *(struct in_addr *)dst = ((struct sockaddr_in *)&ss)->sin_addr;
@@ -66,6 +66,8 @@ int inet_pton(int af, const char *src, void *dst){
         case AF_INET6:
             *(struct in6_addr *)dst = ((struct sockaddr_in6 *)&ss)->sin6_addr;
             return 1;
+        default:
+            return 0;
         }
     }
     return 0;
@@ -152,7 +154,7 @@ int ZAddress::family() const {
 }
 
 ZString ZAddress::str() const {
-    unsigned int csz;
+    int csz;
     if(_family == ipv4){
         csz = IPV4_MAX;
     } else if(_family == ipv6){

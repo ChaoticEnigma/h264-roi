@@ -129,7 +129,7 @@ bool ZBMP::read(ZPath path){
         }
 
         BitmapInfoHeader infoh;
-        buffer.setReadPos(14);
+        buffer.setPos(14);
         readInfoHeader(buffer, &infoh);
 
         if(infoh.biSize != 40){

@@ -116,23 +116,17 @@ int main(){
     encoder.out_height = 720;
     encoder.out_pixel_format = AV_PIX_FMT_YUV420P;
 
-    zu32 xblocks, yblocks;
-    xblocks = encoder.out_width / 16;
-    if(encoder.out_width % 16) ++xblocks;
-    yblocks = encoder.out_height / 16;
-    if(encoder.out_height % 16) ++yblocks;
-
+    zu32 xblocks = encoder.out_width / 16 + (encoder.out_width % 16 ? 1 : 0);
+    zu32 yblocks = encoder.out_height / 16 + (encoder.out_height % 16 ? 1 : 0);
     float *quants = new float[xblocks * yblocks];
 
-    for(zu64 y = 0; y < yblocks; ++y){
-        for(zu64 x = 0; x < xblocks; ++x){
-            if(x > xblocks / 4 && x < xblocks * 3 / 4 &&
-               y > yblocks / 4 && y < yblocks * 3 / 4){
-                quants[x + y * xblocks] = 0;
-            } else {
-                quants[x + y * xblocks] = 20;
-            }
-            //quants[x + y * xblocks] = 20;
+    for(zu64 i = 0; i < xblocks * yblocks; ++i){
+        quants[i] = 20.0f;
+    }
+
+    for(zu64 y = yblocks / 4; y < yblocks * 3 / 4; ++y){
+        for(zu64 x = xblocks / 4; x < xblocks * 3 / 4; ++x){
+            quants[x + y * xblocks] = 0.0f;
         }
     }
 

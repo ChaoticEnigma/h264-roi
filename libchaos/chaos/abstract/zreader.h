@@ -2,20 +2,15 @@
 #define ZREADER_H
 
 #include "ztypes.h"
+#include "zposition.h"
 
 namespace LibChaos {
 
-class ZReader {
+class ZReader : public ZPosition {
 public:
     virtual ~ZReader(){}
 
-    virtual zu64 read(unsigned char *dest, zu64 length) = 0;
-
-    virtual void rewind() = 0;
-
-    virtual bool atEnd() const = 0;
-    virtual void setReadPos(zu64 pos) = 0;
-    virtual zu64 readPos() const = 0;
+    virtual zu64 read(zbyte *dest, zu64 length) = 0;
 };
 
 }

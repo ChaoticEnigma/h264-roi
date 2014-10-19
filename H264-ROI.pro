@@ -25,10 +25,10 @@ OTHER_FILES += \
     CMakeLists.txt
 
 INCLUDEPATH += \
-    roxlu \
-    $$PWD/../x264 \
-    $$PWD/../libuv/include \
-    $$PWD/../ffmpeg \
+    roxlu #\
+    #$$PWD/../x264 \
+    #$$PWD/../libuv/include \
+    #$$PWD/../ffmpeg \
     $$OUT_PWD/glxw/include
 
 include(libchaos/LibChaos.pri)

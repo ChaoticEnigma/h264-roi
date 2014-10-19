@@ -217,7 +217,7 @@ public:
     }
 
     // ZReader interface
-    zu64 read(unsigned char *dest, zu64 length){
+    zu64 read(zbyte *dest, zu64 length){
         if(_rwpos + length > size()){
             length = _rwpos + length - size();
         }
@@ -232,10 +232,10 @@ public:
     bool atEnd() const {
         return _rwpos == size();
     }
-    void setReadPos(zu64 pos){
+    void setPos(zu64 pos){
         _rwpos = pos;
     }
-    zu64 readPos() const {
+    zu64 getPos() const {
         return _rwpos;
     }
 

@@ -11,10 +11,12 @@
 #include "zstring.h"
 #include "zpath.h"
 #include "zbinary.h"
+#include "zreader.h"
+#include "zwriter.h"
 
 namespace LibChaos {
 
-class ZFile {
+class ZFile : public ZReader, public ZWriter {
 public:
     enum zfile_mode {
         readonly    = 0x001,
@@ -34,10 +36,20 @@ public:
     bool open(ZPath, int = readonly);
     bool close();
 
+    // ZPosition
+    zu64 getPos() const;
+    void setPos(zu64 pos);
+    bool atEnd() const;
+    void rewind();
+
+    // ZReader
+    zu64 read(zbyte *dest, zu64 size);
+
+    // ZWriter
+    zu64 write(const zbyte *data, zu64 size);
+
     // does not work correctly
     zu64 read(ZBinary &out, zu64 size = (zu64)-1);
-
-    zu64 write(const char *);
 
     zu64 flsize();
     ZPath path(){ return _flpath; }

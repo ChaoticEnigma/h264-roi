@@ -7,6 +7,7 @@
 //#include "zpath.h"
 //#include "zerror.h"
 #include "zarray.h"
+#include "zmap.h"
 
 namespace LibChaos {
 
@@ -20,7 +21,7 @@ namespace LibChaos {
 //      no image may be loaded unless all dimenions are valid
 //      (channels * depth) % 8 must be zero. dimensions are invalid otherwise
 // copyData() copies raw data of size() into buffer, buffer is allocated if necessary
-// takeData() takes ownership of raw data. CAUTION: do not delete memory passed to takeData()
+// takeData() takes ownership of raw data. CAUTION: do not free memory passed to takeData()
 
 // validDimensions() - check that current dimensions can represent an image
 //      true - _buffer may or may not be null
@@ -33,6 +34,32 @@ namespace LibChaos {
 class ZImage {
 public:
     typedef unsigned char byte;
+
+    enum imagetype {
+        unknown = 0,
+        rgb24   = 1,
+        rgba32  = 2,
+        rgb48   = 3,
+        rgba64  = 4,
+        g8      = 5,
+        ga16    = 6,
+        g16     = 7,
+        ga32    = 8,
+    };
+
+//    struct ImageType {
+//        imagetype type;
+//        zu8 channels;
+//        zu8 depth;
+//    };
+//    static const ZArray<ImageType> types;
+
+    struct ImageType {
+        zu8 channels;
+        zu8 depth;
+    };
+    static const ZMap<imagetype, ImageType> types;
+
 
 public:
     ZImage() : _width(0), _height(0), _channels(0), _depth(0), _buffer(nullptr){
@@ -189,6 +216,8 @@ private:
     zu8 _channels;
     // Number of bits per channel
     zu8 _depth;
+    // Image type
+    imagetype _type;
     // Actual data
     unsigned char *_buffer;
 };

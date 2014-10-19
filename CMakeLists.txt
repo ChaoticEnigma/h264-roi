@@ -3,6 +3,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 PROJECT(H264_ROI)
 
+SET(LIBCHAOS_EXTERN 1)
+SET(ENABLE_ZH264 ON)
+# -DLIBCHAOS_EXTERN=1 =DENABLE_ZH264=1
 ADD_SUBDIRECTORY(libchaos)
 ADD_SUBDIRECTORY(glxw)
 
@@ -39,9 +42,9 @@ INCLUDE_DIRECTORIES(
 )
 IF(PLATFORM_WINDOWS)
     INCLUDE_DIRECTORIES(
-        ${CMAKE_SOURCE_DIR}/../x264
-        ${CMAKE_SOURCE_DIR}/../libuv/include
-        ${CMAKE_SOURCE_DIR}/../ffmpeg
+        #${CMAKE_SOURCE_DIR}/../x264
+        #${CMAKE_SOURCE_DIR}/../libuv/include
+        #${CMAKE_SOURCE_DIR}/../ffmpeg
     )
 ENDIF()
 
@@ -51,20 +54,22 @@ ADD_DEFINITIONS(-DBUILDING)
 
 # Extension Fixer
 ADD_EXECUTABLE(h264_roi ${H264_ROI_SOURCES})
-TARGET_LINK_LIBRARIES(h264_roi chaos)
+TARGET_LINK_LIBRARIES(h264_roi chaos chaosextern)
 IF(PLATFORM_WINDOWS)
-    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../libuv/libuv.a)
-    TARGET_LINK_LIBRARIES(h264_roi iphlpapi)
+    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../libuv/libuv.a)
+    #TARGET_LINK_LIBRARIES(h264_roi iphlpapi)
 
-    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavformat/libavformat.a)
-    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavcodec/libavcodec.a)
-    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../fdk-aac/.libs/libfdk-aac.a)
-    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../x264/libx264.a)
-    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libswscale/libswscale.a)
-    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libswresample/libswresample.a)
-    TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavutil/libavutil.a)
+    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavformat/libavformat.a)
+    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavcodec/libavcodec.a)
+    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../fdk-aac/.libs/libfdk-aac.a)
+    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../x264/libx264.a)
+    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libswscale/libswscale.a)
+    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libswresample/libswresample.a)
+    #TARGET_LINK_LIBRARIES(h264_roi ${CMAKE_SOURCE_DIR}/../ffmpeg/libavutil/libavutil.a)
+
+    TARGET_LINK_LIBRARIES(h264_roi avcodec avutil swscale swresample fdk-aac x264)
 
 ELSE()
-    TARGET_LINK_LIBRARIES(h264_roi uv avformat avcodec x264 avdevice avutil swscale swresample z)
+    TARGET_LINK_LIBRARIES(h264_roi uv avformat avcodec avdevice avutil swscale swresample x264)
 ENDIF()
 TARGET_LINK_LIBRARIES(h264_roi glxw)

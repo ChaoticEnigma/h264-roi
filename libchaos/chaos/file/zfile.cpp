@@ -62,6 +62,41 @@ bool ZFile::close(){
         return false;
 }
 
+// ZPosition
+zu64 ZFile::getPos() const {
+    // Tell file pointer position
+    long pos = ftell(_fileh);
+    return (pos > 0 ? (zu64)pos : 0);
+}
+void ZFile::setPos(zu64 pos){
+    // Seek file pointer to position
+    fseek(_fileh, pos, SEEK_SET);
+}
+bool ZFile::atEnd() const {
+    // Check if file pointer is at end of file
+    return feof(_fileh);
+}
+void ZFile::rewind(){
+    // Shortcut for setPos(0)
+    setPos(0);
+}
+
+// ZReader
+zu64 ZFile::read(zbyte *dest, zu64 size){
+    // Check file is open and has read bit set
+    if(!isOpen() || !(_bits & readonly))
+        return 0;
+    return fread(dest, sizeof(zbyte), size, _fileh);
+}
+
+// ZWriter
+zu64 ZFile::write(const zbyte *data, zu64 size){
+    // Check file is open and has write bit set
+    if(!isOpen() || !(_bits & writeonly))
+        return 0;
+    return fwrite(data, sizeof(zbyte), size, _fileh);
+}
+
 zu64 ZFile::read(ZBinary &out, zu64 max){
     if(!(isOpen() && (_bits & readonly)))
         return 0;
@@ -75,12 +110,6 @@ zu64 ZFile::read(ZBinary &out, zu64 max){
     out = ZBinary(buffer, len);
     //delete[] buffer;
     return len;
-}
-
-zu64 ZFile::write(const char *cont){
-    if(!isOpen() || !(_bits & 0x001))
-        return 0;
-    return fwrite(cont, 1, strlen(cont), _fileh);
 }
 
 /*ZString ZFile::readline(){
