@@ -22,7 +22,7 @@ ZSocket::ZSocket(socket_type type) : _socket(0), _type(type), buffer(nullptr), b
 
 }
 
-ZSocket::ZSocket(socket_type type, int fd) : ZSocket(type){
+ZSocket::ZSocket(socket_type type, zsocktype fd) : ZSocket(type){
     _socket = fd;
 }
 
@@ -30,7 +30,7 @@ ZSocket::~ZSocket(){
     delete buffer;
 }
 
-bool ZSocket::getSocket(int &fd, ZAddress addr){
+bool ZSocket::getSocket(zsocktype &fd, ZAddress addr){
     fd = ::socket(addr.family(), addr.type(), addr.protocol());
     if(fd <= 0){
         error = ZError("ZSocket: failed to create socket " + ZError::getSystemError());
@@ -127,10 +127,10 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
     return (zu64)sent == data.size();
 }
 
-zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
+zu64 ZSocket::receive(ZAddress &sender, ZBinary &str){
     if(!isOpen()){
         ELOG("ZConnection: socket is not open");
-        return false;
+        return 0;
     }
     if(buffer == NULL)
         buffer = new unsigned char[ZSOCKET_UDP_BUFFER];
@@ -150,7 +150,7 @@ zu32 ZSocket::receive(ZAddress &sender, ZBinary &str){
     return (zu64)received;
 }
 
-bool ZSocket::connect(ZAddress addr, int &connfd, ZAddress &connaddr){
+bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
     if(isOpen()){
         error = ZError("ZSocket: socket already open");
         return false;
@@ -190,10 +190,10 @@ bool ZSocket::listen(){
     return true;
 }
 
-bool ZSocket::accept(int &connfd, ZAddress &connaddr){
+bool ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
     sockaddr_storage client_sin;
     socklen_t sin_size = sizeof(client_sin);
-    int client = ::accept(_socket, (struct sockaddr *)&client_sin, &sin_size);
+    zsocktype client = ::accept(_socket, (struct sockaddr *)&client_sin, &sin_size);
     if(client <= 0){
         error = ZError("ZSocket: failed to accept socket: " + ZError::getSystemError());
         return false;

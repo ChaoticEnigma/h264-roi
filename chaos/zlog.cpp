@@ -71,51 +71,7 @@ ZLog &ZLog::log(ZString logtext){
     write_on_destruct = true;
     return *this;
 }
-ZLog &ZLog::operator<<(ZString text){
-    return log(text);
-}
-ZLog &ZLog::operator<<(std::string text){
-    return log(ZString(text));
-}
-ZLog &ZLog::operator<<(zs64 num){
-    return log(ZString(num));
-}
-ZLog &ZLog::operator<<(zu64 num){
-    return log(ZString(num));
-}
-ZLog &ZLog::operator<<(zs32 num){
-    return log(ZString(num));
-}
-ZLog &ZLog::operator<<(zu32 num){
-    return log(ZString(num));
-}
-ZLog &ZLog::operator<<(zint num){
-    return log(ZString(num));
-}
-ZLog &ZLog::operator<<(zuint num){
-    return log(ZString(num));
-}
-ZLog &ZLog::operator<<(bool tf){
-    return log(ZString(tf ? "true" : "false"));
-}
-ZLog &ZLog::operator<<(double num){
-    return log(ZString(num));
-}
-ZLog &ZLog::operator<<(char text){
-    return log(ZString(text));
-}
-ZLog &ZLog::operator<<(unsigned char text){
-    return log((zuint)text);
-}
-ZLog &ZLog::operator<<(const char *text){
-    return log(ZString(text));
-}
-ZLog &ZLog::operator<<(const unsigned char *text){
-    return log(ZString((const char *)text));
-}
-ZLog &ZLog::operator<<(ZPath text){
-    return log(text.str());
-}
+
 ZLog &ZLog::operator<<(ZBinary bin){
     ZString text;
     for(zu64 i = 0; i < bin.size(); ++i){

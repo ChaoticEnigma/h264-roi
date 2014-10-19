@@ -13,7 +13,7 @@ namespace LibChaos {
 class ZConnection : private ZSocket {
 public:
     ZConnection();
-    ZConnection(int fd, ZAddress addr);
+    ZConnection(zsocktype fd, ZAddress addr);
 
     ~ZConnection();
 
@@ -38,7 +38,6 @@ public:
     }
 
 private:
-    int _socket;
     ZAddress _addr;
 
     unsigned char *buffer;

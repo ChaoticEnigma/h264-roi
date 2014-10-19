@@ -10,7 +10,7 @@
 
 #define ZLOG_DEBUG_DEPTH 100
 
-#define ZLOG_FILE_PREPROC LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::file, ZPath(__FILE__).last().str())
+#define ZLOG_FILE_PREPROC LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::file, LibChaos::ZPath(__FILE__).last().str())
 #define ZLOG_LINE_PREPROC LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::line, __LINE__)
 #define ZLOG_FUNC_PREPROC LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::function, __FUNCTION__)
 
@@ -72,22 +72,38 @@ public:
     ZLog &operator<<(zlog_flag);
     ZLog &log(ZString logtext);
 
-    ZLog &operator<<(ZString text);
-    ZLog &operator<<(std::string text);
-    ZLog &operator<<(zs64 text);
-    ZLog &operator<<(zu64 text);
-    ZLog &operator<<(zs32 text);
-    ZLog &operator<<(zu32 text);
-    ZLog &operator<<(zint num);
-    ZLog &operator<<(zuint num);
-    ZLog &operator<<(bool tf);
-    ZLog &operator<<(double text);
-    ZLog &operator<<(char text);
-    ZLog &operator<<(unsigned char text);
-    ZLog &operator<<(const char *text);
-    ZLog &operator<<(const unsigned char *text);
-    ZLog &operator<<(ZPath text);
+    inline ZLog &operator<<(ZString text){ return log(text); }
+    inline ZLog &operator<<(std::string text){ return log(text); }
+    inline ZLog &operator<<(ZPath text){ return log(text.str()); }
     ZLog &operator<<(ZBinary text);
+
+    inline ZLog &operator<<(char text){ return log(ZString(text)); }
+    inline ZLog &operator<<(unsigned char text){ return log(ZString(text)); }
+
+    //inline ZLog &operator<<(zus num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zss num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zul num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zsl num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zull num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zsll num){ return log(ZString(num)); }
+
+    //inline ZLog &operator<<(zuint num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zint num){ return log(ZString(num)); }
+
+    inline ZLog &operator<<(zs8 num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zu8 num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zs16 num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zu16 num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zs32 num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zu32 num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zs64 num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zu64 num){ return log(ZString(num)); }
+
+    inline ZLog &operator<<(bool tf){ return log(tf ? "true" : "false"); }
+    inline ZLog &operator<<(double num){ return log(ZString(num)); }
+
+    inline ZLog &operator<<(const char *text){ return log(text); }
+    inline ZLog &operator<<(const unsigned char *text){ return log(ZString((const char *)text)); }
 
     static zlog_preproc makePreProc(info_type, ZString dat);
     ZLog &operator<<(zlog_preproc info);

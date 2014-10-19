@@ -1,6 +1,12 @@
 #include "zbmp.h"
 #include "zfile.h"
 
+#ifdef BI_RGB
+    #undef BI_RGB
+#endif
+
+#define BI_RGB 0x0000
+
 namespace LibChaos {
 
 struct BitmapFileHeader {
@@ -123,7 +129,7 @@ bool ZBMP::read(ZPath path){
         }
 
         BitmapInfoHeader infoh;
-        buffer.setReadPos(14);
+        buffer.setPos(14);
         readInfoHeader(buffer, &infoh);
 
         if(infoh.biSize != 40){

@@ -2,16 +2,15 @@
 #define ZWRITER_H
 
 #include "ztypes.h"
+#include "zposition.h"
 
 namespace LibChaos {
 
-class ZWriter {
+class ZWriter : public ZPosition {
 public:
     virtual ~ZWriter(){}
 
     virtual zu64 write(const zbyte *data, zu64 size) = 0;
-
-    virtual bool atEnd() const = 0;
 };
 
 }

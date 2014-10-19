@@ -19,7 +19,7 @@ bool ZStreamSocket::isOpen() const {
 }
 
 bool ZStreamSocket::connect(ZAddress addr, ZConnection &conn){
-    int connfd;
+    zsocktype connfd;
     ZAddress connaddr;
     bool ret = ZSocket::connect(addr, connfd, connaddr);
     conn = ZConnection(connfd, connaddr);
@@ -31,7 +31,7 @@ bool ZStreamSocket::listen(){
 }
 
 bool ZStreamSocket::accept(ZConnection &conn){
-    int connfd;
+    zsocktype connfd;
     ZAddress connaddr;
     bool ret = ZSocket::accept(connfd, connaddr);
     conn = ZConnection(connfd, connaddr);

@@ -19,7 +19,7 @@ ZConnection::ZConnection() : ZSocket(stream), buffer(nullptr){
 
 }
 
-ZConnection::ZConnection(int fd, ZAddress addr) : ZSocket(stream, fd), _addr(addr), buffer(nullptr){
+ZConnection::ZConnection(zsocktype fd, ZAddress addr) : ZSocket(stream, fd), _addr(addr), buffer(nullptr){
 
 }
 

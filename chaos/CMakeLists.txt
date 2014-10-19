@@ -30,7 +30,10 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 
     file/database.h
     file/zbitmap.h
+    file/zbmp.h
     file/zfile.h
+    file/zimage.h
+    file/zppm.h
 
     net/zaddress.h
     net/zconnection.h
@@ -65,6 +68,8 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     file/database.cpp
     file/zbmp.cpp
     file/zfile.cpp
+    file/zimage.cpp
+    file/zppm.cpp
 
     lib/sqlite3.c
 

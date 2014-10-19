@@ -93,40 +93,53 @@
 namespace LibChaos {
 
 // Exactly 8 bits (1 byte)
-typedef unsigned char zu8;
-typedef signed char zs8;
+typedef unsigned char zuc;
+typedef signed char zsc;
 typedef char zchar;
-typedef zu8 zbyte;
-typedef zbyte zoctet; // I blame the IETF
 
 // At least 16 bits (2 bytes)
-typedef unsigned short zu16;
-typedef signed short zs16;
+typedef unsigned short zus;
+typedef signed short zss;
 
 typedef int zint;
 typedef unsigned int zuint;
 typedef signed int zsint;
 
 // At least 32 bits (4 bytes)
-typedef unsigned long zu32;
-typedef signed long zs32;
+typedef unsigned long zul;
+typedef signed long zsl;
 
 // At least 64 bits (8 bytes)
-typedef unsigned long long zu64;
-typedef signed long long zs64;
+typedef unsigned long long zull;
+typedef signed long long zsll;
 
 // Fixed types
-typedef int8_t zs8t;
-typedef uint8_t zu8t;
+typedef int8_t zs8;
+typedef uint8_t zu8;
 
-typedef int16_t zs16t;
-typedef uint16_t zu16t;
+typedef int16_t zs16;
+typedef uint16_t zu16;
 
-typedef int32_t zs32t;
-typedef uint32_t zu32t;
+typedef int32_t zs32;
+typedef uint32_t zu32;
 
-typedef int64_t zs64t;
-typedef uint64_t zu64t;
+typedef int64_t zs64;
+typedef uint64_t zu64;
+
+// Aliases
+//typedef zsc zs8;
+//typedef zuc zu8;
+typedef zu8 zbyte;
+typedef zbyte zoctet; // I blame the IETF
+
+//typedef zss zs16;
+//typedef zus zu16;
+
+//typedef zsl zs32;
+//typedef zul zu32;
+
+//typedef zsll zs64;
+//typedef zull zu64;
 
 }
 

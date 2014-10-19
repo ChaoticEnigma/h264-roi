@@ -104,12 +104,24 @@ public:
         operator=(ItoS(num, 10));
     }
 
+    //ZString(zuc num) : ZString((zu64)num){}
+    //ZString(zsc num) : ZString((zs64)num){}
+    //ZString(zus num) : ZString((zu64)num){}
+    //ZString(zss num) : ZString((zs64)num){}
+    ZString(zul num) : ZString((zu64)num){}
+    ZString(zsl num) : ZString((zs64)num){}
+    //ZString(zull num) : ZString((zu64)num){}
+    //ZString(zsll num) : ZString((zs64)num){}
+
+    //ZString(zuint num) : ZString((zu64)num){}
+    //ZString(zint num) : ZString((zs64)num){}
+
+    ZString(zu8 num) : ZString((zu64)num){}
+    ZString(zs8 num) : ZString((zs64)num){}
     ZString(zu16 num) : ZString((zu64)num){}
     ZString(zs16 num) : ZString((zs64)num){}
     ZString(zu32 num) : ZString((zu64)num){}
     ZString(zs32 num) : ZString((zs64)num){}
-    ZString(zuint num) : ZString((zu64)num){}
-    ZString(zint num) : ZString((zs64)num){}
 
     // String to int
     int tint() const;

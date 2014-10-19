@@ -12,24 +12,31 @@
 
 namespace LibChaos {
 
-ZFile::ZFile() : _bits(0){}
-ZFile::ZFile(ZPath name, int mode) : _bits(0){
+ZFile::ZFile() : _bits(0 | readbit){}
+ZFile::ZFile(ZPath name, zfile_mode mode) : ZFile(){
     open(name, mode);
 }
 ZFile::~ZFile(){
     close();
 }
 
-bool ZFile::open(ZPath path, int mode){
-    _flpath = path;
-    _bits = mode;
+void ZFile::setMode(zfile_mode mode){
+    _bits = 0;
+    if(mode & moderead)
+        _bits |= readbit;
+    if(mode & modewrite)
+        _bits |= (writebit | createbit);
+}
 
-    // Close previous file
+bool ZFile::open(ZPath path){
+    // Close previous file, if any
     close();
 
-    // If we're not allowed to create and write
-    if(!((_bits & create) && (_bits & writeonly))){
-        // Check if the file exists
+    _flpath = path;
+
+    // If we're not allowed to create
+    if(!(_bits & createbit)){
+        // Make sure the file exists
         if(!(exists(_flpath) && isFile(_flpath))){
             // Fail if it doesn't
             return false;
@@ -38,11 +45,14 @@ bool ZFile::open(ZPath path, int mode){
 
     // Set flags
     ZString modech;
-    if(_bits & readwrite){ // read / write
-        modech += "r+";
-    } else if(_bits & readonly){ // read
+    if(_bits & readwritebits){ // read / write
+        if(_bits & createbit)
+            modech += "w+";
+        else
+            modech += "r+";
+    } else if(_bits & readbit){ // read
         modech += "r";
-    } else if(_bits & writeonly){ // write
+    } else if(_bits & writebit){ // write
         modech += "w";
     }
     modech += "b"; // binary
@@ -55,15 +65,54 @@ bool ZFile::open(ZPath path, int mode){
     return false;
 }
 
+bool ZFile::open(ZPath path, zfile_mode mode){
+    setMode(mode);
+    return open(path);
+}
+
 bool ZFile::close(){
-    if(isOpen())
-        return fclose(_fileh) == 0;
-    else
-        return false;
+    if(!isOpen())
+        return true;
+    return fclose(_fileh) == 0;
+}
+
+// ZPosition
+zu64 ZFile::getPos() const {
+    // Tell file pointer position
+    long pos = ftell(_fileh);
+    return (pos > 0 ? (zu64)pos : 0);
+}
+void ZFile::setPos(zu64 pos){
+    // Seek file pointer to position
+    fseek(_fileh, pos, SEEK_SET);
+}
+bool ZFile::atEnd() const {
+    // Check if file pointer is at end of file
+    return feof(_fileh);
+}
+void ZFile::rewind(){
+    // Shortcut for setPos(0)
+    setPos(0);
+}
+
+// ZReader
+zu64 ZFile::read(zbyte *dest, zu64 size){
+    // Check file is open and has read bit set
+    if(!isOpen() || !(_bits & readbit))
+        return 0;
+    return fread(dest, sizeof(zbyte), size, _fileh);
+}
+
+// ZWriter
+zu64 ZFile::write(const zbyte *data, zu64 size){
+    // Check file is open and has write bit set
+    if(!isOpen() || !(_bits & writebit))
+        return 0;
+    return fwrite(data, sizeof(zbyte), size, _fileh);
 }
 
 zu64 ZFile::read(ZBinary &out, zu64 max){
-    if(!(isOpen() && (_bits & readonly)))
+    if(!(isOpen() && (_bits & readbit)))
         return 0;
     unsigned char *buffer;
     if(flsize() >= max)
@@ -75,12 +124,6 @@ zu64 ZFile::read(ZBinary &out, zu64 max){
     out = ZBinary(buffer, len);
     //delete[] buffer;
     return len;
-}
-
-zu64 ZFile::write(const char *cont){
-    if(!isOpen() || !(_bits & 0x001))
-        return 0;
-    return fwrite(cont, 1, strlen(cont), _fileh);
 }
 
 /*ZString ZFile::readline(){
@@ -511,9 +554,6 @@ zu64 ZFile::flsize(){
 
 bool ZFile::isOpen(){
     return _bits & goodbit;
-}
-int ZFile::getBits(){
-    return _bits;
 }
 
 }
