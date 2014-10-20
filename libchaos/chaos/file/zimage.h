@@ -212,6 +212,8 @@ public:
 private:
     // Image width / height in pixels
     zu64 _width, _height;
+    // Number of planes
+    zu8 _planes;
     // Number of channels per pixel
     zu8 _channels;
     // Number of bits per channel
