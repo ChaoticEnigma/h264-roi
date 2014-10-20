@@ -60,9 +60,11 @@ public:
     zu64 read(ZBinary &out, zu64 size = (zu64)-1);
 
     zu64 flsize();
-    ZPath path(){ return _flpath; }
+    ZPath path() const { return _flpath; }
 
-    bool isOpen();
+    bool isOpen() const {
+        return (_fileh != NULL && _bits & goodbit);
+    }
     int &bits(){ return _bits; }
 
     FILE *fp(){

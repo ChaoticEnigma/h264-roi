@@ -11,7 +11,7 @@ int file_block(){
     LOG(far.createDirsTo());
 
     ZFile fl;
-    LOG(fl.open(far, ZFile::readwrite | ZFile::createbit));
+    LOG(fl.open(far, ZFile::modereadwrite));
     LOG(ZError::getSystemError());
 
     return 0;

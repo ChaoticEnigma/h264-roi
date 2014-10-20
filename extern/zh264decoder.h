@@ -21,7 +21,7 @@ private:
     AVCodecParserContext *parser;   // h264 bitstream parser
     AVFrame *frame;                 // Current decoded frame
 
-    ZFile file;                       // File with h264 data
+    ZFile file;                     // File with h264 data
 
     zbyte *buffer;                  // Buffered file data
     zu64 buffersize;                // Size of current buffer

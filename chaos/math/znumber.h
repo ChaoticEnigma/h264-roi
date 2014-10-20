@@ -47,7 +47,7 @@ public:
     //ZNumber(signed int num) : ZNumber((zs64)num){}
     ZNumber(int num) : ZNumber((zs64)num){}
     //ZNumber(signed long num) : ZNumber((zs64)num){}
-    ZNumber(long num) : ZNumber((zs64)num){}
+    //ZNumber(long num) : ZNumber((zs64)num){}
 
     ZNumber(zu64 num) : ZNumber(){
         zu8 length = 0;
@@ -66,7 +66,7 @@ public:
     ZNumber(unsigned char num) : ZNumber((zu64)num){}
     ZNumber(unsigned short num) : ZNumber((zu64)num){}
     ZNumber(unsigned int num) : ZNumber((zu64)num){}
-    ZNumber(unsigned long num) : ZNumber((zu64)num){}
+    //ZNumber(unsigned long num) : ZNumber((zu64)num){}
 
     ZNumber(const ZNumber &other) : ZNumber(){
         if(other._size > 0){
