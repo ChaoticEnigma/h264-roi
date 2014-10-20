@@ -90,12 +90,12 @@ public:
     //inline ZLog &operator<<(zuint num){ return log(ZString(num)); }
     //inline ZLog &operator<<(zint num){ return log(ZString(num)); }
 
-    inline ZLog &operator<<(zs8 num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zs8 num){ return log(ZString(num)); }
     //inline ZLog &operator<<(zu8 num){ return log(ZString(num)); }
-    inline ZLog &operator<<(zs16 num){ return log(ZString(num)); }
-    inline ZLog &operator<<(zu16 num){ return log(ZString(num)); }
-    inline ZLog &operator<<(zs32 num){ return log(ZString(num)); }
-    inline ZLog &operator<<(zu32 num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zs16 num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zu16 num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zs32 num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zu32 num){ return log(ZString(num)); }
     inline ZLog &operator<<(zs64 num){ return log(ZString(num)); }
     inline ZLog &operator<<(zu64 num){ return log(ZString(num)); }
 
