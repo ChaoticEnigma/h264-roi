@@ -108,8 +108,8 @@ public:
     //ZString(zsc num) : ZString((zs64)num){}
     //ZString(zus num) : ZString((zu64)num){}
     //ZString(zss num) : ZString((zs64)num){}
-    ZString(zul num) : ZString((zu64)num){}
-    ZString(zsl num) : ZString((zs64)num){}
+    //ZString(zul num) : ZString((zu64)num){}
+    //ZString(zsl num) : ZString((zs64)num){}
     //ZString(zull num) : ZString((zu64)num){}
     //ZString(zsll num) : ZString((zs64)num){}
 

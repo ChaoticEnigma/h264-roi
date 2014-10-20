@@ -12,10 +12,11 @@
 
 namespace LibChaos {
 
-ZFile::ZFile() : _bits(0 | readbit){}
+ZFile::ZFile() : _bits(0 | readbit), _fileh(NULL){}
 ZFile::ZFile(ZPath name, zfile_mode mode) : ZFile(){
     open(name, mode);
 }
+
 ZFile::~ZFile(){
     close();
 }
@@ -73,7 +74,9 @@ bool ZFile::open(ZPath path, zfile_mode mode){
 bool ZFile::close(){
     if(!isOpen())
         return true;
-    return fclose(_fileh) == 0;
+    bool ret = (fclose(_fileh) == 0);
+    _fileh = NULL;
+    return ret;
 }
 
 // ZPosition
@@ -84,7 +87,7 @@ zu64 ZFile::getPos() const {
 }
 void ZFile::setPos(zu64 pos){
     // Seek file pointer to position
-    fseek(_fileh, pos, SEEK_SET);
+    fseek(_fileh, (long)pos, SEEK_SET);
 }
 bool ZFile::atEnd() const {
     // Check if file pointer is at end of file
@@ -550,10 +553,6 @@ zu64 ZFile::flsize(){
     zu64 flsz = (zu64)ftell(_fileh);
     fseek(_fileh, 0, SEEK_SET);
     return flsz;
-}
-
-bool ZFile::isOpen(){
-    return _bits & goodbit;
 }
 
 }

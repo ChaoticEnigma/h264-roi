@@ -82,8 +82,8 @@ public:
 
     //inline ZLog &operator<<(zus num){ return log(ZString(num)); }
     //inline ZLog &operator<<(zss num){ return log(ZString(num)); }
-    inline ZLog &operator<<(zul num){ return log(ZString(num)); }
-    inline ZLog &operator<<(zsl num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zul num){ return log(ZString(num)); }
+    //inline ZLog &operator<<(zsl num){ return log(ZString(num)); }
     //inline ZLog &operator<<(zull num){ return log(ZString(num)); }
     //inline ZLog &operator<<(zsll num){ return log(ZString(num)); }
 
