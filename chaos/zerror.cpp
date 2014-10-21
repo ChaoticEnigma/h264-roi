@@ -29,8 +29,8 @@
         #include <algorithm>
         #include "StackWalker.h"
         #include <list>
-    #endif
-#endif
+    #endif // FUCK_WINDOWS
+#endif // PLATFORM
 
 namespace LibChaos {
 
@@ -642,7 +642,7 @@ void appendCallTrace( std::string & errorMessage ){
     }
 }
 
-#endif
+#endif // FUCK_WINDOWS
 
 ArZ ZError::getStackTrace(unsigned trim){
     ArZ trace;
@@ -667,12 +667,12 @@ ArZ ZError::getStackTrace(unsigned trim){
     trace.push(getStack());
 #else
     trace.push("FUCK WINDOWS");
-#endif
+#endif // FUCK_WINDOWS
 
     return trace;
 }
 
-#endif
+#endif // PLATFORM
 
 void ZError::registerSigSegv(){
 #if PLATFORM == LINUX
@@ -705,7 +705,7 @@ BOOL WINAPI ConsoleHandler(DWORD dwType){
     return TRUE;
 }
 
-#endif
+#endif // PLATFORM
 
 bool ZError::registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
@@ -770,7 +770,7 @@ bool ZError::registerSignalHandler(zerror_signal sigtype, signalHandler handler)
         return false;
     }
 
-#endif
+#endif // PLATFORM
 
     return true;
 }
@@ -789,7 +789,7 @@ ZString ZError::getSystemError(){
     FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, (DWORD)err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), s, 0, NULL);
     LocalFree(s);
     return ZString() << err << ": " << s;
-#endif
+#endif // PLATFORM
 }
 
 }

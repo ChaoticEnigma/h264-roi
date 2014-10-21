@@ -31,10 +31,8 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     error_test.cpp
 )
 
-IF(LIBCHAOS_EXTERN)
-    SET(LibChaosTest_SOURCES ${LibChaosTest_SOURCES}
-        png_test.cpp
-    )
+IF(ENABLE_ZPNG)
+    SET(LibChaosTest_SOURCES ${LibChaosTest_SOURCES} png_test.cpp)
 ENDIF()
 
 ### =================== CONFIG =================== ###
@@ -51,8 +49,8 @@ IF(DISABLE_LIBPNG)
     ADD_DEFINITIONS(-DDISABLE_LIBPNG)
 ENDIF()
 
-IF(LIBCHAOS_EXTERN)
-    ADD_DEFINITIONS(-DLIBCHAOS_EXTERN)
+IF(ENABLE_ZPNG)
+    ADD_DEFINITIONS(-DTEST_ZPNG)
 ENDIF()
 
 ### =================== BUILD =================== ###
