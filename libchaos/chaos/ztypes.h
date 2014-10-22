@@ -6,6 +6,11 @@
 #ifndef ZTYPES_H
 #define ZTYPES_H
 
+// General LibChaos Notes
+// Z-prefixed classes are classes that should be used in user code
+// Y-prefixed classes enforce interfaces on inheriting classes
+// Other classes from LibChaos are not intended to be used outside the library code
+
 // Compiler
 #define GCC     0x11
 #define MINGW   0x12

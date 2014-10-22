@@ -31,10 +31,8 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     error_test.cpp
 )
 
-IF(LIBCHAOS_EXTERN)
-    SET(LibChaosTest_SOURCES ${LibChaosTest_SOURCES}
-        png_test.cpp
-    )
+IF(ENABLE_ZPNG)
+    SET(LibChaosTest_SOURCES ${LibChaosTest_SOURCES} png_test.cpp)
 ENDIF()
 
 ### =================== CONFIG =================== ###
@@ -47,12 +45,10 @@ configure_build("Test" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
 SET(LibChaosTest_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
-IF(DISABLE_LIBPNG)
-    ADD_DEFINITIONS(-DDISABLE_LIBPNG)
-ENDIF()
 
-IF(LIBCHAOS_EXTERN)
-    ADD_DEFINITIONS(-DLIBCHAOS_EXTERN)
+# Set preprocessor defines
+IF(ENABLE_ZPNG)
+    ADD_DEFINITIONS(-DTEST_ZPNG)
 ENDIF()
 
 ### =================== BUILD =================== ###
@@ -61,6 +57,6 @@ ADD_DEFINITIONS(-DBUILDING)
 
 ADD_EXECUTABLE(testchaos ${LibChaosTest_SOURCES})
 TARGET_LINK_LIBRARIES(testchaos chaos)
-IF(LIBCHAOS_EXTERN)
+IF(ENABLE_ZPNG)
     TARGET_LINK_LIBRARIES(testchaos chaosextern)
 ENDIF()
