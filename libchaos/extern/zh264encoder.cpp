@@ -1,6 +1,10 @@
 #include "zh264encoder.h"
 #include "zlog.h"
 
+extern "C" {
+    #include <libavutil/pixfmt.h>
+}
+
 namespace LibChaos {
 
 ZH264Encoder::ZH264Encoder() : encoder(NULL), param(nullptr), sws(NULL), encoder_ready(false), nals(NULL), nalcount(0),
@@ -83,7 +87,8 @@ bool ZH264Encoder::open(ZPath path){
     }
 
     // get the scaling context
-    sws = sws_getContext(inwidth, inheight, AV_PIX_FMT_YUV420P, outwidth, outheight, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+    sws = sws_getContext(inwidth, inheight, PIX_FMT_YUV420P, outwidth, outheight, PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+    //sws = sws_getContext(inwidth, inheight, AV_PIX_FMT_YUV420P, outwidth, outheight, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
     if(!sws){
         ELOG("Cannot create SWS context");
         return false;
@@ -171,22 +176,22 @@ bool ZH264Encoder::encode(uint8_t *data[], const int linesize[]){
     return true;
 }
 
-bool ZH264Encoder::updateScaling(){
-    if(!validSettings()){
-        ELOG("Encoder settings are invalid");
-        return false;
-    }
+//bool ZH264Encoder::updateScaling(){
+//    if(!validSettings()){
+//        ELOG("Encoder settings are invalid");
+//        return false;
+//    }
 
-    if(sws) {
-        sws_freeContext(sws);
-        sws = NULL;
-    }
-    sws = sws_getContext(inwidth, inheight, AV_PIX_FMT_YUV420P, outwidth, outheight, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
-    if(!sws){
-        ELOG("Cannot create SWS context");
-        return false;
-    }
-    return true;
-}
+//    if(sws) {
+//        sws_freeContext(sws);
+//        sws = NULL;
+//    }
+//    sws = sws_getContext(inwidth, inheight, AV_PIX_FMT_YUV420P, outwidth, outheight, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+//    if(!sws){
+//        ELOG("Cannot create SWS context");
+//        return false;
+//    }
+//    return true;
+//}
 
 }

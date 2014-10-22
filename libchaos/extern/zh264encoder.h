@@ -35,7 +35,7 @@ public:
     ZArray<float> &quantOffsets(){ return blockqps; }
 
 private:
-    bool updateScaling();
+    //bool updateScaling();
 
 private:
     // Context data

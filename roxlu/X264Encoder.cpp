@@ -12,11 +12,11 @@ using namespace LibChaos;
 X264Encoder::X264Encoder() 
     :in_width(0)
     ,in_height(0)
-    ,in_pixel_format(AV_PIX_FMT_NONE)
+    ,in_pixel_format(PIX_FMT_NONE)
 
     ,out_width(0)
     ,out_height(0)
-    ,out_pixel_format(AV_PIX_FMT_NONE)
+    ,out_pixel_format(PIX_FMT_NONE)
 
     ,fps(25)
 
@@ -51,7 +51,7 @@ bool X264Encoder::open(std::string filename, bool datapath) {
         return false;
     }
 
-    if(out_pixel_format != AV_PIX_FMT_YUV420P) {
+    if(out_pixel_format != PIX_FMT_YUV420P) {
         ELOG("At this moment the output format must be AV_PIX_FMT_YUV420P");
         return false;
     }
@@ -196,11 +196,11 @@ bool X264Encoder::validateSettings() {
     ELOG("No out_height set");
     return false;
   }
-  if(in_pixel_format == AV_PIX_FMT_NONE) {
+  if(in_pixel_format == PIX_FMT_NONE) {
     ELOG("No in_pixel_format set");
     return false;
   }
-  if(out_pixel_format == AV_PIX_FMT_NONE) {
+  if(out_pixel_format == PIX_FMT_NONE) {
     ELOG("No out_pixel_format set");
     return false;
   }

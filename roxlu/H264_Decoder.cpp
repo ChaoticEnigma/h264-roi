@@ -42,7 +42,8 @@ H264_Decoder::~H264_Decoder() {
 
 bool H264_Decoder::load(std::string filepath, float fps) {
 
-  codec = avcodec_find_decoder(AV_CODEC_ID_H264);
+    codec = avcodec_find_decoder(CODEC_ID_H264);
+  //codec = avcodec_find_decoder(AV_CODEC_ID_H264);
   if(!codec) {
     printf("Error: cannot find the h264 codec: %s\n", filepath.c_str());
     return false;
@@ -66,8 +67,10 @@ bool H264_Decoder::load(std::string filepath, float fps) {
     return false;
   }
 
-  picture = av_frame_alloc();
-  parser = av_parser_init(AV_CODEC_ID_H264);
+  //picture = av_frame_alloc();
+  picture = avcodec_alloc_frame();
+  //parser = av_parser_init(AV_CODEC_ID_H264);
+  parser = av_parser_init(CODEC_ID_H264);
 
   if(!parser) {
     printf("Erorr: cannot create H264 parser.\n");
