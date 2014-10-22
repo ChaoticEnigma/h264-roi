@@ -56,23 +56,25 @@ ENDIF()
 
 ADD_DEFINITIONS(-DBUILDING)
 
-ADD_LIBRARY(chaosextern ${LibChaos_Extern_SOURCES})
-TARGET_LINK_LIBRARIES(chaosextern chaos)
+IF(LibChaos_Extern_SOURCES)
+    ADD_LIBRARY(chaosextern ${LibChaos_Extern_SOURCES})
+    TARGET_LINK_LIBRARIES(chaosextern chaos)
 
-# Link libpng and zlib
-IF(ENABLE_ZPNG)
-    TARGET_LINK_LIBRARIES(chaosextern png z)
-ENDIF()
-# Link libjpeg
-IF(ENABLE_ZJPEG)
-    TARGET_LINK_LIBRARIES(chaosextern jpeg)
-ENDIF()
-# Link x264 and libavcodec
-IF(ENABLE_ZH264)
-    TARGET_LINK_LIBRARIES(chaosextern avcodec avutil swscale)
-    IF(PLATFORM_WINDOWS)
-        TARGET_LINK_LIBRARIES(chaosextern C:/bin/TDMGCC/MinGW64/lib/libx264.a)
-    ELSE()
-        TARGET_LINK_LIBRARIES(chaosextern x264)
+    # Link libpng and zlib
+    IF(ENABLE_ZPNG)
+        TARGET_LINK_LIBRARIES(chaosextern png z)
+    ENDIF()
+    # Link libjpeg
+    IF(ENABLE_ZJPEG)
+        TARGET_LINK_LIBRARIES(chaosextern jpeg)
+    ENDIF()
+    # Link x264 and libavcodec
+    IF(ENABLE_ZH264)
+        TARGET_LINK_LIBRARIES(chaosextern avcodec avutil swscale)
+        IF(PLATFORM_WINDOWS)
+            TARGET_LINK_LIBRARIES(chaosextern C:/bin/TDMGCC/MinGW64/lib/libx264.a)
+        ELSE()
+            TARGET_LINK_LIBRARIES(chaosextern x264)
+        ENDIF()
     ENDIF()
 ENDIF()

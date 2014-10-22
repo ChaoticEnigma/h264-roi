@@ -78,7 +78,10 @@ HEADERS += \
     libchaos/chaos/file/zppm.h \
     libchaos/extern/zh264decoder.h \
     libchaos/extern/zh264encoder.h \
-    libchaos/chaos/abstract/zposition.h
+    libchaos/chaos/abstract/zposition.h \
+    chaos/abstract/ziterator.h \
+    chaos/abstract/ylinearaccess.h \
+    chaos/data/zlist.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
