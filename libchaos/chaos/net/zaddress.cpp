@@ -154,7 +154,7 @@ int ZAddress::family() const {
 }
 
 ZString ZAddress::str() const {
-    int csz;
+    socklen_t csz;
     if(_family == ipv4){
         csz = IPV4_MAX;
     } else if(_family == ipv6){

@@ -121,19 +121,20 @@ int main(){
      LOG(encoder.inputSetup(1280, 720, 0));
      LOG(encoder.outputSetup(1280, 720, 24));
 
-//    zu32 xblocks = encoder.out_width / 16 + (encoder.out_width % 16 ? 1 : 0);
-//    zu32 yblocks = encoder.out_height / 16 + (encoder.out_height % 16 ? 1 : 0);
-//    float *quants = new float[xblocks * yblocks];
+    zu32 xblocks = 1280 / 16 + (1280 % 16 ? 1 : 0);
+    zu32 yblocks = 720 / 16 + (720 % 16 ? 1 : 0);
+    //float *quants = new float[xblocks * yblocks];
+    encoder.quantOffsets().resize(xblocks * yblocks);
 
-//    for(zu64 i = 0; i < xblocks * yblocks; ++i){
-//        quants[i] = 20.0f;
-//    }
+    for(zu64 i = 0; i < xblocks * yblocks; ++i){
+        encoder.quantOffsets()[i] = 20.0f;
+    }
 
-//    for(zu64 y = yblocks / 4; y < yblocks * 3 / 4; ++y){
-//        for(zu64 x = xblocks / 4; x < xblocks * 3 / 4; ++x){
-//            quants[x + y * xblocks] = 0.0f;
-//        }
-//    }
+    for(zu64 y = yblocks / 4; y < yblocks * 3 / 4; ++y){
+        for(zu64 x = xblocks / 4; x < xblocks * 3 / 4; ++x){
+            encoder.quantOffsets()[x + y * xblocks] = 0.0f;
+        }
+    }
 
 //    LOG("Blocks: " << xblocks << " " << yblocks);
 
