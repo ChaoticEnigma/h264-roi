@@ -12,8 +12,17 @@
 
 namespace LibChaos {
 
-ZPath::ZPath() : _data(), _absolute(false), prefix(ZPATH_DEFAULT_DELIM){
-
+ZPath::ZPath() : _absolute(false){
+#if PLATFORM == WINDOWS
+    size_t sz = 1024;
+    char *ptr = new char[sz];
+    getcwd(ptr, sz);
+    ZString pth = ptr;
+    pth.getUntil
+    prefix =
+#else
+    prefix = ZPATH_DEFAULT_DELIM;
+#endif
 }
 
 ZPath::ZPath(ZString path) : ZPath(){
@@ -62,7 +71,6 @@ void ZPath::fromStr(ZString path){
         }
 #endif
     }
-
     //sanitize();
 }
 
