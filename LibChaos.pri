@@ -8,8 +8,6 @@ HEADERS += \
     $$PWD/chaos/zerror.h \
     $$PWD/chaos/zautobuffer.h \
     $$PWD/chaos/zautobufferunit.h \
-    $$PWD/chaos/zlog.h \
-    $$PWD/chaos/zlogworker.h \
     $$PWD/chaos/zsocket.h \
     $$PWD/chaos/ztypes.h \
     $$PWD/chaos/ztime.h \
@@ -27,6 +25,11 @@ HEADERS += \
     $$PWD/chaos/abstract/ziterator.h \
     $$PWD/chaos/abstract/ylinearaccess.h \
     \
+    $$PWD/chaos/base/zlog.h \
+    $$PWD/chaos/base/zlogworker.h \
+    $$PWD/chaos/base/zpath.h \
+    $$PWD/chaos/base/zstring.h \
+    \
     $$PWD/chaos/data/zallocator.h \
     $$PWD/chaos/data/zarray.h \
     $$PWD/chaos/data/zarray2.h \
@@ -39,9 +42,7 @@ HEADERS += \
     $$PWD/chaos/data/zjson.h \
     $$PWD/chaos/data/zlist.h \
     $$PWD/chaos/data/zmap.h \
-    $$PWD/chaos/data/zpath.h \
     $$PWD/chaos/data/zpointer.h \
-    $$PWD/chaos/data/zstring.h \
     $$PWD/chaos/data/zxml.h \
     \
     $$PWD/chaos/file/database.h \
@@ -88,17 +89,18 @@ HEADERS += \
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
     $$PWD/chaos/zerror.cpp \
-    $$PWD/chaos/zlog.cpp \
-    $$PWD/chaos/zlogworker.cpp \
     $$PWD/chaos/zsocket.cpp \
     $$PWD/chaos/ztime.cpp \
     $$PWD/chaos/zclock.cpp \
     \
+    $$PWD/chaos/base/zlog.cpp \
+    $$PWD/chaos/base/zlogworker.cpp \
+    $$PWD/chaos/base/zpath.cpp \
+    $$PWD/chaos/base/zstring.cpp \
+    $$PWD/chaos/base/zstring_encode.cpp \
+    \
     $$PWD/chaos/data/zbinary.cpp \
     $$PWD/chaos/data/zjson.cpp \
-    $$PWD/chaos/data/zpath.cpp \
-    $$PWD/chaos/data/zstring.cpp \
-    $$PWD/chaos/data/zstring_encode.cpp \
     $$PWD/chaos/data/zxml.cpp \
     \
     $$PWD/chaos/file/database.cpp \
@@ -165,24 +167,22 @@ OTHER_FILES += \
     $$PWD/CMakeLists.txt \
     $$PWD/bbb/CMakeLists.txt \
     $$PWD/chaos/CMakeLists.txt \
-    $$PWD/chaos/lib/libpng-1.2.37/CMakeLists.txt \
-    $$PWD/chaos/lib/zlib-1.2.8/CMakeLists.txt \
     $$PWD/extern/CMakeLists.txt \
     $$PWD/test/CMakeLists.txt \
     $$PWD/ui/CMakeLists.txt \
     $$PWD/util/CMakeLists.txt \
     \
     $$PWD/configure_build.cmake \
-    $$PWD/hash.sh \
-    $$PWD/LibChaos_Todo_Ideas.txt \
     $$PWD/source_hash.cmake \
-    $$PWD/todo.txt
+    $$PWD/hash.sh \
+    $$PWD/LibChaos_Todo_Ideas.txt
 
 INCLUDEPATH += \
     $$PWD \
     $$PWD/bbb \
     $$PWD/chaos \
     $$PWD/chaos/abstract \
+    $$PWD/chaos/base \
     $$PWD/chaos/data \
     $$PWD/chaos/file \
     $$PWD/chaos/lib \

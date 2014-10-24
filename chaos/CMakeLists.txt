@@ -8,13 +8,16 @@ OPTION(IBERTY_DEMANGLE "Use libiberty to demangle symbols" OFF)
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     zclock.h
     zerror.h
-    zlog.h
-    zlogworker.h
     zautobuffer.h
     zautobufferunit.h
     zret.h
     ztime.h
     ztypes.h
+
+    base/zlog.h
+    base/zlogworker.h
+    base/zpath.h
+    base/zstring.h
 
     data/zarray.h
     data/zarray2.h
@@ -23,9 +26,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     data/zbinary.h
     data/zdata.h
     data/zmap.h
-    data/zpath.h
     data/zjson.h
-    data/zstring.h
     data/zxml.h
 
     file/database.h
@@ -54,15 +55,16 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     zautobuffer.cpp
     #zclock.cpp
     zerror.cpp
-    zlog.cpp
-    zlogworker.cpp
     #ztime.cpp
+
+    base/zlog.cpp
+    base/zlogworker.cpp
+    base/zpath.cpp
+    base/zstring.cpp
+    base/zstring_encode.cpp
 
     data/zbinary.cpp
     data/zjson.cpp
-    data/zpath.cpp
-    data/zstring.cpp
-    data/zstring_encode.cpp
     data/zxml.cpp
 
     file/database.cpp
@@ -97,6 +99,7 @@ ENDIF()
 SET(LibChaos_INCLUDE
     ${LibChaos_SOURCE_DIR}
     ${LibChaos_SOURCE_DIR}/abstract
+    ${LibChaos_SOURCE_DIR}/base
     ${LibChaos_SOURCE_DIR}/data
     ${LibChaos_SOURCE_DIR}/file
     ${LibChaos_SOURCE_DIR}/net
@@ -110,6 +113,7 @@ SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
 INCLUDE_DIRECTORIES(
     ${LibChaos_SOURCE_DIR}
     abstract
+    base
     data
     file
     lib
