@@ -97,25 +97,32 @@ public:
     static ZString ItoS(zu64 num, unsigned base = 10, zu64 pad = 0);
     static ZString ItoS(zs64 num, unsigned base = 10);
 
-    ZString(zu64 num) : ZString(){
-        operator=(ItoS(num, 10));
-    }
-    ZString(zs64 num) : ZString(){
-        operator=(ItoS(num, 10));
-    }
+//    ZString(zu64 num) : ZString(){
+//        operator=(ItoS(num, 10));
+//    }
+//    ZString(zs64 num) : ZString(){
+//        operator=(ItoS(num, 10));
+//    }
 
-    ZString(zuc num) : ZString((zu64)num){}
-    ZString(zsc num) : ZString((zs64)num){}
-    ZString(zus num) : ZString((zu64)num){}
-    ZString(zss num) : ZString((zs64)num){}
-    ZString(zuint num) : ZString((zu64)num){}
-    ZString(zint num) : ZString((zs64)num){}
-#if COMPILER == MINGW
-    ZString(zul num) : ZString((zu64)num){}
-    ZString(zsl num) : ZString((zs64)num){}
-#endif
-    //ZString(zull num) : ZString((zu64)num){}
-    //ZString(zsll num) : ZString((zs64)num){}
+    ZString(zuc num) : ZString((zull)num){}
+    ZString(zsc num) : ZString((zsll)num){}
+    ZString(zus num) : ZString((zull)num){}
+    ZString(zss num) : ZString((zsll)num){}
+    ZString(zuint num) : ZString((zull)num){}
+    ZString(zint num) : ZString((zsll)num){}
+//#if COMPILER == MINGW
+    ZString(zul num) : ZString((zull)num){}
+    ZString(zsl num) : ZString((zsll)num){}
+//#endif
+//    ZString(zull num) : ZString((zu64)num){}
+//    ZString(zsll num) : ZString((zs64)num){}
+
+    ZString(zull num) : ZString(){
+        operator=(ItoS((zu64)num, 10));
+    }
+    ZString(zsll num) : ZString(){
+        operator=(ItoS((zs64)num, 10));
+    }
 
 //    explicit ZString(zu8 num) : ZString((zu64)num){}
 //    explicit ZString(zs8 num) : ZString((zs64)num){}

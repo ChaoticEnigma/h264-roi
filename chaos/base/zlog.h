@@ -77,17 +77,16 @@ public:
     inline ZLog &operator<<(ZPath text){ return log(text.str()); }
     ZLog &operator<<(ZBinary text);
 
-    //inline ZLog &operator<<(char text){ return log(ZString(text)); }
-    //inline ZLog &operator<<(unsigned char text){ return log(ZString(text)); }
-
+    inline ZLog &operator<<(char text){ return log(ZString(text)); }
+    inline ZLog &operator<<(unsigned char text){ return log(ZString(text)); }
     inline ZLog &operator<<(zus num){ return log(ZString(num)); }
     inline ZLog &operator<<(zss num){ return log(ZString(num)); }
     inline ZLog &operator<<(zuint num){ return log(ZString(num)); }
     inline ZLog &operator<<(zint num){ return log(ZString(num)); }
-#if COMPILER == MINGW
+//#if COMPILER == MINGW
     inline ZLog &operator<<(zul num){ return log(ZString(num)); }
     inline ZLog &operator<<(zsl num){ return log(ZString(num)); }
-#endif
+//#endif
     inline ZLog &operator<<(zull num){ return log(ZString(num)); }
     inline ZLog &operator<<(zsll num){ return log(ZString(num)); }
 
@@ -97,7 +96,6 @@ public:
     //inline ZLog &operator<<(zu16 num){ return log(ZString(num)); }
     //inline ZLog &operator<<(zs32 num){ return log(ZString(num)); }
     //inline ZLog &operator<<(zu32 num){ return log(ZString(num)); }
-
     //inline ZLog &operator<<(zs64 num){ return log(ZString(num)); }
     //inline ZLog &operator<<(zu64 num){ return log(ZString(num)); }
 

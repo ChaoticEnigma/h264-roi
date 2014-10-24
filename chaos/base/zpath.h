@@ -10,9 +10,9 @@
 #include "zstring.h"
 
 #if PLATFORM == WINDOWS
-    #define ZPATH_DEFAULT_DELIM "\\"
+    #define ZPATH_DEFAULT_DELIM '\\'
 #else
-    #define ZPATH_DEFAULT_DELIM "/"
+    #define ZPATH_DEFAULT_DELIM '/'
 #endif
 
 namespace LibChaos {
