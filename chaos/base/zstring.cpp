@@ -453,15 +453,17 @@ ArZ ZString::explode(char delim) const {
     return out;
 }
 
-ArZ ZString::strExplode(ZString delim) const {
+ArZ ZString::strExplode(const ZString &delim) const {
     ZArray<zu64> pos = findAll(delim);
     ArZ out;
     zu64 startpos = 0;
     for(zu64 i = 0; i < pos.size(); ++i){
-        out.push(substr(*this, startpos, pos[i] - startpos));
+        if(startpos < pos[i])
+            out.push(substr(*this, startpos, pos[i] - startpos));
         startpos = pos[i] + delim.size();
     }
-    out.push(substr(*this, startpos));
+    if(startpos < size())
+        out.push(substr(*this, startpos));
     return out;
 }
 
@@ -532,6 +534,7 @@ ArZ ZString::escapedExplode(char delim) const {
     return out;
 }
 
+// Fixes syntax highlighting
 #ifndef BUILDING
     #define VAARGTYPE NULL
 #else
@@ -547,22 +550,27 @@ ArZ ZString::explodeList(unsigned nargs, ...) const {
     va_end(args);
 
     ArZ out;
-    std::string str_ = _data;
-    for(zu64 i = 0; i < str_.length(); ++i){
-        bool br = false;
+    zu64 counter = 0;
+    for(zu64 i = 0; i < size(); ++i){
+        // Test for any delimiter
+        bool delimfound = false;
         for(zu64 j = 0; j < delims.size(); ++j){
-            if(delims[j] == str_[i]){
-                br = true;
+            if(operator[](i) == delims[j]){
+                delimfound = true;
                 break;
             }
         }
-        if(br){
-            out.push(str_.substr(0, i));
-            str_ = str_.substr(i+1, str_.length());
-            i = (zu64)-1;
+        if(delimfound){
+            if(counter){
+                out.push(substr(*this, i - counter, counter));
+                counter = 0;
+            }
+            continue;
         }
+        ++counter;
     }
-    out.push(str_);
+    if(counter)
+        out.push(substr(*this, size() - counter, counter));
     return out;
 }
 #undef VAARGTYPE

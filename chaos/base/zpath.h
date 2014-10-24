@@ -24,7 +24,7 @@ class ZPath {
 public:
     ZPath();
     ZPath(ZString);
-    ZPath(std::string);
+//    ZPath(std::string);
     ZPath(const char *);
     ZPath(ArZ arr);
 
@@ -56,33 +56,37 @@ public:
     static ZPath getAbsolute(ZPath path); // Get absolute representation of path, based on present working directory
     ZPath &getAbsolute(); // Operates on object
 
+    // Hackish path repair crap, meant to make path system-specific valid
     bool valid();
     ZPath &fix();
+
     static bool makeDir(ZPath);
     bool createDirsTo();
 
     ZString str(ZString delim = ZPATH_DEFAULT_DELIM) const;
 
-    ArZ &data();
+    // Data Accessors
+    ArZ &data(){ return _data; }
+    const ArZ &data() const { return _data; }
+    bool &absolute(){ return _absolute; }
+    const bool &absolute() const { return _absolute; }
+    ZString &prefix(){ return _prefix; }
+    const ZString &prefix() const { return _prefix; }
 
-    bool &absolute();
-
-    zu64 size() const {
-        return _data.size();
-    }
-    zu64 depth() const {
-        return size();
-    }
+    // Size
+    zu64 size() const { return _data.size(); }
+    zu64 depth() const { return size(); }
 
 private:
     void fromStr(ZString);
+    static bool isDelim(char ch);
 
 private:
 //    const ArZ delimlist = { "/", "\\\\", "\\" };
 
     ArZ _data;
     bool _absolute;
-    ZString prefix;
+    ZString _prefix;
     //ZString delim;
 };
 

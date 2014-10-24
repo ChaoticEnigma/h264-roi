@@ -108,13 +108,14 @@ public:
     ZString(zsc num) : ZString((zs64)num){}
     ZString(zus num) : ZString((zu64)num){}
     ZString(zss num) : ZString((zs64)num){}
-    //ZString(zul num) : ZString((zu64)num){}
-    //ZString(zsl num) : ZString((zs64)num){}
-    //ZString(zull num) : ZString((zu64)num){}
-    //ZString(zsll num) : ZString((zs64)num){}
-
     ZString(zuint num) : ZString((zu64)num){}
     ZString(zint num) : ZString((zs64)num){}
+#if COMPILER == MINGW
+    ZString(zul num) : ZString((zu64)num){}
+    ZString(zsl num) : ZString((zs64)num){}
+#endif
+    //ZString(zull num) : ZString((zu64)num){}
+    //ZString(zsll num) : ZString((zs64)num){}
 
 //    explicit ZString(zu8 num) : ZString((zu64)num){}
 //    explicit ZString(zs8 num) : ZString((zs64)num){}
@@ -271,8 +272,11 @@ public:
 
     ArZ split(ZString delim) const;
 
+    // Explode a string into any array of substrings
+    // All explode functions will treat consecutive delimiters as one delimitier
+    // Delimiters at the beginning or end of a string are discarded
     ArZ explode(chartype delim) const;
-    ArZ strExplode(ZString delim) const;
+    ArZ strExplode(const ZString &delim) const;
     ArZ quotedExplode(chartype delim) const;
     ArZ escapedExplode(chartype delim) const;
     ArZ explodeList(unsigned nargs, ...) const;
@@ -294,17 +298,12 @@ public:
         return size() == 0;
     }
 
-    zu64 size() const {
-        return _size;
-    }
+    // Sizes
+    zu64 size() const { return _size; }
     inline zu64 length() const { return size(); }
 
-    zu8 charSize() const {
-        return sizeof(chartype);
-    }
-    zu64 strSize() const {
-        return size() * charSize();
-    }
+    zu8 charSize() const { return sizeof(chartype); }
+    zu64 strSize() const { return size() * charSize(); }
 
     chartype &first(){
         return _data[0];

@@ -80,15 +80,16 @@ public:
     //inline ZLog &operator<<(char text){ return log(ZString(text)); }
     //inline ZLog &operator<<(unsigned char text){ return log(ZString(text)); }
 
-//    inline ZLog &operator<<(zus num){ return log(ZString(num)); }
-//    inline ZLog &operator<<(zss num){ return log(ZString(num)); }
-//    inline ZLog &operator<<(zul num){ return log(ZString(num)); }
-//    inline ZLog &operator<<(zsl num){ return log(ZString(num)); }
-//    inline ZLog &operator<<(zull num){ return log(ZString(num)); }
-//    inline ZLog &operator<<(zsll num){ return log(ZString(num)); }
-
-    //inline ZLog &operator<<(zuint num){ return log(ZString(num)); }
-    //inline ZLog &operator<<(zint num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zus num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zss num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zuint num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zint num){ return log(ZString(num)); }
+#if COMPILER == MINGW
+    inline ZLog &operator<<(zul num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zsl num){ return log(ZString(num)); }
+#endif
+    inline ZLog &operator<<(zull num){ return log(ZString(num)); }
+    inline ZLog &operator<<(zsll num){ return log(ZString(num)); }
 
     //inline ZLog &operator<<(zs8 num){ return log(ZString(num)); }
     //inline ZLog &operator<<(zu8 num){ return log(ZString(num)); }

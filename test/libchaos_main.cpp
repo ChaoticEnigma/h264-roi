@@ -24,7 +24,6 @@ int main(int argc, char **argv){
 
         { "string", string_block },
         { "path", path_block },
-        { "path_windows", path_windows_block },
 
         { "thread", thread_block },
         { "number", number_block },
@@ -32,10 +31,6 @@ int main(int argc, char **argv){
         { "file", file_block },
         { "autobuffer", autobuffer_block },
         { "json", json_block },
-
-#ifdef TEST_ZPNG
-        { "png", png_block },
-#endif
     };
 
     ZAssoc<ZString, test_func> tests = defaulttests;
@@ -46,6 +41,10 @@ int main(int argc, char **argv){
         { "tcpserver", tcpserver_test },
         { "tcpserver2", tcpserver_test2 },
         { "tcpserver3", tcpserver_test3 },
+
+#ifdef TEST_ZPNG
+        { "png", png_block },
+#endif
 
         { "sandbox", sandbox },
 

@@ -1,17 +1,15 @@
 #include "test.h"
 
 int path_block(){
-    // /a/path/here/test.txt
-    // /this/path/to/another/place
-    // ../../../../../a/path/here/test.txt
+    LOG("-- Parse:");  // /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // /some/short/thing.obj
-    // /some/short/other/path
-    // ../../thing.obj
+    ZPath path1 = ZString("/some/odd/../complic/ated/../path");
+    LOG(path1.prefix());
+    LOG(path1.absolute());
+    LOG(path1);
 
     LOG("-- Sanitize:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ZPath path1 = ZString("/some/odd/../complic/ated/../path");
     path1.sanitize();
     LOG(path1);
     if(path1.size() != 3 || !path1.absolute() || path1[0] != "some" || path1[1] != "complic" || path1[2] != "path")
@@ -31,6 +29,16 @@ int path_block(){
 
     LOG("-- Relative To:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // Examples
+
+    // /a/path/here/test.txt
+    // /this/path/to/another/place
+    // ../../../../../a/path/here/test.txt
+
+    // /some/short/thing.obj
+    // /some/short/other/path
+    // ../../thing.obj
+
     ZPath path4 = "/some/odd/../complic/ated/../path";
     ZPath path5 = "/";
     LOG(path4);
@@ -40,19 +48,5 @@ int path_block(){
     if(path4.size() != 3 || path4.absolute() || path4[0] != "some" || path4[1] != "complic" || path4[2] != "path")
         throw 4;
 
-    return 0;
-}
-
-int path_windows_block(){
-    LOG("=== Path Windows Test...");
-    ZPath here = ZPath::pwd();
-    LOG(here.size() << " " << here.str());
-
-//    ZPath mk = "over/there/lol.txt";
-//    LOG(mk);
-//    if(mk.createDirsTo())
-//        LOG("ok");
-//    else
-//        LOG("no");
     return 0;
 }

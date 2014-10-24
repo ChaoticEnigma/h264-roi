@@ -142,7 +142,7 @@ ZString ZLog::getThread(){
     ZString thread = ZThreadA::thisTid();
     unsigned id;
     bool found = false;
-    for(unsigned i = 0; i < thread_ids.size(); ++i){
+    for(zu64 i = 0; i < thread_ids.size(); ++i){
         if(thread_ids[i] == thread){
             id = i;
             found = true;

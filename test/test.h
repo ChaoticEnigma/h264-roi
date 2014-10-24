@@ -16,7 +16,6 @@ int binary_block();
 
 int string_block();
 int path_block();
-int path_windows_block();
 
 int pointer_block();
 int allocator_block();

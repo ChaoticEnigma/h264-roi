@@ -14,23 +14,22 @@ namespace LibChaos {
 
 ZPath::ZPath() : _absolute(false){
 #if PLATFORM == WINDOWS
+    // Detect prefix (drive letter) on Windows
     size_t sz = 1024;
     char *ptr = new char[sz];
     getcwd(ptr, sz);
     ZString pth = ptr;
-    pth.getUntil
-    prefix =
-#else
-    prefix = ZPATH_DEFAULT_DELIM;
+    _prefix = ZString::getUntil(pth, ZPATH_DEFAULT_DELIM);
 #endif
+    // Other platforms have default empty prefix
 }
 
 ZPath::ZPath(ZString path) : ZPath(){
     fromStr(path);
 }
-ZPath::ZPath(std::string path) : ZPath(){
-    fromStr(path);
-}
+//ZPath::ZPath(std::string path) : ZPath(){
+//    fromStr(path);
+//}
 ZPath::ZPath(const char *path) : ZPath(){
     fromStr(path);
 }
@@ -48,30 +47,41 @@ bool ZPath::operator==(ZPath pth){
 
 void ZPath::fromStr(ZString path){
 #if PLATFORM == WINDOWS
-    if(path.size() > 2 && path[1] == ':'){
+    if(path.size() >= 2 && path[1] == ':'){
         _absolute = true;
-        prefix = ZString::substr(path, 0, 2) + ZPATH_DEFAULT_DELIM;
-    }
-#else
-    _absolute = path.startsWith(prefix, false);
+        _prefix = ZString::substr(path, 0, 2);
+        path.substr(_prefix.size());
+    } else
 #endif
+    if(path.size() >= 1 && isDelim(path[0])){
+        _absolute = true;
+    }
 
-    if(_absolute)
-        path.substr(prefix.size());
-    _data = path.strExplode(ZPATH_DEFAULT_DELIM);
+#if PLATFORM == WINDOWS
+    _data = path.explodeList(2, ZPATH_DEFAULT_DELIM, '/');
+#else
+    _data = path.explode(ZPATH_DEFAULT_DELIM);
+#endif
 
     for(zu64 i = 0; i < _data.size(); ++i){
         if(_data[i] == "."){
             _data.pop(i);
             --i;
+            continue;
         }
-#if PLATFORM != WINDOWS
-        else {
-            _data[i].replace("\\ ", " ");
-        }
-#endif
+//#if PLATFORM != WINDOWS
+//        _data[i].replace("\\ ", " ");
+//#endif
     }
     //sanitize();
+}
+
+bool ZPath::isDelim(char ch){
+#if PLATFORM == WINDOWS
+    if(ch == '\\')
+        return true;
+#endif
+    return ch == '/';
 }
 
 ZPath &ZPath::concat(ZPath path){
@@ -234,6 +244,7 @@ bool ZPath::valid(){
 }
 
 ZPath &ZPath::fix(){
+    // Much hack, wow
     if(!valid()){
         fromStr(str());
     }
@@ -272,24 +283,18 @@ bool ZPath::createDirsTo(){
 ZString ZPath::str(ZString delim) const {
     ZString tmp;
     if(_absolute){
-        tmp = prefix;
+        tmp = _prefix + delim;
     }
     ArZ data = _data;
-#if PLATFORM != WINDOWS
-    for(zu64 i = 0; i < data.size(); ++i){
-        data[i].replace(" ", "\\ ");
-    }
-#endif
-    tmp += ZString::compound(data, delim);
+//#if PLATFORM != WINDOWS
+//    // Escape spaces
+//    for(zu64 i = 0; i < data.size(); ++i){
+//        data[i].replace(" ", "\\ ");
+//    }
+//#endif
+    ZString str = ZString::compound(data, delim);
+    tmp += str;
     return tmp;
-}
-
-ArZ &ZPath::data(){
-    return _data;
-}
-
-bool &ZPath::absolute(){
-    return _absolute;
 }
 
 }
