@@ -81,7 +81,9 @@ HEADERS += \
     libchaos/chaos/abstract/zposition.h \
     chaos/abstract/ziterator.h \
     chaos/abstract/ylinearaccess.h \
-    chaos/data/zlist.h
+    chaos/data/zlist.h \
+    chaos/abstract/yiterable.h \
+    chaos/abstract/yindexedaccess.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
@@ -156,7 +158,8 @@ SOURCES += \
     libchaos/chaos/file/zppm.cpp \
     libchaos/chaos/file/zimage.cpp \
     libchaos/extern/zh264decoder.cpp \
-    libchaos/extern/zh264encoder.cpp
+    libchaos/extern/zh264encoder.cpp \
+    test/list_test.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

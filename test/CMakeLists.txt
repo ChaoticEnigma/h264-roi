@@ -13,6 +13,7 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     binary_test.cpp
 
     array_test.cpp
+    list_test.cpp
 
     string_test.cpp
     path_test.cpp
