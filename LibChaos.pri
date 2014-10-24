@@ -21,6 +21,11 @@ HEADERS += \
     $$PWD/chaos/abstract/zserializer.h \
     $$PWD/chaos/abstract/zstorage.h \
     $$PWD/chaos/abstract/zwriter.h \
+    $$PWD/chaos/abstract/yiterable.h \
+    $$PWD/chaos/abstract/yindexedaccess.h \
+    $$PWD/chaos/abstract/zposition.h \
+    $$PWD/chaos/abstract/ziterator.h \
+    $$PWD/chaos/abstract/ylinearaccess.h \
     \
     $$PWD/chaos/data/zallocator.h \
     $$PWD/chaos/data/zarray.h \
@@ -32,6 +37,7 @@ HEADERS += \
     $$PWD/chaos/data/zdefaultstorage.h \
     $$PWD/chaos/data/zfilestorage.h \
     $$PWD/chaos/data/zjson.h \
+    $$PWD/chaos/data/zlist.h \
     $$PWD/chaos/data/zmap.h \
     $$PWD/chaos/data/zpath.h \
     $$PWD/chaos/data/zpointer.h \
@@ -43,6 +49,7 @@ HEADERS += \
     $$PWD/chaos/file/zfile.h \
     $$PWD/chaos/file/zimage.h \
     $$PWD/chaos/file/zbmp.h \
+    $$PWD/chaos/file/zppm.h \
     \
     $$PWD/chaos/lib/sqlite3.h \
     \
@@ -58,6 +65,8 @@ HEADERS += \
     $$PWD/chaos/thread/zmutex.h \
     $$PWD/chaos/thread/zthread.h \
     \
+    $$PWD/extern/zh264decoder.h \
+    $$PWD/extern/zh264encoder.h \
     $$PWD/extern/zjpeg.h \
     $$PWD/extern/zpng.h \
     \
@@ -74,16 +83,7 @@ HEADERS += \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
     \
-    $$PWD/bbb/zbbb.h \
-    libchaos/chaos/file/zppm.h \
-    libchaos/extern/zh264decoder.h \
-    libchaos/extern/zh264encoder.h \
-    libchaos/chaos/abstract/zposition.h \
-    chaos/abstract/ziterator.h \
-    chaos/abstract/ylinearaccess.h \
-    chaos/data/zlist.h \
-    chaos/abstract/yiterable.h \
-    chaos/abstract/yindexedaccess.h
+    $$PWD/bbb/zbbb.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
@@ -104,6 +104,8 @@ SOURCES += \
     $$PWD/chaos/file/database.cpp \
     $$PWD/chaos/file/zfile.cpp \
     $$PWD/chaos/file/zbmp.cpp \
+    $$PWD/chaos/file/zppm.cpp \
+    $$PWD/chaos/file/zimage.cpp \
     \
     $$PWD/chaos/lib/sqlite3.c \
     \
@@ -117,6 +119,8 @@ SOURCES += \
     \
     $$PWD/chaos/thread/zthread.cpp \
     \
+    $$PWD/extern/zh264decoder.cpp \
+    $$PWD/extern/zh264encoder.cpp \
     $$PWD/extern/zpng.cpp \
     $$PWD/extern/zjpeg.cpp \
     \
@@ -138,6 +142,7 @@ SOURCES += \
     $$PWD/test/pointer_test.cpp \
     $$PWD/test/allocator_test.cpp \
     $$PWD/test/storage_test.cpp \
+    $$PWD/test/list_test.cpp \
     \
     $$PWD/ui/win32/window_win32.cpp \
     $$PWD/ui/win32/windowproc_win32.cpp \
@@ -154,12 +159,7 @@ SOURCES += \
     $$PWD/util/extensionfixer.cpp \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
-    $$PWD/util/duplicatefinder.cpp \
-    libchaos/chaos/file/zppm.cpp \
-    libchaos/chaos/file/zimage.cpp \
-    libchaos/extern/zh264decoder.cpp \
-    libchaos/extern/zh264encoder.cpp \
-    test/list_test.cpp
+    $$PWD/util/duplicatefinder.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
