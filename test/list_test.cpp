@@ -12,6 +12,19 @@ int list_block(){
     tst.debug();
     tst.push(567);
     tst.debug();
+
+    // push to back and pop back
+    tst.push(663);
+    tst.debug();
+    tst.pop();
+    tst.debug();
+
+    // push to front and pop front
+    tst.pushFront(336);
+    tst.debug();
+    tst.popFront();
+    tst.debug();
+
     if(tst.size() == 4 && tst[0] == 45 && tst[1] == 10 && tst[2] == 20 &&  tst[3] == 567)
         LOG(tst.size() << " " << tst[0] << "." << tst[1] << "." << tst[2] << "." << tst[3] << " OK");
     else

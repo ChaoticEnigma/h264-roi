@@ -21,7 +21,7 @@ public:
     ZList() : _size(0), head(nullptr){}
 
     ~ZList(){
-        if(_size){
+        if(head != nullptr){
             head->prev->next = nullptr; // Break circular link
             Node *current = head;
             Node *next;
@@ -65,6 +65,29 @@ public:
     }
     inline void push(const T &data){ pushBack(data); }
 
+    void popFront(){
+        if(head != nullptr){
+            head->prev->next = head->next;
+            head->next->prev = head->prev;
+            Node *old = head;
+            head = head->next;
+            --_size;
+            delete old->data;
+            delete old;
+        }
+    }
+    void popBack(){
+        if(head != nullptr){
+            head->prev->prev->next = head;
+            Node *old = head->prev;
+            head->prev = head->prev->prev;
+            --_size;
+            delete old->data;
+            delete old;
+        }
+    }
+    inline void pop(){ popBack(); }
+
     void debug() const {
         ZString str;
         Node *current = head;
@@ -83,6 +106,19 @@ public:
     }
     const T &operator[](zu64 index) const {
         return *getNode(index)->data;
+    }
+
+    T &front(){
+        return *head->data;
+    }
+    const T &front() const {
+        return *head->data;
+    }
+    T &back(){
+        return *head->prev->data;
+    }
+    const T &back() const {
+        return *head->prev->data;
     }
 
     zu64 size() const {
