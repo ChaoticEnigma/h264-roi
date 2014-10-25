@@ -10,13 +10,6 @@ namespace LibChaos {
 
 // Implemented as a circular doubly-linked list
 template <typename T> class ZList : public YIndexedAccess<T> {
-private:
-    struct Node {
-        Node *prev;
-        Node *next;
-        T *data;
-    };
-
 public:
     ZList() : _size(0), head(nullptr){}
 
@@ -124,6 +117,13 @@ public:
     zu64 size() const {
         return _size;
     }
+
+private:
+    struct Node {
+        Node *prev;
+        Node *next;
+        T *data;
+    };
 
 private:
    static Node *newNode(const T &data){
