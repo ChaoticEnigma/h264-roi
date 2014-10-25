@@ -5,12 +5,25 @@
 int list_block(){
     ZList<int> tst;
     tst.push(10);
+    tst.debug();
+    tst.push(20);
+    tst.debug();
     tst.pushFront(45);
+    tst.debug();
     tst.push(567);
-    if(tst.size() == 3 && tst[0] == 45 && tst[1] == 10 && tst[2] == 567)
-        LOG(tst.size() << " " << tst[0] << "." << tst[1] << "." << tst[2] << " OK");
+    tst.debug();
+    if(tst.size() == 4 && tst[0] == 45 && tst[1] == 10 && tst[2] == 20 &&  tst[3] == 567)
+        LOG(tst.size() << " " << tst[0] << "." << tst[1] << "." << tst[2] << "." << tst[3] << " OK");
     else
         throw (int)1;
+
+    ZList<ZString> tst4;
+    tst4.pushFront("two");
+    tst4.push("three");
+    tst4.push("four");
+    tst4.pushFront("one");
+    for(zu64 i = 0; i < tst4.size(); ++i)
+        LOG(tst4[i]);
 
 //    int myints[] = { 16, 2, 77, 29 };
 //    ZList<int> tst2(myints, 4);
