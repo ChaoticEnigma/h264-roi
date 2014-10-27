@@ -69,12 +69,12 @@ int tcpserver_test(){
 
         ZBinary data;
         client.read(data);
-        LOG("read (" << data.size() << "): \"" << ZString(data.printable().storage()) << "\"");
+        LOG("read (" << data.size() << "): \"" << ZString(data.printable().asChar()) << "\"");
 
         ZString str = "hello back there!";
         ZBinary snddata((const unsigned char *)str.cc(), str.size());
         client.write(snddata);
-        LOG("write (" << snddata.size() << "): \"" << ZString(snddata.printable().storage()) << "\"");
+        LOG("write (" << snddata.size() << "): \"" << ZString(snddata.printable().asChar()) << "\"");
     }
 
     return 0;

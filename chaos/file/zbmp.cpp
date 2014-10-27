@@ -147,16 +147,7 @@ bool ZBMP::read(ZPath path){
 
         image.setDimensions(width, height, bmp_channels, 8);
 
-        zu32 padding = 0;
-        zu32 scanlinebytes = width * 3;
-        while((scanlinebytes + padding) % 4 != 0)
-            padding++;
-        zu32 psw = scanlinebytes + padding;
-        zu64 outsize = height * psw;
-
-        unsigned char *buff = buffer.storage()->getBlock(fileh.bfOffBits, outsize);
-        unsigned char *pixels = convertBMPDatatoRGB(buff, image.width(), image.height());
-        buffer.storage()->freeBlock(buff);
+        unsigned char *pixels = convertBMPDatatoRGB(buffer.raw() + fileh.bfOffBits, image.width(), image.height());
 
         image.takeData(pixels);
 
