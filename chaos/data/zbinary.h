@@ -194,6 +194,10 @@ public:
         return _stor->get(size()-1);
     }
 
+    inline zbinary_type *raw(){
+        return _stor->getBlock(0, _stor->size());
+    }
+
     inline zu64 size() const {
         return _stor->size();
     }
