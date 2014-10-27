@@ -8,7 +8,7 @@ int file_block(){
 //    LOG(ZPath::makeDir(near));
 
     ZPath far = ZString("a/b/c/d/e/f.dat");
-    LOG(far.createDirsTo());
+    LOG(ZFile::createDirsTo(far));
 
     ZFile fl;
     LOG(fl.open(far, ZFile::modereadwrite));

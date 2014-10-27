@@ -48,7 +48,8 @@ public:
     ZPath &parent(); // Get the path to the next directory up
     static ZPath parent(ZPath path);
 
-    bool childTo(ZPath); // Needs REWRITE
+    // Determines if <path> is a child to <this>
+    bool childTo(ZPath path) const; // Needs REWRITE
 
     ZPath &sanitize(); // Gets most direct path (resolves .. in path, as best as possible), removes unnecessary tokens
     static ZPath sanitize(ZPath path);
@@ -59,9 +60,6 @@ public:
     // Hackish path repair crap, meant to make path system-specific valid
     bool valid();
     ZPath &fix();
-
-    static bool makeDir(ZPath);
-    bool createDirsTo();
 
     ZString str(ZString delim = ZPATH_DEFAULT_DELIM) const;
 

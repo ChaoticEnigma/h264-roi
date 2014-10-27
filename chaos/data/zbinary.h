@@ -194,7 +194,7 @@ public:
         return _stor->get(size()-1);
     }
 
-    inline zbinary_type *raw(){
+    inline zbinary_type *raw() const {
         return _stor->getBlock(0, _stor->size());
     }
 

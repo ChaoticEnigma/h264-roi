@@ -1,4 +1,5 @@
 #include "zlogworker.h"
+#include "zfile.h"
 
 #include <iostream>
 #include <fstream>
@@ -126,14 +127,14 @@ void ZLogWorker::doLog(LogJob &jb){
     if(!jb.stdio){
         for(zu64 i = 0; i < logfiles.size(); ++i){
             if(!logfiles[i][jb.source].isEmpty()){
-                logfiles.key(i).createDirsTo();
+                ZFile::createDirsTo(logfiles.key(i));
 
                 std::ofstream lgfl(logfiles.key(i).str().cc(), std::ios::app);
                 lgfl << makeLog(jb, logfiles[i][jb.source]);
                 lgfl.flush();
                 lgfl.close();
             } else if(!logfiles[i][ZLogSource::all].isEmpty()){
-                logfiles.key(i).createDirsTo();
+                ZFile::createDirsTo(logfiles.key(i));
 
                 std::ofstream lgfl(logfiles.key(i).str().cc(), std::ios::app);
                 lgfl << makeLog(jb, logfiles[i][ZLogSource::all]);

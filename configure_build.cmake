@@ -3,6 +3,7 @@ FUNCTION(configure_build NAME BUILD PLATFORM)
 
     SET(BUILD_STRING "${NAME}:")
 
+    # Set variables for build type
     IF(BUILD MATCHES 1)
         ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_DEBUG)
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
@@ -16,6 +17,7 @@ FUNCTION(configure_build NAME BUILD PLATFORM)
         SET(BUILD_STRING "${BUILD_STRING} Normal")
     ENDIF()
 
+    # Set variables for platform type
     IF(PLATFORM MATCHES 1)
         ADD_DEFINITIONS(-D_LIBCHAOS_PLATFORM_LINUX -D_LIBCHAOS_COMPILER_GCC)
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
@@ -42,7 +44,10 @@ FUNCTION(configure_build NAME BUILD PLATFORM)
 
     #SET(CXXF "${CXXF} -Wshadow ") # Some warnings are too verbose to be useful
     #SET(CXXF "${CXXF} -Wmissing-declarations -Wold-style-cast") # Not actually errors
-    SET(CXXF "${CXXF} -Wno-unused-parameter -Wno-unused -Wno-comment") # Disabled Warnings
+    SET(CXXF "${CXXF} -Wno-unused-parameter -Wno-unused") # Disabled Warnings
+    IF(NOT PLATFORM MATCHES 2)
+        SET(CXXF "${CXXF} -Wno-comment") # Not recognized on MinGW
+    ENDIF()
 
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXXF}" PARENT_SCOPE)
 

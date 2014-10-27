@@ -113,28 +113,49 @@ ZPath ZPath::pwd(){
     return path;
 }
 
-ZPath &ZPath::relativeTo(ZPath path){
-    // Make both paths absolute
-    if(!absolute())
-        getAbsolute();
-    if(!path.absolute())
-        path.getAbsolute();
+ZPath &ZPath::relativeTo(ZPath relative){
+    // Get path to here:
+    // /a/path/here/test.txt
+    // from here:
+    // /this/path/to/another/place
+    // =
+    // ../../../../../a/path/here/test.txt
 
-    ZPath up;
+    // Get path to here:
+    // /some/short/thing.obj
+    // from here:
+    // /some/short/other/path
+    // =
+    // ../../thing.obj
+
+    ZPath path = *this;
+
+    // Make both paths absolute
+    path.getAbsolute();
+    relative.getAbsolute();
+
+    // Get number of matching parts from beginning of path
+    // Build path of ".."s
     zu64 match_len = 0;
-    for(zu64 i = 0; i < path.size() && i < _data.size(); ++i){
-        if(path[i] != _data[i]){
+    for(zu64 i = 0; i < path.size() && i < relative.size(); ++i){
+        if(relative[i] != path[i])
             break;
-        }
         ++match_len;
+    }
+    // Remove common path parts
+    path.data().popFrontCount(match_len);
+    relative.data().popFrontCount(match_len);
+
+    // Build path of ".."s for remaining parts in relative
+    ZPath up;
+    for(zu64 i = 0; i < relative.size(); ++i){
         up.concat("..");
     }
-    _data.popFrontCount(match_len);
-    path.data().popFrontCount(match_len);
+    // Combine
+    up.concat(path);
+    up.sanitize();
 
-    up.concat(*this);
     *this = up;
-    sanitize();
     return *this;
 }
 
@@ -153,11 +174,16 @@ ZPath ZPath::parent(ZPath path){
     return path.parent();
 }
 
-bool ZPath::childTo(ZPath path){
-    if(path.depth() > depth())
+bool ZPath::childTo(ZPath path) const {
+    // Get absolute and clean paths
+    ZPath base = *this;
+    base.getAbsolute();
+    path.getAbsolute();
+
+    if(base.depth() >= path.depth())
         return false;
-    for(unsigned i = 0; i < path.depth(); ++i){
-        if(path[i] != _data[i])
+    for(zu64 i = 0; i < base.size(); ++i){
+        if(base[i] != path[i])
             return false;
     }
     return true;
@@ -249,35 +275,6 @@ ZPath &ZPath::fix(){
         fromStr(str());
     }
     return *this;
-}
-
-bool ZPath::makeDir(ZPath dir){
-    struct stat st_buf;
-    int ret = stat(dir.str().cc(), &st_buf);
-    if(ret == 0){
-        if(S_ISDIR(st_buf.st_mode)){
-            return true;
-        } else {
-            return false;
-        }
-    }
-#if COMPILER == MINGW
-    const char *tmp = dir.str().cc();
-    return (mkdir(tmp) == 0);
-#elif COMPILER == GCC
-    return (mkdir(dir.str().cc(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0);
-#endif
-}
-
-bool ZPath::createDirsTo(){
-    ZPath orig = *this;
-    ZPath cur = orig;
-    for(zu64 i = 0; i < orig.size()-1; ++i){
-        cur.concat(orig[i]);
-        if(!makeDir(cur))
-            return false;
-    }
-    return true;
 }
 
 ZString ZPath::str(ZString delim) const {

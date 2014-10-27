@@ -202,21 +202,14 @@ zu64 ZFile::writeFile(ZPath filenm, const ZString &str){
     return writeFile(filenm, ZBinary(str.cc(), str.size()));
 }
 
-zu64 ZFile::writeBinary(ZPath file, const ZBinary &data){
-    if(!file.createDirsTo())
+zu64 ZFile::writeBinary(ZPath path, const ZBinary &data){
+    if(!ZFile::createDirsTo(path))
+        throw ZError("could not create dirs to file");
+
+    ZFile file(path, ZFile::modewrite);
+    if(!file.isOpen())
         return 0;
-
-    FILE *fp = fopen(file.str().cc(), "wb");
-    if(fp == NULL)
-        throw ZError("fopen error");
-
-    zbyte *ptr = data.storage()->getBlock(0, data.size());
-    zu64 wrt = fwrite(ptr, sizeof(char), data.size(), fp);
-    data.storage()->freeBlock(ptr);
-    fclose(fp);
-    if(wrt != data.size())
-        throw ZError("fwrite error");
-
+    zu64 wrt = file.write(data.raw(), data.size());
     return wrt;
 }
 
@@ -236,10 +229,6 @@ zu64 ZFile::copy(ZPath source, ZPath output){
     fclose(outFile);
     fclose(inFile);
     return total;
-}
-
-bool ZFile::createDirsTo(ZPath path){
-    return path.createDirsTo();
 }
 
 /*bool ZFile::append(ZString cont){
@@ -391,6 +380,38 @@ bool ZFile::isFile(ZPath file){
         return true;
     }
     return false;
+}
+
+bool ZFile::makeDir(ZPath dir){
+    struct stat st_buf;
+    int ret = stat(dir.str().cc(), &st_buf);
+    if(ret == 0){
+        if(S_ISDIR(st_buf.st_mode)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+#if COMPILER == MINGW
+    ret = mkdir(dir.str().cc());
+#else // GCC
+    ret = mkdir(dir.str().cc(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#endif
+    return ret == 0;
+}
+
+bool ZFile::createDirsTo(ZPath dir){
+    if(!dir.depth())
+        return false;
+    dir.sanitize();
+    ZPath current;
+    current.absolute() = dir.absolute();
+    for(zu64 i = 0; i < dir.size()-1; ++i){
+        current.concat(dir[i]);
+        if(!makeDir(current))
+            return false;
+    }
+    return true;
 }
 
 ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){

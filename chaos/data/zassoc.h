@@ -214,7 +214,7 @@ public:
         return _data.empty();
     }
 
-    unsigned size() const {
+    zu64 size() const {
         return _data.size();
     }
     ZArray<Data> &data(){

@@ -100,7 +100,7 @@ public:
     //inline ZLog &operator<<(zu64 num){ return log(ZString(num)); }
 
     inline ZLog &operator<<(bool tf){ return log(tf ? "true" : "false"); }
-    //inline ZLog &operator<<(double num){ return log(ZString(num)); }
+    inline ZLog &operator<<(double num){ return log(ZString(num)); }
 
     inline ZLog &operator<<(const char *text){ return log(text); }
     //inline ZLog &operator<<(const unsigned char *text){ return log(ZString((const char *)text)); }

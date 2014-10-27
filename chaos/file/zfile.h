@@ -82,7 +82,6 @@ public:
     static zu64 writeBinary(ZPath name, const ZBinary &data);
 
     static zu64 copy(ZPath, ZPath);
-    static bool createDirsTo(ZPath);
 
     //bool append(ZString);
 
@@ -98,6 +97,10 @@ public:
     // Path-related functions
     static bool isDir(ZPath dir);
     static bool isFile(ZPath dir);
+
+    static bool makeDir(ZPath dir);
+    static bool createDirsTo(ZPath path);
+
     static ZArray<ZPath> listFiles(ZPath dir, bool recurse = true);
     static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false);
     static zu64 dirSize(ZPath dir);
