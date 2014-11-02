@@ -1,0 +1,14 @@
+LibChaos Projects
+==================================
+LibChaos Core
+LibChaos Extern
+LibChaos Util
+
+Archon - webserver
+Zephyr - game engine
+
+SteamTool - symlink and reparse point multi hard disk data manager
+
+H264-ROI - region of interest encoding in H264
+
+Windows Audio Output Circular Recorder - record output from windows playback device in a circular buffer

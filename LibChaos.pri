@@ -175,7 +175,8 @@ OTHER_FILES += \
     $$PWD/configure_build.cmake \
     $$PWD/source_hash.cmake \
     $$PWD/hash.sh \
-    $$PWD/LibChaos_Todo_Ideas.txt
+    $$PWD/LibChaos_Todo_Ideas.txt \
+    $$PWD/Projects.txt
 
 INCLUDEPATH += \
     $$PWD \
