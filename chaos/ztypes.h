@@ -131,11 +131,9 @@ typedef uint32_t zu32;
 typedef int64_t zs64;
 typedef uint64_t zu64;
 
-// Aliases
+// Integral type Aliases
 //typedef zsc zs8;
 //typedef zuc zu8;
-typedef zu8 zbyte;
-typedef zbyte zoctet; // I blame the IETF
 
 //typedef zss zs16;
 //typedef zus zu16;
@@ -145,6 +143,23 @@ typedef zbyte zoctet; // I blame the IETF
 
 //typedef zsll zs64;
 //typedef zull zu64;
+
+// Aliases
+typedef zu8 zbyte;
+typedef zbyte zoctet; // I blame the IETF
+
+// Check sizes
+static_assert(sizeof(zs8) == 1, "zs8 has incorrect size");
+static_assert(sizeof(zu8) == 1, "zu8 has incorrect size");
+
+static_assert(sizeof(zs16) == 2, "zs16 has incorrect size");
+static_assert(sizeof(zu16) == 2, "zu16 has incorrect size");
+
+static_assert(sizeof(zs32) == 4, "zs32 has incorrect size");
+static_assert(sizeof(zu32) == 4, "zu32 has incorrect size");
+
+static_assert(sizeof(zs64) == 8, "zs64 has incorrect size");
+static_assert(sizeof(zu64) == 8, "zu64 has incorrect size");
 
 }
 

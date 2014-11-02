@@ -10,7 +10,8 @@ class ZWriter : public ZPosition {
 public:
     virtual ~ZWriter(){}
 
-    virtual zu64 write(const zbyte *data, zu64 size) = 0;
+    // Write <size> bytes from <src> to object at current position
+    virtual zu64 write(const zbyte *src, zu64 size) = 0;
 };
 
 }

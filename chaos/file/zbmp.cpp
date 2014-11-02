@@ -113,8 +113,8 @@ ZBinary writeInfoHeader(const BitmapInfoHeader *infoh){
 
 bool ZBMP::read(ZPath path){
     try {
-        ZBinary buffer = ZFile::readBinary(path);
-        if(buffer.size() < 54){
+        ZBinary buffer;
+        if(ZFile::readBinary(path, buffer) < 54){
             throw ZError("File too small", BMPError::badfile, false);
         }
 

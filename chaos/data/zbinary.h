@@ -83,7 +83,7 @@ public:
     bool operator==(const ZBinary &rhs) const {
         if(_size != rhs._size)
             return false;
-        return memcmp(_data, rhs._data, _size);
+        return (memcmp(_data, rhs._data, _size) == 0);
     }
     bool operator!=(const ZBinary &rhs) const {
         return !operator==(rhs);
@@ -176,6 +176,8 @@ public:
             for(zu64 i = 0; i < _size - 1; ++i){
                 if(_data[i] == 0){
                     _data[i] = '0';
+                } else if(_data[i] > 127){
+                    _data[i] = '!';
                 }
             }
         }
@@ -220,22 +222,22 @@ public:
 
     // ZReader interface
     zu64 read(zbyte *dest, zu64 length){
-        if(_rwpos + length > size()){
+        if(_rwpos + length > size())
             length = _rwpos + length - size();
-        }
         if(dest && length)
-            memcpy(dest, _data, length);
+            memcpy(dest, _data + _rwpos, length);
         _rwpos += length;
         return length;
     }
-    void rewind(){
-        _rwpos = 0;
+    zu64 rewind(){
+        return setPos(0);
     }
     bool atEnd() const {
         return _rwpos == size();
     }
-    void setPos(zu64 pos){
+    zu64 setPos(zu64 pos){
         _rwpos = pos;
+        return _rwpos;
     }
     zu64 getPos() const {
         return _rwpos;

@@ -10,9 +10,18 @@
 #include "zlog.h"
 #include "zerror.h"
 
+#include "xxhash.h"
+
+#if PLATFORM == WINDOWS
+    #define V 1
+    #include <windows.h>
+#else
+    #define V 2
+#endif
+
 namespace LibChaos {
 
-ZFile::ZFile() : _bits(0 | readbit), _fileh(NULL){}
+ZFile::ZFile() : _bits(0 | readbit), _file(NULL){}
 ZFile::ZFile(ZPath name, zfile_mode mode) : ZFile(){
     open(name, mode);
 }
@@ -21,29 +30,59 @@ ZFile::~ZFile(){
     close();
 }
 
-void ZFile::setMode(zfile_mode mode){
-    _bits = 0;
-    if(mode & moderead)
-        _bits |= readbit;
-    if(mode & modewrite)
-        _bits |= (writebit | createbit);
-}
-
 bool ZFile::open(ZPath path){
     // Close previous file, if any
     close();
+    _path = path;
 
-    _flpath = path;
+    // Must open for read or write or both
+    if(!(_bits & readbit) && !(_bits & writebit))
+        return false;
 
     // If we're not allowed to create
     if(!(_bits & createbit)){
         // Make sure the file exists
-        if(!(exists(_flpath) && isFile(_flpath))){
+        if(!isFile(_path)){
             // Fail if it doesn't
             return false;
         }
     }
 
+#if PLATFORM == WINDOWS
+    DWORD access = 0;
+    if(_bits & readbit)
+        access |= GENERIC_READ;
+    if(_bits & writebit)
+        access |= GENERIC_WRITE;
+
+    DWORD share = 0;
+    if(_bits & readbit && !(_bits & writebit))
+        share = FILE_SHARE_READ;
+
+    DWORD create;
+    if(_bits & createbit){
+        if(_bits & apptruncbit)
+            create = CREATE_ALWAYS;
+        else
+            create = CREATE_NEW;
+    } else {
+        if(_bits & apptruncbit)
+            create = TRUNCATE_EXISTING;
+        else
+            create = OPEN_EXISTING;
+    }
+
+    DWORD attr = FILE_ATTRIBUTE_NORMAL;
+
+    _file = CreateFileA(_path.str('\\').cc(), access, share, NULL, create, attr, NULL);
+    if(_file == INVALID_HANDLE_VALUE){
+        _file == NULL;
+        return false;
+    }
+
+    _bits |= goodbit;
+    return true;
+#else
     // Set flags
     ZString modech;
     if(_bits & readwritebits){ // read / write
@@ -58,12 +97,14 @@ bool ZFile::open(ZPath path){
     }
     modech += "b"; // binary
 
-    _fileh = fopen(_flpath.str().cc(), modech.cc());
-    if(_fileh != NULL){
-        _bits = _bits | goodbit;
-        return true;
+    _file = fopen(_path.str().cc(), modech.cc());
+    if(_file == NULL){
+        return false;
     }
-    return false;
+
+    _bits = _bits | goodbit;
+    return true;
+#endif
 }
 
 bool ZFile::open(ZPath path, zfile_mode mode){
@@ -71,31 +112,71 @@ bool ZFile::open(ZPath path, zfile_mode mode){
     return open(path);
 }
 
+void ZFile::setMode(zfile_mode mode){
+    _bits = 0;
+    if(mode & moderead)
+        _bits |= readbit;
+    if(mode & modewrite){
+        if(mode & nocreate)
+            _bits |= writebit;
+        else
+            _bits |= (writebit | createbit);
+    }
+    // If append not set and truncate set
+    if(!(mode & append) && mode & truncate)
+        _bits |= apptruncbit;
+}
+
 bool ZFile::close(){
     if(!isOpen())
         return true;
-    bool ret = (fclose(_fileh) == 0);
-    _fileh = NULL;
+#if PLATFORM == WINDOWS
+    bool ret = CloseHandle(_file);
+#else
+    bool ret = (fclose(_file) == 0);
+#endif
+    _file = NULL;
+    _bits &= ~goodbit;
     return ret;
 }
 
 // ZPosition
 zu64 ZFile::getPos() const {
+#if PLATFORM == WINDOWS
+    // Move pointer by 0 to get current pos
+    LARGE_INTEGER distance;
+    distance.QuadPart = 0;
+    LARGE_INTEGER newpos;
+    SetFilePointerEx(_file, distance, &newpos, FILE_CURRENT);
+    return (zu64)newpos.QuadPart;
+#else
     // Tell file pointer position
-    long pos = ftell(_fileh);
+    long pos = ftell(_file);
     return (pos > 0 ? (zu64)pos : 0);
+#endif
 }
-void ZFile::setPos(zu64 pos){
+
+zu64 ZFile::setPos(zu64 pos){
+#if PLATFORM == WINDOWS
+    LARGE_INTEGER distance;
+    distance.QuadPart = (long long)pos;
+    LARGE_INTEGER newpos;
+    SetFilePointerEx(_file, distance, &newpos, FILE_BEGIN);
+    return (zu64)newpos.QuadPart;
+#else
     // Seek file pointer to position
-    fseek(_fileh, (long)pos, SEEK_SET);
+    fseek(_file, (long)pos, SEEK_SET);
+    return getPos();
+ #endif
 }
 bool ZFile::atEnd() const {
+#if PLATFORM == WINDOWS
+    // Hack
+    return getPos() >= fileSize();
+#else
     // Check if file pointer is at end of file
-    return feof(_fileh);
-}
-void ZFile::rewind(){
-    // Shortcut for setPos(0)
-    setPos(0);
+    return feof(_file);
+#endif
 }
 
 // ZReader
@@ -103,76 +184,98 @@ zu64 ZFile::read(zbyte *dest, zu64 size){
     // Check file is open and has read bit set
     if(!isOpen() || !(_bits & readbit))
         return 0;
-    return fread(dest, sizeof(zbyte), size, _fileh);
+#if PLATFORM == WINDOWS
+    DWORD read;
+    bool ret = ReadFile(_file, dest, size, &read, NULL);
+    if(!ret)
+        return 0;
+    return (zu64)read;
+#else
+    return fread(dest, sizeof(zbyte), size, _file);
+#endif
 }
 
 // ZWriter
-zu64 ZFile::write(const zbyte *data, zu64 size){
+zu64 ZFile::write(const zbyte *src, zu64 size){
     // Check file is open and has write bit set
     if(!isOpen() || !(_bits & writebit))
         return 0;
-    return fwrite(data, sizeof(zbyte), size, _fileh);
-}
-
-zu64 ZFile::read(ZBinary &out, zu64 max){
-    if(!(isOpen() && (_bits & readbit)))
+#if PLATFORM == WINDOWS
+    DWORD write;
+    bool ret = WriteFile(_file, src, size, &write, NULL);
+    if(!ret)
         return 0;
-    unsigned char *buffer;
-    if(flsize() >= max)
-        buffer = new unsigned char[max];
-    else
-        buffer = new unsigned char[flsize()];
-    //zu64 dats = fread(buffer, 1, sizeof buffer, _fileh);
-    zu64 len = fread(buffer, 1, sizeof buffer, _fileh);
-    out = ZBinary(buffer, len);
-    //delete[] buffer;
-    return len;
+    return (zu64)write;
+#else
+    return fwrite(data, sizeof(zbyte), size, _file);
+#endif
 }
 
-/*ZString ZFile::readline(){
-    if(_file){
-        std::string line;
-        std::getline(_file, line);
-        return ZString(line);
-    }
-    return ZString();
-}*/
-
-ZString ZFile::readFile(ZPath filenm){
-    bool st;
-    return readFile(filenm, st);
-}
-ZString ZFile::readFile(ZPath filenm, bool &status){
-    struct stat st_buf;
-    int ret = stat(filenm.str().cc(), &st_buf);
-    if(ret != 0){
-        status = false;
-        return ZString();
-    }
-    if(S_ISDIR(st_buf.st_mode)){
-        status = false;
-        return ZString();
-    }
-    std::ifstream infile(filenm.str().cc(), std::ios::in | std::ios::binary);
-    if(infile){
-        std::string buffer;
-        infile.seekg(0, std::ios::end);
-        buffer.resize((unsigned long)infile.tellg());
-        infile.seekg(0, std::ios::beg);
-        infile.read(&buffer[0], (long)buffer.size());
-        infile.close();
-        status = true;
-        return(ZString(buffer));
-    }
-    status = false;
-    return ZString();
+zu64 ZFile::read(ZBinary &out, zu64 size){
+    out.resize(size);
+    return read(out.raw(), size);
 }
 
-ZBinary ZFile::readBinary(ZPath file){
+zu64 ZFile::write(const ZBinary &data){
+    return write(data.raw(), data.size());
+}
+
+bool ZFile::remove(){
+    close();
+    remove(_path);
+    return true;
+}
+bool ZFile::remove(ZPath file){
+    if(exists(file.str())){
+        if(std::remove(file.str().cc()) == 0){
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+bool ZFile::resizeFile(zu64 size){
+#if PLATFORM == WINDOWS
+    return false;
+#else
+    int fd = fileno(_file);
+    if(ftruncate64(fd, (long long)size) != 0)
+        return false;
+    return true;
+#endif
+}
+
+zu64 ZFile::fileSize() const {
+#if PLATFORM == WINDOWS
+    // Check file is open and has read bit set
+    if(!isOpen() || !(_bits & readbit))
+        return 0;
+    LARGE_INTEGER lint;
+    if(!GetFileSizeEx(_file, &lint))
+        return 0;
+    return (zu64)lint.QuadPart;
+#else
+    if(!isOpen())
+        return 0;
+    fseek(_file, 0, SEEK_END);
+    zu64 flsz = (zu64)ftell(_file);
+    fseek(_file, 0, SEEK_SET);
+    return flsz;
+#endif
+}
+zu64 ZFile::fileSize(ZPath path){
+    ZFile file(path);
+    return file.fileSize();
+}
+
+zu64 ZFile::readBinary(ZPath file, ZBinary &out){
     struct stat st_buf;
     int ret = stat(file.str().cc(), &st_buf);
     if(ret != 0)
-        throw ZError("ZFile: stat error");
+        return 0;
     if(S_ISDIR(st_buf.st_mode))
         throw ZError("ZFile: file is directory");
 
@@ -193,13 +296,9 @@ ZBinary ZFile::readBinary(ZPath file){
     if(len != size)
         throw ZError("ZFile: fread error");
 
-    ZBinary data(buffer, size);
+    out.write(buffer, size);
     delete[] buffer;
-    return data;
-}
-
-zu64 ZFile::writeFile(ZPath filenm, const ZString &str){
-    return writeFile(filenm, ZBinary(str.cc(), str.size()));
+    return size;
 }
 
 zu64 ZFile::writeBinary(ZPath path, const ZBinary &data){
@@ -231,75 +330,11 @@ zu64 ZFile::copy(ZPath source, ZPath output){
     return total;
 }
 
-/*bool ZFile::append(ZString cont){
-    if(writeable){
-        if(_file.is_open()){
-            _file.seekp(0, std::ios::end);
-            _file << cont.cc();
-            _file.flush();
-            return true;
-        }
-    }
-    return false;
-}*/
-
-bool ZFile::remove(){
-    close();
-    remove(_flpath);
-    return true;
-}
-bool ZFile::remove(ZPath file){
-    if(exists(file.str())){
-        if(std::remove(file.str().cc()) == 0){
-            return true;
-        } else {
-            return false;
-        }
-    } else {
+bool ZFile::rename(ZPath old, ZPath newfl){
+    if(::rename(old.str().cc(), newfl.str().cc()) == 0)
         return true;
-    }
+    return false;
 }
-//bool ZFile::removeDir(ZPath name){
-//    const char *path = name.str().cc();
-//    DIR *d = opendir(path);
-//    size_t path_len = strlen(path);
-//    int r = -1;
-
-//    if(d){
-//       struct dirent *p;
-//       r = 0;
-//       while(!r && (p=readdir(d))){
-//           int r2 = -1;
-//           char *buf;
-//           size_t len;
-//           /* Skip the names "." and ".." as we don't want to recurse on them. */
-//           if(!strcmp(p->d_name, ".") || !strcmp(p->d_name, "..")){
-//              continue;
-//           }
-//           len = path_len + strlen(p->d_name) + 2;
-//           buf = (char *)malloc(len);
-
-//           if(buf){
-//              struct stat statbuf;
-//              snprintf(buf, len, "%s/%s", path, p->d_name);
-//              if (!stat(buf, &statbuf)){
-//                 if(S_ISDIR(statbuf.st_mode)){
-//                    r2 = ZFile::removeDir(ZPath(ZString(buf)));
-//                 } else {
-//                    r2 = unlink(buf);
-//                 }
-//              }
-//              free(buf);
-//           }
-//           r = r2;
-//       }
-//       closedir(d);
-//    }
-//    if(!r){
-//       r = rmdir(path);
-//    }
-//    return r;
-//}
 
 bool ZFile::removeDir(ZPath name) {
     using namespace std;
@@ -338,15 +373,6 @@ bool ZFile::removeDir(ZPath name) {
     return true;
 }
 
-bool ZFile::rename(ZPath old, ZPath newfl){
-    if(::rename(old.str().cc(), newfl.str().cc()) == 0)
-        return true;
-    return false;
-}
-
-bool ZFile::exists(){
-    return exists(_flpath);
-}
 bool ZFile::exists(ZPath name){
     if(FILE *file = fopen(name.str().cc(), "r")){
         fclose(file);
@@ -355,18 +381,6 @@ bool ZFile::exists(ZPath name){
     return false;
 }
 
-bool ZFile::isDir(ZPath dir){
-    struct stat st;
-#if COMPILER == MINGW
-    stat(dir.str().cc(), &st);
-#elif COMPILER == GCC
-    lstat(dir.str().cc(), &st);
-#endif
-    if(S_ISDIR(st.st_mode)){
-        return true;
-    }
-    return false;
-}
 bool ZFile::isFile(ZPath file){
     if(!exists(file))
         return false;
@@ -377,6 +391,18 @@ bool ZFile::isFile(ZPath file){
     lstat(file.str().cc(), &st);
 #endif
     if(S_ISREG(st.st_mode)){
+        return true;
+    }
+    return false;
+}
+bool ZFile::isDir(ZPath dir){
+    struct stat st;
+#if COMPILER == MINGW
+    stat(dir.str().cc(), &st);
+#elif COMPILER == GCC
+    lstat(dir.str().cc(), &st);
+#endif
+    if(S_ISDIR(st.st_mode)){
         return true;
     }
     return false;
@@ -472,15 +498,6 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
     return dirs;
 }
 
-#if PLATFORM == WINDOWS
-#define V 1
-}
-#include <windows.h>
-namespace LibChaos {
-#else
-#define V 2
-#endif
-
 zu64 ZFile::dirSize(ZPath dir){
 #if V == 1
     WIN32_FIND_DATAA data;
@@ -546,9 +563,9 @@ zu64 ZFile::dirSize(ZPath dir){
             struct stat st;
 #ifdef COMPILER_MINGW
             stat(flnm.str().cc(), &st);
-#else
+#else // COMPILER_MINGW
             lstat(flnm.str().cc(), &st);
-#endif
+#endif // COMPILER_MINGW
             if(S_ISDIR(st.st_mode)){
                 total += dirSize(flnm); // Unsafe, stack overflow possibility
             } else {
@@ -561,19 +578,27 @@ zu64 ZFile::dirSize(ZPath dir){
         closedir(dr);
     }
     return total;
-#else
+#else // V
     return 0;
-#endif
-#undef V
+#endif // V
 }
 
-zu64 ZFile::flsize(){
-    if(!isOpen())
+zu64 ZFile::fileHash(ZPath path){
+    ZFile file;
+    if(!file.open(path))
         return 0;
-    fseek(_fileh, 0, SEEK_END);
-    zu64 flsz = (zu64)ftell(_fileh);
-    fseek(_fileh, 0, SEEK_SET);
-    return flsz;
+    XXH64_state_t *state = XXH64_createState();
+    XXH64_reset(state, 0);
+    zbyte *buffer = new zbyte[4096];
+    zu64 readsize;
+    do {
+        readsize = file.read(buffer, 4096);
+        XXH64_update(state, buffer, readsize);
+    } while(readsize == 4096);
+    delete[] buffer;
+    zu64 hash = XXH64_digest(state);
+    XXH64_freeState(state);
+    return hash;
 }
 
 }

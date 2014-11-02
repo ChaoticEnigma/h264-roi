@@ -51,7 +51,7 @@ ZAutoBuffer &ZAutoBuffer::add(const char *ptr, zu64 pos, zu64 len){
     return *this;
 }
 ZAutoBuffer &ZAutoBuffer::add(ZFile file){
-    refs.push({ type_file, copy(file.path().str().cc(), file.path().str().size()), file.path().str().size(), file.flsize(), 0 });
+    refs.push({ type_file, copy(file.path().str().cc(), file.path().str().size()), file.path().str().size(), file.fileSize(), 0 });
     return *this;
 }
 ZAutoBuffer &ZAutoBuffer::add(ZFile file, zu64 pos, zu64 len){

@@ -682,6 +682,11 @@ ZString &ZString::duplicate(zu64 iter){
 //    return *this;
 //}
 
+
+bool ZString::charIsAlphabetic(chartype ch){
+    return (ch >= 65 && ch <= 90 || ch >= 97 && ch <= 122);
+}
+
 bool ZString::alphaTest(ZString str1, ZString str2){
     for(zu64 k = 0; k < str1.size() && k < str2.size(); ++k){
         if(str1[k] == str2[k])

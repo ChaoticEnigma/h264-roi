@@ -296,6 +296,8 @@ public:
     //ZString format(ZString fmt_str, ...);
     //ZString &format(...);
 
+    static bool charIsAlphabetic(chartype ch);
+
     static bool alphaTest(ZString str1, ZString str2);
 
     // Allows ZString to be used with std streams

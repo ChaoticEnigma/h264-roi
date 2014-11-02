@@ -74,6 +74,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     file/zppm.cpp
 
     lib/sqlite3.c
+    lib/xxhash.c
 
     net/zaddress.cpp
     net/zconnection.cpp
