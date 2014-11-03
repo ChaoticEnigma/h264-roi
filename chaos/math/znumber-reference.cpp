@@ -1,50 +1,29 @@
 #include "znumber.h"
 
-#ifndef ZNUMBER_REFERENCE
+#ifdef ZNUMBER_REFERENCE
 
 namespace LibChaos {
 
-ZNumber::ZNumber() : _data(nullptr), _size(0){
-    //clear(); // Redundant?
+ZNumber::ZNumber() : _sign(true), _number(0){
+
 }
 
 ZNumber::ZNumber(zs64 num) : ZNumber(){
-    zu8 length = 0;
-    for(zu8 i = 0; i < sizeof(num); ++i){
-        if(((zbyte*)&num)[i] == 0){
-            length = i;
-            break;
-        }
+    if(num < 0){
+        _sign = false;
+        _number = (zu64)-num;
+    } else {
+        _number = (zu64)num;
     }
-    if(!length)
-        return;
-    _size = length;
-    _data = new zbyte[_size];
-    memcpy(_data, &num, _size);
 }
 
 ZNumber::ZNumber(zu64 num) : ZNumber(){
-    zu8 length = 0;
-    for(zu8 i = 0; i < sizeof(num); ++i){
-        if(((zbyte*)&num)[i] == 0){
-            length = i;
-            break;
-        }
-    }
-    if(!length)
-        return;
-    _size = length;
-    _data = new zbyte[_size];
-    memcpy(_data, &num, _size);
+    _number = num;
 }
 
 ZNumber::ZNumber(const ZNumber &other) : ZNumber(){
-    if(other._size > 0){
-        _size = other._size;
-        _data = new zbyte[_size];
-        memcpy(_data, other._data, other._size);
-        //_sign = other._sign;
-    }
+    _sign = other._sign;
+    _number = other._number;
 }
 
 ZNumber::ZNumber(ZString str) : ZNumber(){
@@ -52,49 +31,49 @@ ZNumber::ZNumber(ZString str) : ZNumber(){
 }
 
 ZNumber &ZNumber::operator=(const ZNumber &other){
-    clear();
-    if(other._size > 0){
-        _size = other._size;
-        _data = new zbyte[_size];
-        memcpy(_data, other._data, other._size);
-        //_sign = other._sign;
-    }
+    _sign = other._sign;
+    _number = other._number;
     return *this;
 }
 
 ZNumber ZNumber::operator-(){
-
-    return a;
+    ZNumber tmp = *this;
+    tmp._sign = !tmp._sign;
+    return tmp;
 }
 
 ZNumber &ZNumber::operator+=(const ZNumber &other){
-    if(other.isNegative()){
-        throw ZError("wait");
-        return *this;
-    }
-    if(other._size > _size){
-        pad(other._size - _size);
-    }
-    zu8 carry = 0;
-    for(zu64 i = 0; i < MAX(_size, other._size); ++i){
-        zu16 sum = byte(i) + other.byte(i) + carry;
-        _data[i] = ((zbyte*)&sum)[0];
-        carry = ((zbyte*)&sum)[1];
-    }
-    if(carry){
-        pad(1);
-        _data[_size - 1] = carry;
+    if(_sign){
+        if(other._sign){
+            _number += other._number;
+        } else {
+            if(other._number > _number){
+
+            } else {
+                _number -= other._number;
+            }
+        }
+    } else {
+        if(other._sign){
+            _number -= other._number;
+        } else {
+            _number += other._number;
+        }
     }
     return *this;
 }
 
 ZNumber &ZNumber::operator-=(const ZNumber &other){
-
+    operator+=(-other);
     return *this;
 }
 
 ZNumber &ZNumber::operator*=(const ZNumber &other){
-
+    if((!_sign && other._sign) || (_sign && !other._sign))
+        _sign = false;
+    else
+        _sign = true;
+    _number *= other._number;
     return *this;
 }
 

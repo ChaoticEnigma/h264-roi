@@ -10,7 +10,7 @@ namespace LibChaos {
 class ZTime {
 public:
     ZTime(time_t raw){
-        rawtime = raw;
+        _time = raw;
     }
 
     static ZTime now(){
@@ -18,7 +18,7 @@ public:
     }
 
     time_t getRawTime(){
-        return rawtime;
+        return _time;
     }
 
     int getSecs(){
@@ -27,7 +27,7 @@ public:
 
     ZString getDate(){
         struct tm *time;
-        time = localtime(&rawtime);
+        time = localtime(&_time);
         char buffer[20];
         sprintf(buffer, "%02d/%02d/%02d", time->tm_mon + 1, time->tm_mday, time->tm_year - 100);
         ZString out(buffer);
@@ -35,7 +35,7 @@ public:
     }
     ZString getTime(){
         struct tm *time;
-        time = localtime(&rawtime);
+        time = localtime(&_time);
         char buffer[20];
         sprintf(buffer, "%02d:%02d:%02d", time->tm_hour, time->tm_min, time->tm_sec);
         ZString out(buffer);
@@ -43,7 +43,7 @@ public:
     }
 
 private:
-    time_t rawtime;
+    time_t _time;
 };
 
 }

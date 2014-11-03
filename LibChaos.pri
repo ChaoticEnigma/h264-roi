@@ -10,8 +10,6 @@ HEADERS += \
     $$PWD/chaos/zautobufferunit.h \
     $$PWD/chaos/zsocket.h \
     $$PWD/chaos/ztypes.h \
-    $$PWD/chaos/ztime.h \
-    $$PWD/chaos/zclock.h \
     $$PWD/chaos/zret.h \
     \
     $$PWD/chaos/abstract/zaccessor.h \
@@ -25,10 +23,13 @@ HEADERS += \
     $$PWD/chaos/abstract/ziterator.h \
     $$PWD/chaos/abstract/ylinearaccess.h \
     \
+    $$PWD/chaos/base/zclock.h \
     $$PWD/chaos/base/zlog.h \
     $$PWD/chaos/base/zlogworker.h \
     $$PWD/chaos/base/zpath.h \
     $$PWD/chaos/base/zstring.h \
+    $$PWD/chaos/base/ztime.h \
+    $$PWD/chaos/base/zuid.h \
     \
     $$PWD/chaos/data/zallocator.h \
     $$PWD/chaos/data/zarray.h \
@@ -90,14 +91,15 @@ SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
     $$PWD/chaos/zerror.cpp \
     $$PWD/chaos/zsocket.cpp \
-    $$PWD/chaos/ztime.cpp \
-    $$PWD/chaos/zclock.cpp \
     \
+    $$PWD/chaos/base/zclock.cpp \
     $$PWD/chaos/base/zlog.cpp \
     $$PWD/chaos/base/zlogworker.cpp \
     $$PWD/chaos/base/zpath.cpp \
     $$PWD/chaos/base/zstring.cpp \
     $$PWD/chaos/base/zstring_encode.cpp \
+    $$PWD/chaos/base/ztime.cpp \
+    $$PWD/chaos/base/zuid.cpp \
     \
     $$PWD/chaos/data/zbinary.cpp \
     $$PWD/chaos/data/zjson.cpp \
@@ -111,6 +113,7 @@ SOURCES += \
     \
     $$PWD/chaos/lib/sqlite3.c \
     \
+    $$PWD/chaos/math/znumber-reference.cpp \
     $$PWD/chaos/math/znumber.cpp \
     \
     $$PWD/chaos/net/zsocket.cpp \

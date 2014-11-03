@@ -7,6 +7,9 @@
 #include <bitset>
 #include "zerror.h"
 
+// Use reference implementation
+#define ZNUMBER_REFERENCE
+
 namespace LibChaos {
 
 // NOTES
@@ -14,11 +17,34 @@ namespace LibChaos {
 // Using twos-complement
 // -a = ~a + 1
 
+// TODO
+// ZNumber(zs64)
+// ZNumber(zu64)
+// ZNumber(ZString)
+
+// operator+=
+// operator-=
+// operator*=
+// operator/=
+// operator%=
+
+// operator&=
+// operator|=
+// operator^=
+// operator<<=
+// operator>>=
+
+// str
+
+// operator<
+
+// operator+
+// operator-
+// operator~
+
 class ZNumber {
 public:
-    ZNumber() : _data(nullptr), _size(0){
-        //clear(); // Redundant?
-    }
+    ZNumber();
 
 //    ZNumber(void *value, zu64 bits) : ZNumber(){
 //        zu64 bytes = bits / 8;
@@ -26,20 +52,7 @@ public:
 //        memcpy(_data, value, bytes);
 //    }
 
-    ZNumber(zs64 num) : ZNumber(){
-        zu8 length = 0;
-        for(zu8 i = 0; i < sizeof(num); ++i){
-            if(((zbyte*)&num)[i] == 0){
-                length = i;
-                break;
-            }
-        }
-        if(!length)
-            return;
-        _size = length;
-        _data = new zbyte[_size];
-        memcpy(_data, &num, _size);
-    }
+    ZNumber(zs64 num);
     ZNumber(signed char num) : ZNumber((zs64)num){}
     ZNumber(char num) : ZNumber((zs64)num){}
     //ZNumber(signed short num) : ZNumber((zs64)num){}
@@ -49,150 +62,64 @@ public:
     //ZNumber(signed long num) : ZNumber((zs64)num){}
     //ZNumber(long num) : ZNumber((zs64)num){}
 
-    ZNumber(zu64 num) : ZNumber(){
-        zu8 length = 0;
-        for(zu8 i = 0; i < sizeof(num); ++i){
-            if(((zbyte*)&num)[i] == 0){
-                length = i;
-                break;
-            }
-        }
-        if(!length)
-            return;
-        _size = length;
-        _data = new zbyte[_size];
-        memcpy(_data, &num, _size);
-    }
+    ZNumber(zu64 num);
     ZNumber(unsigned char num) : ZNumber((zu64)num){}
     ZNumber(unsigned short num) : ZNumber((zu64)num){}
     ZNumber(unsigned int num) : ZNumber((zu64)num){}
     //ZNumber(unsigned long num) : ZNumber((zu64)num){}
 
-    ZNumber(const ZNumber &other) : ZNumber(){
-        if(other._size > 0){
-            _size = other._size;
-            _data = new zbyte[_size];
-            memcpy(_data, other._data, other._size);
-            //_sign = other._sign;
-        }
-    }
+    ZNumber(const ZNumber &other);
 
-    ZNumber(ZString str) : ZNumber(){
+    ZNumber(ZString str);
 
-    }
-
-    ~ZNumber(){
-        clear();
-    }
+    ~ZNumber(){ clear(); }
 
     // Assignment
-    ZNumber &operator=(const ZNumber &other){
-        clear();
-        if(other._size > 0){
-            _size = other._size;
-            _data = new zbyte[_size];
-            memcpy(_data, other._data, other._size);
-            //_sign = other._sign;
-        }
-        return *this;
-    }
+    ZNumber &operator=(const ZNumber &other);
 
     // Comparison
     friend bool operator==(const ZNumber &lhs, const ZNumber &rhs);
-    friend bool operator!=(const ZNumber &lhs, const ZNumber &rhs);
+    friend bool operator!=(const ZNumber &lhs, const ZNumber &rhs); // Uses ==
     friend bool operator<(const ZNumber &lhs, const ZNumber &rhs);
-    friend bool operator>(const ZNumber &lhs, const ZNumber &rhs);
-    friend bool operator<=(const ZNumber &lhs, const ZNumber &rhs);
-    friend bool operator>=(const ZNumber &lhs, const ZNumber &rhs);
+    friend bool operator>(const ZNumber &lhs, const ZNumber &rhs); // Uses == and <
+    friend bool operator<=(const ZNumber &lhs, const ZNumber &rhs); // Uses >
+    friend bool operator>=(const ZNumber &lhs, const ZNumber &rhs); // Uses <
 
     // Arithmetic
-    friend ZNumber operator+(ZNumber lhs, const ZNumber &rhs);
-    friend ZNumber operator-(ZNumber lhs, const ZNumber &rhs);
-    friend ZNumber operator*(ZNumber lhs, const ZNumber &rhs);
-    friend ZNumber operator/(ZNumber lhs, const ZNumber &rhs);
-    friend ZNumber operator%(ZNumber lhs, const ZNumber &rhs);
+    friend ZNumber operator+(ZNumber lhs, const ZNumber &rhs); // Uses +=
+    friend ZNumber operator-(ZNumber lhs, const ZNumber &rhs); // Uses -=
+    friend ZNumber operator*(ZNumber lhs, const ZNumber &rhs); // Uses *=
+    friend ZNumber operator/(ZNumber lhs, const ZNumber &rhs); // Uses /=
+    friend ZNumber operator%(ZNumber lhs, const ZNumber &rhs); // Uses %=
 
     // Unary
-    friend ZNumber operator+(ZNumber a);
-    friend ZNumber operator-(ZNumber a);
+    //friend ZNumber operator+(ZNumber a);
+    ZNumber operator-() const;
 
     // Bitwise
     friend ZNumber operator~(ZNumber a);
-    friend ZNumber operator&(ZNumber lhs, const ZNumber &rhs);
-    friend ZNumber operator|(ZNumber lhs, const ZNumber &rhs);
-    friend ZNumber operator^(ZNumber lhs, const ZNumber &rhs);
-    friend ZNumber operator<<(ZNumber lhs, const ZNumber &rhs);
-    friend ZNumber operator>>(ZNumber lhs, const ZNumber &rhs);
+    friend ZNumber operator&(ZNumber lhs, const ZNumber &rhs); // Uses &=
+    friend ZNumber operator|(ZNumber lhs, const ZNumber &rhs); // Uses |=
+    friend ZNumber operator^(ZNumber lhs, const ZNumber &rhs); // Uses ^=
+    friend ZNumber operator<<(ZNumber lhs, const ZNumber &rhs); // Uses <<=
+    friend ZNumber operator>>(ZNumber lhs, const ZNumber &rhs); // Uses >>=
 
     // Arithmetic Assignment
-    ZNumber &operator+=(const ZNumber &other){
-        if(other.isNegative()){
-            throw ZError("wait");
-            return *this;
-        }
-        if(other._size > _size){
-            pad(other._size - _size);
-        }
-        zu8 carry = 0;
-        for(zu64 i = 0; i < MAX(_size, other._size); ++i){
-            zu16 sum = byte(i) + other.byte(i) + carry;
-            _data[i] = ((zbyte*)&sum)[0];
-            carry = ((zbyte*)&sum)[1];
-        }
-        if(carry){
-            pad(1);
-            _data[_size - 1] = carry;
-        }
-        return *this;
-    }
-    ZNumber &operator-=(const ZNumber &other){
-
-        return *this;
-    }
-    ZNumber &operator*=(const ZNumber &other){
-
-        return *this;
-    }
-    ZNumber &operator/=(const ZNumber &other){
-        if(other == 0){
-            throw ZError("Division by zero");
-        }
-        return *this;
-    }
-    ZNumber &operator%=(const ZNumber &other){
-        if(other == 0){
-            throw ZError("Division by zero");
-        }
-        return *this;
-    }
+    ZNumber &operator+=(const ZNumber &other);
+    ZNumber &operator-=(const ZNumber &other);
+    ZNumber &operator*=(const ZNumber &other);
+    ZNumber &operator/=(const ZNumber &other);
+    ZNumber &operator%=(const ZNumber &other);
 
     // Bitwise Assignment
-    ZNumber &operator&=(const ZNumber &other){
-
-        return *this;
-    }
-    ZNumber &operator|=(const ZNumber &other){
-
-        return *this;
-    }
-    ZNumber &operator^=(const ZNumber &other){
-
-        return *this;
-    }
-    ZNumber &operator<<=(const ZNumber &other){
-
-        return *this;
-    }
-    ZNumber &operator>>=(const ZNumber &other){
-
-        return *this;
-    }
+    ZNumber &operator&=(const ZNumber &other);
+    ZNumber &operator|=(const ZNumber &other);
+    ZNumber &operator^=(const ZNumber &other);
+    ZNumber &operator<<=(const ZNumber &other);
+    ZNumber &operator>>=(const ZNumber &other);
 
     // Prefix Increment
-    ZNumber &operator++(){
-
-        return *this;
-    }
+    ZNumber &operator++();
     // Postfix Increment
     ZNumber operator++(int){
         ZNumber tmp(*this);
@@ -201,10 +128,7 @@ public:
     }
 
     // Prefix Decrement
-    ZNumber &operator--(){
-
-        return *this;
-    }
+    ZNumber &operator--();
     // Postfix Decrement
     ZNumber operator--(int){
         ZNumber tmp(*this);
@@ -212,143 +136,70 @@ public:
         return tmp;
     }
 
-    void clear(){
-        //_sign = true;
-        _size = 0;
-        delete[] _data;
-        _data = nullptr;
-    }
+    void clear();
 
-    ZNumber factorial() const {
-        if(*this == 0){
-            return ZNumber(1);
-        }
-        ZNumber result(*this);
-        for(ZNumber next(*this-1); next > 1; --next){
-            result *= next;
-        }
-        return result;
-    }
+    ZNumber factorial() const;
 
-    // Still working this out...
-    ZString str(zu16 base = 10) const {
-        if(_data == nullptr){
-            return "0";
-        }
-        if(base > 64){
-            return "!";
-        }
+    // Expensive!
+    ZString str(zu16 base = 10) const;
 
-        const char *digits =
-            "01"       // Binary
-            "234567"   // Octal
-            "89"       // Decimal
-            "abcdef"   // Hexadecimal
-            "ghijklmnopqrstuv" // Base 32
-            "wxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@"; // Base 64
-
-        ZString out;
-
-        bool bit = 0;
-        for(zu64 i = 0; i < _size; ++i){
-            for(zu8 j = 0, m = 1; j < 8; ++j, m <<= 1){
-                bit = _data[i] & m;
-
-                //out += (bit ? "1" : "0");
-                out += digits[bit];
-            }
-            out += " ";
-        }
-        out.strip(' ');
-
-        return out;
-    }
-
-    ZString strBytes() const {
-        ZString out;
-        for(zu64 i = 0; i < _size; ++i){
-            std::bitset<8> b1(_data[i]);
-            out = ZString(b1.to_string()) << " " << out;
-        }
-        out.strip(' ');
-        return out;
-    }
+    ZString strBytes() const;
 
     // zero is positive (should it be negative too?)
     bool isPositive() const {
         return !isNegative();
     }
-    bool isNegative() const {
-        return _data[_size-1] & 128;
-    }
+    bool isNegative() const;
 
+#ifdef ZNUMBER_REFERENCE
+    zbyte *data() const {
+        return (zbyte *)&_number;
+    }
+    zu64 size() const {
+        return 8;
+    }
+#else
     zbyte *data() const {
         return _data;
     }
     zu64 size() const {
         return _size;
     }
-
-    void pad(zu64 num){
-        zbyte *tmp = _data;
-        _data = new zbyte[_size + num];
-        memcpy(_data, tmp, _size);
-        delete[] tmp;
-        for(zu64 i = _size; i < _size + num; ++i){
-            _data[i] = 0;
-        }
-        //memset(_data + _size, 0, num);
-        _size += num;
-    }
-
-    void clean(){
-        zu8 length = 0;
-        for(zu8 i = 0; i < _size; ++i){
-            if(_data[i] == 0){
-                length = i;
-                break;
-            }
-        }
-        zbyte *tmp = _data;
-        _data = new zbyte[length];
-        memcpy(_data, tmp, length);
-        delete[] tmp;
-        _size = length;
-    }
+#endif
 
     zbyte byte(zu64 i) const {
-        return (i < _size ? _data[i] : 0);
+        return (i < size() ? data()[i] : 0);
     }
 
 private:
+    void pad(zu64 num);
+
+    void clean();
+
+private:
+#ifdef ZNUMBER_REFERENCE
+    bool _sign;
+    zu64 _number;
+#else
     zbyte *_data;
     zu64 _size;
+#endif
 };
 
 // Comparison
-inline bool operator==(const ZNumber &lhs, const ZNumber &rhs){
-    return (lhs._size == rhs._size &&
-            memcmp(lhs._data, rhs._data, lhs._size) == 0);
-}
+bool operator==(const ZNumber &lhs, const ZNumber &rhs);
 inline bool operator!=(const ZNumber &lhs, const ZNumber &rhs){
-    return !operator==(lhs,rhs);
+    return !operator==(lhs, rhs);
 }
-inline bool operator<(const ZNumber &lhs, const ZNumber &rhs){
-    if(lhs._size < rhs._size)
-        return true;
-    if(lhs._size > rhs._size)
-        return false;
-
-    return false;
-}
+bool operator<(const ZNumber &lhs, const ZNumber &rhs);
 inline bool operator>(const ZNumber &lhs, const ZNumber &rhs){
-    return operator<(rhs,lhs);
+    return !operator==(lhs, rhs) && !operator<(rhs, lhs);
 }
 inline bool operator<=(const ZNumber &lhs, const ZNumber &rhs){
-    return !operator>(lhs,rhs);
+    return !operator>(lhs, rhs);
 }
 inline bool operator>=(const ZNumber &lhs, const ZNumber &rhs){
-    return !operator<(lhs,rhs);
+    return !operator<(lhs, rhs);
 }
 
 // Arithmetic
@@ -374,12 +225,9 @@ inline ZNumber operator%(ZNumber lhs, const ZNumber &rhs){
 }
 
 //Unary
-inline ZNumber operator+(ZNumber a){
-    return a;
-}
-inline ZNumber operator-(ZNumber a){
-    return a;
-}
+//inline ZNumber operator+(ZNumber a){
+//    return a;
+//}
 
 // Bitwise
 inline ZNumber operator~(ZNumber a){

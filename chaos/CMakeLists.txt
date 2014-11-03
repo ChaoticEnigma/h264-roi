@@ -82,7 +82,8 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     net/zdatagramsocket.cpp
     net/zstreamsocket.cpp
 
-    #math/znumber.cpp
+    math/znumber.cpp
+    math/znumber-reference.cpp
 
     thread/zthread.cpp
 )
