@@ -75,7 +75,7 @@ public:
     ~ZNumber(){ clear(); }
 
     // Conversions
-    operator zu64();
+    //operator zu64();
 
     // Assignment
     ZNumber &operator=(const ZNumber &other);

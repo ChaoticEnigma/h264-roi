@@ -51,10 +51,9 @@ ZNumber::ZNumber(ZString str) : ZNumber(){
 
 }
 
-ZNumber::operator zu64(){
-
-    return 0;
-}
+//ZNumber::operator zu64(){
+//    return 0;
+//}
 
 ZNumber &ZNumber::operator=(const ZNumber &other){
     clear();
