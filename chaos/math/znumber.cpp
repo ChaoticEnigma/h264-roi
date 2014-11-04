@@ -51,6 +51,11 @@ ZNumber::ZNumber(ZString str) : ZNumber(){
 
 }
 
+ZNumber::operator zu64(){
+
+    return 0;
+}
+
 ZNumber &ZNumber::operator=(const ZNumber &other){
     clear();
     if(other._size > 0){
@@ -62,9 +67,9 @@ ZNumber &ZNumber::operator=(const ZNumber &other){
     return *this;
 }
 
-ZNumber ZNumber::operator-(){
+ZNumber ZNumber::operator-() const {
 
-    return a;
+    return *this;
 }
 
 ZNumber &ZNumber::operator+=(const ZNumber &other){
@@ -159,7 +164,7 @@ ZNumber ZNumber::factorial() const {
         return ZNumber(1);
     }
     ZNumber result(*this);
-    for(ZNumber next(*this-1); next > 1; --next){
+    for(ZNumber next(*this - 1); next > 1; --next){
         result *= next;
     }
     return result;

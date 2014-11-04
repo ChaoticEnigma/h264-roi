@@ -8,14 +8,9 @@
 #include "zerror.h"
 
 // Use reference implementation
-#define ZNUMBER_REFERENCE
+//#define ZNUMBER_REFERENCE
 
 namespace LibChaos {
-
-// NOTES
-// Numbers stored in little endian
-// Using twos-complement
-// -a = ~a + 1
 
 // TODO
 // ZNumber(zs64)
@@ -42,6 +37,11 @@ namespace LibChaos {
 // operator-
 // operator~
 
+
+// ZNumber: Represents a floating point or integral number of variable size
+// Numbers stored in little endian
+// Using twos-complement
+// -a = ~a + 1
 class ZNumber {
 public:
     ZNumber();
@@ -73,6 +73,9 @@ public:
     ZNumber(ZString str);
 
     ~ZNumber(){ clear(); }
+
+    // Conversions
+    operator zu64();
 
     // Assignment
     ZNumber &operator=(const ZNumber &other);

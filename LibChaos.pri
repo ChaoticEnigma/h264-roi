@@ -85,7 +85,9 @@ HEADERS += \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
     \
-    $$PWD/bbb/zbbb.h
+    $$PWD/bbb/zbbb.h \
+    chaos/math/zexpression.h \
+    chaos/math/zformula.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
@@ -164,7 +166,9 @@ SOURCES += \
     $$PWD/util/extensionfixer.cpp \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
-    $$PWD/util/duplicatefinder.cpp
+    $$PWD/util/duplicatefinder.cpp \
+    chaos/math/zexpression.cpp \
+    chaos/math/zformula.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
