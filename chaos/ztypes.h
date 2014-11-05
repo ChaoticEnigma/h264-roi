@@ -11,63 +11,127 @@
 // Y-prefixed classes enforce interfaces on inheriting classes
 // Other classes from LibChaos are not intended to be used outside the library code
 
-// Compiler
-#define GCC     0x11
-#define MINGW   0x12
+// Require C++
+#ifndef __cplusplus
+    #error LibChaos requires a C++ compiler!
+#endif
 
-#if __cplusplus != 201103L
+// Require C++11 or greater
+#if __cplusplus < 201103L
     #error LibChaos requires a C++11 compiler!
 #endif
 
-#ifdef _LIBCHAOS_COMPILER_GCC
-    #define COMPILER GCC
-#else
-    #ifdef _LIBCHAOS_COMPILER_MINGW
-        #define COMPILER MINGW
+// Warn if greater than C++11
+#if __cplusplus > 201103L
+    #warning LibChaos is not tested with C++ spec newer than C++11
+#endif
+
+//
+// Compiler
+//
+#define GCC     0x11
+#define MINGW   0x12
+#define MSVC    0x13
+
+// Detected
+#ifdef __GNUC__
+    #ifdef __MINGW32__
+        #define COMPILER_DETECTED MINGW
     #else
-        #error Unsupported Compiler!
+        #define COMPILER_DETECTED GCC
+    #endif
+#elif defined(_MSC_VER)
+    #define COMPILER_DETECTED MSVC
+#else
+    #warning Unknown Compiler!
+#endif
+
+// Specified
+#if defined(_LIBCHAOS_COMPILER_GCC)
+    #define COMPILER_SPECIFIED GCC
+#elif defined(_LIBCHAOS_COMPILER_MINGW)
+    #define COMPILER_SPECIFIED MINGW
+#elif defined(_LIBCHAOS_COMPILER_MSVC)
+    #define COMPILER_SPECIFIED MSVC
+    #error MSVC not supported!
+#else
+    #warning Unspecified Compiler!
+#endif
+
+// Set compiler
+#ifdef COMPILER_SPECIFIED
+    #define COMPILER COMPILER_SPECIFIED
+#else
+    #ifdef COMPILER_DETECTED
+        #define COMPILER COMPILER_DETECTED
+    #else
+        #error No detected or specified compiler!
     #endif
 #endif
 
-#ifdef PLATFORM_LINUX
-    #ifdef PLATFORM_WINDOWS
-        #error Multiple compilers declared. Please declare only one compiler at a time.
-    #endif
+// Warn if detected and specified compilers different
+#if COMPILER_DETECTED != COMPILER_SPECIFIED
+    #warning Different detected and specified compilers!
 #endif
 
+//
 // Platform
-#define LINUX   0x01
-#define WINDOWS 0x02
+//
+#define UNIX    0x21
+#define LINUX   0x22
+#define WINDOWS 0x23
+#define MACOS   0x24
 
-#ifdef _LIBCHAOS_PLATFORM_LINUX
-    #define PLATFORM LINUX
+// Detected
+#if defined(__linux__)
+    #define PLATFORM_DETECTED LINUX
+#elif defined(_WIN32)
+    #define PLATFORM_DETECTED WINDOWS
+#elif defined(__APPLE__)
+    #define PLATFORM_DETECTED MACOS
 #else
-    #ifdef _LIBCHAOS_PLATFORM_WINDOWS
-        #define PLATFORM WINDOWS
+    #warning Unknown Platform!
+#endif
+
+#if defined(_LIBCHAOS_PLATFORM_LINUX)
+    #define PLATFORM_SPECIFIED LINUX
+#elif defined(_LIBCHAOS_PLATFORM_WINDOWS)
+    #define PLATFORM_SPECIFIED WINDOWS
+#else
+    #warning Unsupported Platform!
+#endif
+
+#ifdef PLATFORM_SPECIFIED
+    #define PLATFORM PLATFORM_SPECIFIED
+#else
+    #ifdef PLATFORM_DETECTED
+        #define PLATFORM PLATFORM_DETECTED
     #else
-        #error Unsupported Platform!
+        #error No detected or specified platform!
     #endif
 #endif
 
-#ifdef PLATFORM_LINUX
-    #ifdef PLATFORM_WINDOWS
-        #error Multiple platforms declared. Please declare only one platform at a time.
-    #endif
+// Warn if detected and specified platforms different
+#if PLATFORM_DETECTED != PLATFORM_SPECIFIED
+    #warning Different detected and specified platforms!
+#endif
+
+// Only one platform specified
+#if defined(_LIBCHAOS_PLATFORM_LINUX) && defined(_LIBCHAOS_PLATFORM_WINDOWS)
+    #error Multiple platforms declared. Please declare only one platform at a time.
 #endif
 
 // Build
-#define LIBCHAOS_DEBUG      0x21
-#define LIBCHAOS_RELEASE    0x22
-#define LIBCHAOS_NORMAL     0x23
+#define LIBCHAOS_DEBUG      0x31
+#define LIBCHAOS_RELEASE    0x32
+#define LIBCHAOS_NORMAL     0x33
 
-#ifdef _LIBCHAOS_BUILD_DEBUG
+#if defined(_LIBCHAOS_BUILD_DEBUG)
     #define LIBCHAOS_BUILD LIBCHAOS_DEBUG
+#elif defined(_LIBCHAOS_BUILD_RELEASE)
+    #define LIBCHAOS_BUILD LIBCHAOS_RELEASE
 #else
-    #ifdef _LIBCHAOS_BUILD_RELEASE
-        #define LIBCHAOS_BUILD LIBCHAOS_RELEASE
-    #else
-        #define LIBCHAOS_BUILD LIBCHAOS_NORMAL
-    #endif
+    #define LIBCHAOS_BUILD LIBCHAOS_NORMAL
 #endif
 
 // Signed Integer Encoding
