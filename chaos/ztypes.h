@@ -16,11 +16,6 @@
     #error LibChaos requires a C++ compiler!
 #endif
 
-// Require C++11 or greater
-#if __cplusplus < 201103L
-    #error LibChaos requires a C++11 compiler!
-#endif
-
 // Warn if greater than C++11
 #if __cplusplus > 201103L
     #warning LibChaos is not tested with C++ spec newer than C++11
@@ -53,7 +48,6 @@
     #define COMPILER_SPECIFIED MINGW
 #elif defined(_LIBCHAOS_COMPILER_MSVC)
     #define COMPILER_SPECIFIED MSVC
-    #error MSVC not supported!
 #else
     #warning Unspecified Compiler!
 #endif
@@ -72,6 +66,13 @@
 // Warn if detected and specified compilers different
 #if COMPILER_DETECTED != COMPILER_SPECIFIED
     #warning Different detected and specified compilers!
+#endif
+
+#if COMPILER == GCC || COMPILER == MINGW
+    // Require C++11 or greater
+    #if __cplusplus < 201103L
+        #error LibChaos requires a C++11 compiler!
+    #endif
 #endif
 
 //

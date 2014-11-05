@@ -6,13 +6,15 @@
 #ifndef ZTHREAD_H
 #define ZTHREAD_H
 
-#include <pthread.h>
+#include "ztypes.h"
+
+#if COMPILER != MSVC
+    #include <pthread.h>
+#endif
 
 #include <atomic>
-// WTF ?
-#undef bool
 
-#include "ztypes.h"
+#undef bool // WTF ?
 
 namespace LibChaos {
 
@@ -32,9 +34,7 @@ public:
     ZThread();
     ZThread(funcType);
     ZThread(funcType, void *);
-    ZThread(const ZThread &other) :_param(other._param), _stop((bool)other._stop), ret(other.ret), thread(other.thread), _alive(other._alive), copyable(other.copyable){
-
-    }
+    ZThread(const ZThread &other);
 
     ~ZThread();
 
@@ -60,11 +60,18 @@ private:
         funcType funcptr;
         ZThreadArg zarg;
     };
+
+    typedef void * HANDLE;
+
 private:
     zthreadparam _param;
     std::atomic<bool> _stop;
     int ret;
-    pthread_t thread;
+#if COMPILER == MSVC
+    HANDLE _thread;
+#else
+    pthread_t _thread;
+#endif
     bool _alive;
     bool copyable;
 };

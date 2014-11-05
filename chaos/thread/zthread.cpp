@@ -1,10 +1,13 @@
 #include "zthread.h"
 
-#include <signal.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <thread>
-#include <iostream>
+#if COMPILER == MSVC
+    #include <windows.h>
+#else
+    #include <signal.h>
+    #include <unistd.h>
+    #include <sys/types.h>
+    #include <thread>
+#endif
 
 namespace LibChaos {
 
@@ -12,7 +15,7 @@ bool ZThreadArg::stop(){
     return (bool)*_stop;
 }
 
-ZThread::ZThread() : _stop(false), thread(0), _alive(false), copyable(false){
+ZThread::ZThread() : _stop(false), _thread(0), _alive(false), copyable(false){
 
 }
 ZThread::ZThread(funcType func) : ZThread(){
@@ -20,6 +23,9 @@ ZThread::ZThread(funcType func) : ZThread(){
 }
 ZThread::ZThread(funcType func, void *argptr) : ZThread(){
     run(func, argptr);
+}
+ZThread::ZThread(const ZThread &other) :_param(other._param), _stop((bool)other._stop), ret(other.ret), _thread(other._thread), _alive(other._alive), copyable(other.copyable){
+
 }
 
 ZThread::~ZThread(){
@@ -43,7 +49,7 @@ bool ZThread::run(funcType func, void *argptr){
     _param.funcptr = func;
     _param.zarg.arg = argptr;
 
-    ret = pthread_create(&thread, NULL, entry, this);
+    ret = pthread_create(&_thread, NULL, entry, this);
     //std::cout << "create " << ret << std::endl;
     if(ret == 0){
         _alive = true;
@@ -56,13 +62,13 @@ bool ZThread::run(funcType func, void *argptr){
 void *ZThread::join(){
     void *retval = NULL;
     if(_alive)
-        ret = pthread_join(thread, &retval);
+        ret = pthread_join(_thread, &retval);
     return retval;
 }
 
 void ZThread::kill(){
     if(_alive){
-        ret = pthread_cancel(thread);
+        ret = pthread_cancel(_thread);
         _alive = false;
     }
 }
@@ -73,7 +79,7 @@ void ZThread::stop(){
 
 void ZThread::detach(){
     if(_alive)
-        ret = pthread_detach(thread);
+        ret = pthread_detach(_thread);
 }
 
 void ZThread::setCopyable(){
@@ -81,7 +87,7 @@ void ZThread::setCopyable(){
 }
 
 ztid ZThread::tid(){
-    return (ztid)thread;
+    return (ztid)_thread;
 }
 bool ZThread::alive(){
     return _alive;

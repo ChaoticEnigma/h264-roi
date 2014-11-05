@@ -684,7 +684,7 @@ ZString &ZString::duplicate(zu64 iter){
 
 
 bool ZString::charIsAlphabetic(chartype ch){
-    return (ch >= 65 && ch <= 90 || ch >= 97 && ch <= 122);
+    return (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122);
 }
 
 bool ZString::alphaTest(ZString str1, ZString str2){

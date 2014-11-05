@@ -55,6 +55,8 @@ HEADERS += \
     \
     $$PWD/chaos/lib/sqlite3.h \
     \
+    $$PWD/chaos/math/zexpression.h \
+    $$PWD/chaos/math/zformula.h \
     $$PWD/chaos/math/znumber.h \
     \
     $$PWD/chaos/net/zsocket.h \
@@ -85,9 +87,7 @@ HEADERS += \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
     \
-    $$PWD/bbb/zbbb.h \
-    chaos/math/zexpression.h \
-    chaos/math/zformula.h
+    $$PWD/bbb/zbbb.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \
@@ -115,6 +115,8 @@ SOURCES += \
     \
     $$PWD/chaos/lib/sqlite3.c \
     \
+    $$PWD/chaos/math/zexpression.cpp \
+    $$PWD/chaos/math/zformula.cpp \
     $$PWD/chaos/math/znumber-reference.cpp \
     $$PWD/chaos/math/znumber.cpp \
     \
@@ -166,9 +168,7 @@ SOURCES += \
     $$PWD/util/extensionfixer.cpp \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
-    $$PWD/util/duplicatefinder.cpp \
-    chaos/math/zexpression.cpp \
-    chaos/math/zformula.cpp
+    $$PWD/util/duplicatefinder.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -203,11 +203,11 @@ INCLUDEPATH += \
     $$PWD/util
 
 # Build
-#DEFINES += ZLOG_STD_MUTEX
 QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11 -std=c++0x
 LIBS += pthread
 
-win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MINGW DISABLE_LIBPNG
+#win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MINGW
+win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MSVC
 else:DEFINES += _LIBCHAOS_PLATFORM_LINUX _LIBCHAOS_COMPILER_GCC
 
 debug:DEFINES += _LIBCHAOS_BUILD_DEBUG

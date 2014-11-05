@@ -7,11 +7,6 @@
 #define ZLOGWORKER_H
 
 #include <queue>
-#ifdef ZLOG_STD_MUTEX
-    #include <mutex>
-#else
-    #include <pthread.h>
-#endif
 
 #include "zstring.h"
 #include "zpath.h"
