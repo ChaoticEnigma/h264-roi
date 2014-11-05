@@ -1,7 +1,7 @@
 #ifndef ZCONDITION_H
 #define ZCONDITION_H
 
-#include <pthread.h>
+#include "ztypes.h"
 #include "zmutex.h"
 
 namespace LibChaos {

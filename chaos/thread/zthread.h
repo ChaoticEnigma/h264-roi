@@ -8,7 +8,11 @@
 
 #include "ztypes.h"
 
-#if COMPILER != MSVC
+#if COMPILER == MSVC
+    #define ZTHREAD_WINTHREADS
+#endif
+
+#ifndef ZTHREAD_WINTHREADS
     #include <pthread.h>
 #endif
 
@@ -64,14 +68,14 @@ private:
     typedef void * HANDLE;
 
 private:
-    zthreadparam _param;
-    std::atomic<bool> _stop;
-    int ret;
-#if COMPILER == MSVC
+#ifdef ZTHREAD_WINTHREADS
     HANDLE _thread;
 #else
     pthread_t _thread;
 #endif
+    zthreadparam _param;
+    std::atomic<bool> _stop;
+    int ret;
     bool _alive;
     bool copyable;
 };
