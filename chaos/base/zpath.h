@@ -37,7 +37,7 @@ public:
     ZPath &operator<<(ZPath);
     ZPath operator+(ZPath);
 
-    ZString &operator[](unsigned);
+    ZString &operator[](zu64 index);
     ZString &last();
 
     static ZPath pwd(); // Get a ZPath that represents the present working directory of the program

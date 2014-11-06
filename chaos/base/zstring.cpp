@@ -17,6 +17,14 @@ std::string ZString::str() const {
     return std::string(_data, size());
 }
 
+ZString::ZString(std::wstring wstr) : ZString(){
+
+}
+
+std::wstring ZString::wstr() const {
+
+}
+
 //ZString::ZString(std::wstring wide) : _data(wide.begin(), wide.end()){}
 //std::wstring ZString::wstr() const {
 //    return std::wstring(_data.begin(), _data.end());
@@ -698,6 +706,11 @@ bool ZString::alphaTest(ZString str1, ZString str2){
     if(str1.size() <= str2.size())
         return true;
     return false;
+}
+
+zu64 ZString::length() const {
+    // This is wrong, WIP
+    return size();
 }
 
 // ///////////////////////////////////////////////////////////////////////////////

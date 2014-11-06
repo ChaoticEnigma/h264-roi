@@ -6,8 +6,8 @@
 #ifndef ZSTRING_H
 #define ZSTRING_H
 
-#include "zassoc.h"
 #include "ztypes.h"
+#include "zassoc.h"
 
 #include "zstorage.h"
 #include "zdefaultstorage.h"
@@ -18,6 +18,13 @@
 #include <string>
 #include <iosfwd>
 
+#if PLATFORM == WINDOWS
+//    #define UNICODE
+//    #define _UNICODE
+    #undef UNICODE
+    #undef _UNICODE
+#endif
+
 namespace LibChaos {
 
 class ZString;
@@ -25,6 +32,8 @@ class ZString;
 typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
+// Represents UTF-8 string
+// Wide characters are narrowed and encoded in UTF-8
 class ZString {
 public:
     typedef char chartype;
@@ -44,6 +53,7 @@ public:
         }
     }
 
+    // Assumed UTF-8
     ZString(const chartype *ptr, zu64 size) : ZString(){
         if(size && ptr){
             resize(size);
@@ -55,11 +65,18 @@ public:
     // char ZArray constructor
     ZString(const ZArray<chartype> &array) : ZString(array.ptr(), array.size()){}
 
-    // std::string constructor
-    ZString(std::string);
+    // std strings
+    // Assumed UTF-8
+    ZString(std::string str);
     std::string str() const;
 
+    // std wide strings
+    // Assumed UCS-2 and converted to UTF-8
+    ZString(std::wstring wstr);
+    std::wstring wstr() const;
+
     // C-string constructor
+    // Assumed UTF-8
     ZString(const chartype *str) : ZString(){
         if(str != nullptr){
             zu64 i = 0;
@@ -307,12 +324,11 @@ public:
         return size() == 0;
     }
 
-    // Sizes
-    zu64 size() const { return _size; }
-    inline zu64 length() const { return size(); }
+    // Number of bytes (code units)
+    inline zu64 size() const { return _size; }
 
-    zu8 charSize() const { return sizeof(chartype); }
-    zu64 strSize() const { return size() * charSize(); }
+    // Number of *characters* (code points)
+    zu64 length() const;
 
     chartype &first(){
         return _data[0];
@@ -346,11 +362,29 @@ inline ZString operator+(const ZString &lhs, const ZString &rhs){
 inline bool operator==(const ZString &lhs, const ZString &rhs){
     if(lhs.size() != rhs.size())
         return false;
-    return memcmp(lhs._data, rhs._data, lhs.strSize()) == 0;
+    return memcmp(lhs._data, rhs._data, lhs.size()) == 0;
 }
 inline bool operator!=(const ZString &lhs, const ZString &rhs){
     return !operator==(lhs, rhs);
 }
+
+// Shell class, just wraps memory for wide character string
+class ZWideString {
+public:
+    ZWideString() : data(nullptr){
+
+    }
+    ~ZWideString(){
+        delete data;
+    }
+
+    const wchar_t *wc() const {
+        return data;
+    }
+
+private:
+    wchar_t *data;
+};
 
 } // namespace LibChaos
 

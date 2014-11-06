@@ -31,11 +31,14 @@ namespace LibChaos {
 
 typedef unsigned long ztid;
 
+// An object used to control access to a resource shared by multiple threads
+// Uses a pthread_mutex_t on POSIX
+// Uses a Critical Section on Windows
 class ZMutex {
 public:
     ZMutex() : locker_tid(0){
 #ifdef ZMUTEX_WINTHREADS
-        _mutex = CreateMutexA(NULL, FALSE, NULL);
+        InitializeCriticalSection(&_mutex);
 #else
         pthread_mutex_init(&_mutex, NULL);
 #endif
@@ -45,7 +48,7 @@ public:
     }
     ~ZMutex(){
 #ifdef ZMUTEX_WINTHREADS
-        CloseHandle(_mutex);
+        DeleteCriticalSection(&_mutex);
 #else
         pthread_mutex_destroy(&_mutex);
 #endif
@@ -55,7 +58,7 @@ public:
     void lock(){
         if(!iOwn()){
 #ifdef ZMUTEX_WINTHREADS
-            WaitForSingleObject(_mutex, INFINITE);
+            EnterCriticalSection(&_mutex);
             locker_tid = GetCurrentThreadId();
 #else
             pthread_mutex_lock(&_mutex);
@@ -69,7 +72,7 @@ public:
     bool trylock(){
         if(!iOwn()){
 #ifdef ZMUTEX_WINTHREADS
-            if(WaitForSingleObject(_mutex, 0) == WAIT_OBJECT_0){
+            if(TryEnterCriticalSection(&_mutex)){
                 locker_tid = GetCurrentThreadId();
                 return true; // We now own the mutex
             }
@@ -102,7 +105,7 @@ public:
             lock(); // Make sure we own the mutex first
             locker_tid = 0;
 #ifdef ZMUTEX_WINTHREADS
-            ReleaseMutex(_mutex);
+            LeaveCriticalSection(&_mutex);
 #else
             pthread_mutex_unlock(&_mutex);
 #endif
@@ -112,7 +115,7 @@ public:
 
     // Returns true if mutex is locked, else returns false.
     inline bool locked(){
-        return (bool)locker();
+        return (locker() != 0);
     }
     // Returns locking thread's id, or 0 if unlocked.
     inline ztid locker(){
@@ -128,8 +131,8 @@ public:
     }
 
 #ifdef ZMUTEX_WINTHREADS
-    inline HANDLE handle(){
-        return _mutex;
+    inline CRITICAL_SECTION *handle(){
+        return &_mutex;
     }
 #else
     inline pthread_mutex_t *handle(){
@@ -139,7 +142,7 @@ public:
 
 private:
 #ifdef ZMUTEX_WINTHREADS
-    HANDLE _mutex;
+    CRITICAL_SECTION _mutex;
 #else
     pthread_mutex_t _mutex;
 #endif
@@ -167,6 +170,26 @@ public:
 
 private:
     T obj;
+};
+
+// //////////////////////////////////////////////////////////////////////////////
+
+class ZCriticalSection {
+public:
+    ZCriticalSection(ZMutex *mutex) : _mutex(mutex){
+        if(_mutex)
+            _mutex->lock();
+    }
+    ZCriticalSection(ZMutex &mutex) : ZCriticalSection(&mutex){
+
+    }
+    ~ZCriticalSection(){
+        if(_mutex)
+            _mutex->unlock();
+    }
+
+private:
+    ZMutex *_mutex;
 };
 
 } // namespace LibChaos

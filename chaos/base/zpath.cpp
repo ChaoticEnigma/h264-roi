@@ -1,14 +1,18 @@
 #include "zpath.h"
 
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
 #include "zfile.h"
 
-#ifdef COMPILER_MINGW
+#if COMPILER == MSVC
     #include <direct.h>
+#elif COMPILER == MINGW
+    #include <direct.h>
+    #include <unistd.h>
+#else
+    #include <unistd.h>
 #endif
+
+#include <sys/stat.h>
+#include <sys/types.h>
 
 namespace LibChaos {
 
@@ -17,7 +21,11 @@ ZPath::ZPath() : _absolute(false){
     // Detect prefix (drive letter) on Windows
     size_t sz = 1024;
     char *ptr = new char[sz];
+#if COMPILER == MSVC
+    _getcwd(ptr, (int)sz);
+#else
     getcwd(ptr, sz);
+#endif
     ZString pth = ptr;
     _prefix = ZString::getUntil(pth, ZPATH_DEFAULT_DELIM);
 #endif
@@ -96,7 +104,7 @@ ZPath &ZPath::operator<<(ZPath path){
     return concat(path);
 }
 
-ZString &ZPath::operator[](unsigned inx){
+ZString &ZPath::operator[](zu64 inx){
     return _data[inx];
 }
 
@@ -107,7 +115,11 @@ ZString &ZPath::last(){
 ZPath ZPath::pwd(){
     size_t sz = 1024;
     char *ptr = new char[sz];
+#if COMPILER == MSVC
+    _getcwd(ptr, (int)sz);
+#else
     getcwd(ptr, sz);
+#endif
     ZPath path(ptr);
     delete[] ptr;
     return path;

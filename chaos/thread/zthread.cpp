@@ -6,6 +6,9 @@
     #include <signal.h>
     #include <unistd.h>
     #include <sys/types.h>
+    #include <pthread.h>
+
+    #include <thread>
 #endif
 
 namespace LibChaos {
@@ -137,7 +140,11 @@ void ZThread::yield(){
 #ifdef ZTHREAD_WINTHREADS
     SwitchToThread();
 #else
-    pthread_yield();
+    #if PLATFORM == WINDOWS
+        std::this_thread::yield();
+    #else
+        pthread_yield();
+    #endif
 #endif
 }
 

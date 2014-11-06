@@ -1,14 +1,17 @@
 #include "zfile.h"
 
-#include <stdlib.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <cstring>
-
 #include "zlog.h"
 #include "zerror.h"
+
+#include <stdlib.h>
+#include <cstring>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#if COMPILER == GCC || COMPILER == MINGW
+    #include <dirent.h>
+    #include <unistd.h>
+#endif
 
 #include "xxhash.h"
 
@@ -226,6 +229,11 @@ bool ZFile::remove(){
     return true;
 }
 bool ZFile::remove(ZPath file){
+#if COMPILER == MSVC
+    if(isFile(file))
+        return DeleteFileA(file.str().cc());
+    return false;
+#else
     if(exists(file.str())){
         if(std::remove(file.str().cc()) == 0){
             return true;
@@ -235,6 +243,7 @@ bool ZFile::remove(ZPath file){
     } else {
         return true;
     }
+#endif
 }
 
 bool ZFile::resizeFile(zu64 size){
@@ -272,11 +281,7 @@ zu64 ZFile::fileSize(ZPath path){
 }
 
 zu64 ZFile::readBinary(ZPath file, ZBinary &out){
-    struct stat st_buf;
-    int ret = stat(file.str().cc(), &st_buf);
-    if(ret != 0)
-        return 0;
-    if(S_ISDIR(st_buf.st_mode))
+    if(isFile(file))
         throw ZError("ZFile: file is directory");
 
     FILE *fp = fopen(file.str().cc(), "rb");
@@ -336,19 +341,21 @@ bool ZFile::rename(ZPath old, ZPath newfl){
     return false;
 }
 
-bool ZFile::removeDir(ZPath name) {
+bool ZFile::removeDir(ZPath name){
+#if COMPILER == MSVC
+
+#else
     using namespace std;
     string path = name.str().str();
-    if (path[path.length()-1] != '\\') path += "\\";
-    // first off, we need to create a pointer to a directory
-    DIR *pdir = NULL; // remember, it's good practice to initialise a pointer to NULL!
-    pdir = opendir (path.c_str());
-    struct dirent *pent = NULL;
-    if (pdir == NULL) { // if pdir wasn't initialised correctly
-        return false; // return false to say "we couldn't do it"
-    } // end if
+    if(path[path.length()-1] != '\\')
+        path += "\\";
+
+    DIR *pdir = opendir(path.c_str());
+    if(pdir == NULL)
+        return false;
     char file[256];
 
+    struct dirent *pent = NULL;
     int counter = 1; // use this to skip the first TWO which cause an infinite loop (and eventually, stack overflow)
     while((pent = readdir(pdir))) { // while there is still something in the directory to list
         if (counter > 2) {
@@ -366,53 +373,68 @@ bool ZFile::removeDir(ZPath name) {
         } counter++;
     }
 
-    // finally, let's clean up
-    closedir (pdir); // close the directory
+    closedir(pdir); // close the directory
     if(!rmdir(path.c_str()))
         return false; // delete the directory
     return true;
+#endif
 }
 
 bool ZFile::exists(ZPath name){
+#if COMPILER == MSVC
+    DWORD attr = GetFileAttributesA(name.str().cc());
+    return (attr != INVALID_FILE_ATTRIBUTES); // Just checks that there is something, anything at that path
+#else
     if(FILE *file = fopen(name.str().cc(), "r")){
         fclose(file);
         return true;
     }
     return false;
+#endif
 }
 
 bool ZFile::isFile(ZPath file){
+#if COMPILER == MSVC
+    DWORD attr = GetFileAttributesA(file.str().cc());
+    if(attr != INVALID_FILE_ATTRIBUTES)
+        return !(attr & FILE_ATTRIBUTE_DIRECTORY) && !(attr & FILE_ATTRIBUTE_REPARSE_POINT); // Not directory or link
+    return false;
+#else
     if(!exists(file))
         return false;
-    struct stat st;
-#if COMPILER == MINGW
-    stat(file.str().cc(), &st);
-#elif COMPILER == GCC
-    lstat(file.str().cc(), &st);
-#endif
-    if(S_ISREG(st.st_mode)){
-        return true;
+    struct stat flstat;
+    if(stat(file.str().cc(), &flstat) == 0){
+        if(flstat.st_mode & S_IFREG)
+            return true;
     }
     return false;
+#endif // COMPILER == MSVC
 }
+
 bool ZFile::isDir(ZPath dir){
-    struct stat st;
-#if COMPILER == MINGW
-    stat(dir.str().cc(), &st);
-#elif COMPILER == GCC
-    lstat(dir.str().cc(), &st);
-#endif
-    if(S_ISDIR(st.st_mode)){
-        return true;
+#if COMPILER == MSVC
+    DWORD attr = GetFileAttributesA(dir.str().cc());
+    if(attr != INVALID_FILE_ATTRIBUTES)
+        return (attr & FILE_ATTRIBUTE_DIRECTORY);
+    return false;
+#else
+    struct stat flstat;
+    if(stat(dir.str().cc(), &flstat) == 0){
+        if(flstat.st_mode & S_IFDIR)
+            return true;
     }
     return false;
+#endif // COMPILER == MSVC
 }
 
 bool ZFile::makeDir(ZPath dir){
-    struct stat st_buf;
-    int ret = stat(dir.str().cc(), &st_buf);
+#if COMPILER == MSVC
+    return CreateDirectoryA(dir.str().cc(), NULL);
+#else
+    struct stat flstat;
+    int ret = stat(dir.str().cc(), &flstat);
     if(ret == 0){
-        if(S_ISDIR(st_buf.st_mode)){
+        if(S_ISDIR(flstat.st_mode)){
             return true;
         } else {
             return false;
@@ -424,6 +446,7 @@ bool ZFile::makeDir(ZPath dir){
     ret = mkdir(dir.str().cc(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 #endif
     return ret == 0;
+#endif // COMPILER == MSVC
 }
 
 bool ZFile::createDirsTo(ZPath dir){
@@ -442,9 +465,27 @@ bool ZFile::createDirsTo(ZPath dir){
 
 ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
     ZArray<ZPath> files;
-    if(!isDir(dir)){
+    if(!isDir(dir))
         return ZArray<ZPath>(dir);
-    }
+#if COMPILER == MSVC
+    WIN32_FIND_DATA ffd;
+    ZPath current = dir;
+    current.concat("*");
+    ZArray<ZPath> dirs;
+    do {
+        HANDLE find = FindFirstFileA(current.str('\\').cc(), &ffd);
+        if(find == INVALID_HANDLE_VALUE){
+            continue;
+        }
+        do {
+            if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY){
+                dirs.push(ffd.cFileName);
+            } else {
+                files.push(ffd.cFileName);
+            }
+        } while(FindNextFileA(find, &ffd));
+    } while(!dirs.isEmpty());
+#else
     DIR *dr = opendir(dir.str().cc());
     if(dr != NULL){
         struct dirent *drnt;
@@ -455,7 +496,7 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
             struct stat st;
 #if COMPILER == MINGW
             stat(flnm.str().cc(), &st);
-#elif COMPILER == GCC
+#else
             lstat(flnm.str().cc(), &st);
 #endif
             if(S_ISDIR(st.st_mode)){
@@ -467,6 +508,7 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
         }
         closedir(dr);
     }
+#endif // COMPILER == MSVC
     return files;
 }
 ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
