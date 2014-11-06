@@ -1,5 +1,5 @@
 
-FUNCTION(configure_build NAME BUILD PLATFORM)
+FUNCTION(configure_build NAME BUILD)
 
     SET(BUILD_STRING "${NAME}:")
 
@@ -18,29 +18,32 @@ FUNCTION(configure_build NAME BUILD PLATFORM)
     ENDIF()
 
     # Set variables for platform type
-    IF(PLATFORM MATCHES 1) # Linux
+    IF(UNIX) # Linux
         ADD_DEFINITIONS(-D_LIBCHAOS_PLATFORM_LINUX -D_LIBCHAOS_COMPILER_GCC)
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
         SET(BUILD_STRING "${BUILD_STRING}, Unix")
         SET(PLATFORM_UNIX TRUE PARENT_SCOPE)
         SET(COMPILER_GCC TRUE)
-    ELSEIF(PLATFORM MATCHES 2) # Windows
+    ELSEIF(WIN32) # Windows
         ADD_DEFINITIONS(-D_LIBCHAOS_PLATFORM_WINDOWS)
         SET(PLATFORM_WINDOWS TRUE PARENT_SCOPE)
-        IF(USE_MINGW) # MinGW
+        IF(MINGW OR USE_MINGW) # MinGW
             ADD_DEFINITIONS(-D_LIBCHAOS_COMPILER_MINGW)
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwin32 -mwindows")
             SET(BUILD_STRING "${BUILD_STRING}, Windows-MinGW")
             SET(COMPILER_MINGW TRUE)
-        ELSE() # MSVC
+        ELSEIF(MSVC) # MSVC
             ADD_DEFINITIONS(-D_LIBCHAOS_COMPILER_MSVC)
             SET(BUILD_STRING "${BUILD_STRING}, Windows-MSVC")
+        ELSE()
+            MESSAGE(ERROR "Unknown Compiler")
         ENDIF()
     ELSE() # Unknown
         MESSAGE(ERROR "Unknown Platform")
     ENDIF()
 
     SET(BUILD_STRING "${BUILD_STRING}" PARENT_SCOPE)
+    SET(CONFIGURE_BUILD_STRING "${BUILD_STRING}" PARENT_SCOPE)
 
     IF(COMPILER_GCC OR COMPILER_MINGW)
         SET(CXXF         "-std=c++11 -Wall -Wextra -Wpedantic")
@@ -51,10 +54,11 @@ FUNCTION(configure_build NAME BUILD PLATFORM)
         SET(CXXF "${CXXF} -Wredundant-decls -Wstrict-null-sentinel -Wctor-dtor-privacy -Wdisabled-optimization")
         SET(CXXF "${CXXF} -Wstrict-overflow=5 -Wswitch-default -Wundef")
 
+        SET(CXXF "${CXXF} -Werror=return-type") # Should be errors
         #SET(CXXF "${CXXF} -Wshadow ") # Some warnings are too verbose to be useful
         #SET(CXXF "${CXXF} -Wmissing-declarations -Wold-style-cast") # Not actually errors
         SET(CXXF "${CXXF} -Wno-unused-parameter -Wno-unused") # Disabled Warnings
-        IF(NOT PLATFORM MATCHES 2)
+        IF(NOT COMPILER_MINGW)
             SET(CXXF "${CXXF} -Wno-comment") # Not recognized on MinGW
         ENDIF()
 

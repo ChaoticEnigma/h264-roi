@@ -83,7 +83,7 @@ public:
     }
 
     bool empty() const {
-        return data.empty();
+        return data.isEmpty();
     }
 
     unsigned size() const {

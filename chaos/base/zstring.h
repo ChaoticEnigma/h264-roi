@@ -19,10 +19,10 @@
 #include <iosfwd>
 
 #if PLATFORM == WINDOWS
-//    #define UNICODE
-//    #define _UNICODE
-    #undef UNICODE
-    #undef _UNICODE
+    #define UNICODE
+    #define _UNICODE
+//    #undef UNICODE
+//    #undef _UNICODE
 #endif
 
 namespace LibChaos {
@@ -95,10 +95,7 @@ public:
         return _data;
     }
 
-//    ZString(std::wstring);
-//    std::wstring wstr() const;
-//    ZString(const wchar_t*);
-//    const wchar_t *wc() const;
+    ZString(const wchar_t *wstr);
 
     // Fill constructor
     ZString(chartype ch, zu64 len = 1) : ZString(){

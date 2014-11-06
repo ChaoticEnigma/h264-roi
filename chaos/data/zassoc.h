@@ -211,7 +211,7 @@ public:
     }
 
     bool empty() const {
-        return _data.empty();
+        return _data.isEmpty();
     }
 
     zu64 size() const {

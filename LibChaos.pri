@@ -194,6 +194,7 @@ INCLUDEPATH += \
     $$PWD/chaos/data \
     $$PWD/chaos/file \
     $$PWD/chaos/lib \
+    $$PWD/chaos/lib/nowide_standalone \
     $$PWD/chaos/math \
     $$PWD/chaos/net \
     $$PWD/chaos/thread \
@@ -206,8 +207,8 @@ INCLUDEPATH += \
 QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11 -std=c++0x
 LIBS += pthread
 
-win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MINGW
-#win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MSVC
+#win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MINGW
+win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MSVC
 else:DEFINES += _LIBCHAOS_PLATFORM_LINUX _LIBCHAOS_COMPILER_GCC
 
 debug:DEFINES += _LIBCHAOS_BUILD_DEBUG

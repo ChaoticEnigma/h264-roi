@@ -139,8 +139,8 @@ public:
         return data.back().key;
     }
 
-    bool empty() const {
-        return data.empty();
+    bool isEmpty() const {
+        return data.isEmpty();
     }
 
     unsigned size() const {

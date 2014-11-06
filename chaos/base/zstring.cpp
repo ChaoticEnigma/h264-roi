@@ -10,6 +10,8 @@
 
 #include <string>
 
+#include <nowide/convert.hpp>
+
 namespace LibChaos {
 
 ZString::ZString(std::string str) : ZString(str.c_str(), str.size()){}
@@ -17,51 +19,12 @@ std::string ZString::str() const {
     return std::string(_data, size());
 }
 
-ZString::ZString(std::wstring wstr) : ZString(){
-
-}
-
+ZString::ZString(std::wstring wstr) : ZString(nowide::narrow(wstr)){}
 std::wstring ZString::wstr() const {
-
+    return nowide::widen(_data);
 }
 
-//ZString::ZString(std::wstring wide) : _data(wide.begin(), wide.end()){}
-//std::wstring ZString::wstr() const {
-//    return std::wstring(_data.begin(), _data.end());
-//}
-
-//ZString::ZString(char *str_){
-//    if(str_ != NULL){
-//        data = std::string(str_, strlen(str_));
-//    } else {
-//        data = std::string();
-//    }
-//}
-//char *ZString::c(){
-//    char str_[size()];
-//    return strcpy(str_, data.c_str());
-//}
-
-//#if PLATFORM == WINDOWS
-//}
-//#include <windows.h>
-//namespace LibChaos {
-
-//ZString::ZString(const wchar_t *wstr){
-//    if(wstr != NULL){
-//        int len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
-//        char *str = new char[len];
-//        WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
-//        _data = std::string(str, len);
-//    }
-//}
-//const wchar_t *ZString::wc() const {
-//    int len = MultiByteToWideChar(CP_UTF8, 0, cc(), size(), NULL, 0);
-//    wchar_t *wstr = new wchar_t[len];
-//    MultiByteToWideChar(CP_UTF8, 0, cc(), size(), wstr, len);
-//    return wstr;
-//}
-//#endif
+ZString::ZString(const wchar_t *wstr) : ZString(nowide::narrow(wstr)){}
 
 ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad){
     std::string buf;
@@ -499,30 +462,6 @@ ArZ ZString::quotedExplode(char delim) const {
         out.push(substr(*this, size() - counter, counter));
     return out;
 }
-
-/*
-ArZ ZString::quotedExplode(char delim) const {
-    ArZ out;
-    std::string str_ = data;
-    for(zu64 i = 0; i < str_.length(); ++i){
-        if(str_[i] == '"'){
-            for(zu64 j = i; j < str_.length(); ++j){
-                if(str_[j] == '"'){
-                    out.push(str_.substr(0, j));
-                    str_ = str_.substr(j+1, str_.length());
-                    i = (zu64)-1;
-                }
-            }
-        } else if(str_[i] == delim){
-            out.push(str_.substr(0, i));
-            str_ = str_.substr(i+1, str_.length());
-            i = (zu64)-1;
-        }
-    }
-    out.push(str_);
-    return out;
-}
-*/
 
 ArZ ZString::escapedExplode(char delim) const {
     ArZ out;

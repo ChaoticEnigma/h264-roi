@@ -75,6 +75,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
 
     lib/sqlite3.c
     lib/xxhash.c
+    #lib/nowide_standalone/src/iostream.cpp
 
     net/zaddress.cpp
     net/zconnection.cpp
@@ -119,14 +120,15 @@ INCLUDE_DIRECTORIES(
     data
     file
     lib
+    lib/nowide_standalone
     net
     math
     thread
 )
 
 #source_hash(${LibChaos_SOURCE_DIR})
-configure_build("Core" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
-SET(LibChaosCore_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
+configure_build("Core" ${LIBCHAOS_BUILD})
+SET(LibChaosCore_BUILD_STRING ${CONFIGURE_BUILD_STRING} PARENT_SCOPE)
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
 #ADD_DEFINITIONS(-DZLOG_STD_MUTEX)

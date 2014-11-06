@@ -25,7 +25,7 @@ ZAddressData::ZAddressData(const ZAddressData &other) : _family(other._family), 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if PLATFORM == WINDOWS
-const char *inet_ntop(int af, const void* src, char *dst, int cnt){
+const char *inet_ntop(int af, const void *src, char *dest, int cnt){
     sockaddr_storage srcaddr;
     memset(&srcaddr, 0, sizeof(sockaddr_storage));
 
@@ -41,24 +41,24 @@ const char *inet_ntop(int af, const void* src, char *dst, int cnt){
         return NULL;
     }
 
-    if(WSAAddressToString((struct sockaddr *)&srcaddr, sizeof(sockaddr_storage), 0, dst, (LPDWORD) &cnt) != 0){
+    if(WSAAddressToStringA((struct sockaddr *)&srcaddr, sizeof(sockaddr_storage), 0, dest, (LPDWORD)&cnt) != 0){
         ELOG("ZAddress: WSAAddressToString error " << ZError::getSystemError());
         return NULL;
     }
-    return dst;
+    return dest;
 }
 
 int inet_pton(int af, const char *src, void *dst){
     struct sockaddr_storage ss;
     int size = sizeof(ss);
-    char src_copy[INET6_ADDRSTRLEN+1];
+    char src_copy[INET6_ADDRSTRLEN + 1];
 
     memset(&ss, 0, sizeof(sockaddr_storage));
     // Stupid windows non-const API
-    strncpy(src_copy, src, INET6_ADDRSTRLEN+1);
+    strncpy(src_copy, src, INET6_ADDRSTRLEN + 1);
     src_copy[INET6_ADDRSTRLEN] = 0;
 
-    if(WSAStringToAddress(src_copy, af, NULL, (struct sockaddr *)&ss, &size) == 0){
+    if(WSAStringToAddressA(src_copy, af, NULL, (struct sockaddr *)&ss, &size) == 0){
         switch(af) {
         case AF_INET:
             *(struct in_addr *)dst = ((struct sockaddr_in *)&ss)->sin_addr;

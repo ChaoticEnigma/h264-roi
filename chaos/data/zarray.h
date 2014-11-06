@@ -102,7 +102,7 @@ public:
         return pop(0);
     }
     ZArray<T> &popBack(){
-        if(!empty()){
+        if(!isEmpty()){
             _data.pop_back();
         }
         return *this;
@@ -175,10 +175,8 @@ public:
         _data.swap(other._data);
     }
 
-    bool empty() const {
-        if(_data.size() <= 0)
-            return true;
-        return false;
+    bool isEmpty() const {
+        return _data.size() == 0;
     }
     void clear(){
         _data.clear();
