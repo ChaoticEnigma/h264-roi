@@ -12,9 +12,7 @@
 #include "zreader.h"
 #include "zwriter.h"
 
-#if PLATFORM == WINDOWS
-    #include <windows.h>
-#else
+#if PLATFORM != WINDOWS
     #include <fstream>
 #endif
 
@@ -38,6 +36,8 @@ public:
     };
 
 private:
+    typedef void *HANDLE;
+
     enum zfile_bits {
         readbit         = 0x001,    // Reading allowed
         writebit        = 0x002,    // Writing allowed

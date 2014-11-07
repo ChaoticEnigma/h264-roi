@@ -35,24 +35,6 @@ ZThread::~ZThread(){
         detach();
 }
 
-void *ZThread::entry(void *ptr){
-    ZThread *thr = (ZThread*)ptr;
-    void *ret = thr->_param.funcptr(&thr->_param.zarg);
-    //pthread_exit(ret);
-    thr->_alive = false;
-    return ret;
-}
-
-#ifdef ZTHREAD_WINTHREADS
-DWORD ZThread::entry_win(LPVOID ptr){
-    ZThread *thr = (ZThread *)ptr;
-    void *ret = thr->_param.funcptr(&thr->_param.zarg); // Run function
-    //pthread_exit(ret);
-    thr->_alive = false;
-    return ret;
-}
-#endif
-
 bool ZThread::run(funcType func){
     return run(func, NULL);
 }
@@ -65,13 +47,11 @@ bool ZThread::run(funcType func, void *argptr){
     _thread = CreateThread(NULL, 0, entry_win, this, 0, NULL);
     if(_thread == NULL)
         return false;
-    _alive = true;
 #else
     ret = pthread_create(&_thread, NULL, entry, this);
     //std::cout << "create " << ret << std::endl;
     if(ret != 0)
         return false;
-    _alive = true;
 #endif
     return true;
 }
@@ -117,6 +97,26 @@ void ZThread::detach(){
 #endif
 }
 
+void ZThread::yield(){
+#ifdef ZTHREAD_WINTHREADS
+    SwitchToThread();
+#else
+    #if PLATFORM == WINDOWS
+        std::this_thread::yield();
+    #else
+        pthread_yield();
+    #endif
+#endif
+}
+
+void ZThread::sleep(zu64 seconds){
+    sleep(seconds);
+}
+
+void ZThread::usleep(zu64 microseconds){
+    usleep(microseconds);
+}
+
 void ZThread::setCopyable(){
     copyable = true;
 }
@@ -136,16 +136,21 @@ ztid ZThread::thisTid(){
 #endif
 }
 
-void ZThread::yield(){
 #ifdef ZTHREAD_WINTHREADS
-    SwitchToThread();
-#else
-    #if PLATFORM == WINDOWS
-        std::this_thread::yield();
-    #else
-        pthread_yield();
-    #endif
-#endif
+DWORD ZThread::entry_win(LPVOID ptr){
+    ZThread *thr = (ZThread *)ptr;
+    thr->_param.funcptr(&thr->_param.zarg); // Run function
+    thr->_alive = false;
+    return 0;
 }
+#else
+void *ZThread::entry(void *ptr){
+    ZThread *thr = (ZThread*)ptr;
+    void *ret = thr->_param.funcptr(&thr->_param.zarg);
+    //pthread_exit(ret);
+    thr->_alive = false;
+    return ret;
+}
+#endif
 
 }

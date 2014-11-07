@@ -86,6 +86,8 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     math/znumber.cpp
     math/znumber-reference.cpp
 
+    thread/zcondition.cpp
+    thread/zmutex.cpp
     thread/zthread.cpp
 )
 
@@ -142,8 +144,8 @@ ENDIF()
 ADD_DEFINITIONS(-DBUILDING)
 
 ADD_LIBRARY(chaos ${LibChaos_SOURCES})
-TARGET_LINK_LIBRARIES(chaos pthread)
 IF(LIBCHAOS_UNIX)
+    TARGET_LINK_LIBRARIES(chaos pthread)
     IF(IBERTY_DEMANGLE)
         TARGET_LINK_LIBRARIES(chaos iberty)
     ENDIF()
@@ -154,5 +156,10 @@ IF(LIBCHAOS_UNIX)
         TARGET_LINK_LIBRARIES(chaos dl)
     ENDIF()
 ELSEIF(LIBCHAOS_WINDOWS)
-    TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi version)
+    IF(COMPILER_MINGW)
+        TARGET_LINK_LIBRARIES(chaos pthread)
+        TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi version)
+    ELSEIF(COMPILER_MSVC)
+        TARGET_LINK_LIBRARIES(chaos Ws2_32)
+    ENDIF()
 ENDIF()

@@ -24,7 +24,7 @@ ZAddressData::ZAddressData(const ZAddressData &other) : _family(other._family), 
 // ZADDRESS
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if PLATFORM == WINDOWS
+#if COMPILER == MINGW
 const char *inet_ntop(int af, const void *src, char *dest, int cnt){
     sockaddr_storage srcaddr;
     memset(&srcaddr, 0, sizeof(sockaddr_storage));
@@ -164,7 +164,7 @@ ZString ZAddress::str() const {
     }
 
     char *str = new char[csz];
-    inet_ntop(_family, &_v4_addr, str, csz);
+    inet_ntop(_family, (void *)&_v4_addr, str, csz);
     ZString out = str;
     delete[] str;
     return out;

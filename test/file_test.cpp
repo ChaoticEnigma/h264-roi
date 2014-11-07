@@ -4,11 +4,15 @@
 #include "zerror.h"
 
 int file_block(){
-//    ZPath near = ZString("here");
-//    LOG(ZPath::makeDir(near));
+    ZPath near = ZString("here");
+    LOG(ZFile::makeDir(near));
 
-    ZPath farfile = ZString("a/b/c/d/e/f.dat");
+    ZPath farfile = "a/b/c/d/e/f.dat";
     LOG(ZFile::createDirsTo(farfile));
+
+    ZArray<ZPath> farfl = ZFile::listFiles("a");
+    for(zu64 i = 0; i < farfl.size(); ++i)
+        LOG(farfl[i]);
 
     ZFile fl;
     LOG(fl.open(farfile, ZFile::modereadwrite));

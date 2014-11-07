@@ -113,7 +113,7 @@ SOURCES += \
     $$PWD/chaos/file/zppm.cpp \
     $$PWD/chaos/file/zimage.cpp \
     \
-    $$PWD/chaos/lib/sqlite3.c \
+    #$$PWD/chaos/lib/sqlite3.c \
     \
     $$PWD/chaos/math/zexpression.cpp \
     $$PWD/chaos/math/zformula.cpp \
@@ -168,7 +168,9 @@ SOURCES += \
     $$PWD/util/extensionfixer.cpp \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
-    $$PWD/util/duplicatefinder.cpp
+    $$PWD/util/duplicatefinder.cpp \
+    chaos/thread/zmutex.cpp \
+    chaos/thread/zcondition.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

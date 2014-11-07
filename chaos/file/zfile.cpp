@@ -343,7 +343,8 @@ bool ZFile::rename(ZPath old, ZPath newfl){
 
 bool ZFile::removeDir(ZPath name){
 #if COMPILER == MSVC
-
+    //TODO: Win32 removeDir
+    return false;
 #else
     using namespace std;
     string path = name.str().str();
@@ -553,15 +554,15 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
 
 zu64 ZFile::dirSize(ZPath dir){
 #if V == 1
-    WIN32_FIND_DATAA data;
+    WIN32_FIND_DATA data;
     zu64 total = 0;
     HANDLE sh = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &data);
     if(sh == INVALID_HANDLE_VALUE)
         return 0;
     do {
-        if(std::string(data.cFileName) != "." && std::string(data.cFileName) != ".."){
+        if(ZString(data.cFileName) != "." && ZString(data.cFileName) != ".."){
             if((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
-                total += dirSize(dir + data.cFileName);
+                total += dirSize(dir + ZString(data.cFileName));
             else
                 //total += (zu64)(data.nFileSizeHigh * (MAXDWORD) + data.nFileSizeLow);
                 total += data.nFileSizeLow | (zu64)data.nFileSizeHigh << 32;

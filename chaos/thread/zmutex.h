@@ -6,112 +6,56 @@
 #ifndef ZMUTEX_H
 #define ZMUTEX_H
 
-// ZMutex Class
-// WARNING: Relatively untested
-// Allows storing of an object in a semi-thread-safe manner.
-// Thread-unique locking, so only the thread that locked the mutex is allowed to unlock it.
-// While the mutex is locked, other threads may get a refrence to the contained object. THREAD RESPONSIBLY. SERIOUSLY.
-
 #include "ztypes.h"
 
 #if COMPILER == MSVC
     #define ZMUTEX_WINTHREADS
 #endif
 
-#ifdef ZMUTEX_WINTHREADS
-    #include <windows.h>
-#else
+#ifndef ZMUTEX_WINTHREADS
     #include <pthread.h>
 #endif
 
 #include <atomic>
 #include <chrono>
 
+struct _RTL_CRITICAL_SECTION;
+typedef _RTL_CRITICAL_SECTION CRITICAL_SECTION;
+
 namespace LibChaos {
 
 typedef unsigned long ztid;
+
+// ZMutex Class
+// WARNING: Relatively untested
+// Allows storing of an object in a semi-thread-safe manner.
+// Thread-unique locking, so only the thread that locked the mutex is allowed to unlock it.
+// While the mutex is locked, other threads may get a refrence to the contained object. THREAD RESPONSIBLY. SERIOUSLY.
+
 
 // An object used to control access to a resource shared by multiple threads
 // Uses a pthread_mutex_t on POSIX
 // Uses a Critical Section on Windows
 class ZMutex {
 public:
-    ZMutex() : locker_tid(0){
-#ifdef ZMUTEX_WINTHREADS
-        InitializeCriticalSection(&_mutex);
-#else
-        pthread_mutex_init(&_mutex, NULL);
-#endif
-    }
-    ZMutex(const ZMutex &other) : _mutex(other._mutex), locker_tid(other.locker_tid){
-
-    }
-    ~ZMutex(){
-#ifdef ZMUTEX_WINTHREADS
-        DeleteCriticalSection(&_mutex);
-#else
-        pthread_mutex_destroy(&_mutex);
-#endif
-    }
+    ZMutex();
+    ZMutex(const ZMutex &other);
+    ~ZMutex();
 
     // If mutex is unlocked, mutex is locked by calling thread. If mutex is locked by other thread, function blocks until mutex is unlocked by other thread, then mutex is locked by calling thread.
-    void lock(){
-        if(!iOwn()){
-#ifdef ZMUTEX_WINTHREADS
-            EnterCriticalSection(&_mutex);
-            locker_tid = GetCurrentThreadId();
-#else
-            pthread_mutex_lock(&_mutex);
-            locker_tid = pthread_self();
-#endif
-        }
-        // We own the mutex
-    }
+    void lock();
 
     // Locks mutex and returns true if unlocked, else returns false.
-    bool trylock(){
-        if(!iOwn()){
-#ifdef ZMUTEX_WINTHREADS
-            if(TryEnterCriticalSection(&_mutex)){
-                locker_tid = GetCurrentThreadId();
-                return true; // We now own the mutex
-            }
-#else
-            if(pthread_mutex_trylock(&_mutex) == 0){
-                locker_tid = pthread_self();
-                return true; // We now own the mutex
-            }
-#endif
-            return false; // Another thread owns the mutex
-        } else {
-            return true; // We already own the mutex
-        }
-    }
+    bool trylock();
 
     // Tries to lock the mutex for <timeout_microsec> microseconds, then returns false.
-    bool timelock(zu64 timeout_microsec){
-        auto end = std::chrono::high_resolution_clock::now() + std::chrono::microseconds(timeout_microsec);
-        while(!trylock()){
-            // Loop until trylock() succeeds OR timeout is exceeded
-            if(std::chrono::high_resolution_clock::now() > end)
-                return false; // Timeout exceeded, mutex is locked by another thread
-        }
-        return true; // Locked, and this thread owns it
-    }
+    bool timelock(zu64 timeout_microsec);
 
     // If mutex is unlocked, returns true. If mutex is locked by calling thread, mutex is unlocked. If mutex is locked by other thread, blocks until mutex is unlocked by other thread.
-    void unlock(){
-        if(locked()){
-            lock(); // Make sure we own the mutex first
-            locker_tid = 0;
-#ifdef ZMUTEX_WINTHREADS
-            LeaveCriticalSection(&_mutex);
-#else
-            pthread_mutex_unlock(&_mutex);
-#endif
-        }
-        // Mutex is unlocked
-    }
+    void unlock();
+
+    // Return true if this thread owns the mutex, else returns false
+    bool iOwn();
 
     // Returns true if mutex is locked, else returns false.
     inline bool locked(){
@@ -121,18 +65,10 @@ public:
     inline ztid locker(){
         return locker_tid;
     }
-    // Return true if this thread owns the mutex, else returns false
-    inline bool iOwn(){
-#ifdef ZMUTEX_WINTHREADS
-        return (locker() == GetCurrentThreadId());
-#else
-        return (locker() == pthread_self());
-#endif
-    }
 
 #ifdef ZMUTEX_WINTHREADS
     inline CRITICAL_SECTION *handle(){
-        return &_mutex;
+        return _mutex;
     }
 #else
     inline pthread_mutex_t *handle(){
@@ -142,7 +78,7 @@ public:
 
 private:
 #ifdef ZMUTEX_WINTHREADS
-    CRITICAL_SECTION _mutex;
+    CRITICAL_SECTION *_mutex;
 #else
     pthread_mutex_t _mutex;
 #endif

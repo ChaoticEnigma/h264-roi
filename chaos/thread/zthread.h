@@ -34,6 +34,12 @@ class ZThread {
 public:
     typedef void *(*funcType)(void *);
 
+#ifdef ZTHREAD_WINTHREADS
+private:
+    typedef unsigned long DWORD;
+    typedef void *LPVOID;
+#endif
+
 public:
     ZThread();
     ZThread(funcType);
@@ -50,14 +56,21 @@ public:
     void detach();
 
     static void yield();
-
-    static void *entry(void *ptr);
+    static void sleep(zu64 seconds);
+    static void usleep(zu64 microseconds);
 
     void setCopyable();
 
     ztid tid();
     bool alive();
     static ztid thisTid();
+
+private:
+#ifdef ZTHREAD_WINTHREADS
+    static DWORD entry_win(LPVOID ptr);
+#else
+    static void *entry(void *ptr);
+#endif
 
 private:
     struct zthreadparam {

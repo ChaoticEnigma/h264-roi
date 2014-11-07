@@ -12,7 +12,7 @@
 
 namespace LibChaos {
 
-// TODO
+// TODO: Operators to implement
 // ZNumber(zs64)
 // ZNumber(zu64)
 // ZNumber(ZString)
