@@ -19,8 +19,10 @@
 #include <atomic>
 #include <chrono>
 
-struct _RTL_CRITICAL_SECTION;
-typedef _RTL_CRITICAL_SECTION CRITICAL_SECTION;
+#ifdef ZMUTEX_WINTHREADS
+    struct _RTL_CRITICAL_SECTION;
+    typedef _RTL_CRITICAL_SECTION CRITICAL_SECTION;
+#endif
 
 namespace LibChaos {
 

@@ -2,6 +2,7 @@
 #define ZLIST_H
 
 #include "ztypes.h"
+#include "zallocator.h"
 #include "yindexedaccess.h"
 
 #include "zlog.h"
@@ -19,9 +20,11 @@ public:
             Node *current = head;
             Node *next;
             do { // Delete all nodes
-                delete current->data;
+                _alloc.destroy(current->data);
+                _alloc.dealloc(current->data);
                 next = current->next;
-                delete current;
+                _nodealloc.destroy(current);
+                _nodealloc.dealloc(current);
                 current = next;
             } while(current != nullptr);
         }
@@ -65,8 +68,10 @@ public:
             Node *old = head;
             head = head->next;
             --_size;
-            delete old->data;
-            delete old;
+            _alloc.destroy(old->data);
+            _alloc.dealloc(old->data);
+            _nodealloc.destroy(old);
+            _nodealloc.dealloc(old);
         }
     }
     void popBack(){
@@ -75,8 +80,10 @@ public:
             Node *old = head->prev;
             head->prev = head->prev->prev;
             --_size;
-            delete old->data;
-            delete old;
+            _alloc.destroy(old->data);
+            _alloc.dealloc(old->data);
+            _nodealloc.destroy(old);
+            _nodealloc.dealloc(old);
         }
     }
     inline void pop(){ popBack(); }
@@ -126,9 +133,11 @@ private:
     };
 
 private:
-   static Node *newNode(const T &data){
-       Node *node = new Node;
-       node->data = new T(data);
+    Node *newNode(const T &data){
+       Node *node = _nodealloc.alloc(1);
+       _nodealloc.construct(node);
+       node->data = _alloc.alloc(1);
+       _alloc.construct(node->data, 1, data);
        return node;
     }
 
@@ -141,6 +150,8 @@ private:
     }
 
 private:
+    ZAllocator<T> _alloc;
+    ZAllocator<Node> _nodealloc;
     zu64 _size;
     Node *head;
 };

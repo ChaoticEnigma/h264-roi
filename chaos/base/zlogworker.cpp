@@ -40,7 +40,7 @@ void ZLogWorker::run(){
 }
 
 void ZLogWorker::waitEnd(){ // Must NEVER be called by log worker thread
-    // FIXME: Sometimes hangs
+    // BUG: Sometimes hangs
     work.stop();
     cond.signal();
     work.join();

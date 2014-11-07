@@ -1,4 +1,5 @@
 #include "zmutex.h"
+#include "zerror.h"
 
 #ifdef ZMUTEX_WINTHREADS
     #include <windows.h>
@@ -8,17 +9,18 @@
 
 namespace LibChaos {
 
-ZMutex::ZMutex() : _mutex(new CRITICAL_SECTION), locker_tid(0){
 #ifdef ZMUTEX_WINTHREADS
+ZMutex::ZMutex() : _mutex(new CRITICAL_SECTION), locker_tid(0){
     InitializeCriticalSection(_mutex);
-#else
-    pthread_mutex_init(&_mutex, NULL);
-#endif
 }
+#else
+ZMutex::ZMutex() : locker_tid(0){
+    pthread_mutex_init(&_mutex, NULL);
+}
+#endif
 
-// FIXME
-ZMutex::ZMutex(const ZMutex &other) : _mutex(other._mutex), locker_tid(other.locker_tid){
-
+ZMutex::ZMutex(const ZMutex &){
+    throw ZError("Someone tried to copy a ZMutex");
 }
 
 ZMutex::~ZMutex(){

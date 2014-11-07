@@ -154,9 +154,9 @@
 #define MIN(A, B) ((A < B) ? A : B)
 #define MAX(A, B) ((A > B) ? A : B)
 
-// LibChaos version control
-#define ZARRAY_VERSION 1 //2
-#define ZASSOC_VERSION 1 //2
+// LibChaos experimental versions
+#define ZARRAY_VERSION /*1*/ 2
+#define ZASSOC_VERSION 1 /*2*/
 
 #include <stdint.h>
 

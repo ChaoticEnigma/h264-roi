@@ -110,11 +110,11 @@ void ZThread::yield(){
 }
 
 void ZThread::sleep(zu64 seconds){
-    sleep(seconds);
+    ::sleep(seconds);
 }
 
 void ZThread::usleep(zu64 microseconds){
-    usleep(microseconds);
+    ::usleep(microseconds);
 }
 
 void ZThread::setCopyable(){

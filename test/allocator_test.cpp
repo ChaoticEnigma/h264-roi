@@ -7,13 +7,13 @@ int allocator_block(){
     ZAllocator<char> alloc;
     char *test = alloc.alloc(20);
     LOG("free char");
-    alloc.free();
+    alloc.dealloc(test);
 
     LOG("Alloc void");
     ZAllocator<void> alloc2;
     void *test2 = alloc2.alloc(20);
     LOG("free void");
-    alloc2.free();
+    alloc2.dealloc(test2);
 
     return 0;
 }

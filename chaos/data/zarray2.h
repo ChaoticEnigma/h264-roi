@@ -1,9 +1,8 @@
 #ifndef ZARRAY2_H
 #define ZARRAY2_H
 
-#include <cstring>
-
 #include "ztypes.h"
+#include "zallocator.h"
 
 namespace LibChaos {
 
@@ -66,21 +65,23 @@ public:
         return !operator==(arr);
     }
 
-    T &operator[](zu64 index){
+    inline T &at(zu64 index){
         return _data[index];
     }
-    T &at(zu64 index){
-        return operator[](index);
+    inline T &operator[](zu64 index){
+        return at(index);
     }
 
-    const T &operator[](zu64 index) const {
+    inline const T &at(zu64 index) const {
         return _data[index];
     }
-    const T &at(zu64 index) const {
-        return operator[](index);
+    inline const T &operator[](zu64 index) const {
+        return at(index);
     }
 
+    // Resize (IMPORTANT: this is the only place memory is allocated)
     ZArray<T> &resize(zu64 size){
+        // FIXME: ZArray resize
         if(size){
             T *tmp = new T[size];
             if(_size && tmp != nullptr && _data != nullptr)
@@ -201,6 +202,7 @@ public:
     }
 
 private:
+    ZAllocator<T> _alloc;
     zu64 _size;
     zu64 _realsize;
     T *_data;

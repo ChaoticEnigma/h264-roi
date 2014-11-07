@@ -656,9 +656,17 @@ zu64 ZString::length() const {
 // Private functions
 // ///////////////////////////////////////////////////////////////////////////////
 
-void ZString::_copy(chartype *dest, const chartype *src, zu64 size){
-    if(size && dest && src)
-        memcpy(dest, src, size * sizeof(chartype));
+void ZString::resize(zu64 len){
+    if(len > _realsize || _data == nullptr){ // Only reallocate if new size is larger than buffer
+        chartype *buff = _alloc.alloc(len + 1); // New size + null terminator
+        _alloc.rawcopy(_data, buff, _size); // Copy data to new buffer
+        _realsize = len; // Update new buffer size
+        _alloc.dealloc(_data); // Delete old buffer
+        _data = buff;
+    }
+    // If the new size is smaller, just change size
+    _size = len;
+    _data[_size] = 0; // Always null terminate
 }
 
 bool ZString::_charIsWhitespace(chartype ch){

@@ -4,14 +4,17 @@
 #include "ztypes.h"
 #include "zmutex.h"
 
-struct _RTL_CONDITION_VARIABLE;
-typedef _RTL_CONDITION_VARIABLE CONDITION_VARIABLE;
+#ifdef ZMUTEX_WINTHREADS
+    struct _RTL_CONDITION_VARIABLE;
+    typedef _RTL_CONDITION_VARIABLE CONDITION_VARIABLE;
+#endif
 
 namespace LibChaos {
 
 class ZCondition {
 public:
     ZCondition();
+    ZCondition(const ZCondition &);
     ~ZCondition();
 
     void waitOnce();

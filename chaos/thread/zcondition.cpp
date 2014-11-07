@@ -8,14 +8,20 @@
 
 namespace LibChaos {
 
-ZCondition::ZCondition() : mutex(new CRITICAL_SECTION), cond(new CONDITION_VARIABLE){
 #ifdef ZMUTEX_WINTHREADS
+ZCondition::ZCondition() : mutex(new CRITICAL_SECTION), cond(new CONDITION_VARIABLE){
     InitializeCriticalSection(mutex);
     InitializeConditionVariable(cond);
+}
 #else
+ZCondition::ZCondition(){
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&cond, NULL);
+}
 #endif
+
+ZCondition::ZCondition(const ZCondition &){
+    throw ZError("Someone tried to copy a ZCondition");
 }
 
 ZCondition::~ZCondition(){

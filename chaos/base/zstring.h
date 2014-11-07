@@ -7,10 +7,11 @@
 #define ZSTRING_H
 
 #include "ztypes.h"
+#include "zallocator.h"
 #include "zassoc.h"
 
-#include "zstorage.h"
-#include "zdefaultstorage.h"
+//#include "zstorage.h"
+//#include "zdefaultstorage.h"
 
 #include <cstring>
 
@@ -21,8 +22,6 @@
 #if PLATFORM == WINDOWS
     #define UNICODE
     #define _UNICODE
-//    #undef UNICODE
-//    #undef _UNICODE
 #endif
 
 namespace LibChaos {
@@ -34,6 +33,7 @@ typedef ZAssoc<ZString, ZString> AsArZ;
 
 // Represents UTF-8 string
 // Wide characters are narrowed and encoded in UTF-8
+// Internal array is always null terminated
 class ZString {
 public:
     typedef char chartype;
@@ -43,24 +43,27 @@ public:
     };
 
 public:
-    ZString() : _size(0), _data(nullptr){
-        resize(0);
+    ZString() : _size(0), _realsize(0), _data(nullptr){
+        clear(); // Empty string with null terminator
     }
-    ZString(ZStorage *stor) : ZString(){
-        if(stor != nullptr){
-            resize(stor->size());
-            stor->copyBlockTo(0, stor->size(), (zbyte *)_data);
-        }
+    ~ZString(){
+        _alloc.dealloc(_data);
     }
 
+//    ZString(ZStorage *stor) : ZString(){
+//        if(stor != nullptr){
+//            resize(stor->size());
+//            stor->copyBlockTo(0, stor->size(), (zbyte *)_data);
+//        }
+//    }
+
     // Assumed UTF-8
-    ZString(const chartype *ptr, zu64 size) : ZString(){
-        if(size && ptr){
-            resize(size);
-            _copy(_data, ptr, size);
-        }
+    ZString(const chartype *ptr, zu64 size) : _size(0), _realsize(0), _data(nullptr){
+        resize(size);
+        if(size && ptr)
+            _alloc.rawcopy(ptr, _data, size);
     }
-    ZString(const ZString &other) : ZString(other._data, other.size()){}
+    ZString(const ZString &other) : ZString(other._data, other._size){}
 
     // char ZArray constructor
     ZString(const ZArray<chartype> &array) : ZString(array.ptr(), array.size()){}
@@ -98,25 +101,16 @@ public:
     ZString(const wchar_t *wstr);
 
     // Fill constructor
-    ZString(chartype ch, zu64 len = 1) : ZString(){
-        if(len){
-            resize(len);
-            for(zu64 i = 0; i < len; ++i){
+    ZString(chartype ch, zu64 len = 1) : _size(0), _realsize(0), _data(nullptr){
+        resize(len);
+        if(len)
+            for(zu64 i = 0; i < len; ++i)
                 _data[i] = ch;
-            }
-        }
     }
 
     // Interger to string
     static ZString ItoS(zu64 num, unsigned base = 10, zu64 pad = 0);
     static ZString ItoS(zs64 num, unsigned base = 10);
-
-//    ZString(zu64 num) : ZString(){
-//        operator=(ItoS(num, 10));
-//    }
-//    ZString(zs64 num) : ZString(){
-//        operator=(ItoS(num, 10));
-//    }
 
     ZString(zuc num) : ZString((zull)num){}
     ZString(zsc num) : ZString((zsll)num){}
@@ -128,8 +122,6 @@ public:
     ZString(zul num) : ZString((zull)num){}
     ZString(zsl num) : ZString((zsll)num){}
 //#endif
-//    ZString(zull num) : ZString((zu64)num){}
-//    ZString(zsll num) : ZString((zs64)num){}
 
     ZString(zull num) : ZString(){
         operator=(ItoS((zu64)num, 10));
@@ -138,28 +130,17 @@ public:
         operator=(ItoS((zs64)num, 10));
     }
 
-//    explicit ZString(zu8 num) : ZString((zu64)num){}
-//    explicit ZString(zs8 num) : ZString((zs64)num){}
-//    explicit ZString(zu16 num) : ZString((zu64)num){}
-//    explicit ZString(zs16 num) : ZString((zs64)num){}
-//    explicit ZString(zu32 num) : ZString((zu64)num){}
-//    explicit ZString(zs32 num) : ZString((zs64)num){}
-
     // String to int
     int tint() const;
 
     // Construct from double with <places> decimal points, 0 means all
     ZString(double flt, unsigned places = 0);
 
-    // Destructor
-    ~ZString(){
-        delete[] _data;
-    }
-
     // Assignment
     ZString &assign(const ZString &other){
         resize(other.size());
-        _copy(_data, other._data, other.size());
+        if(other.size())
+            _alloc.rawcopy(other._data, _data, other.size());
         return *this;
     }
     inline ZString &operator=(const ZString &rhs){
@@ -170,20 +151,8 @@ public:
     friend bool operator==(const ZString &lhs, const ZString &rhs);
     friend bool operator!=(const ZString &lhs, const ZString &rhs);
 
-    // Resize (IMPORTANT: memory is only allocated and initialized here)
-    // _data must always have null terminator
-    ZString &resize(zu64 len){
-        chartype *buff = new chartype[len + 1];
-        _copy(buff, _data, MIN(len, _size));
-        buff[len] = 0;
-        _size = len;
-        delete[] _data;
-        _data = buff;
-        return *this;
-    }
-
     // Clear
-    ZString &clear(){
+    inline ZString &clear(){
         resize(0);
         return *this;
     }
@@ -201,7 +170,7 @@ public:
         if(str.size()){
             zu64 oldsize = size();
             resize(oldsize + str.size());
-            _copy(_data + oldsize, str._data, str.size());
+            _alloc.rawcopy(str._data, _data + oldsize, str.size());
         }
         return *this;
     }
@@ -323,6 +292,7 @@ public:
 
     // Number of bytes (code units)
     inline zu64 size() const { return _size; }
+    inline zu64 realSize() const { return _realsize; }
 
     // Number of *characters* (code points)
     zu64 length() const;
@@ -341,15 +311,16 @@ public:
     }
 
 private:
-    static void _copy(chartype *dest, const chartype *src, zu64 size);
+    // Resize (IMPORTANT: memory is only allocated and initialized here)
+    void resize(zu64 len);
     static bool _charIsWhitespace(chartype ch);
-
     zu64 _strReplace(const ZString &before, const ZString &after, zu64 startpos);
 
 private:
+    ZAllocator<chartype> _alloc;
     zu64 _size;
+    zu64 _realsize;
     chartype *_data;
-
 };
 
 inline ZString operator+(const ZString &lhs, const ZString &rhs){
@@ -364,24 +335,6 @@ inline bool operator==(const ZString &lhs, const ZString &rhs){
 inline bool operator!=(const ZString &lhs, const ZString &rhs){
     return !operator==(lhs, rhs);
 }
-
-// Shell class, just wraps memory for wide character string
-class ZWideString {
-public:
-    ZWideString() : data(nullptr){
-
-    }
-    ~ZWideString(){
-        delete data;
-    }
-
-    const wchar_t *wc() const {
-        return data;
-    }
-
-private:
-    wchar_t *data;
-};
 
 } // namespace LibChaos
 

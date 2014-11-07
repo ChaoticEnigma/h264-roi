@@ -3,7 +3,7 @@
 #include "zthread.h"
 //#include <unistd.h>
 
-void *thread_func(void */*zarg*/){
+void *thread_func(void * /*zarg*/){
     //ZThreadArg *arg = (ZThreadArg*)zarg;
     LOG("running " << ZThread::thisTid());
     ZThread::sleep(2);
