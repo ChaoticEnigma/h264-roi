@@ -18,7 +18,7 @@ public:
     ZArray(const T *raw, zu64 size) : ZArray(){
         reserve(size);
         for(zu64 i = 0; i < size; ++i)
-            _alloc.construct(_data + i, 1, raw[i]);
+            _alloc.construct(&_data[i], 1, raw[i]);
         _size = size;
     }
     ZArray(const T &first) : ZArray(){
@@ -28,14 +28,14 @@ public:
     ZArray(const ZArray<T> &other) : ZArray(){
         reserve(other._size);
         for(zu64 i = 0; i < other._size; ++i)
-            _alloc.construct(_data + i, 1, other[i]);
+            _alloc.construct(&_data[i], 1, other[i]);
         _size = other._size;
     }
     ZArray(std::initializer_list<T> ls) : ZArray(){
         reserve(ls.size());
         zu64 i = 0;
         for(auto item = ls.begin(); item < ls.end(); ++item){
-            _alloc.construct(_data + i, 1, *item);
+            _alloc.construct(&_data[i], 1, *item);
             ++i;
         }
         _size = ls.size();
@@ -52,27 +52,27 @@ public:
         _data = nullptr;
     }
 
-    ZArray<T> &operator=(const ZArray<T> &other){
-        reserve(other.size());
+    ZArray<T> &assign(const ZArray<T> &other){
         _alloc.destroy(_data, _size); // Destroy contents
+        reserve(other.size()); // Make space
+        for(zu64 i = 0; i < other.size(); ++i)
+            _alloc.construct(&_data[i], 1, other[i]); // Copy objects
         _size = other.size();
-        for(zu64 i = 0; i < _size; ++i)
-            _alloc.construct(_data + i, 1, other[i]); // Copy objects
         return *this;
     }
+    inline ZArray<T> &operator=(const ZArray<T> &other){ return assign(other); }
 
-    bool operator==(const ZArray<T> &arr) const {
-        if(size() != arr.size())
+    bool equals(const ZArray<T> &other) const {
+        if(size() != other.size())
             return false;
         for(zu64 i = 0; i < size(); ++i){
-            if(!(operator[](i) == arr[i]))
+            if(!(operator[](i) == other[i]))
                 return false;
         }
         return true;
     }
-    bool operator!=(const ZArray<T> &arr) const {
-        return !operator==(arr);
-    }
+    inline bool operator==(const ZArray<T> &other) const { return equals(other); }
+    inline bool operator!=(const ZArray<T> &other) const { return !equals(other); }
 
     inline T &at(zu64 index){ return _data[index]; }
     inline T &operator[](zu64 index){ return at(index); }
@@ -117,6 +117,15 @@ public:
         return resize(_size - count);
     }
 
+    // Insert <value> at <pos>, shifting subsequent elements
+    ZArray<T> &insert(zu64 pos, const T &value){
+        reserve(_size + 1);
+        _alloc.rawmove(_data + pos, _data + pos + 1, 1);
+        _alloc.construct(_data + pos, 1, value);
+        ++_size;
+        return *this;
+    }
+
     ZArray<T> &pushBack(const T &value){
         reserve(_size + 1);
         _alloc.construct(_data + _size, 1, value);
@@ -128,31 +137,11 @@ public:
     }
     inline ZArray<T> &push(const T &value){ return pushBack(value); }
 
-    ZArray<T> &insert(zu64 pos, const T &value){
-        reserve(_size + 1);
-        _alloc.rawmove(_data + pos, _data + pos + 1, 1);
-        _alloc.construct(_data + pos, 1, value);
-        ++_size;
-        return *this;
-    }
-
-    ZArray<T> &concat(const ZArray<T> &in){
-        zu64 presize = _size;
-        reserve(_size + in.size());
-        for(zu64 i = 0; i < in.size(); ++i)
-            _alloc.construct(_data + presize, i, in[i]);
-        _size = _size + in.size();
-        return *this;
-    }
-
-    ZArray<T> &erase(zu64 index, zu64 count){
+    ZArray<T> &erase(zu64 index, zu64 count = 1){
         _alloc.destroy(_data + index, count);
         _alloc.rawmove(_data + index + count, _data + index, count);
         _size -= count;
         return *this;
-    }
-    inline ZArray<T> &erase(zu64 index){
-        return erase(index, 1);
     }
 
     ZArray<T> &pop(zu64 index){
@@ -161,14 +150,20 @@ public:
     ZArray<T> &popFront(){
         return pop(0);
     }
+    ZArray<T> &popFrontCount(unsigned conut){
+        return erase(0, conut);
+    }
     ZArray<T> &popBack(){
         return resize(_size - 1);
     }
-    ZArray<T> &pop(){
-        return resize(_size - 1);
-    }
-    ZArray<T> &popFrontCount(unsigned conut){
-        return erase(0, conut);
+    inline ZArray<T> &pop(){ return popBack(); }
+
+    ZArray<T> &concat(const ZArray<T> &in){
+        reserve(_size + in.size());
+        for(zu64 i = 0; i < in.size(); ++i)
+            _alloc.construct(_data + _size + i, 1, in[i]);
+        _size += in.size();
+        return *this;
     }
 
     bool contains(const T &test) const {
@@ -179,13 +174,13 @@ public:
         return false;
     }
 
-    T &front(){ return _data[0]; }
-    const T &front() const { return _data[0]; }
-    T &back(){ return _data[_size - 1]; }
-    const T &back() const { return _data[_size - 1]; }
+    inline T &front(){ return _data[0]; }
+    inline const T &front() const { return _data[0]; }
+    inline T &back(){ return _data[_size - 1]; }
+    inline const T &back() const { return _data[_size - 1]; }
 
-    bool empty() const { return (_size == 0); }
-    bool isEmpty() const { return empty(); }
+    inline bool isEmpty() const { return (_size == 0); }
+    inline bool empty() const { return isEmpty(); }
 
     inline zu64 size() const { return _size; }
     inline zu64 realsize() const { return _realsize; }

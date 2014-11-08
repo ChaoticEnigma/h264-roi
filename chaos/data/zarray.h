@@ -103,12 +103,9 @@ public:
         return push(value);
     }
 
-    ZArray<T> &erase(zu64 index, zu64 count){
+    ZArray<T> &erase(zu64 index, zu64 count = 1){
         _data.erase(_data.begin() + index, _data.begin() + index + count);
         return *this;
-    }
-    ZArray<T> &erase(zu64 index){
-        return erase(index, 1);
     }
 
     ZArray<T> &popFront(){
