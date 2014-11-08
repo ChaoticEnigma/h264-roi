@@ -5,11 +5,12 @@
 #include "zallocator.h"
 #include "yindexedaccess.h"
 
-#include "zlog.h"
+#include "zstring.h"
 
 namespace LibChaos {
 
 // Implemented as a circular doubly-linked list
+// ZList push/pop paradigm is FIFO
 template <typename T> class ZList : public YIndexedAccess<T> {
 public:
     ZList() : _size(0), head(nullptr){}
@@ -86,9 +87,9 @@ public:
             _nodealloc.dealloc(old);
         }
     }
-    inline void pop(){ popBack(); }
+    inline void pop(){ popFront(); }
 
-    void debug() const {
+    ZString debug() const {
         ZString str;
         Node *current = head;
         for(int i = 0; i < _size; ++i){
@@ -98,32 +99,18 @@ public:
             str += ", ";
             current = current->next;
         }
-        LOG(str);
+        return str;
     }
 
-    T &operator[](zu64 index){
-        return *getNode(index)->data;
-    }
-    const T &operator[](zu64 index) const {
-        return *getNode(index)->data;
-    }
+    T &operator[](zu64 index){ return *getNode(index)->data; }
+    const T &operator[](zu64 index) const { return *getNode(index)->data; }
 
-    T &front(){
-        return *head->data;
-    }
-    const T &front() const {
-        return *head->data;
-    }
-    T &back(){
-        return *head->prev->data;
-    }
-    const T &back() const {
-        return *head->prev->data;
-    }
+    T &front(){ return *head->data; }
+    const T &front() const { return *head->data; }
+    T &back(){ return *head->prev->data; }
+    const T &back() const { return *head->prev->data; }
 
-    zu64 size() const {
-        return _size;
-    }
+    zu64 size() const { return _size; }
 
 private:
     struct Node {

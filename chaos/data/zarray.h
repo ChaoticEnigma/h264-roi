@@ -75,10 +75,30 @@ public:
         return *this;
     }
 
-    ZArray<T> &push(T value){
+    ZArray<T> &extend(zu64 num = 1){
+        return resize(size() + num);
+    }
+
+    ZArray<T> &insert(zu64 pos, T in){
+        typename std::vector<T>::iterator it = _data.begin() + pos;
+        _data.insert(it, in);
+        return *this;
+    }
+
+    ZArray<T> &pushFront(T in){
+        typename std::vector<T>::iterator it;
+        it = _data.begin();
+        _data.insert(it, in);
+        return *this;
+    }
+    ZArray<T> &pushBack(T value){
         _data.push_back(value);
         return *this;
     }
+    ZArray<T> &push(const T &value){
+        return pushBack(value);
+    }
+
     inline ZArray<T> &operator<<(T value){
         return push(value);
     }
@@ -91,43 +111,28 @@ public:
         return erase(index, 1);
     }
 
-    ZArray<T> &extend(zu64 num = 1){
-        return resize(size() + num);
-    }
-
-    ZArray<T> &pop(zu64 index){
-        return erase(index);
-    }
     ZArray<T> &popFront(){
         return pop(0);
     }
+    ZArray<T> &popFrontCount(unsigned count){
+        return erase(0, count);
+    }
     ZArray<T> &popBack(){
-        if(!isEmpty()){
+        if(!isEmpty())
             _data.pop_back();
-        }
         return *this;
     }
-    ZArray<T> &popFrontCount(unsigned conut){
-        return erase(0, conut);
+    ZArray<T> &pop(zu64 index){
+        return erase(index);
     }
-
-    ZArray<T> &pushFront(T in){
-        typename std::vector<T>::iterator it;
-        it = _data.begin();
-        _data.insert(it, in);
-        return *this;
+    ZArray<T> &pop(){
+        return popBack();
     }
 
     ZArray<T> &concat(ZArray<T> in){
         for(unsigned i = 0; i < in.size(); ++i){
             _data.push_back(in[i]);
         }
-        return *this;
-    }
-
-    ZArray<T> &insert(zu64 pos, T in){
-        typename std::vector<T>::iterator it = _data.begin() + pos;
-        _data.insert(it, in);
         return *this;
     }
 

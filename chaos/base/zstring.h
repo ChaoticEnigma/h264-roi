@@ -63,10 +63,18 @@ public:
         if(size && ptr)
             _alloc.rawcopy(ptr, _data, size);
     }
-    ZString(const ZString &other) : ZString(other._data, other._size){}
+    ZString(const ZString &other) : _size(0), _realsize(0), _data(nullptr){
+        resize(other._size);
+        if(other._size && other._data)
+            _alloc.rawcopy(other._data, _data, other._size);
+    }
 
     // char ZArray constructor
-    ZString(const ZArray<chartype> &array) : ZString(array.ptr(), array.size()){}
+    ZString(const ZArray<chartype> &array) : _size(0), _realsize(0), _data(nullptr){
+        resize(array.size());
+        if(array.size() && array.ptr())
+            _alloc.rawcopy(array.ptr(), _data, array.size());
+    }
 
     // std strings
     // Assumed UTF-8

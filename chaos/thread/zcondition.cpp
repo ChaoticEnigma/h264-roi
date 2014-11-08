@@ -1,4 +1,5 @@
 #include "zcondition.h"
+#include "zerror.h"
 
 #ifdef ZMUTEX_WINTHREADS
     #include <windows.h>

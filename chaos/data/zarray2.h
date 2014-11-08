@@ -3,28 +3,42 @@
 
 #include "ztypes.h"
 #include "zallocator.h"
+#include "yindexedaccess.h"
+
+#include <initializer_list>
 
 namespace LibChaos {
 
-template <typename T> class ZArray {
+// ZArray push/pop paradigm is FILO
+template <typename T> class ZArray : public YIndexedAccess<T> {
 public:
-    ZArray() : _size(0), _data(nullptr){
-
+    ZArray() : _size(0), _realsize(0), _data(nullptr){
+        reserve(4); // Initial capacity
     }
-    ZArray(const T *raw, zu64 size) : _size(size + (_size % 2)), _data(nullptr){
-        if(_size && raw != nullptr){
-            _data = new T[_size];
-            for(zu64 i = 0; i < _size; ++i){
-                _data[i] = raw[i];
-            }
-            //memcpy(_data, raw, _size * sizeof(T));
+    ZArray(const T *raw, zu64 size) : ZArray(){
+        reserve(size);
+        for(zu64 i = 0; i < size; ++i)
+            _alloc.construct(_data + i, 1, raw[i]);
+        _size = size;
+    }
+    ZArray(const T &first) : ZArray(){
+        _alloc.construct(_data, 1, first);
+        _size = 1;
+    }
+    ZArray(const ZArray<T> &other) : ZArray(){
+        reserve(other._size);
+        for(zu64 i = 0; i < other._size; ++i)
+            _alloc.construct(_data + i, 1, other[i]);
+        _size = other._size;
+    }
+    ZArray(std::initializer_list<T> ls) : ZArray(){
+        reserve(ls.size());
+        zu64 i = 0;
+        for(auto item = ls.begin(); item < ls.end(); ++item){
+            _alloc.construct(_data + i, 1, *item);
+            ++i;
         }
-    }
-    ZArray(const T &first) : ZArray(&first, 1){
-
-    }
-    ZArray(const ZArray<T> &other) : ZArray(other._data, other._size){
-
+        _size = ls.size();
     }
 
     ~ZArray(){
@@ -32,23 +46,18 @@ public:
     }
 
     void clear(){
+        _alloc.destroy(_data, _size); // Destroy objects
+        _alloc.dealloc(_data); // Delete memory
         _size = 0;
-        delete[] _data;
         _data = nullptr;
     }
 
     ZArray<T> &operator=(const ZArray<T> &other){
-        if(other.size() && other.ptr() != nullptr){
-            clear();
-            _size = other.size();
-            _data = new T[_size];
-            for(zu64 i = 0; i < _size; ++i){
-                _data[i] = other._data[i];
-            }
-            //memcpy(_data, other.ptr(), _size * sizeof(T));
-        } else {
-            clear();
-        }
+        reserve(other.size());
+        _alloc.destroy(_data, _size); // Destroy contents
+        _size = other.size();
+        for(zu64 i = 0; i < _size; ++i)
+            _alloc.construct(_data + i, 1, other[i]); // Copy objects
         return *this;
     }
 
@@ -65,94 +74,81 @@ public:
         return !operator==(arr);
     }
 
-    inline T &at(zu64 index){
-        return _data[index];
-    }
-    inline T &operator[](zu64 index){
-        return at(index);
-    }
+    inline T &at(zu64 index){ return _data[index]; }
+    inline T &operator[](zu64 index){ return at(index); }
 
-    inline const T &at(zu64 index) const {
-        return _data[index];
-    }
-    inline const T &operator[](zu64 index) const {
-        return at(index);
-    }
+    inline const T &at(zu64 index) const { return _data[index]; }
+    inline const T &operator[](zu64 index) const { return at(index); }
 
     // Resize (IMPORTANT: this is the only place memory is allocated)
-    ZArray<T> &resize(zu64 size){
-        // FIXME: ZArray resize
-        if(size){
-            T *tmp = new T[size];
-            if(_size && tmp != nullptr && _data != nullptr)
-                memcpy(tmp, _data, MIN(size, _size) * sizeof(T));
-            operator delete[] _data;
-            _data = tmp;
-            _size = size;
-        } else {
-            clear();
+    ZArray<T> &resize(zu64 size, const T &value = T()){
+        if(size > _realsize){
+            reserve(size);
         }
+        if(size > _size){
+            _alloc.construct(_data + _size, size - _size, value); // Construct new objects
+        } else if(size < _size){
+            _alloc.destroy(_data, _size - size); // Destroy extra objects
+        }
+        _size = size;
         return *this;
     }
 
-    ZArray<T> &extend(zu64 num = 1){
-        return resize(_size + num);
+    // Resize the real buffer
+    // If new size is larger, adds uninitialized space for more elements (subsequent resizes may not have to reallocate)
+    // Otherwise does nothing
+    void reserve(zu64 size){
+        if(size > _realsize){
+            zu64 newsize = MAX(_size * 2, size);
+            T *data = _alloc.alloc(newsize);
+            _alloc.rawcopy(_data, data, _size); // Copy data to new buffer
+            _alloc.dealloc(_data); // Delete old buffer without calling destructors
+            _data = data;
+            _realsize = newsize;
+        }
     }
 
-    ZArray<T> &push(T value){
-        resize(_size + 1);
-        back() = value;
-        return *this;
+    // Add <count> objects to array
+    ZArray<T> &extend(zu64 count){
+        return resize(_size + count);
+    }
+    // Remove <count> objects from array
+    ZArray<T> &contract(zu64 count){
+        return resize(_size - count);
     }
 
-    ZArray<T> &pushFront(const T &in){
-        T *tmp = new T[_size + 1];
-        tmp[0] = in;
-        if(_size && _data != nullptr)
-            memcpy(tmp + 1, _data, _size * sizeof(T));
-        delete[] _data;
-        _data = tmp;
+    ZArray<T> &pushBack(const T &value){
+        reserve(_size + 1);
+        _alloc.construct(_data + _size, 1, value);
         ++_size;
         return *this;
     }
+    ZArray<T> &pushFront(const T &value){
+        return insert(0, value);
+    }
+    inline ZArray<T> &push(const T &value){ return pushBack(value); }
 
-    ZArray<T> &insert(zu64 pos, const T &in){
-        T *tmp = new T[_size + 1];
-        tmp[0] = in;
-        memcpy(tmp, _data, pos * sizeof(T));
-        _data[pos] = in;
-        memcpy(tmp + pos + 1, _data + pos, (_size - pos) * sizeof(T));
-        delete[] _data;
-        _data = tmp;
+    ZArray<T> &insert(zu64 pos, const T &value){
+        reserve(_size + 1);
+        _alloc.rawmove(_data + pos, _data + pos + 1, 1);
+        _alloc.construct(_data + pos, 1, value);
         ++_size;
         return *this;
     }
 
     ZArray<T> &concat(const ZArray<T> &in){
         zu64 presize = _size;
-        resize(_size + in.size());
-        for(zu64 i = 0; i < in.size(); ++i){
-            _data[presize + i] = in.ptr()[i];
-        }
-        //memcpy(_data + (_size * sizeof(T)), in.ptr(), in.size() * sizeof(T));
+        reserve(_size + in.size());
+        for(zu64 i = 0; i < in.size(); ++i)
+            _alloc.construct(_data + presize, i, in[i]);
+        _size = _size + in.size();
         return *this;
     }
 
     ZArray<T> &erase(zu64 index, zu64 count){
-        if(_size && count){
-            if(count < _size && (index || (_size - index - count))){
-                T *tmp = _data;
-                _data = new T[_size - count];
-                if(index)
-                    memcpy(_data, tmp, index * sizeof(T));
-                if(_size - index - count)
-                    memcpy(_data + (index * sizeof(T)), tmp + ((index + count) * sizeof(T)), (_size - index - count) * sizeof(T));
-                delete[] tmp;
-                _size = _size - count;
-            } else {
-                clear();
-            }
-        }
+        _alloc.destroy(_data + index, count);
+        _alloc.rawmove(_data + index + count, _data + index, count);
+        _size -= count;
         return *this;
     }
     inline ZArray<T> &erase(zu64 index){
@@ -168,6 +164,9 @@ public:
     ZArray<T> &popBack(){
         return resize(_size - 1);
     }
+    ZArray<T> &pop(){
+        return resize(_size - 1);
+    }
     ZArray<T> &popFrontCount(unsigned conut){
         return erase(0, conut);
     }
@@ -180,26 +179,20 @@ public:
         return false;
     }
 
-    T &front(){
-        return _data[0];
-    }
-    T &back(){
-        return _data[_size - 1];
-    }
+    T &front(){ return _data[0]; }
+    const T &front() const { return _data[0]; }
+    T &back(){ return _data[_size - 1]; }
+    const T &back() const { return _data[_size - 1]; }
 
-    bool empty() const {
-        return (_size == 0);
-    }
+    bool empty() const { return (_size == 0); }
+    bool isEmpty() const { return empty(); }
 
-    inline zu64 size() const {
-        return _size;
-    }
-    inline T *ptr() const {
-        return _data;
-    }
-    inline T *raw() const {
-        return ptr();
-    }
+    inline zu64 size() const { return _size; }
+    inline zu64 realsize() const { return _realsize; }
+    inline zu64 capacity() const { return realsize(); }
+
+    inline T *ptr() const { return _data; }
+    inline T *raw() const { return ptr(); }
 
 private:
     ZAllocator<T> _alloc;
