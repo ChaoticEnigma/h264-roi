@@ -4,8 +4,8 @@
 int runTests(ZAssoc<ZString, test_func> tests);
 
 int main(int argc, char **argv){
-    ZLog::formatStdout(ZLogSource::normal, "%time% %thread% - %log%");
-    ZLog::formatStderr(ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
+    ZLog::formatStdout(ZLogSource::normal, "%clock% %thread% - %log%");
+    ZLog::formatStderr(ZLogSource::error, "%clock% %thread% %function% (%file%:%line%) - %log%");
     ZPath lgf = ZPath("logs") + ZLog::genLogFileName("testchaos_");
     ZLog::addLogFile(lgf, ZLogSource::normal, "%time% %thread% - %log%");
     ZLog::addLogFile(lgf, ZLogSource::debug, "%time% %thread% %function% (%file%:%line%) - %log%");

@@ -156,7 +156,7 @@
 
 // LibChaos experimental versions
 #define ZARRAY_VERSION /*1*/ 2
-#define ZASSOC_VERSION 1 /*2*/
+#define ZASSOC_VERSION 1 //2
 
 #include <stdint.h>
 

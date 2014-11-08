@@ -120,7 +120,7 @@ public:
     // Insert <value> at <pos>, shifting subsequent elements
     ZArray<T> &insert(zu64 pos, const T &value){
         reserve(_size + 1);
-        _alloc.rawmove(_data + pos, _data + pos + 1, 1);
+        _alloc.rawmove(_data + pos, _data + pos + 1, _size - pos);
         _alloc.construct(_data + pos, 1, value);
         ++_size;
         return *this;
@@ -139,7 +139,7 @@ public:
 
     ZArray<T> &erase(zu64 index, zu64 count = 1){
         _alloc.destroy(_data + index, count);
-        _alloc.rawmove(_data + index + count, _data + index, count);
+        _alloc.rawmove(_data + index + count, _data + index, _size - index - count);
         _size -= count;
         return *this;
     }
@@ -163,6 +163,15 @@ public:
         for(zu64 i = 0; i < in.size(); ++i)
             _alloc.construct(_data + _size + i, 1, in[i]);
         _size += in.size();
+        return *this;
+    }
+
+    ZArray<T> &reverse(){
+        ZArray<T> tmp;
+        tmp.reserve(_size);
+        for(zu64 i = _size; i > 0; --i)
+            tmp.pushBack(operator[](i-1));
+        assign(tmp);
         return *this;
     }
 

@@ -15,6 +15,11 @@ template <typename T> class ZList : public YIndexedAccess<T> {
 public:
     ZList() : _size(0), head(nullptr){}
 
+    ZList(const T *data, zu64 size) : ZList(){
+        for(zu64 i = 0; i < size; ++i)
+            pushBack(data[i]);
+    }
+
     ~ZList(){
         if(head != nullptr){
             head->prev->next = nullptr; // Break circular link
