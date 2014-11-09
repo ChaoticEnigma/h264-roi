@@ -89,7 +89,29 @@ HEADERS += \
     \
     $$PWD/bbb/zbbb.h \
     chaos/data/zqueue.h \
-    chaos/data/zstack.h
+    chaos/data/zstack.h \
+    chaos/lib/nowide_standalone/config.hpp \
+    chaos/lib/nowide_standalone/encoding_errors.hpp \
+    chaos/lib/nowide_standalone/encoding_utf.hpp \
+    chaos/lib/nowide_standalone/scoped_ptr.hpp \
+    chaos/lib/nowide_standalone/utf.hpp \
+    chaos/lib/nowide_standalone/nowide/args.hpp \
+    chaos/lib/nowide_standalone/nowide/cenv.hpp \
+    chaos/lib/nowide_standalone/nowide/config.hpp \
+    chaos/lib/nowide_standalone/nowide/convert.hpp \
+    chaos/lib/nowide_standalone/nowide/cstdio.hpp \
+    chaos/lib/nowide_standalone/nowide/cstdlib.hpp \
+    chaos/lib/nowide_standalone/nowide/encoding_errors.hpp \
+    chaos/lib/nowide_standalone/nowide/encoding_utf.hpp \
+    chaos/lib/nowide_standalone/nowide/filebuf.hpp \
+    chaos/lib/nowide_standalone/nowide/fstream.hpp \
+    chaos/lib/nowide_standalone/nowide/iostream.hpp \
+    chaos/lib/nowide_standalone/nowide/scoped_ptr.hpp \
+    chaos/lib/nowide_standalone/nowide/stackstring.hpp \
+    chaos/lib/nowide_standalone/nowide/system.hpp \
+    chaos/lib/nowide_standalone/nowide/utf.hpp \
+    chaos/lib/nowide_standalone/nowide/windows.hpp \
+    chaos/lib/xxhash.h
 
 SOURCES += \
     $$PWD/chaos/zautobuffer.cpp \

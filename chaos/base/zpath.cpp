@@ -73,7 +73,7 @@ void ZPath::fromStr(ZString path){
 
     for(zu64 i = 0; i < _data.size(); ++i){
         if(_data[i] == "."){
-            _data.pop(i);
+            _data.erase(i);
             --i;
             continue;
         }
@@ -224,7 +224,7 @@ ZPath &ZPath::sanitize(){
                 if(prevup){
                     tmp2.push("..");
                 } else {
-                    tmp2.pop(tmp2.size()-1);
+                    tmp2.remove(tmp2.size() - 1);
                 }
             }
             prevup = true;

@@ -28,13 +28,11 @@ public:
 
     ZError(ZString desc = ZString(), int code = 0, bool trace = true);
 
-    ZString what() const;
-    int code() const;
-    ZString trace() const;
+    inline const ZString &what() const { return desc; }
+    inline int code() const { return err; }
 
-    void clear();
-
-    explicit operator bool() const;
+    inline const ArZ &trace() const { return stacktrace; }
+    ZString traceStr() const;
 
     void logStackTrace() const;
 

@@ -62,6 +62,23 @@ public:
     }
     inline ZArray<T> &operator=(const ZArray<T> &other){ return assign(other); }
 
+    void swap(ZArray<T>& other){
+        ZAllocator<T> alloc = _alloc;
+        zu64 size =_size;
+        zu64 realsize = _realsize;
+        T *data = _data;
+
+        _alloc = alloc;
+        _size = other._size;
+        _realsize = other._realsize;
+        _data = other._data;
+
+        other._alloc = alloc;
+        other._size = size;
+        other._realsize = realsize;
+        other._data = data;
+    }
+
     bool equals(const ZArray<T> &other) const {
         if(size() != other.size())
             return false;
@@ -82,9 +99,7 @@ public:
 
     // Resize (IMPORTANT: this is the only place memory is allocated)
     ZArray<T> &resize(zu64 size, const T &value = T()){
-        if(size > _realsize){
-            reserve(size);
-        }
+        reserve(size);
         if(size > _size){
             _alloc.construct(_data + _size, size - _size, value); // Construct new objects
         } else if(size < _size){

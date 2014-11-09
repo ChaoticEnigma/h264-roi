@@ -35,17 +35,18 @@ public:
 
     ~ZArray(){}
 
-//    ZArray<T> &operator=(ZArray<T> arr){
-//        data = arr.dat();
-//        return *this;
-//    }
+    ZArray<T> &assign(const ZArray<T> &other){
+        _data = other._data;
+        return *this;
+    }
+    inline ZArray<T> &operator=(const ZArray<T> &other){ return assign(other); }
 
-    bool operator==(ZArray<T> arr) const {
-        return (_data == arr.data());
+    void swap(ZArray<T>& other){
+        _data.swap(other._data);
     }
-    bool operator!=(ZArray<T> arr) const {
-        return !operator==(arr);
-    }
+
+    inline bool operator==(ZArray<T> arr) const { return (_data == arr.data()); }
+    inline bool operator!=(ZArray<T> arr) const { return !operator==(arr); }
 
     T &at(zu64 index){
         if(index < size()){
@@ -53,25 +54,23 @@ public:
         }
         throw "Invalid ZArray index";
     }
-    T &operator[](zu64 index){
-        return at(index);
-    }
+    T &operator[](zu64 index){ return at(index); }
     const T &at(zu64 index) const {
         if(index < size()){
             return _data[index];
         }
         throw "Invalid ZArray index";
     }
-    const T &operator[](zu64 index) const {
-        return at(index);
-    }
-    // Const-only overload
-    const T &get(zu64 index) const {
-        return at(index);
-    }
+    const T &operator[](zu64 index) const { return at(index); }
+    const T &get(zu64 index) const { return at(index); }
 
     ZArray<T> &resize(zu64 len){
         _data.resize(len);
+        return *this;
+    }
+
+    ZArray<T> &reserve(zu64 len){
+        _data.reserve(len);
         return *this;
     }
 
@@ -95,9 +94,7 @@ public:
         _data.push_back(value);
         return *this;
     }
-    ZArray<T> &push(const T &value){
-        return pushBack(value);
-    }
+    inline ZArray<T> &push(const T &value){ return pushBack(value); }
 
     inline ZArray<T> &operator<<(T value){
         return push(value);
@@ -107,6 +104,7 @@ public:
         _data.erase(_data.begin() + index, _data.begin() + index + count);
         return *this;
     }
+    inline ZArray<T> &remove(zu64 index){ return erase(index); }
 
     ZArray<T> &popFront(){
         return pop(0);
@@ -119,12 +117,7 @@ public:
             _data.pop_back();
         return *this;
     }
-    ZArray<T> &pop(zu64 index){
-        return erase(index);
-    }
-    ZArray<T> &pop(){
-        return popBack();
-    }
+    inline ZArray<T> &pop(){ return popBack(); }
 
     ZArray<T> &concat(ZArray<T> in){
         for(unsigned i = 0; i < in.size(); ++i){
@@ -132,23 +125,6 @@ public:
         }
         return *this;
     }
-
-//    ZArrayV1<T> &clean(){
-//        for(long int i = 0; i < size(); ++i){
-//            if(data[i] == T()){
-//                pop(i);
-//                i = -1;
-//            }
-//        }
-//        return *this;
-//    }
-
-//    bool contains(T item){
-//        for(unsigned i = 0; i < data.size(); ++i)
-//            if(data[i] == item)
-//                return true;
-//        return false;
-//    }
 
     T &front(){
         return _data.front();
@@ -173,8 +149,13 @@ public:
         return false;
     }
 
-    void swap(ZArray<T>& other){
-        _data.swap(other._data);
+    ZArray<T> &reverse(){
+        ZArray<T> tmp;
+        tmp.reserve(size());
+        for(zu64 i = size(); i > 0; --i)
+            tmp.pushBack(operator[](i-1));
+        assign(tmp);
+        return *this;
     }
 
     bool isEmpty() const {

@@ -1,30 +1,64 @@
 #include "zstring.h"
 
+// std::stringstream
 #include <sstream>
-#include <cstring>
-#include <cstdlib>
+// std::reverse
 #include <algorithm>
+// Variable arguments lists
 #include <cstdarg>
-#include <clocale>
-#include <locale>
-
-#include <string>
-
-#include <nowide/convert.hpp>
 
 namespace LibChaos {
+
+ZString::ZString(const ZString::chartype *ptr, zu64 size) : _size(0), _realsize(0), _data(nullptr){
+    resize(size);
+    if(size && ptr)
+        _alloc.rawcopy(ptr, _data, size);
+}
+
+ZString::ZString(const ZString &other) : _size(0), _realsize(0), _data(nullptr){
+    resize(other._size);
+    if(other._size && other._data)
+        _alloc.rawcopy(other._data, _data, other._size);
+}
+
+ZString::ZString(const ZArray<ZString::chartype> &array) : _size(0), _realsize(0), _data(nullptr){
+    resize(array.size());
+    if(array.size() && array.ptr())
+        _alloc.rawcopy(array.ptr(), _data, array.size());
+}
 
 ZString::ZString(std::string str) : ZString(str.c_str(), str.size()){}
 std::string ZString::str() const {
     return std::string(_data, size());
 }
 
-ZString::ZString(std::wstring wstr) : ZString(nowide::narrow(wstr)){}
+ZString::ZString(std::wstring wstr) : ZString(){
+    fromUtf16(wstr);
+}
 std::wstring ZString::wstr() const {
-    return nowide::widen(_data);
+    return toUtf16();
 }
 
-ZString::ZString(const wchar_t *wstr) : ZString(nowide::narrow(wstr)){}
+ZString::ZString(const ZString::chartype *str) : ZString(){
+    if(str != nullptr){
+        zu64 i = 0;
+        while(str[i] != 0){
+            ++i;
+        }
+        assign(ZString(str, i));
+    }
+}
+
+ZString::ZString(const wchar_t *wstr) : ZString(){
+    fromUtf16(wstr);
+}
+
+ZString::ZString(ZString::chartype ch, zu64 len) : _size(0), _realsize(0), _data(nullptr){
+    resize(len);
+    if(len)
+        for(zu64 i = 0; i < len; ++i)
+            _data[i] = ch;
+}
 
 ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad){
     std::string buf;
@@ -71,6 +105,44 @@ ZString::ZString(double num, unsigned places) : ZString(){
     } else {
         assign(stream.str());
     }
+}
+
+ZString &ZString::assign(const ZString &other){
+    resize(other.size());
+    if(other.size())
+        _alloc.rawcopy(other._data, _data, other.size());
+    return *this;
+}
+
+void ZString::reserve(zu64 size){
+    if(size > _realsize || _data == nullptr){ // Only reallocate if new size is larger than buffer
+        // TEST: newsize, but always leave extra space for null terminator, but don't count null terminator in realsize
+        zu64 newsize = MAX(_size * 2, size + 1);
+        chartype *buff = _alloc.alloc(newsize); // New size + null terminator
+        _alloc.rawcopy(_data, buff, _size); // Copy data to new buffer
+        // Update new buffer size
+        if(newsize == (size + 1))
+            _realsize = newsize - 1;
+        else
+            _realsize = newsize;
+        _alloc.dealloc(_data); // Delete old buffer
+        _data = buff;
+    }
+}
+
+ZString ZString::concat(const ZString &str) const {
+    ZString out = *this;
+    out.append(str);
+    return out;
+}
+
+ZString &ZString::append(const ZString &str){
+    if(str.size()){
+        zu64 oldsize = size();
+        resize(oldsize + str.size());
+        _alloc.rawcopy(str._data, _data + oldsize, str.size());
+    }
+    return *this;
 }
 
 zu64 ZString::count(ZString needle) const {
@@ -657,13 +729,7 @@ zu64 ZString::length() const {
 // ///////////////////////////////////////////////////////////////////////////////
 
 void ZString::resize(zu64 len){
-    if(len > _realsize || _data == nullptr){ // Only reallocate if new size is larger than buffer
-        chartype *buff = _alloc.alloc(len + 1); // New size + null terminator
-        _alloc.rawcopy(_data, buff, _size); // Copy data to new buffer
-        _realsize = len; // Update new buffer size
-        _alloc.dealloc(_data); // Delete old buffer
-        _data = buff;
-    }
+    reserve(len);
     // If the new size is smaller, just change size
     _size = len;
     _data[_size] = 0; // Always null terminate

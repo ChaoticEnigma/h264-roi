@@ -18,10 +18,9 @@
 
 #if LIBCHAOS_BUILD == LIBCHAOS_RELEASE
     #define LOG(A)  LibChaos::ZLog() << A
-    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::debug) << PREPROCM << A
+    #define DLOG(A)
     #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error) << PREPROCM << A
     #define RLOG(A) LibChaos::ZLog() << LibChaos::ZLog::raw << A
-    //#define SLOG(A) LibChaos::ZLog() << LibChaos::ZLog::sync << A
     #define TLOG(A) LibChaos::ZLog() << LibChaos::ZLog::this_thread << A
     #define OLOG(A) LibChaos::ZLog() << LibChaos::ZLog::stdio << A
 #else
@@ -29,7 +28,6 @@
     #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::debug) << PREPROCM << A
     #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error) << PREPROCM << A
     #define RLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::raw << A
-    //#define SLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::sync << A
     #define TLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::this_thread << A
     #define OLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::stdio << A
 #endif
@@ -61,8 +59,6 @@ public:
         stdio = 9,          // Current instance outputs only to stdout
 
         // Sequence Modifiers
-        //sync = 10,          // Push log to queue, block until queue is empty
-        //async = 11,         // Push log to queue, return as soon as possible (default)
         this_thread = 12    // Log immediately from this thread, block until done
     };
 
@@ -73,7 +69,6 @@ public:
     ZLog &log(ZString logtext);
 
     inline ZLog &operator<<(ZString text){ return log(text); }
-    //inline ZLog &operator<<(std::string text){ return log(text); }
     inline ZLog &operator<<(ZPath text){ return log(text.str()); }
     ZLog &operator<<(ZBinary text);
 
@@ -83,27 +78,15 @@ public:
     inline ZLog &operator<<(zss num){ return log(ZString(num)); }
     inline ZLog &operator<<(zuint num){ return log(ZString(num)); }
     inline ZLog &operator<<(zint num){ return log(ZString(num)); }
-//#if COMPILER == MINGW
     inline ZLog &operator<<(zul num){ return log(ZString(num)); }
     inline ZLog &operator<<(zsl num){ return log(ZString(num)); }
-//#endif
     inline ZLog &operator<<(zull num){ return log(ZString(num)); }
     inline ZLog &operator<<(zsll num){ return log(ZString(num)); }
-
-    //inline ZLog &operator<<(zs8 num){ return log(ZString(num)); }
-    //inline ZLog &operator<<(zu8 num){ return log(ZString(num)); }
-    //inline ZLog &operator<<(zs16 num){ return log(ZString(num)); }
-    //inline ZLog &operator<<(zu16 num){ return log(ZString(num)); }
-    //inline ZLog &operator<<(zs32 num){ return log(ZString(num)); }
-    //inline ZLog &operator<<(zu32 num){ return log(ZString(num)); }
-    //inline ZLog &operator<<(zs64 num){ return log(ZString(num)); }
-    //inline ZLog &operator<<(zu64 num){ return log(ZString(num)); }
 
     inline ZLog &operator<<(bool tf){ return log(tf ? "true" : "false"); }
     inline ZLog &operator<<(double num){ return log(ZString(num)); }
 
     inline ZLog &operator<<(const char *text){ return log(text); }
-    //inline ZLog &operator<<(const unsigned char *text){ return log(ZString((const char *)text)); }
 
     static zlog_preproc makePreProc(info_type, ZString dat);
     ZLog &operator<<(zlog_preproc info);
@@ -138,9 +121,7 @@ private:
     bool write_on_destruct;
     bool newline;
     bool rawlog;
-    //bool synclog;
     bool noqueue;
-
 };
 
 } // namespace LibChaos

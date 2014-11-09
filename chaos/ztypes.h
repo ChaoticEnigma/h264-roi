@@ -155,7 +155,7 @@
 #define MAX(A, B) ((A > B) ? A : B)
 
 // LibChaos experimental versions
-#define ZARRAY_VERSION /*1*/ 2
+#define ZARRAY_VERSION 1 //2
 #define ZASSOC_VERSION 1 //2
 
 #include <stdint.h>

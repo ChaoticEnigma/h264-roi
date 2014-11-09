@@ -34,9 +34,6 @@ void ZLog::flushLog(){
 
     if(_init && !noqueue){
         worker.queue(out);
-//        if(synclog){
-//            worker.wait();
-//        }
     } else {
         ZLogWorker::doLog(out);
     }
@@ -56,10 +53,6 @@ ZLog &ZLog::operator<<(zlog_flag flag){
         rawlog = true;
     } else if(flag == stdio){
         stdiolog = true;
-//    } else if(flag == sync){
-//        synclog = true;
-//    } else if(flag == async){
-//        synclog = false;
     } else if(flag == this_thread){
         noqueue = true;
     }
@@ -78,11 +71,6 @@ ZLog &ZLog::operator<<(ZBinary bin){
         unsigned char tmp = bin[i];
         // Log in hexadecimal pairs
         text += ZString::ItoS(tmp, 16, 2);
-//        // If null character, show 0
-//        if(tmp == 0){
-//            tmp = '0';
-//        }
-//        text += (char)tmp;
     }
     return log(text);
 }

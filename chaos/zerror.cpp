@@ -41,29 +41,13 @@ ZError::ZError(ZString str, int code, bool trace) : desc(str), err(code){
         stacktrace = getStackTrace(2);
 }
 
-ZString ZError::what() const {
-    return desc;
-}
-int ZError::code() const {
-    return err;
-}
-ZString ZError::trace() const {
+ZString ZError::traceStr() const {
     ZString str = "**************************************\n";
     for(zu64 i = 0; i < stacktrace.size(); ++i){
         str += stacktrace[i] + "\n";
     }
     str += "**************************************";
     return str;
-}
-
-void ZError::clear(){
-    desc.clear();
-    err = 0;
-    stacktrace.clear();
-}
-
-ZError::operator bool() const {
-    return (err == 0);
 }
 
 void ZError::logStackTrace() const {

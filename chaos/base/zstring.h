@@ -10,9 +10,6 @@
 #include "zallocator.h"
 #include "zassoc.h"
 
-//#include "zstorage.h"
-//#include "zdefaultstorage.h"
-
 #include <cstring>
 
 //#include <bits/stringfwd.h>
@@ -58,23 +55,11 @@ public:
 //    }
 
     // Assumed UTF-8
-    ZString(const chartype *ptr, zu64 size) : _size(0), _realsize(0), _data(nullptr){
-        resize(size);
-        if(size && ptr)
-            _alloc.rawcopy(ptr, _data, size);
-    }
-    ZString(const ZString &other) : _size(0), _realsize(0), _data(nullptr){
-        resize(other._size);
-        if(other._size && other._data)
-            _alloc.rawcopy(other._data, _data, other._size);
-    }
+    ZString(const chartype *ptr, zu64 size);
+    ZString(const ZString &other);
 
     // char ZArray constructor
-    ZString(const ZArray<chartype> &array) : _size(0), _realsize(0), _data(nullptr){
-        resize(array.size());
-        if(array.size() && array.ptr())
-            _alloc.rawcopy(array.ptr(), _data, array.size());
-    }
+    ZString(const ZArray<chartype> &array);
 
     // std strings
     // Assumed UTF-8
@@ -88,33 +73,16 @@ public:
 
     // C-string constructor
     // Assumed UTF-8
-    ZString(const chartype *str) : ZString(){
-        if(str != nullptr){
-            zu64 i = 0;
-            while(str[i] != 0){
-                ++i;
-            }
-            operator=(ZString(str, i));
-        }
-    }
+    ZString(const chartype *str);
 
     // Pointer to data
-    inline const chartype *cc() const {
-        return _data;
-    }
-    inline chartype *c() const {
-        return _data;
-    }
+    inline const chartype *cc() const { return _data; }
+    inline chartype *c() const { return _data; }
 
     ZString(const wchar_t *wstr);
 
     // Fill constructor
-    ZString(chartype ch, zu64 len = 1) : _size(0), _realsize(0), _data(nullptr){
-        resize(len);
-        if(len)
-            for(zu64 i = 0; i < len; ++i)
-                _data[i] = ch;
-    }
+    ZString(chartype ch, zu64 len = 1);
 
     // Interger to string
     static ZString ItoS(zu64 num, unsigned base = 10, zu64 pad = 0);
@@ -126,17 +94,11 @@ public:
     ZString(zss num) : ZString((zsll)num){}
     ZString(zuint num) : ZString((zull)num){}
     ZString(zint num) : ZString((zsll)num){}
-//#if COMPILER == MINGW
     ZString(zul num) : ZString((zull)num){}
     ZString(zsl num) : ZString((zsll)num){}
-//#endif
 
-    ZString(zull num) : ZString(){
-        operator=(ItoS((zu64)num, 10));
-    }
-    ZString(zsll num) : ZString(){
-        operator=(ItoS((zs64)num, 10));
-    }
+    ZString(zull num) : ZString(){ assign(ItoS((zu64)num, 10)); }
+    ZString(zsll num) : ZString(){ assign(ItoS((zs64)num, 10)); }
 
     // String to int
     int tint() const;
@@ -145,52 +107,30 @@ public:
     ZString(double flt, unsigned places = 0);
 
     // Assignment
-    ZString &assign(const ZString &other){
-        resize(other.size());
-        if(other.size())
-            _alloc.rawcopy(other._data, _data, other.size());
-        return *this;
-    }
-    inline ZString &operator=(const ZString &rhs){
-        return assign(rhs);
-    }
+    ZString &assign(const ZString &other);
+    inline ZString &operator=(const ZString &rhs){ return assign(rhs); }
 
     // Comparison
     friend bool operator==(const ZString &lhs, const ZString &rhs);
     friend bool operator!=(const ZString &lhs, const ZString &rhs);
 
     // Clear
-    inline ZString &clear(){
-        resize(0);
-        return *this;
-    }
+    inline void clear(){ resize(0); }
+
+    // Resize (IMPORTANT: memory is only allocated and initialized here)
+    void reserve(zu64 size);
 
     // Concatenates this and <str> and returns result
-    ZString concat(const ZString &str) const {
-        ZString out = *this;
-        out.append(str);
-        return out;
-    }
+    ZString concat(const ZString &str) const;
     friend ZString operator+(const ZString &lhs, const ZString &rhs);
 
     // Appends <str> to this and returns this
-    ZString &append(const ZString &str){
-        if(str.size()){
-            zu64 oldsize = size();
-            resize(oldsize + str.size());
-            _alloc.rawcopy(str._data, _data + oldsize, str.size());
-        }
-        return *this;
-    }
+    ZString &append(const ZString &str);
     inline ZString &operator+=(const ZString &str){ return append(str); }
     inline ZString &operator<<(const ZString &str){ return append(str); }
 
-    inline char &operator[](zu64 i){
-        return _data[i];
-    }
-    inline const char &operator[](zu64 i) const {
-        return _data[i];
-    }
+    inline char &operator[](zu64 i){ return _data[i]; }
+    inline const char &operator[](zu64 i) const { return _data[i]; }
 
     zu64 count(ZString) const;
 
@@ -282,8 +222,6 @@ public:
 
     static ZString compound(ArZ parts, ZString delim);
 
-    bool isUtf8(ZString);
-
     //ZString format(ZString fmt_str, ...);
     //ZString &format(...);
 
@@ -294,9 +232,7 @@ public:
     // Allows ZString to be used with std streams
     friend std::ostream &operator<<(std::ostream &lhs, ZString rhs);
 
-    bool isEmpty() const {
-        return size() == 0;
-    }
+    inline bool isEmpty() const { return (size() == 0); }
 
     // Number of bytes (code units)
     inline zu64 size() const { return _size; }
@@ -305,24 +241,22 @@ public:
     // Number of *characters* (code points)
     zu64 length() const;
 
-    chartype &first(){
-        return _data[0];
-    }
-    const chartype &first() const {
-        return _data[0];
-    }
-    chartype &last(){
-        return _data[size() - 1];
-    }
-    const chartype &last() const {
-        return _data[size() - 1];
-    }
+    // On empty string, will return null terminator
+    inline chartype &first(){ return _data[0]; }
+    inline const chartype &first() const { return _data[0]; }
+    inline chartype &last(){ return _data[size() - 1]; }
+    inline const chartype &last() const { return _data[size() - 1]; }
 
 private:
-    // Resize (IMPORTANT: memory is only allocated and initialized here)
     void resize(zu64 len);
     static bool _charIsWhitespace(chartype ch);
     zu64 _strReplace(const ZString &before, const ZString &after, zu64 startpos);
+
+    // Unicode Encoding
+    void fromUtf16(std::wstring wstr);
+    std::wstring toUtf16() const;
+
+    static bool isUtf8(ZString str);
 
 private:
     ZAllocator<chartype> _alloc;

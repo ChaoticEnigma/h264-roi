@@ -79,22 +79,32 @@ int main(int argc, char **argv){
 }
 
 int runTests(ZAssoc<ZString, test_func> tests){
+    ArZ errorstrings;
     for(zu64 i = 0; i < tests.size(); ++i){
-        LOG("=== Starting " << tests.key(i) << " Test...");
+        LOG("=== Starting Test '" << tests.key(i) << "'...");
         int result = -1;
         try {
             result = tests[i]();
         } catch(int err){
             result = err;
         } catch(ZError err){
-            ELOG("!! Error: " << err.what());
+            ZString errstr = "!! Error: " + err.what();
+            errorstrings.push(errstr);
+            ELOG(errstr);
             err.logStackTrace();
             result = -2;
         }
         if(result != 0){
-            ELOG("!!! Test '" << tests.key(i) << "' Failed: " << result);
+            ZString errstr = "!!! Test '" + tests.key(i) + "' Failed: " + result;
+            errorstrings.push(errstr);
+            ELOG(errstr);
         } else {
             LOG("=== Finished Test '" << tests.key(i) << "'");
+        }
+    }
+    if(!errorstrings.isEmpty()){
+        for(zu64 i = 0; i < errorstrings.size(); ++i){
+            LOG("ERR: " << errorstrings[i]);
         }
     }
     return 0;
