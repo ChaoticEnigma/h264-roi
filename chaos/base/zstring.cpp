@@ -117,14 +117,11 @@ ZString &ZString::assign(const ZString &other){
 void ZString::reserve(zu64 size){
     if(size > _realsize || _data == nullptr){ // Only reallocate if new size is larger than buffer
         // TEST: newsize, but always leave extra space for null terminator, but don't count null terminator in realsize
-        zu64 newsize = MAX(_size * 2, size + 1);
-        chartype *buff = _alloc.alloc(newsize); // New size + null terminator
+        zu64 newsize = MAX(_realsize * 2, size);
+        chartype *buff = _alloc.alloc(newsize + 1); // New size + null terminator
         _alloc.rawcopy(_data, buff, _size); // Copy data to new buffer
         // Update new buffer size
-        if(newsize == (size + 1))
-            _realsize = newsize - 1;
-        else
-            _realsize = newsize;
+        _realsize = newsize;
         _alloc.dealloc(_data); // Delete old buffer
         _data = buff;
     }
