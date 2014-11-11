@@ -64,5 +64,9 @@ int assoc_block(){
 int stack_block(){
     ZStack<int> tst1;
 
+    zu64 u = 56546;
+    int i = u;
+    LOG(i);
+
     return 0;
 }

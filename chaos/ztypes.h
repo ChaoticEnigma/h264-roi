@@ -24,12 +24,12 @@
 //
 // Compiler
 //
-#define GCC     0x11
-#define MINGW   0x12
-#define MSVC    0x13
+#define GCC         0x11
+#define MINGW       0x12
+#define MSVC        0x13
 
 // Detected
-#ifdef __GNUC__
+#if defined(__GNUC__)
     #ifdef __MINGW32__
         #define COMPILER_DETECTED MINGW
     #else
@@ -52,6 +52,11 @@
     #warning Unspecified Compiler!
 #endif
 
+// Warn if detected and specified compilers different
+#if COMPILER_DETECTED != COMPILER_SPECIFIED
+    #warning Different detected and specified compilers!
+#endif
+
 // Set compiler
 #ifdef COMPILER_SPECIFIED
     #define COMPILER COMPILER_SPECIFIED
@@ -63,10 +68,8 @@
     #endif
 #endif
 
-// Warn if detected and specified compilers different
-#if COMPILER_DETECTED != COMPILER_SPECIFIED
-    #warning Different detected and specified compilers!
-#endif
+//#undef COMPILER_SPECIFIED
+//#undef COMPILER_DETECTED
 
 #if COMPILER == GCC || COMPILER == MINGW
     // Require C++11 or greater
@@ -75,13 +78,21 @@
     #endif
 #endif
 
+// Disable some MSVC warnings
+#if COMPILER == MSVC
+    #pragma warning(disable : 4244) // C4244: conversion from 'x' to 'y', possible loss of data
+    #pragma warning(disable : 4800) // C4800: forcing value to 'true' or 'false' (performance warning)
+    #pragma warning(disable : 4996) // C4996: This function or variable may be unsafe.
+    #pragma warning(disable : 4221)
+#endif
+
 //
 // Platform
 //
-#define UNIX    0x21
-#define LINUX   0x22
-#define WINDOWS 0x23
-#define MACOS   0x24
+#define UNIX        0x21
+#define LINUX       0x22
+#define WINDOWS     0x23
+#define MACOS       0x24
 
 // Detected
 #if defined(__linux__)
@@ -94,12 +105,18 @@
     #warning Unknown Platform!
 #endif
 
+// Specified
 #if defined(_LIBCHAOS_PLATFORM_LINUX)
     #define PLATFORM_SPECIFIED LINUX
 #elif defined(_LIBCHAOS_PLATFORM_WINDOWS)
     #define PLATFORM_SPECIFIED WINDOWS
 #else
     #warning Unsupported Platform!
+#endif
+
+// Warn if detected and specified platforms different
+#if PLATFORM_DETECTED != PLATFORM_SPECIFIED
+    #warning Different detected and specified platforms!
 #endif
 
 #ifdef PLATFORM_SPECIFIED
@@ -112,17 +129,21 @@
     #endif
 #endif
 
-// Warn if detected and specified platforms different
-#if PLATFORM_DETECTED != PLATFORM_SPECIFIED
-    #warning Different detected and specified platforms!
-#endif
+//#undef PLATFORM_SPECIFIED
+//#undef PLATFORM_DETECTED
 
 // Only one platform specified
 #if defined(_LIBCHAOS_PLATFORM_LINUX) && defined(_LIBCHAOS_PLATFORM_WINDOWS)
     #error Multiple platforms declared. Please declare only one platform at a time.
 #endif
 
+#if PLATFORM == MACOS
+    #error LibChaos does not support MacOS!
+#endif
+
+//
 // Build
+//
 #define LIBCHAOS_DEBUG      0x31
 #define LIBCHAOS_RELEASE    0x32
 #define LIBCHAOS_NORMAL     0x33
@@ -225,6 +246,9 @@ static_assert(sizeof(zu32) == 4, "zu32 has incorrect size");
 
 static_assert(sizeof(zs64) == 8, "zs64 has incorrect size");
 static_assert(sizeof(zu64) == 8, "zu64 has incorrect size");
+
+// Force 64-bit platform
+//static_assert(sizeof(void *) == 8, "void pointer is not 64-bit");
 
 }
 

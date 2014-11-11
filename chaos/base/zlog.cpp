@@ -2,6 +2,10 @@
 #include <ctime>
 #include <cstdio>
 
+#if COMPILER == MSVC
+    #include <windows.h>
+#endif
+
 namespace LibChaos {
 
 bool ZLog::_init = false;
@@ -91,6 +95,12 @@ ZString ZLog::pullBuffer(){
 }
 
 ZString ZLog::getDate(){
+#if COMPILER == MSVC
+    SYSTEMTIME time;
+    GetLocalTime(&time);
+    ZString str = ZString::ItoS(time.wMonth, 10, 2) + "/" + ZString::ItoS(time.wDay, 10, 2) + "/" + ZString::ItoS(time.wYear, 10, 2);
+    return str;
+#else
     time_t raw;
     time(&raw);
     struct tm *time;
@@ -99,8 +109,16 @@ ZString ZLog::getDate(){
     sprintf(buffer, "%02d/%02d/%02d", time->tm_mon + 1, time->tm_mday, time->tm_year - 100);
     ZString out(buffer);
     return out;
+#endif
 }
+
 ZString ZLog::getTime(){
+#if COMPILER == MSVC
+    SYSTEMTIME time;
+    GetLocalTime(&time);
+    ZString str = ZString::ItoS(time.wHour, 10, 2) + ":" + ZString::ItoS(time.wMinute, 10, 2) + ":" + ZString::ItoS(time.wSecond, 10, 2);
+    return str;
+#else
     time_t raw;
     time(&raw);
     struct tm *time;
@@ -109,6 +127,7 @@ ZString ZLog::getTime(){
     sprintf(buffer, "%02d:%02d:%02d", time->tm_hour, time->tm_min, time->tm_sec);
     ZString out(buffer);
     return out;
+#endif
 }
 
 ZString ZLog::getClock(){
@@ -120,15 +139,16 @@ ZString ZLog::getClock(){
     secs = secs - (mins * 60);
     int hrs = mins / 60;
     mins = mins - (hrs * 60);
-    char buffer[20];
-    sprintf(buffer, "%02d:%02d:%02d:%03d", hrs, mins, secs, msecs);
-    ZString out(buffer);
+    //char buffer[20];
+    //sprintf(buffer, "%02d:%02d:%02d:%03d", hrs, mins, secs, msecs);
+    //ZString out(buffer);
+    ZString out = ZString::ItoS((zu64)hrs, 10, 2) + ":" + ZString::ItoS((zu64)mins, 10, 2) + ":" + ZString::ItoS((zu64)secs, 10, 2) + ":" + ZString::ItoS((zu64)msecs, 10, 3);
     return out;
 }
 
 ZString ZLog::getThread(){
     ZString thread = ZThreadA::thisTid();
-    unsigned id;
+    zu64 id;
     bool found = false;
     for(zu64 i = 0; i < thread_ids.size(); ++i){
         if(thread_ids[i] == thread){
@@ -141,7 +161,7 @@ ZString ZLog::getThread(){
         id = thread_ids.size();
         thread_ids.push(thread);
     }
-    return id;
+    return ZString(id);
 }
 
 ZString ZLog::genLogFileName(ZString prefix){

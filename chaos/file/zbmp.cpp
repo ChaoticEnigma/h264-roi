@@ -178,7 +178,7 @@ bool ZBMP::write(ZPath path){
     const zu8 fileheadersize = 14;
     const zu8 infoheadersize = 40;
 
-    const zu32 filesize = fileheadersize + infoheadersize + outsize;
+    const zu32 filesize = (zu32)(fileheadersize + infoheadersize + outsize);
 
     ZBinary out;
 
@@ -192,8 +192,8 @@ bool ZBMP::write(ZPath path){
     BitmapInfoHeader infoh;
     memset(&infoh, 0, sizeof(BitmapInfoHeader));
     infoh.biSize = infoheadersize;
-    infoh.biWidth = image.width();
-    infoh.biHeight = image.height();
+    infoh.biWidth = (unsigned)image.width();
+    infoh.biHeight = (unsigned)image.height();
     infoh.biPlanes = 1;
     infoh.biBitCount = image.channels() * image.depth();    // will always be 24, but still
     infoh.biCompression = 0;    // no compression

@@ -111,7 +111,7 @@ void ZThread::yield(){
 
 void ZThread::sleep(zu64 seconds){
 #ifdef ZTHREAD_WINTHREADS
-    Sleep((zu64)(seconds * 1000));
+    Sleep((DWORD)(seconds * 1000));
 #else
     ::sleep(seconds);
 #endif
@@ -119,7 +119,7 @@ void ZThread::sleep(zu64 seconds){
 
 void ZThread::msleep(zu64 milliseconds){
 #ifdef ZTHREAD_WINTHREADS
-    Sleep((zu64)milliseconds);
+    Sleep((DWORD)milliseconds);
 #else
     ::usleep(milliseconds * 1000);
 #endif
@@ -127,10 +127,9 @@ void ZThread::msleep(zu64 milliseconds){
 
 void ZThread::usleep(zu64 microseconds){
 #ifdef ZTHREAD_WINTHREADS
-    HANDLE timer;
     LARGE_INTEGER ft;
-    ft.QuadPart = -(10 * microseconds); // Convert to 100 nanosecond interval, negative value indicates relative time
-    timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    ft.QuadPart = (10 * microseconds); // Convert to 100 nanosecond interval, negative value indicates relative time
+    HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
     SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
     WaitForSingleObject(timer, INFINITE);
     CloseHandle(timer);

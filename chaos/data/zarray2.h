@@ -174,7 +174,7 @@ public:
     ZArray<T> &popFront(){
         return remove(0);
     }
-    ZArray<T> &popFrontCount(unsigned conut){
+    ZArray<T> &popFrontCount(zu64 conut){
         return erase(0, conut);
     }
     ZArray<T> &popBack(){
