@@ -10,7 +10,9 @@ int sandbox();
 
 int array_block();
 int assoc_block();
+int stack_block();
 int list_block();
+int queue_block();
 
 int binary_block();
 

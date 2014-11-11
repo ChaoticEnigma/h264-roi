@@ -4,24 +4,31 @@
 #include "ztypes.h"
 #include "zarray.h"
 
+#include "ypushpopaccess.h"
+
 namespace LibChaos {
 
-template <typename T> class ZStack : private ZArray<T> {
+template <typename T> class ZStack : public YPushPopAccess<T> {
 public:
-    ZStack(){}
+    ZStack() : _data(){}
 
-    ZStack &push(const T &data){
-        ZArray::push(data);
-        return *this;
+    void push(const T &data){
+        _data.pushBack(data);
     }
-    T pop(){
-        T tmp = ZArray.back();
-        ZArray::popBack();
-        return tmp;
-    }
+
     T &peek(){
-        return ZArray::back();
+        return _data.back();
     }
+    const T &peek() const {
+        return _data.back();
+    }
+
+    void pop(){
+        _data.popBack();
+    }
+
+private:
+    ZArray<T> _data;
 };
 
 }

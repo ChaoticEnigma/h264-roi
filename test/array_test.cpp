@@ -1,6 +1,6 @@
 #include "test.h"
 #include "zarray.h"
-#include "zerror.h"
+#include "zstack.h"
 
 int array_block(){
     ZArray<int> tst;
@@ -60,5 +60,11 @@ int assoc_block(){
     for(unsigned i = 0; i < zarr.size(); ++i){
         LOG(zarr.key(i) << " " << zarr[i]);
     }
+    return 0;
+}
+
+int stack_block(){
+    ZStack<int> tst1;
+
     return 0;
 }

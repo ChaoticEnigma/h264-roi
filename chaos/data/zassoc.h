@@ -127,7 +127,7 @@ public:
     }
 
     ZAssoc<K, T> &pop(unsigned index){
-        _data.pop(index);
+        _data.reverse(index);
         return *this;
     }
     ZAssoc<K, T> &popAll(K key_){

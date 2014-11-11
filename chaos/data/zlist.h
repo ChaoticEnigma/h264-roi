@@ -3,7 +3,9 @@
 
 #include "ztypes.h"
 #include "zallocator.h"
+
 #include "yindexedaccess.h"
+#include "ypushpopaccess.h"
 
 #include "zstring.h"
 
@@ -11,7 +13,7 @@ namespace LibChaos {
 
 // Implemented as a circular doubly-linked list
 // ZList push/pop paradigm is FIFO
-template <typename T> class ZList : public YIndexedAccess<T> {
+template <typename T> class ZList : public YIndexedAccess<T>, public YPushPopAccess<T> {
 public:
     ZList() : _size(0), head(nullptr){}
 
@@ -93,6 +95,22 @@ public:
         }
     }
     inline void pop(){ popFront(); }
+
+    T &peekFront(){
+        return *head->data;
+    }
+    const T &peekFront() const {
+        return *head->data;
+    }
+    T &peekBack(){
+        return *head->prev->data;
+    }
+    const T &peekBack() const {
+        return *head->prev->data;
+    }
+
+    inline T &peek(){ return peekFront(); }
+    inline const T &peek() const { return peekFront(); }
 
     ZString debug() const {
         ZString str;

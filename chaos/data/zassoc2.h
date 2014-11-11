@@ -80,14 +80,14 @@ public:
         return pushFront(K(), value);
     }
 
-    ZAssoc<K, T> &pop(unsigned index){
-        data.pop(index);
+    ZAssoc<K, T> &reverse(unsigned index){
+        data.reverse(index);
         return *this;
     }
     ZAssoc<K, T> &popAll(K key_){
         for(unsigned i = 0; i < data.size(); ++i){
             if(data[i].key == key_){
-                pop(i);
+                reverse(i);
                 i = 0;
             }
         }

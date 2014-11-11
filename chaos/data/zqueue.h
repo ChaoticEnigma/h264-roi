@@ -4,24 +4,31 @@
 #include "ztypes.h"
 #include "zlist.h"
 
+#include "ypushpopaccess.h"
+
 namespace LibChaos {
 
-template <typename T> class ZQueue : private ZList<T> {
+template <typename T> class ZQueue : public YPushPopAccess<T> {
 public:
-    ZQueue(){}
+    ZQueue() : _data(){}
 
-    ZQueue &push(const T &data){
-        ZList::pushBack(data);
-        return *this;
+    void push(const T &data){
+        _data.pushBack(data);
     }
-    T pop(){
-        T tmp = ZList::front();
-        ZList::popFront();
-        return tmp;
-    }
+
     T &peek(){
-        return ZList::front();
+        return _data.front();
     }
+    const T &peek() const {
+        return _data.front();
+    }
+
+    void pop(){
+        _data.popFront();
+    }
+
+private:
+    ZList<T> _data;
 };
 
 }

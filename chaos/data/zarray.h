@@ -126,12 +126,10 @@ public:
         return *this;
     }
 
-    T &front(){
-        return _data.front();
-    }
-    T &back(){
-        return _data.back();
-    }
+    T &front(){ return _data.front(); }
+    const T &front() const { return _data.front(); }
+    T &back(){ return _data.back(); }
+    const T &back() const { return _data.back(); }
 
     zu64 indexOf(T test) const {
         for(zu64 i = 0; i < size(); ++i){

@@ -1,6 +1,6 @@
 #include "test.h"
 #include "zlist.h"
-#include "zerror.h"
+#include "zqueue.h"
 
 int list_block(){
     ZList<int> tst;
@@ -56,6 +56,12 @@ int list_block(){
         LOG(tst4.size() << " " << tst4[0] << "." << tst4[1] << "." << tst4[2] << "." << tst4[3] << "." << tst4[4] << " OK");
     else
         throw (int)4;
+
+    return 0;
+}
+
+int queue_block(){
+    ZQueue<int> tst1;
 
     return 0;
 }

@@ -3,14 +3,16 @@
 
 #include "ztypes.h"
 #include "zallocator.h"
+
 #include "yindexedaccess.h"
+#include "ypushpopaccess.h"
 
 #include <initializer_list>
 
 namespace LibChaos {
 
 // ZArray push/pop paradigm is FILO
-template <typename T> class ZArray : public YIndexedAccess<T> {
+template <typename T> class ZArray : public YIndexedAccess<T>, public YPushPopAccess<T> {
 public:
     ZArray() : _size(0), _realsize(0), _data(nullptr){
         reserve(4); // Initial capacity
@@ -150,7 +152,7 @@ public:
     ZArray<T> &pushFront(const T &value){
         return insert(0, value);
     }
-    inline ZArray<T> &push(const T &value){ return pushBack(value); }
+    inline void push(const T &value){ pushBack(value); }
 
     ZArray<T> &erase(zu64 index, zu64 count = 1){
         _alloc.destroy(_data + index, count);
@@ -159,11 +161,18 @@ public:
         return *this;
     }
 
-    ZArray<T> &pop(zu64 index){
+    T &peek(){
+        return back();
+    }
+    const T &peek() const {
+        return back();
+    }
+
+    ZArray<T> &remove(zu64 index){
         return erase(index);
     }
     ZArray<T> &popFront(){
-        return pop(0);
+        return remove(0);
     }
     ZArray<T> &popFrontCount(unsigned conut){
         return erase(0, conut);
@@ -171,7 +180,7 @@ public:
     ZArray<T> &popBack(){
         return resize(_size - 1);
     }
-    inline ZArray<T> &pop(){ return popBack(); }
+    inline void pop(){ popBack(); }
 
     ZArray<T> &concat(const ZArray<T> &in){
         reserve(_size + in.size());

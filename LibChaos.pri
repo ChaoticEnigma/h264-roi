@@ -21,7 +21,7 @@ HEADERS += \
     $$PWD/chaos/abstract/yindexedaccess.h \
     $$PWD/chaos/abstract/zposition.h \
     $$PWD/chaos/abstract/ziterator.h \
-    $$PWD/chaos/abstract/ylinearaccess.h \
+    $$PWD/chaos/abstract/ypushpopaccess.h \
     \
     $$PWD/chaos/base/zclock.h \
     $$PWD/chaos/base/zlog.h \
