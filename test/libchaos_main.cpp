@@ -20,9 +20,9 @@ int main(int argc, char **argv){
 
         { "array", array_block },
         { "assoc", assoc_block },
-        { "stack", list_block },
+        { "stack", stack_block },
         { "list", list_block },
-        { "queue", list_block },
+        { "queue", queue_block },
 
         { "string", string_block },
         { "path", path_block },
