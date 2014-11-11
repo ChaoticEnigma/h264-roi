@@ -46,8 +46,6 @@ int array_block(){
     else
         throw (int)6;
 
-    throw (int)7;
-
     return 0;
 }
 

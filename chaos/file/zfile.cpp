@@ -210,7 +210,7 @@ zu64 ZFile::write(const zbyte *src, zu64 size){
         return 0;
     return (zu64)write;
 #else
-    return fwrite(data, sizeof(zbyte), size, _file);
+    return fwrite(src, sizeof(zbyte), size, _file);
 #endif
 }
 
@@ -574,7 +574,7 @@ zu64 ZFile::dirSize(ZPath dir){
     ZArray<ZPath> fls = listFiles(dir);
     zu64 total = 0;
     for(zu64 i = 0; i < fls.size(); ++i){
-        total += ZFile(fls[i]).flsize();
+        total += ZFile(fls[i]).fileSize();
     }
     return total;
 #elif V == 3
