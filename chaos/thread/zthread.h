@@ -57,6 +57,7 @@ public:
 
     static void yield();
     static void sleep(zu64 seconds);
+    static void msleep(zu64 milliseconds);
     static void usleep(zu64 microseconds);
 
     void setCopyable();

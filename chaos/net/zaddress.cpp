@@ -164,7 +164,11 @@ ZString ZAddress::str() const {
     }
 
     char *str = new char[csz];
+#if COMPILER == MSVC
+    inet_ntop(_family, (void *)&_v4_addr, str, csz);
+#else
     inet_ntop(_family, (const void *)&_v4_addr, str, csz);
+#endif
     ZString out = str;
     delete[] str;
     return out;

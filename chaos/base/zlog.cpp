@@ -114,8 +114,8 @@ ZString ZLog::getTime(){
 ZString ZLog::getClock(){
     clock_t raw = clock();
     float rawsecs = (float)raw / (float)CLOCKS_PER_SEC;
-    int secs = rawsecs;
-    int msecs = (rawsecs - (float)secs) * 1000;
+    int secs = (int)rawsecs;
+    int msecs = (int)(rawsecs - (float)secs) * 1000;
     int mins = secs / 60;
     secs = secs - (mins * 60);
     int hrs = mins / 60;

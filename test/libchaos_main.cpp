@@ -53,9 +53,9 @@ int main(int argc, char **argv){
         { "error", error_block },
     });
 
+    ZAssoc<ZString, test_func> runtests;
+    ZString runstr;
     if(argc > 1){
-        ZAssoc<ZString, test_func> runtests;
-        ZString runstr;
         if(ZString(argv[1]) == "all"){
             runtests = defaulttests;
             runstr = "All";
@@ -71,13 +71,15 @@ int main(int argc, char **argv){
             }
         }
         runstr.strip(',');
-
-        LOG("*** Starting Tests \"" << runstr << "\"");
-        int ret = runTests(runtests);
-        LOG("*** Finished Tests \"" << runstr << "\"");
-        return ret;
+    } else {
+        runtests = defaulttests;
+        runstr = "All";
     }
-    return 0;
+
+    LOG("*** Starting Tests \"" << runstr << "\"");
+    int ret = runTests(runtests);
+    LOG("*** Finished Tests \"" << runstr << "\"");
+    return ret;
 }
 
 int runTests(ZAssoc<ZString, test_func> tests){

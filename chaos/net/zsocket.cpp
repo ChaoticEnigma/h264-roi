@@ -112,10 +112,12 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
     dest = ZAddress::lookUp(dest)[0];
     dest.populate(&addrstorage);
 
-#if PLATFORM == LINUX
-    long sent = ::sendto(_socket, data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
-#elif PLATFORM == WINDOWS
+#if COMPILER == MSVC
+    long sent = ::sendto(_socket, (const char *)data.raw(), (int)data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
+#elif COMPILER == MINGW
     long sent = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
+#else
+    long sent = ::sendto(_socket, data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
 #endif
 
     if(sent < 0)
@@ -213,10 +215,12 @@ zu64 ZSocket::read(ZBinary &data){
         return 0;
     }
 
-#if PLATFORM == LINUX
-    long bytes = ::read(_socket, data.raw(), data.size());
-#elif PLATFORM == WINDOWS
+#if COMPILER == MSVC
+    long bytes = ::recv(_socket, (char *)data.raw(), (int)data.size(), 0);
+#elif COMPILER == MINGW
     long bytes = ::recv(_socket, (char *)data.raw(), data.size(), 0);
+#else
+    long bytes = ::read(_socket, data.raw(), data.size());
 #endif
 
     if(bytes <= -1){
@@ -237,10 +241,12 @@ bool ZSocket::write(const ZBinary &data){
         return false;
     }
 
-#if PLATFORM == LINUX
-    long bytes = ::write(_socket, data.raw(), data.size());
-#elif PLATFORM == WINDOWS
+#if COMPILER == MSVC
+    long bytes = ::send(_socket, (const char *)data.raw(), (int)data.size(), 0);
+#elif COMPILER == MINGW
     long bytes = ::send(_socket, (const char *)data.raw(), data.size(), 0);
+#else
+    long bytes = ::write(_socket, data.raw(), data.size());
 #endif
 
     if(bytes <= 0){
