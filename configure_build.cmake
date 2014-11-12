@@ -51,7 +51,7 @@ FUNCTION(configure_build NAME BUILD)
     SET(CONFIGURE_BUILD_STRING "${BUILD_STRING}" PARENT_SCOPE)
 
     IF(GNU_FLAGS)
-        SET(CXXGNU          "-std=c++11 -Wall -Wextra -Wpedantic")
+        SET(CXXGNU "-std=c++11 -Wall -Wextra -Wpedantic")
         #SET(CXXF "${CXXF} -Wbloody_everything") # Some day...
         SET(CXXGNU "${CXXGNU} -Wcast-align -Wcast-qual -Wsign-conversion -Wsign-promo")
         SET(CXXGNU "${CXXGNU} -Wformat=2 -Winit-self -Wlogical-op")
