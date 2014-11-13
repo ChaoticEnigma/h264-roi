@@ -42,7 +42,7 @@ public:
 
     static ZPath pwd(); // Get a ZPath that represents the present working directory of the program
 
-    ZPath &relativeTo(ZPath absolute); // Get a path from an absolute path that is a relative path to the same location, relative to <path>
+    ZPath &relativeTo(ZPath absolute); // Get a relative C to A (<this>) from B (<absolute>) such that B + C = A
     static ZPath relativeTo(ZPath path, ZPath absolute);
 
     ZPath &parent(); // Get the path to the next directory up

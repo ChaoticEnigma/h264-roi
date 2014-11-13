@@ -430,7 +430,11 @@ bool ZFile::isDir(ZPath dir){
 
 bool ZFile::makeDir(ZPath dir){
 #if COMPILER == MSVC
-    return CreateDirectory(dir.str('\\').wstr().c_str(), NULL) != 0;
+    if(exists(dir)){
+        return isDir(dir);
+    } else {
+        return CreateDirectory(dir.str('\\').wstr().c_str(), NULL) != 0;
+    }
 #else
     struct stat flstat;
     int ret = stat(dir.str().cc(), &flstat);

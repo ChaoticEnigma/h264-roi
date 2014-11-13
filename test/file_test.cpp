@@ -5,10 +5,14 @@
 
 int file_block(){
     ZPath near = ZString("here");
-    LOG(ZFile::makeDir(near));
+    LOG("makeDir: " << near);
+    if(!ZFile::makeDir(near))
+        throw (int)1;
 
     ZPath farfile = "a/b/c/d/e/f.dat";
-    LOG(ZFile::createDirsTo(farfile));
+    LOG("createDirsTo: " << farfile);
+    if(!ZFile::createDirsTo(farfile))
+        throw (int)2;
 
     ZArray<ZPath> farfl = ZFile::listFiles("a");
     for(zu64 i = 0; i < farfl.size(); ++i)

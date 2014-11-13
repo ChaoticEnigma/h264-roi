@@ -48,5 +48,14 @@ int path_block(){
     if(path4.size() != 3 || path4.absolute() || path4[0] != "some" || path4[1] != "complic" || path4[2] != "path")
         throw 4;
 
+    ZPath path6 = "/another/long/interesting/path";
+    ZPath path7 = "/another/short/boring/path";
+    LOG(path6);
+    LOG(path7);
+    path7.relativeTo(path6);
+    LOG(path6);
+    if(path6.size() != 6 || path6.absolute() || path6[0] != ".." || path6[1] != ".." || path6[2] != ".." || path6[3] != "short" || path6[4] != "boring" || path6[5] != "path")
+        throw 5;
+
     return 0;
 }

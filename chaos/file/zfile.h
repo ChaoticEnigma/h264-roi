@@ -110,7 +110,9 @@ public:
     static bool isFile(ZPath dir);
     static bool isDir(ZPath dir);
 
+    // Creates directory if it doesn't exist
     static bool makeDir(ZPath dir);
+    // Creates all directories in path before last path part, if they don't exist
     static bool createDirsTo(ZPath path);
 
     static ZArray<ZPath> listFiles(ZPath dir, bool recurse = true);
