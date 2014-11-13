@@ -60,19 +60,19 @@ bool ZFile::open(ZPath path){
 
     DWORD share = 0;
     if(_bits & readbit && !(_bits & writebit))
-        share = FILE_SHARE_READ;
+        share = FILE_SHARE_READ; // Share read access if only reading
 
     DWORD create;
     if(_bits & createbit){
         if(_bits & apptruncbit)
-            create = CREATE_ALWAYS;
+            create = CREATE_ALWAYS; // Always create new empty file
         else
-            create = CREATE_NEW;
+            create = OPEN_ALWAYS; // Always open a file, create if not exists
     } else {
         if(_bits & apptruncbit)
-            create = TRUNCATE_EXISTING;
+            create = TRUNCATE_EXISTING; // Truncate exiting file
         else
-            create = OPEN_EXISTING;
+            create = OPEN_EXISTING; // Open file only if it exists
     }
 
     DWORD attr = FILE_ATTRIBUTE_NORMAL;
@@ -83,7 +83,6 @@ bool ZFile::open(ZPath path){
         return false;
     }
 
-    _bits |= goodbit;
     return true;
 #else
     // Set flags
@@ -105,7 +104,6 @@ bool ZFile::open(ZPath path){
         return false;
     }
 
-    _bits = _bits | goodbit;
     return true;
 #endif
 }
@@ -117,14 +115,19 @@ bool ZFile::open(ZPath path, zfile_mode mode){
 
 void ZFile::setMode(zfile_mode mode){
     _bits = 0;
-    if(mode & moderead)
+    if(mode & moderead){
         _bits |= readbit;
-    if(mode & modewrite){
-        if(mode & nocreate)
-            _bits |= writebit;
-        else
-            _bits |= (writebit | createbit);
     }
+
+    if(mode & modewrite){
+        if(mode & nocreate){
+            _bits |= writebit;
+        } else {
+            _bits |= writebit;
+            _bits |= createbit;
+        }
+    }
+
     // If append not set and truncate set
     if(!(mode & append) && mode & truncate)
         _bits |= apptruncbit;
@@ -139,7 +142,6 @@ bool ZFile::close(){
     bool ret = (fclose(_file) == 0);
 #endif
     _file = NULL;
-    _bits &= ~goodbit;
     return ret;
 }
 
@@ -221,6 +223,10 @@ zu64 ZFile::read(ZBinary &out, zu64 size){
 
 zu64 ZFile::write(const ZBinary &data){
     return write(data.raw(), data.size());
+}
+
+zu64 ZFile::write(const ZString &str){
+    return write((const zbyte *)str.cc(), str.size());
 }
 
 bool ZFile::remove(){
@@ -383,7 +389,7 @@ bool ZFile::removeDir(ZPath name){
 
 bool ZFile::exists(ZPath name){
 #if COMPILER == MSVC
-    DWORD attr = GetFileAttributes(name.str('\\').wstr().c_str()) != 0;
+    DWORD attr = GetFileAttributes(name.str('\\').wstr().c_str());
     return (attr != INVALID_FILE_ATTRIBUTES); // Just checks that there is something, anything at that path
 #else
     if(FILE *file = fopen(name.str().cc(), "r")){
@@ -396,9 +402,9 @@ bool ZFile::exists(ZPath name){
 
 bool ZFile::isFile(ZPath file){
 #if COMPILER == MSVC
-    DWORD attr = GetFileAttributes(file.str('\\').wstr().c_str()) != 0;
+    DWORD attr = GetFileAttributes(file.str('\\').wstr().c_str());
     if(attr != INVALID_FILE_ATTRIBUTES)
-        return !(attr & FILE_ATTRIBUTE_DIRECTORY) && !(attr & FILE_ATTRIBUTE_REPARSE_POINT); // Not directory or link
+        return !(attr & FILE_ATTRIBUTE_DIRECTORY) && !(attr & FILE_ATTRIBUTE_REPARSE_POINT); // Not a directory or link
     return false;
 #else
     if(!exists(file))
@@ -414,7 +420,7 @@ bool ZFile::isFile(ZPath file){
 
 bool ZFile::isDir(ZPath dir){
 #if COMPILER == MSVC
-    DWORD attr = GetFileAttributes(dir.str('\\').wstr().c_str()) != 0;
+    DWORD attr = GetFileAttributes(dir.str('\\').wstr().c_str());
     if(attr != INVALID_FILE_ATTRIBUTES)
         return (attr & FILE_ATTRIBUTE_DIRECTORY);
     return false;
@@ -431,7 +437,10 @@ bool ZFile::isDir(ZPath dir){
 bool ZFile::makeDir(ZPath dir){
 #if COMPILER == MSVC
     if(exists(dir)){
-        return isDir(dir);
+        if(isDir(dir))
+            return true;
+        else
+            return false;
     } else {
         return CreateDirectory(dir.str('\\').wstr().c_str(), NULL) != 0;
     }
@@ -461,7 +470,7 @@ bool ZFile::createDirsTo(ZPath dir){
     ZPath current;
     current.absolute() = dir.absolute();
     for(zu64 i = 0; i < dir.size()-1; ++i){
-        current.concat(dir[i]);
+        current.append(dir[i]);
         if(!makeDir(current))
             return false;
     }
@@ -473,9 +482,10 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
     if(!isDir(dir))
         return files;
 #if COMPILER == MSVC
+    // FIXME: ZFile listFiles
     WIN32_FIND_DATA ffd;
     ZPath current = dir;
-    current.concat("*");
+    current.append("*");
     ZArray<ZPath> dirs;
     do {
         HANDLE find = FindFirstFile(current.str('\\').wstr().c_str(), &ffd);
@@ -528,6 +538,7 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
     if(!isDir(dir))
         return dirs;
 #if COMPILER == MSVC
+    // FINISH: ZFile listFiles
 
 #else
     DIR *dr;
@@ -558,6 +569,7 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
 
 zu64 ZFile::dirSize(ZPath dir){
 #if V == 1
+    // TEST: ZFile dirSize
     WIN32_FIND_DATA data;
     zu64 total = 0;
     HANDLE sh = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &data);

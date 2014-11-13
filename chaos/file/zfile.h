@@ -45,8 +45,6 @@ private:
 
         createbit       = 0x004,    // Create allowed
         apptruncbit     = 0x008,    // Not set for append, set for truncate
-
-        goodbit         = 0x064
     };
 
 public:
@@ -71,6 +69,8 @@ public:
     zu64 read(ZBinary &out, zu64 size);
     zu64 write(const ZBinary &data);
 
+    zu64 write(const ZString &str);
+
     bool remove();
     static bool remove(ZPath path);
 
@@ -79,13 +79,7 @@ public:
     zu64 fileSize() const;
     static zu64 fileSize(ZPath path);
 
-    bool isOpen() const {
-#if PLATFORM == WINDOWS
-        return (_file != NULL && _bits & goodbit);
-#else
-        return (_file != NULL && _bits & goodbit);
-#endif
-    }
+    bool isOpen() const { return (_file != NULL); }
     int &bits(){ return _bits; }
     ZPath path() const { return _path; }
 

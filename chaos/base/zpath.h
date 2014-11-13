@@ -33,9 +33,10 @@ public:
         return !(operator==(pth));
     }
 
-    ZPath &concat(ZPath);
-    ZPath &operator<<(ZPath);
-    ZPath operator+(ZPath);
+    ZPath &append(ZPath path);
+    ZPath &operator<<(ZPath path){ return append(path); }
+    ZPath concat(ZPath path) const ;
+    ZPath operator+(ZPath path) const { return concat(path); }
 
     ZString &operator[](zu64 index);
     ZString &last();

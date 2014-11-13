@@ -92,16 +92,15 @@ bool ZPath::isDelim(char ch){
     return ch == '/';
 }
 
-ZPath &ZPath::concat(ZPath path){
-    _data.concat(path.data());
+ZPath &ZPath::append(ZPath path){
+    _data.append(path.data());
     return *this;
 }
-ZPath ZPath::operator+(ZPath path){
+
+ZPath ZPath::concat(ZPath path) const {
     ZPath tmp(*this);
-    return tmp.concat(path);
-}
-ZPath &ZPath::operator<<(ZPath path){
-    return concat(path);
+    tmp.append(path.data());
+    return tmp;
 }
 
 ZString &ZPath::operator[](zu64 inx){
@@ -125,7 +124,7 @@ ZPath ZPath::pwd(){
     return path;
 }
 
-ZPath &ZPath::relativeTo(ZPath relative){
+ZPath &ZPath::relativeTo(ZPath base){
     // Get path to here:
     // /a/path/here/test.txt
     // from here:
@@ -144,27 +143,27 @@ ZPath &ZPath::relativeTo(ZPath relative){
 
     // Make both paths absolute
     path.getAbsolute();
-    relative.getAbsolute();
+    base.getAbsolute();
 
     // Get number of matching parts from beginning of path
     // Build path of ".."s
     zu64 match_len = 0;
-    for(zu64 i = 0; i < path.size() && i < relative.size(); ++i){
-        if(relative[i] != path[i])
+    for(zu64 i = 0; i < path.size() && i < base.size(); ++i){
+        if(base[i] != path[i])
             break;
         ++match_len;
     }
     // Remove common path parts
     path.data().popFrontCount(match_len);
-    relative.data().popFrontCount(match_len);
+    base.data().popFrontCount(match_len);
 
     // Build path of ".."s for remaining parts in relative
     ZPath up;
-    for(zu64 i = 0; i < relative.size(); ++i){
-        up.concat("..");
+    for(zu64 i = 0; i < base.size(); ++i){
+        up.append("..");
     }
     // Combine
-    up.concat(path);
+    up.append(path);
     up.sanitize();
 
     *this = up;
@@ -247,7 +246,7 @@ ZPath ZPath::sanitize(ZPath path){
 ZPath &ZPath::getAbsolute(){
     if(!absolute()){
         ZPath cwd = pwd();
-        cwd.concat(*this);
+        cwd.append(*this);
         cwd.sanitize();
         *this = cwd;
     }

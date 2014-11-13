@@ -120,14 +120,14 @@ public:
     // Resize (IMPORTANT: memory is only allocated and initialized here)
     void reserve(zu64 size);
 
-    // Concatenates this and <str> and returns result
-    ZString concat(const ZString &str) const;
-    friend ZString operator+(const ZString &lhs, const ZString &rhs);
-
     // Appends <str> to this and returns this
     ZString &append(const ZString &str);
     inline ZString &operator+=(const ZString &str){ return append(str); }
     inline ZString &operator<<(const ZString &str){ return append(str); }
+
+    // Concatenates this and <str> and returns result
+    ZString concat(const ZString &str) const;
+    friend ZString operator+(const ZString &lhs, const ZString &rhs);
 
     inline char &operator[](zu64 i){ return _data[i]; }
     inline const char &operator[](zu64 i) const { return _data[i]; }

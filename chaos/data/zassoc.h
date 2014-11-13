@@ -8,8 +8,6 @@
 
 #include "zarray.h"
 
-#if ZASSOC_VERSION == 1
-
 namespace LibChaos {
 
 template <class K, class T> class ZAssoc {
@@ -153,7 +151,7 @@ public:
     }
 
     ZAssoc<K, T> &concat(ZAssoc<K, T> in){
-        _data.concat(in.data());
+        _data.append(in.data());
         return *this;
     }
 
@@ -226,11 +224,5 @@ private:
 };
 
 }
-
-#else
-
-#include "zassoc2.h"
-
-#endif
 
 #endif // ZASSOC_H
