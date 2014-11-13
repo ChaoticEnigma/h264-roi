@@ -188,20 +188,20 @@ typedef signed char zsc;
 typedef char zchar;
 
 // At least 16 bits (2 bytes)
-typedef unsigned short zus;
-typedef signed short zss;
+typedef unsigned short int zus;
+typedef signed short int zss;
 
 typedef int zint;
 typedef unsigned int zuint;
 typedef signed int zsint;
 
 // At least 32 bits (4 bytes)
-typedef unsigned long zul;
-typedef signed long zsl;
+typedef unsigned long int zul;
+typedef signed long int zsl;
 
 // At least 64 bits (8 bytes)
-typedef unsigned long long zull;
-typedef signed long long zsll;
+typedef unsigned long long int zull;
+typedef signed long long int zsll;
 
 // Fixed types
 typedef int8_t zs8;
