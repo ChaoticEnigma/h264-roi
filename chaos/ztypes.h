@@ -30,7 +30,7 @@
 
 // Detected
 #if defined(__GNUC__)
-    #ifdef __MINGW32__
+    #if defined(__MINGW32__)
         #define COMPILER_DETECTED MINGW
     #else
         #define COMPILER_DETECTED GCC

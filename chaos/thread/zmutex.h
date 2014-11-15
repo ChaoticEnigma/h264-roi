@@ -8,7 +8,8 @@
 
 #include "ztypes.h"
 
-#if COMPILER == MSVC
+//#if COMPILER == MSVC
+#if PLATFORM == WINDOWS
     #define ZMUTEX_WINTHREADS
 #endif
 
