@@ -103,14 +103,6 @@ ZPath ZPath::concat(ZPath path) const {
     return tmp;
 }
 
-ZString &ZPath::operator[](zu64 inx){
-    return _data[inx];
-}
-
-ZString &ZPath::last(){
-    return _data.back();
-}
-
 ZPath ZPath::pwd(){
     size_t sz = 1024;
     char *ptr = new char[sz];
@@ -252,6 +244,16 @@ ZPath &ZPath::getAbsolute(){
     }
     return *this;
 }
+
+ZString ZPath::getExtension() const {
+    if(size() == 0)
+        return ZString();
+    ArZ parts = last().explode('.');
+    if(parts.size() == 0)
+        return ZString();
+    return "." + parts.back();
+}
+
 ZPath ZPath::getAbsolute(ZPath path){
     return path.getAbsolute();
 }

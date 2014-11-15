@@ -38,7 +38,7 @@ int main(int argc, char **argv){
     cmd += param_args[0];
     cmd += " ";
 
-    ZPath::makeDir(param_args[0]);
+    ZFile::makeDir(param_args[0]);
 
     ZString cd = "cd ";
     cd += param_args[0];

@@ -490,7 +490,7 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
     if(!isDir(dir)){
         return files;
     }
-#if COMPILER == MSVC
+#if PLATFORM == WINDOWS
     WIN32_FIND_DATA finddata;
     HANDLE find = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &finddata);
     if(find == INVALID_HANDLE_VALUE){
@@ -517,11 +517,7 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
                 continue;
             ZPath flnm = dir + drnt->d_name;
             struct stat st;
-#if COMPILER == MINGW
-            stat(flnm.str().cc(), &st);
-#else
             lstat(flnm.str().cc(), &st);
-#endif
             if(S_ISDIR(st.st_mode)){
                 if(recurse)
                     files.concat(listFiles(flnm));
@@ -532,20 +528,20 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
         closedir(dr);
     }
     return files;
-#endif // COMPILER
+#endif // PLATFORM
 }
-ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
+ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse, bool hidden){
     ZArray<ZPath> dirs;
     if(!isDir(dir))
         return dirs;
-#if COMPILER == MSVC
+#if PLATFORM == WINDOWS
     WIN32_FIND_DATA finddata;
     HANDLE find = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &finddata);
     if(find == INVALID_HANDLE_VALUE){
         return dirs;
     }
     do {
-        if(finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY){
+        if((finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && (hidden || !(finddata.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN))){
             ZString name = ZString(finddata.cFileName);
             if(name != "." && name != ".."){
                 dirs.push(dir + name);
@@ -566,11 +562,7 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
                 continue;
             ZPath flnm = dir + drnt->d_name;
             struct stat st;
-#if COMPILER == MINGW
-            stat(flnm.str().cc(), &st);
-#elif COMPILER == GCC
             lstat(flnm.str().cc(), &st);
-#endif
             if(S_ISDIR(st.st_mode)){
                 dirs.push(flnm.getAbsolute());
                 if(recurse){
@@ -581,7 +573,7 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
         closedir(dr);
     }
     return dirs;
-#endif
+#endif // PLATFORM
 }
 
 zu64 ZFile::dirSize(ZPath dir){

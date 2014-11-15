@@ -11,16 +11,18 @@
 
 namespace LibChaos {
 
+#ifdef ZMUTEX_WINTHREADS
 struct ZMutex::MutexData {
     CRITICAL_SECTION crit;
 };
+#endif
 
 #ifdef ZMUTEX_WINTHREADS
 ZMutex::ZMutex() : _mutex(new MutexData)/*, owner_tid(0)*/{
     InitializeCriticalSection(&_mutex->crit);
 }
 #else
-ZMutex::ZMutex() : locker_tid(0){
+ZMutex::ZMutex() : owner_tid(0){
     pthread_mutex_init(&_mutex, NULL);
 }
 #endif
@@ -44,7 +46,7 @@ void ZMutex::lock(){
 #else
     if(!iOwn()){
         pthread_mutex_lock(&_mutex);
-        locker_tid = pthread_self();
+        owner_tid = pthread_self();
     }
 #endif
     // We own the mutex
@@ -61,7 +63,7 @@ bool ZMutex::trylock(){
 #else
     if(!iOwn()){
         if(pthread_mutex_trylock(&_mutex) == 0){
-            locker_tid = pthread_self();
+            owner_tid = pthread_self();
             return true; // We now own the mutex
         }
         return false; // Another thread owns the mutex
@@ -89,16 +91,18 @@ void ZMutex::unlock(){
 #else
     if(locked()){
         lock(); // Make sure we own the mutex first
-        locker_tid = 0;
+        owner_tid = 0;
         pthread_mutex_unlock(&_mutex);
     }
 #endif
     // Mutex is unlocked
 }
 
+#ifdef ZMUTEX_WINTHREADS
 CRITICAL_SECTION *ZMutex::handle(){
     return &_mutex->crit;
 }
+#endif
 
 #ifndef ZMUTEX_WINTHREADS
 bool ZMutex::iOwn(){

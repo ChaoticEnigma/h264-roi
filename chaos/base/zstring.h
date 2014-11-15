@@ -129,6 +129,9 @@ public:
     ZString concat(const ZString &str) const;
     friend ZString operator+(const ZString &lhs, const ZString &rhs);
 
+    // Prepends <str> to this and returns this
+    ZString &prepend(const ZString &str);
+
     inline char &operator[](zu64 i){ return _data[i]; }
     inline const char &operator[](zu64 i) const { return _data[i]; }
 

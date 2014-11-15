@@ -120,7 +120,8 @@ public:
     // List files in a directory, recursize by default
     static ZArray<ZPath> listFiles(ZPath dir, bool recurse = true);
     // List directories in a directory, non-recursive by default
-    static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false);
+    static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false, bool hidden = false);
+
     static zu64 dirSize(ZPath dir);
 
     static zu64 fileHash(ZPath path);

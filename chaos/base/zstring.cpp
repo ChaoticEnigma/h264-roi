@@ -142,6 +142,16 @@ ZString ZString::concat(const ZString &str) const {
     return out;
 }
 
+ZString &ZString::prepend(const ZString &str){
+    if(str.size()){
+        zu64 oldsize = size();
+        resize(str.size() + oldsize);
+        _alloc.rawmove(_data, _data + str.size(), oldsize);
+        _alloc.rawcopy(str._data, _data, str.size());
+    }
+    return *this;
+}
+
 zu64 ZString::count(ZString needle) const {
     ZString haystack = _data;
     zu64 cnt = 0;
@@ -190,7 +200,8 @@ bool ZString::startsWith(const ZString &str, const ZString &test, bool ignorews)
 bool ZString::endsWith(ZString test) const {
     if(test.size() > size())
         return false;
-    return test == substr(size() - test.size(), test.size());
+    ZString end = substr(*this, size() - test.size(), test.size());
+    return test == end;
 }
 
 ZString &ZString::insert(zu64 pos, const ZString &txt){

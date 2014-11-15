@@ -41,12 +41,18 @@ int file_block(){
     LOG("-- List Files:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ZArray<ZPath> nearfiles = ZFile::listFiles(near, false);
+    for(zu64 i = 0; i < nearfiles.size(); ++i)
+        LOG(nearfiles[i]);
+
     if(nearfiles.size() != 1)
         throw 6;
     if(nearfiles.front().data() != ArZ({ "testdir","near.dat" }))
         throw 7;
 
     ZArray<ZPath> farfiles = ZFile::listFiles(near, true);
+    for(zu64 i = 0; i < farfiles.size(); ++i)
+        LOG(farfiles[i]);
+
     if(farfiles.size() != 2)
         throw 8;
     zu64 findf = farfiles.find(ZPath("testdir/a/b/c/d/e/f.dat"));

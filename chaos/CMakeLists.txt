@@ -6,18 +6,15 @@ PROJECT(LibChaos)
 OPTION(IBERTY_DEMANGLE "Use libiberty to demangle symbols" OFF)
 
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
-    zclock.h
-    zerror.h
-    zautobuffer.h
-    zautobufferunit.h
-    zret.h
-    ztime.h
     ztypes.h
 
+    base/zclock.h
+    base/zerror.h
     base/zlog.h
     base/zlogworker.h
     base/zpath.h
     base/zstring.h
+    base/ztime.h
 
     data/zarray.h
     data/zarray2.h
@@ -44,6 +41,12 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 
     math/znumber.h
 
+    misc/zautobuffer.h
+    misc/zautobufferunit.h
+    misc/zmisc.h
+    misc/zret.h
+    misc/zuid.h
+
     lib/sqlite3.h
     #lib/demangle.h
 
@@ -52,11 +55,10 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 )
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
-    zautobuffer.cpp
     #zclock.cpp
-    zerror.cpp
     #ztime.cpp
 
+    base/zerror.cpp
     base/zlog.cpp
     base/zlogworker.cpp
     base/zpath.cpp
@@ -86,6 +88,10 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     math/znumber.cpp
     #math/znumber-reference.cpp
 
+    misc/zautobuffer.cpp
+    misc/zmisc.cpp
+    #misc/zuid.cpp
+
     thread/zcondition.cpp
     thread/zmutex.cpp
     thread/zthread.cpp
@@ -109,6 +115,7 @@ SET(LibChaos_INCLUDE
     ${LibChaos_SOURCE_DIR}/file
     ${LibChaos_SOURCE_DIR}/net
     ${LibChaos_SOURCE_DIR}/math
+    ${LibChaos_SOURCE_DIR}/misc
     ${LibChaos_SOURCE_DIR}/thread
 )
 
@@ -125,6 +132,7 @@ INCLUDE_DIRECTORIES(
     lib/nowide_standalone
     net
     math
+    misc
     thread
 )
 

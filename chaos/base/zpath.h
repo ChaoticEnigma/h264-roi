@@ -38,8 +38,10 @@ public:
     ZPath concat(ZPath path) const ;
     ZPath operator+(ZPath path) const { return concat(path); }
 
-    ZString &operator[](zu64 index);
-    ZString &last();
+    ZString &operator[](zu64 index){ return _data[index]; }
+    const ZString &operator[](zu64 index) const { return _data[index]; }
+    ZString &last(){ return _data.back(); }
+    const ZString &last() const { return _data.back(); }
 
     static ZPath pwd(); // Get a ZPath that represents the present working directory of the program
 
@@ -57,6 +59,8 @@ public:
 
     static ZPath getAbsolute(ZPath path); // Get absolute representation of path, based on present working directory
     ZPath &getAbsolute(); // Operates on object
+
+    ZString getExtension() const;
 
     // Hackish path repair crap, meant to make path system-specific valid
     bool valid();
