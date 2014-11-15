@@ -1,5 +1,5 @@
 ## LibChaos CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 
 PROJECT(LibChaos)
 
@@ -67,13 +67,13 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     data/zjson.cpp
     data/zxml.cpp
 
-    file/database.cpp
+    #file/database.cpp
     file/zbmp.cpp
     file/zfile.cpp
     file/zimage.cpp
     file/zppm.cpp
 
-    lib/sqlite3.c
+    #lib/sqlite3.c
     lib/xxhash.c
     #lib/nowide_standalone/src/iostream.cpp
 
@@ -143,7 +143,7 @@ ENDIF()
 
 ADD_DEFINITIONS(-DBUILDING)
 
-ADD_LIBRARY(chaos ${LibChaos_SOURCES})
+ADD_LIBRARY(chaos STATIC ${LibChaos_SOURCES})
 IF(LIBCHAOS_UNIX)
     TARGET_LINK_LIBRARIES(chaos pthread)
     IF(IBERTY_DEMANGLE)

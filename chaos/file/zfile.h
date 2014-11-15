@@ -11,6 +11,7 @@
 #include "zbinary.h"
 #include "zreader.h"
 #include "zwriter.h"
+#include "zerror.h"
 
 #if PLATFORM != WINDOWS
     #include <fstream>
@@ -50,6 +51,11 @@ private:
 public:
     ZFile();
     ZFile(ZPath path, zfile_mode mode = moderead);
+
+    ZFile(const ZFile &){
+        throw ZError("Someone tried to copy a ZFile");
+    }
+
     ~ZFile();
 
     bool open(ZPath path);
@@ -93,6 +99,8 @@ public:
     static zu64 readBinary(ZPath name, ZBinary &out);
     static zu64 writeBinary(ZPath name, const ZBinary &data);
 
+    static ZString readString(ZPath path);
+
     static zu64 copy(ZPath src, ZPath dest);
     static bool rename(ZPath old, ZPath newfl);
 
@@ -109,7 +117,9 @@ public:
     // Creates all directories in path before last path part, if they don't exist
     static bool createDirsTo(ZPath path);
 
+    // List files in a directory, recursize by default
     static ZArray<ZPath> listFiles(ZPath dir, bool recurse = true);
+    // List directories in a directory, non-recursive by default
     static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false);
     static zu64 dirSize(ZPath dir);
 

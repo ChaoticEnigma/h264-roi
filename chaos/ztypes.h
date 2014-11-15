@@ -233,6 +233,8 @@ typedef uint64_t zu64;
 typedef zu8 zbyte;
 typedef zbyte zoctet; // I blame the IETF
 
+#define ZU64_MAX ((zu64)0xFFFFFFFFFFFFFFFF)
+
 // Check sizes
 static_assert(sizeof(zs8) == 1, "zs8 has incorrect size");
 static_assert(sizeof(zu8) == 1, "zu8 has incorrect size");

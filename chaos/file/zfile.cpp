@@ -323,6 +323,14 @@ zu64 ZFile::writeBinary(ZPath path, const ZBinary &data){
     return wrt;
 }
 
+ZString ZFile::readString(ZPath path){
+    ZFile file(path);
+    ZString str('0', file.fileSize());
+    file.read((zbyte *)str.c(), str.size());
+    file.close();
+    return str;
+}
+
 zu64 ZFile::copy(ZPath source, ZPath output){
     FILE* inFile = fopen(source.str().cc(), "rb");
     FILE* outFile = fopen(output.str().cc(), "wb");
@@ -479,34 +487,27 @@ bool ZFile::createDirsTo(ZPath dir){
 
 ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
     ZArray<ZPath> files;
-    if(!isDir(dir))
+    if(!isDir(dir)){
         return files;
+    }
 #if COMPILER == MSVC
-    // FIXME: ZFile listFiles
-    WIN32_FIND_DATA ffd;
-    ZPath current = dir;
-    current.append("*");
-    ZArray<ZPath> dirs;
+    WIN32_FIND_DATA finddata;
+    HANDLE find = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &finddata);
+    if(find == INVALID_HANDLE_VALUE){
+        return files;
+    }
     do {
-        HANDLE find = FindFirstFile(current.str('\\').wstr().c_str(), &ffd);
-        if(find == INVALID_HANDLE_VALUE){
-            current = dirs.front();
-            dirs.popFront();
-            continue;
-        }
-        do {
-            if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY){
-                if(recurse)
-                    dirs.push(ZString(ffd.cFileName));
-            } else if(ffd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT){
-                // Link
-            } else {
-                files.push(ZString(ffd.cFileName));
+        ZString name = ZString(finddata.cFileName);
+        if(finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY){
+            if(recurse && name != "." && name != ".."){
+                files.append(listFiles(dir + name, recurse));
             }
-        } while(FindNextFile(find, &ffd));
-        current = dirs.front();
-        dirs.popFront();
-    } while(!dirs.isEmpty());
+        } else {
+            files.push(dir + name);
+        }
+    } while(FindNextFile(find, &finddata) != 0);
+
+    return files;
 #else
     DIR *dr = opendir(dir.str().cc());
     if(dr != NULL){
@@ -530,16 +531,32 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
         }
         closedir(dr);
     }
-#endif // COMPILER == MSVC
     return files;
+#endif // COMPILER
 }
 ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
     ZArray<ZPath> dirs;
     if(!isDir(dir))
         return dirs;
 #if COMPILER == MSVC
-    // FINISH: ZFile listFiles
+    WIN32_FIND_DATA finddata;
+    HANDLE find = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &finddata);
+    if(find == INVALID_HANDLE_VALUE){
+        return dirs;
+    }
+    do {
+        if(finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY){
+            ZString name = ZString(finddata.cFileName);
+            if(name != "." && name != ".."){
+                dirs.push(dir + name);
+                if(recurse){
+                    dirs.append(listDirs(dir + name, recurse));
+                }
+            }
+        }
+    } while(FindNextFile(find, &finddata) != 0);
 
+    return dirs;
 #else
     DIR *dr;
     struct dirent *drnt;
@@ -563,8 +580,8 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse){
         }
         closedir(dr);
     }
-#endif
     return dirs;
+#endif
 }
 
 zu64 ZFile::dirSize(ZPath dir){
@@ -580,8 +597,8 @@ zu64 ZFile::dirSize(ZPath dir){
             if((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
                 total += dirSize(dir + ZString(data.cFileName));
             else
-                //total += (zu64)(data.nFileSizeHigh * (MAXDWORD) + data.nFileSizeLow);
-                total += data.nFileSizeLow | (zu64)data.nFileSizeHigh << 32;
+                total += (zu64)(data.nFileSizeHigh * (MAXDWORD) + data.nFileSizeLow);
+                //total += data.nFileSizeLow | (zu64)data.nFileSizeHigh << 32;
         }
     } while(FindNextFile(sh, &data));
     FindClose(sh);

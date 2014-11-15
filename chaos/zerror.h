@@ -6,8 +6,9 @@
 #ifndef ZERROR_H
 #define ZERROR_H
 
+#include "zarray.h"
 #include "zstring.h"
-#include "zmap.h"
+//#include "zmap.h"
 
 namespace LibChaos {
 
@@ -26,6 +27,12 @@ public:
 
     typedef void (*signalHandler)(zerror_signal);
 
+    struct sigset {
+        zerror_signal sigtype;
+        signalHandler handler;
+    };
+
+public:
     ZError(ZString desc = ZString(), int code = 0, bool trace = true);
 
     inline const ZString &what() const { return desc; }
@@ -46,12 +53,8 @@ public:
     static ArZ getStackTrace(unsigned trim = 1);
 
 private:
-    struct sigset {
-        zerror_signal sigtype;
-        signalHandler handler;
-    };
     static void sigHandle(int sig);
-    static ZMap<int, sigset> sigmap;
+    //static ZMap<int, sigset> sigmap;
 
 private:
     ZString desc;

@@ -22,6 +22,11 @@ namespace LibChaos {
 // ZArray push/pop paradigm is FILO
 template <typename T> class ZArray : public YIndexedAccess<T>, public YPushPopAccess<T> {
 public:
+    enum {
+        none = ZU64_MAX
+    };
+
+public:
     ZArray() : _size(0), _realsize(0), _data(nullptr){
         reserve(4); // Initial capacity
     }
@@ -219,6 +224,13 @@ public:
                 return true;
         }
         return false;
+    }
+    zu64 find(const T &test) const {
+        for(zu64 i = 0; i < _size; ++i){
+            if(_data[i] == test)
+                return i;
+        }
+        return none;
     }
 
     inline T &front(){ return _data[0]; }

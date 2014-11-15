@@ -34,7 +34,9 @@
 
 namespace LibChaos {
 
-ZMap<int, ZError::sigset> ZError::sigmap;
+// Map of signals to signal handling functions
+ZMap<int, ZError::sigset> sigmap;
+
 
 ZError::ZError(ZString str, int code, bool trace) : desc(str), err(code){
     if(trace)

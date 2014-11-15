@@ -293,16 +293,14 @@ ZString ZPath::str(ZString delim) const {
     if(_absolute){
         tmp = _prefix + delim;
     }
-    ArZ data = _data;
+//    ArZ data = _data;
 //#if PLATFORM != WINDOWS
 //    // Escape spaces
 //    for(zu64 i = 0; i < data.size(); ++i){
 //        data[i].replace(" ", "\\ ");
 //    }
 //#endif
-    ZString str = ZString::compound(data, delim);
-    tmp += str;
-    return tmp;
+    return tmp + ZString::compound(_data, delim);
 }
 
 }

@@ -16,9 +16,6 @@
     #include <pthread.h>
 #endif
 
-#include <atomic>
-#include <chrono>
-
 #ifdef ZMUTEX_WINTHREADS
     struct _RTL_CRITICAL_SECTION;
     typedef _RTL_CRITICAL_SECTION CRITICAL_SECTION;
@@ -56,22 +53,21 @@ public:
     // If mutex is unlocked, returns true. If mutex is locked by calling thread, mutex is unlocked. If mutex is locked by other thread, blocks until mutex is unlocked by other thread.
     void unlock();
 
+#ifndef ZMUTEX_WINTHREADS
     // Return true if this thread owns the mutex, else returns false
     bool iOwn();
-
     // Returns true if mutex is locked, else returns false.
     inline bool locked(){
         return (locker() != 0);
     }
     // Returns locking thread's id, or 0 if unlocked.
     inline ztid locker(){
-        return locker_tid;
+        return owner_tid;
     }
+#endif
 
 #ifdef ZMUTEX_WINTHREADS
-    inline CRITICAL_SECTION *handle(){
-        return _mutex;
-    }
+    CRITICAL_SECTION *handle();
 #else
     inline pthread_mutex_t *handle(){
         return &_mutex;
@@ -80,12 +76,13 @@ public:
 
 private:
 #ifdef ZMUTEX_WINTHREADS
-    CRITICAL_SECTION *_mutex;
+    struct MutexData;
+    MutexData *_mutex;
 #else
     pthread_mutex_t _mutex;
+    ztid owner_tid;
 #endif
-    ztid locker_tid;
-    //std::atomic<pthread_t> locker_tid;
+//    zu32 lock_depth;
 };
 
 // //////////////////////////////////////////////////////////////////////////////

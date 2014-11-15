@@ -36,7 +36,7 @@ public:
     typedef char chartype;
 
     enum {
-        none = (zu64)-1
+        none = ZU64_MAX
     };
 
 public:

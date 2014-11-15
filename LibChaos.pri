@@ -1,7 +1,7 @@
 #TARGET = chaos
 TEMPLATE = lib
-CONFIG += staticlib console
-QT -= core gui widgets
+CONFIG += staticlib console debug
+#QT -= core gui widgets
 
 # LibChaos
 HEADERS += \
@@ -148,6 +148,8 @@ SOURCES += \
     $$PWD/chaos/net/zdatagramsocket.cpp \
     $$PWD/chaos/net/zaddress.cpp \
     \
+    $$PWD/chaos/thread/zcondition.cpp \
+    $$PWD/chaos/thread/zmutex.cpp \
     $$PWD/chaos/thread/zthread.cpp \
     \
     $$PWD/extern/zh264decoder.cpp \
