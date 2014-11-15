@@ -1,7 +1,7 @@
 #TARGET = chaos
 TEMPLATE = lib
-CONFIG += staticlib console
-QT -= core gui widgets
+CONFIG += staticlib console debug
+#QT -= core gui widgets
 
 # LibChaos
 HEADERS += \
@@ -33,9 +33,7 @@ HEADERS += \
     \
     $$PWD/chaos/data/zallocator.h \
     $$PWD/chaos/data/zarray.h \
-    $$PWD/chaos/data/zarray2.h \
     $$PWD/chaos/data/zassoc.h \
-    $$PWD/chaos/data/zassoc2.h \
     $$PWD/chaos/data/zbinary.h \
     $$PWD/chaos/data/zdata.h \
     $$PWD/chaos/data/zdefaultstorage.h \
@@ -150,6 +148,8 @@ SOURCES += \
     $$PWD/chaos/net/zdatagramsocket.cpp \
     $$PWD/chaos/net/zaddress.cpp \
     \
+    $$PWD/chaos/thread/zcondition.cpp \
+    $$PWD/chaos/thread/zmutex.cpp \
     $$PWD/chaos/thread/zthread.cpp \
     \
     $$PWD/extern/zh264decoder.cpp \
@@ -205,9 +205,10 @@ OTHER_FILES += \
     $$PWD/ui/CMakeLists.txt \
     $$PWD/util/CMakeLists.txt \
     \
-    $$PWD/configure_build.cmake \
-    $$PWD/source_hash.cmake \
-    $$PWD/hash.sh \
+    $$PWD/cmake/configure_build.cmake \
+    $$PWD/cmake/source_hash.cmake \
+    $$PWD/cmake/hash.sh \
+    \
     $$PWD/LibChaos_Todo_Ideas.txt \
     $$PWD/Projects.txt
 

@@ -72,6 +72,7 @@ void ZCondition::waitUnlock(){
 
 void ZCondition::signal(){
 #ifdef ZMUTEX_WINTHREADS
+    // FIXME: Causes crash at end of program
     EnterCriticalSection(mutex);
     WakeConditionVariable(cond);
     LeaveCriticalSection(mutex);

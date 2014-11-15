@@ -177,7 +177,6 @@
 
 // LibChaos experimental versions
 #define ZARRAY_VERSION /*1*/ 2
-#define ZASSOC_VERSION 1 //2
 
 #include <stdint.h>
 
@@ -189,20 +188,20 @@ typedef signed char zsc;
 typedef char zchar;
 
 // At least 16 bits (2 bytes)
-typedef unsigned short zus;
-typedef signed short zss;
+typedef unsigned short int zus;
+typedef signed short int zss;
 
 typedef int zint;
 typedef unsigned int zuint;
 typedef signed int zsint;
 
 // At least 32 bits (4 bytes)
-typedef unsigned long zul;
-typedef signed long zsl;
+typedef unsigned long int zul;
+typedef signed long int zsl;
 
 // At least 64 bits (8 bytes)
-typedef unsigned long long zull;
-typedef signed long long zsll;
+typedef unsigned long long int zull;
+typedef signed long long int zsll;
 
 // Fixed types
 typedef int8_t zs8;
@@ -233,6 +232,8 @@ typedef uint64_t zu64;
 // Aliases
 typedef zu8 zbyte;
 typedef zbyte zoctet; // I blame the IETF
+
+#define ZU64_MAX ((zu64)0xFFFFFFFFFFFFFFFF)
 
 // Check sizes
 static_assert(sizeof(zs8) == 1, "zs8 has incorrect size");

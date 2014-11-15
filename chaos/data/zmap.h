@@ -13,7 +13,7 @@ namespace LibChaos {
 template <class K, class T> class ZMap {
 public:
     enum {
-        none = (zu64)-1
+        none = ZU64_MAX
     };
 
 public:

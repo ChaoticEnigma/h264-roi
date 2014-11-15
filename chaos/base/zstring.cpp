@@ -127,12 +127,6 @@ void ZString::reserve(zu64 size){
     }
 }
 
-ZString ZString::concat(const ZString &str) const {
-    ZString out = *this;
-    out.append(str);
-    return out;
-}
-
 ZString &ZString::append(const ZString &str){
     if(str.size()){
         zu64 oldsize = size();
@@ -140,6 +134,12 @@ ZString &ZString::append(const ZString &str){
         _alloc.rawcopy(str._data, _data + oldsize, str.size());
     }
     return *this;
+}
+
+ZString ZString::concat(const ZString &str) const {
+    ZString out = *this;
+    out.append(str);
+    return out;
 }
 
 zu64 ZString::count(ZString needle) const {

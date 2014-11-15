@@ -17,7 +17,9 @@ public:
         hashType1 = 1
     };
 
-    static const zu64 none = (zu64)-1;
+    enum {
+        none = ZU64_MAX
+    };
 
 public:
     class RAW {

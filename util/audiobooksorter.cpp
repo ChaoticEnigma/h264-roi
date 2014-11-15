@@ -105,7 +105,7 @@ int main(int argc, char **argv){
     ArP dirs = ZFile::listDirs(pwd, false);
     ArP files;
     for(zu64 i = 0; i < dirs.size(); ++i){
-        files.concat(ZFile::listFiles(dirs[i], true));
+        files.append(ZFile::listFiles(dirs[i], true));
     }
 
     LOG("Found " << files.size() << " files");

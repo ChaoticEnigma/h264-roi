@@ -11,6 +11,7 @@
 #include "zbinary.h"
 #include "zreader.h"
 #include "zwriter.h"
+#include "zerror.h"
 
 #if PLATFORM != WINDOWS
     #include <fstream>
@@ -45,13 +46,16 @@ private:
 
         createbit       = 0x004,    // Create allowed
         apptruncbit     = 0x008,    // Not set for append, set for truncate
-
-        goodbit         = 0x064
     };
 
 public:
     ZFile();
     ZFile(ZPath path, zfile_mode mode = moderead);
+
+    ZFile(const ZFile &){
+        throw ZError("Someone tried to copy a ZFile");
+    }
+
     ~ZFile();
 
     bool open(ZPath path);
@@ -71,6 +75,8 @@ public:
     zu64 read(ZBinary &out, zu64 size);
     zu64 write(const ZBinary &data);
 
+    zu64 write(const ZString &str);
+
     bool remove();
     static bool remove(ZPath path);
 
@@ -79,13 +85,7 @@ public:
     zu64 fileSize() const;
     static zu64 fileSize(ZPath path);
 
-    bool isOpen() const {
-#if PLATFORM == WINDOWS
-        return (_file != NULL && _bits & goodbit);
-#else
-        return (_file != NULL && _bits & goodbit);
-#endif
-    }
+    bool isOpen() const { return (_file != NULL); }
     int &bits(){ return _bits; }
     ZPath path() const { return _path; }
 
@@ -99,6 +99,8 @@ public:
     static zu64 readBinary(ZPath name, ZBinary &out);
     static zu64 writeBinary(ZPath name, const ZBinary &data);
 
+    static ZString readString(ZPath path);
+
     static zu64 copy(ZPath src, ZPath dest);
     static bool rename(ZPath old, ZPath newfl);
 
@@ -110,10 +112,14 @@ public:
     static bool isFile(ZPath dir);
     static bool isDir(ZPath dir);
 
+    // Creates directory if it doesn't exist
     static bool makeDir(ZPath dir);
+    // Creates all directories in path before last path part, if they don't exist
     static bool createDirsTo(ZPath path);
 
+    // List files in a directory, recursize by default
     static ZArray<ZPath> listFiles(ZPath dir, bool recurse = true);
+    // List directories in a directory, non-recursive by default
     static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false);
     static zu64 dirSize(ZPath dir);
 
