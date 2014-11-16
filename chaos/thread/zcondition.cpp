@@ -21,10 +21,6 @@ ZCondition::ZCondition(){
 }
 #endif
 
-ZCondition::ZCondition(const ZCondition &){
-    throw ZError("Someone tried to copy a ZCondition");
-}
-
 ZCondition::~ZCondition(){
 #ifdef ZMUTEX_WINTHREADS
     DeleteCriticalSection(mutex);

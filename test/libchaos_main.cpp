@@ -28,6 +28,8 @@ int main(int argc, char **argv){
         { "path", path_block },
 
         { "thread", thread_block },
+        { "mutex", mutex_block },
+
         { "number", number_block },
 
         { "file", file_block },

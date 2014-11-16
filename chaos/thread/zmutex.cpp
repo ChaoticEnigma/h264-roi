@@ -21,24 +21,22 @@ ZMutex::ZMutex() : _mutex(new MutexData)/*, owner_tid(0)*/{
     InitializeCriticalSection(&_mutex->crit);
 }
 
-ZMutex::ZMutex(const ZMutex &){
-    throw ZError("Someone tried to copy a ZMutex");
-}
-
 ZMutex::~ZMutex(){
     DeleteCriticalSection(&_mutex->crit);
 }
 
 void ZMutex::lock(){
     EnterCriticalSection(&_mutex->crit);
-    // We own the mutex
+    // This thread owns the mutex
 }
 
 bool ZMutex::trylock(){
     if(TryEnterCriticalSection(&_mutex->crit) == TRUE){
 //        owner_tid = GetCurrentThreadId();
+        // This thread owns the mutex
         return true;
     } else {
+        // This thread does not own the mutex
         return false;
     }
 }
@@ -50,11 +48,13 @@ bool ZMutex::timelock(zu64 timeout_microsec){
         if(std::chrono::high_resolution_clock::now() > end)
             return false; // Timeout exceeded, mutex is locked by another thread
     }
-    return true; // Locked, and this thread owns it
+    // This thread owns the mutex
+    return true;
 }
 
 void ZMutex::unlock(){
     lock(); // Make sure we own the mutex first
+    // This thread owns the mutex
 //    owner_tid = 0;
     LeaveCriticalSection(&_mutex->crit);
     // Mutex is unlocked
@@ -64,14 +64,10 @@ CRITICAL_SECTION *ZMutex::handle(){
     return &_mutex->crit;
 }
 
-#else
+#else // ZMUTEX_WINTHREADS
 
 ZMutex::ZMutex() : owner_tid(0){
     pthread_mutex_init(&_mutex, NULL);
-}
-
-ZMutex::ZMutex(const ZMutex &){
-    throw ZError("Someone tried to copy a ZMutex");
 }
 
 ZMutex::~ZMutex(){
@@ -121,6 +117,6 @@ bool ZMutex::iOwn(){
     return (locker() == pthread_self());
 }
 
-#endif
+#endif // ZMUTEX_WINTHREADS
 
 }

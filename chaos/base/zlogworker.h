@@ -6,15 +6,18 @@
 #ifndef ZLOGWORKER_H
 #define ZLOGWORKER_H
 
-#include <queue>
-
 #include "zstring.h"
+#include "zbinary.h"
 #include "zpath.h"
+
+#include "zmap.h"
+
 #include "zthread.h"
 #include "zmutex.h"
-#include "zbinary.h"
-#include "zmap.h"
 #include "zcondition.h"
+
+#include "ztime.h"
+#include "zclock.h"
 
 // Default Log formats
 #define LOGONLY "%log%"
@@ -37,46 +40,31 @@ class ZLogWorker {
 public:
     typedef ZLogSource::zlog_source zlog_source;
 
-    enum info_type {
-        file = 1,
-        line = 2,
-        function = 3,
-        clock = 4,
-        date = 5,
-        time = 6,
-        thread = 7
-    };
-
     struct LogJob {
         zlog_source source;
+
+        ZTime time;
+        ZClock clock;
+        ztid thread;
+
+        ZString file;
+        ZString line;
+        ZString func;
+
         bool stdio;
         bool newln;
         bool raw;
         ZString log;
-        ZMap<info_type, ZString> pinfo;
     };
 
-    struct zlog_preproc {
-        info_type type;
-        ZString info;
-    };
-
-    static ZMutex mtx;
-    static ZMutex formatMtx;
-    static ZCondition cond;
-    static std::queue<LogJob> jobs;
-
-    static ZMap<zlog_source, ZString> stdoutlog;
-    static ZMap<zlog_source, ZString> stderrlog;
-    static ZAssoc< ZPath, ZMap<zlog_source, ZString> > logfiles;
     static bool lastcomp;
 
     ZLogWorker();
     ~ZLogWorker();
     void run();
     void waitEnd();
-    void queue(LogJob);
-    static void doLog(LogJob &jb);
+    void queue(LogJob *job);
+    static void doLog(LogJob *job);
 
     static void formatStdout(zlog_source type, ZString fmt);
     static void formatStderr(zlog_source type, ZString fmt);
@@ -84,7 +72,7 @@ public:
 private:
     static void *zlogWorker(void *);
     static void sigHandle(int);
-    static ZString makeLog(LogJob &job, ZString fmt);
+    static ZString makeLog(LogJob *job, ZString fmt);
 
     ZThread work;
 };

@@ -12,23 +12,11 @@ public:
         rawclock = clock();
     }
 
-    double getSecs(){
+    double getSecs() const {
         return (double)rawclock / (double)CLOCKS_PER_SEC;
     }
 
-    ZString getClock(){
-        float rawsecs = getSecs();
-        int secs = rawsecs;
-        int msecs = (rawsecs - (float)secs) * 1000;
-        int mins = secs / 60;
-        secs = secs - (mins * 60);
-        int hrs = mins / 60;
-        mins = mins - (hrs * 60);
-        char buffer[20];
-        sprintf(buffer, "%02d:%02d:%02d:%03d", hrs, mins, secs, msecs);
-        ZString out(buffer);
-        return out;
-    }
+    ZString getClock() const;
 
 private:
     clock_t rawclock;

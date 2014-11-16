@@ -55,15 +55,15 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 )
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
-    #zclock.cpp
-    #ztime.cpp
 
+    base/zclock.cpp
     base/zerror.cpp
     base/zlog.cpp
     base/zlogworker.cpp
     base/zpath.cpp
     base/zstring.cpp
     base/zstring_encode.cpp
+    base/ztime.cpp
 
     data/zbinary.cpp
     data/zjson.cpp

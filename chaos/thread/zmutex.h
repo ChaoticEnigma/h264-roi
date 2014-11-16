@@ -39,8 +39,10 @@ typedef unsigned long ztid;
 class ZMutex {
 public:
     ZMutex();
-    ZMutex(const ZMutex &other);
     ~ZMutex();
+
+    ZMutex(const ZMutex &other) = delete;
+    ZMutex &operator=(const ZMutex &) = delete;
 
     // If mutex is unlocked, mutex is locked by calling thread. If mutex is locked by other thread, function blocks until mutex is unlocked by other thread, then mutex is locked by calling thread.
     void lock();

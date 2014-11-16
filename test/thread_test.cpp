@@ -46,3 +46,79 @@ int thread_block(){
     LOG("joined " << thr2.tid());
     return 0;
 }
+
+//
+//
+//
+
+/**
+ * @author Jeff Tanner, Seattle, jeff_tanner@earthlink.net
+ *
+ * Update volatile global variable until maximum value
+ * is reached using critical sections.
+ */
+
+//#include "stdafx.h"
+#include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <iostream>
+using namespace std;
+
+CRITICAL_SECTION gCS; // shared structure
+
+const int gcMaxCount = 10;
+volatile int gCount = 0;
+
+DWORD threadLoop(void *name){
+    while(true){
+        TLOG((char *)name << " entering critical Section...");
+        EnterCriticalSection(&gCS);
+        if(gCount < gcMaxCount){
+            TLOG((char *)name << " in critical Section");
+            gCount++;
+        } else {
+            LeaveCriticalSection(&gCS);
+            break;
+        }
+        LeaveCriticalSection(&gCS);
+        TLOG((char *)name << " left critical Section");
+    }
+    return 0;
+}
+
+HANDLE CreateChild(char *name){
+    HANDLE hThread; DWORD dwId;
+    hThread = CreateThread(NULL, 0, threadLoop, (LPVOID)name, 0, &dwId);
+    assert(hThread != NULL);
+    return hThread;
+}
+
+int mutex_block(){
+    HANDLE hT[4];
+    InitializeCriticalSection(&gCS);
+
+    TLOG("Starting...");
+//    Sleep(200);
+
+    // Create multiple child threads
+    hT[0] = CreateChild("Evelyn");
+    hT[1] = CreateChild("Bodie");
+    hT[2] = CreateChild("Rebecca");
+    hT[3] = CreateChild("Jeff");
+
+    WaitForMultipleObjects(4, hT, TRUE, INFINITE);
+    TLOG("Completed!");
+
+    CloseHandle(hT[0]);
+    CloseHandle(hT[1]);
+    CloseHandle(hT[2]);
+    CloseHandle(hT[3]);
+
+    DeleteCriticalSection(&gCS);
+    return 0;
+}
+
+
+

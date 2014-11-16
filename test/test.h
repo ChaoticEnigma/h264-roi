@@ -24,6 +24,7 @@ int allocator_block();
 int storage_block();
 
 int thread_block();
+int mutex_block();
 
 int number_block();
 

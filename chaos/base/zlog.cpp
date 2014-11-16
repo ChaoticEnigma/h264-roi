@@ -12,45 +12,55 @@ bool ZLog::_init = false;
 ZLogWorker ZLog::worker;
 AsArZ ZLog::thread_ids;
 
-ZLog::ZLog(zlog_source source) : source_mode(source), stdiolog(false), write_on_destruct(false), newline(true), rawlog(false), /*synclog(false),*/ noqueue(false){}
-
-ZLog::~ZLog(){
-    if(write_on_destruct)
-        flushLog();
+ZLog::ZLog(zlog_source source) : job(new LogJob), stdiolog(false), newline(true), rawlog(false), /*synclog(false),*/ noqueue(false){
+    job->source = source;
+    job->time = ZTime::now();
+    job->clock = ZClock();
+    job->thread = ZThread::thisTid();
 }
 
-void ZLog::flushLog(){
-    LogJob out;
-    out.source = source_mode;
-    out.stdio = stdiolog;
-    out.newln = newline;
-    out.raw = rawlog;
-    out.log = buffer;
-    if(info[ZLogWorker::clock].isEmpty())
-        info[ZLogWorker::clock] = getClock();
-    if(info[ZLogWorker::date].isEmpty())
-        info[ZLogWorker::date] = getDate();
-    if(info[ZLogWorker::time].isEmpty())
-        info[ZLogWorker::time] = getTime();
-    if(info[ZLogWorker::thread].isEmpty())
-        info[ZLogWorker::thread] = getThread();
-    out.pinfo = info;
+ZLog::ZLog(ZLog::zlog_source source, ZString prefile, ZString preline, ZString prefunc) : ZLog(source){
+    job->file = prefile;
+    job->line = preline;
+    job->func = prefunc;
+}
 
-    if(_init && !noqueue){
-        worker.queue(out);
+ZLog::~ZLog(){
+    if(job && !job->log.isEmpty()){
+        flushLog(true);
+    }
+}
+
+void ZLog::flushLog(bool final){
+    if(!job)
+        return;
+
+    job->stdio = stdiolog;
+    job->newln = newline;
+    job->raw = rawlog;
+    //job->log = buffer;
+
+    LogJob *jobptr = job;
+    job = nullptr;
+    if(!final){
+        job = new LogJob(*jobptr);
+    }
+
+    if(!noqueue && _init){
+        worker.queue(jobptr);
     } else {
-        ZLogWorker::doLog(out);
+        ZLogWorker::doLog(jobptr);
     }
 }
 
 ZLog &ZLog::operator<<(zlog_flag flag){
     if(flag == flush){
-        flushLog();
+        flushLog(false);
     } else if(flag == newln){
         log("\n");
     } else if(flag == flushln){
         log("\n");
-        flushLog();
+        flushLog(false);
     } else if(flag == noln){
         newline = false;
     } else if(flag == raw){
@@ -64,8 +74,8 @@ ZLog &ZLog::operator<<(zlog_flag flag){
 }
 
 ZLog &ZLog::log(ZString logtext){
-    buffer << logtext;
-    write_on_destruct = true;
+    if(job)
+        job->log.append(logtext);
     return *this;
 }
 
@@ -79,71 +89,42 @@ ZLog &ZLog::operator<<(ZBinary bin){
     return log(text);
 }
 
-ZLog::zlog_preproc ZLog::makePreProc(info_type type, ZString dat){
-    return { type, dat };
-}
-ZLog &ZLog::operator<<(zlog_preproc in){
-    info[in.type] = in.info;
+ZLog &ZLog::operator<<(ZLogInfo in){
+    if(job){
+        switch(in.type){
+            case ZLogInfo::file:
+                job->file = in.info;
+                break;
+            case ZLogInfo::line:
+                job->line = in.info;
+                break;
+            case ZLogInfo::function:
+                job->func = in.info;
+                break;
+
+            case ZLogInfo::time:
+    //            job->file = in.info;
+                break;
+            case ZLogInfo::clock:
+    //            job->line = in.info;
+                break;
+            case ZLogInfo::thread:
+    //            job->func = in.info;
+                break;
+
+            default:
+                break;
+        }
+    }
     return *this;
 }
 
 ZString ZLog::pullBuffer(){
-    ZString tmp = buffer;
-    buffer.clear();
-    write_on_destruct = false;
+    if(!job)
+        return ZString();
+    ZString tmp = job->log;
+    job->log.clear();
     return tmp;
-}
-
-ZString ZLog::getDate(){
-#if COMPILER == MSVC
-    SYSTEMTIME time;
-    GetLocalTime(&time);
-    ZString str = ZString::ItoS(time.wMonth, 10, 2) + "/" + ZString::ItoS(time.wDay, 10, 2) + "/" + ZString::ItoS(time.wYear, 10, 2);
-    return str;
-#else
-    time_t raw;
-    time(&raw);
-    struct tm *time;
-    time = localtime(&raw);
-    char buffer[20];
-    sprintf(buffer, "%02d/%02d/%02d", time->tm_mon + 1, time->tm_mday, time->tm_year - 100);
-    ZString out(buffer);
-    return out;
-#endif
-}
-
-ZString ZLog::getTime(){
-#if COMPILER == MSVC
-    SYSTEMTIME time;
-    GetLocalTime(&time);
-    ZString str = ZString::ItoS(time.wHour, 10, 2) + ":" + ZString::ItoS(time.wMinute, 10, 2) + ":" + ZString::ItoS(time.wSecond, 10, 2);
-    return str;
-#else
-    time_t raw;
-    time(&raw);
-    struct tm *time;
-    time = localtime(&raw);
-    char buffer[20];
-    sprintf(buffer, "%02d:%02d:%02d", time->tm_hour, time->tm_min, time->tm_sec);
-    ZString out(buffer);
-    return out;
-#endif
-}
-
-ZString ZLog::getClock(){
-    clock_t raw = clock();
-    float rawsecs = (float)raw / (float)CLOCKS_PER_SEC;
-    int secs = (int)rawsecs;
-    int msecs = (int)(rawsecs - (float)secs) * 1000;
-    int mins = secs / 60;
-    secs = secs - (mins * 60);
-    int hrs = mins / 60;
-    mins = mins - (hrs * 60);
-    //char buffer[20];
-    //sprintf(buffer, "%02d:%02d:%02d:%03d", hrs, mins, secs, msecs);
-    //ZString out(buffer);
-    ZString out = ZString::ItoS((zu64)hrs, 10, 2) + ":" + ZString::ItoS((zu64)mins, 10, 2) + ":" + ZString::ItoS((zu64)secs, 10, 2) + ":" + ZString::ItoS((zu64)msecs, 10, 3);
-    return out;
 }
 
 ZString ZLog::getThread(){

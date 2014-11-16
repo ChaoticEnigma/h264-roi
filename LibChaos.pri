@@ -89,7 +89,8 @@ HEADERS += \
     $$PWD/ui/align.h \
     \
     $$PWD/bbb/zbbb.h \
-    chaos/misc/zmisc.h
+    chaos/misc/zmisc.h \
+    libchaos/chaos/thread/zlock.h
 
 SOURCES += \
     $$PWD/chaos/base/zerror.cpp \
@@ -173,7 +174,8 @@ SOURCES += \
     $$PWD/util/imagedownloader.cpp \
     $$PWD/util/duplicatefinder.cpp \
     $$PWD/util/imagelibrarymanager.cpp \
-    chaos/misc/zmisc.cpp
+    chaos/misc/zmisc.cpp \
+    libchaos/chaos/thread/zlock.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -213,17 +215,17 @@ INCLUDEPATH += \
 QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11 -std=c++0x
 LIBS += pthread
 
-#win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MINGW
-#win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MSVC
-unix:DEFINES += _LIBCHAOS_PLATFORM_LINUX _LIBCHAOS_COMPILER_GCC
-
-windows{
+windows {
+    DEFINES += _LIBCHAOS_PLATFORM_WINDOWS
     *-g++* {
-        DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MINGW
+        DEFINES += _LIBCHAOS_COMPILER_MINGW
     }
     *-msvc* {
-        DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MSVC
+        DEFINES += _LIBCHAOS_COMPILER_MSVC
     }
+}
+unix {
+    DEFINES += _LIBCHAOS_PLATFORM_LINUX _LIBCHAOS_COMPILER_GCC
 }
 
 

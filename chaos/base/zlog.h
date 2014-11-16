@@ -10,26 +10,31 @@
 
 #define ZLOG_DEBUG_DEPTH 100
 
-#define ZLOG_FILE_PREPROC LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::file, LibChaos::ZPath(__FILE__).last().str())
-#define ZLOG_LINE_PREPROC LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::line, __LINE__)
-#define ZLOG_FUNC_PREPROC LibChaos::ZLog::makePreProc(LibChaos::ZLogWorker::function, __FUNCTION__)
+#define ZLOG_PREFILE LibChaos::ZPath(__FILE__).last()
+#define ZLOG_PRELINE LibChaos::ZString(__LINE__)
+#define ZLOG_PREFUNC LibChaos::ZString(__FUNCTION__)
 
-#define PREPROCM ZLOG_FILE_PREPROC << ZLOG_LINE_PREPROC
+#define ZLOG_FILE_PREPROC LibChaos::ZLogInfo(LibChaos::ZLogInfo::file, ZLOG_PREFILE)
+#define ZLOG_LINE_PREPROC LibChaos::ZLogInfo(LibChaos::ZLogInfo::line, ZLOG_PRELINE)
+#define ZLOG_FUNC_PREPROC LibChaos::ZLogInfo(LibChaos::ZLogInfo::function, ZLOG_PREFUNC)
+
+#define PREPROCR ZLOG_FILE_PREPROC << ZLOG_LINE_PREPROC
+//#define PREPROCD ZLOG_FILE_PREPROC << ZLOG_LINE_PREPROC << ZLOG_FUNC_PREPROC
 
 #if LIBCHAOS_BUILD == LIBCHAOS_RELEASE
     #define LOG(A)  LibChaos::ZLog() << A
     #define DLOG(A)
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error) << PREPROCM << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error) << PREPROCR << A
     #define RLOG(A) LibChaos::ZLog() << LibChaos::ZLog::raw << A
     #define TLOG(A) LibChaos::ZLog() << LibChaos::ZLog::this_thread << A
     #define OLOG(A) LibChaos::ZLog() << LibChaos::ZLog::stdio << A
 #else
-    #define LOG(A)  LibChaos::ZLog() << PREPROCM << A
-    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::debug) << PREPROCM << A
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error) << PREPROCM << A
-    #define RLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::raw << A
-    #define TLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::this_thread << A
-    #define OLOG(A) LibChaos::ZLog() << PREPROCM << LibChaos::ZLog::stdio << A
+    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLogSource::normal, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::debug, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::normal, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::raw << A
+    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::normal, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::this_thread << A
+    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::normal, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::stdio << A
 #endif
 #define ORLOG(A) OLOG(LibChaos::ZLog::raw << A)
 
@@ -38,11 +43,27 @@
 
 namespace LibChaos {
 
+struct ZLogInfo {
+    enum info_type {
+        file = 1,
+        line = 2,
+        function = 3,
+
+        clock = 4,
+        date = 5,
+        time = 6,
+        thread = 7
+    };
+
+    ZLogInfo(info_type type, ZString info) : type(type), info(info){}
+
+    info_type type;
+    ZString info;
+};
+
 class ZLog {
 public:
     typedef ZLogSource::zlog_source zlog_source;
-    typedef ZLogWorker::zlog_preproc zlog_preproc;
-    typedef ZLogWorker::info_type info_type;
     typedef ZLogWorker::LogJob LogJob;
 
     enum zlog_flag {
@@ -63,6 +84,8 @@ public:
     };
 
     ZLog(zlog_source source = ZLogSource::normal);
+    ZLog(zlog_source source, ZString prefile, ZString preline, ZString prefunc);
+
     ~ZLog();
 
     ZLog &operator<<(zlog_flag);
@@ -88,14 +111,10 @@ public:
 
     inline ZLog &operator<<(const char *text){ return log(text); }
 
-    static zlog_preproc makePreProc(info_type, ZString dat);
-    ZLog &operator<<(zlog_preproc info);
+    ZLog &operator<<(ZLogInfo info);
 
     ZString pullBuffer();
 
-    static ZString getDate();
-    static ZString getTime();
-    static ZString getClock();
     static ZString getThread();
     static ZString genLogFileName(ZString prefix);
 
@@ -108,17 +127,17 @@ public:
 
     static void waitEnd();
 private:
-    void flushLog();
+    void flushLog(bool final);
 
     static bool _init;
     static ZLogWorker worker;
     static AsArZ thread_ids;
 
+    LogJob *job;
+
     ZString buffer;
-    ZMap<info_type, ZString> info;
-    zlog_source source_mode;
+
     bool stdiolog;
-    bool write_on_destruct;
     bool newline;
     bool rawlog;
     bool noqueue;

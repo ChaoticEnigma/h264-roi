@@ -125,15 +125,26 @@ public:
         return str;
     }
 
-    T &operator[](zu64 index){ return *getNode(index)->data; }
-    const T &operator[](zu64 index) const { return *getNode(index)->data; }
+    // Swap data but NOT allocators of two lists
+    void swap(ZList &other){
+        zu64 tmpsize = _size;
+        Node *tmphead = head;
+        _size = other._size;
+        head = other.head;
+        other._size = tmpsize;
+        other.head = tmphead;
+    }
 
-    T &front(){ return *head->data; }
-    const T &front() const { return *head->data; }
-    T &back(){ return *head->prev->data; }
-    const T &back() const { return *head->prev->data; }
+    inline T &operator[](zu64 index){ return *getNode(index)->data; }
+    inline const T &operator[](zu64 index) const { return *getNode(index)->data; }
 
-    zu64 size() const { return _size; }
+    inline T &front(){ return *head->data; }
+    inline const T &front() const { return *head->data; }
+    inline T &back(){ return *head->prev->data; }
+    inline const T &back() const { return *head->prev->data; }
+
+    inline bool isEmpty() const { return (_size == 0); }
+    inline zu64 size() const { return _size; }
 
 private:
     struct Node {

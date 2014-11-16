@@ -14,8 +14,10 @@ namespace LibChaos {
 class ZCondition {
 public:
     ZCondition();
-    ZCondition(const ZCondition &);
     ~ZCondition();
+
+    ZCondition(const ZCondition &) = delete;
+    ZCondition &operator=(const ZCondition &) = delete;
 
     void waitOnce();
 

@@ -7,11 +7,12 @@ FUNCTION(configure_build NAME BUILD)
     IF(BUILD MATCHES 1) # Debug
         ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_DEBUG)
         SET(CXXGNU "${CXXGNU} -g")
-        SET(CXXVC "${CXXVC} /Zi")
+        SET(CXXVC "${CXXVC} /Zi /MDd")
         SET(BUILD_STRING "${BUILD_STRING} Debug")
     ELSEIF(BUILD MATCHES 2) # Release
         ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_RELEASE)
         SET(CXXGNU "${CXXGNU} -O3")
+        SET(CXXVC "${CXXVC} /GL /MD")
         SET(BUILD_STRING "${BUILD_STRING} Release")
     ELSE() # Normal
         ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_NORMAL)
@@ -71,6 +72,8 @@ FUNCTION(configure_build NAME BUILD)
     ENDIF()
 
     IF(MSVC_FLAGS)
+        #SET(CXXVC "${CXXVC} /MD")
+
         SET(LNKVC "/ignore:4221 /wd4221") # LNK4221: File does not define any public symbols
         SET(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} ${LNKVC}")
         SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LNKVC}")

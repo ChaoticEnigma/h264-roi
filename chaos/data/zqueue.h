@@ -27,6 +27,18 @@ public:
         _data.popFront();
     }
 
+    void swap(ZQueue &other){
+        _data.swap(other._data);
+    }
+
+    bool isEmpty() const {
+        return _data.isEmpty();
+    }
+
+    zu64 size() const {
+        return _data.size();
+    }
+
 private:
     ZList<T> _data;
 };

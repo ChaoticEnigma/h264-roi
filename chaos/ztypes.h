@@ -29,12 +29,10 @@
 #define MSVC        0x13
 
 // Detected
-#if defined(__GNUC__)
-    #if defined(__MINGW32__)
-        #define COMPILER_DETECTED MINGW
-    #else
-        #define COMPILER_DETECTED GCC
-    #endif
+#if defined(__MINGW32__)
+    #define COMPILER_DETECTED MINGW
+#elif defined(__GNUC__)
+    #define COMPILER_DETECTED GCC
 #elif defined(_MSC_VER)
     #define COMPILER_DETECTED MSVC
 #else
