@@ -15,7 +15,7 @@ ZMutex jobmutex;
 ZCondition jobcondition;
 ZQueue<ZLogWorker::LogJob*> jobs;
 
-ZMutex writemutex;
+//ZMutex writemutex;
 
 ZMutex formatmutex;
 ZMap<ZLogWorker::zlog_source, ZString> stdoutlog;
@@ -73,7 +73,7 @@ void *ZLogWorker::zlogWorker(void *arg){
             while(jobs.isEmpty()){
                 jobmutex.unlock(); // Unlock while waiting so work can be queued
                 jobcondition.wait();
-                jobmutex.lock(); // Lock again before while(jobs.empty()) condition
+                jobmutex.lock(); // Lock again before jobs.empty() check
             }
             jobcondition.waitUnlock();
         }
@@ -115,52 +115,61 @@ ZString ZLogWorker::makeLog(LogJob *job, ZString fmt){
 
 void ZLogWorker::doLog(LogJob *job){
     formatmutex.lock();
+    ZString stdoutfmt = stdoutlog[job->source];
+    ZString stdoutfmtall = stdoutlog[ZLogSource::all];
+    ZString stderrfmt = stderrlog[job->source];
+    ZString stderrfmtall = stderrlog[ZLogSource::all];
+    formatmutex.unlock();
 
     // Do any stdout logging
-    if(!stdoutlog[job->source].isEmpty()){
-        fprintf(stdout, "%s", makeLog(job, stdoutlog[job->source]).cc());
+    if(!stdoutfmt.isEmpty()){
+        fprintf(stdout, "%s", makeLog(job, stdoutfmt).cc());
         fflush(stdout);
-    } else if(!stdoutlog[ZLogSource::all].isEmpty()){
-        fprintf(stdout, "%s", makeLog(job, stdoutlog[ZLogSource::all]).cc());
+    } else if(!stdoutfmtall.isEmpty()){
+        fprintf(stdout, "%s", makeLog(job, stdoutfmtall).cc());
         fflush(stdout);
     }
 
     // Do any stderr logging
-    if(!stderrlog[job->source].isEmpty()){
-        fprintf(stderr, "%s", makeLog(job, stderrlog[job->source]).cc());
+    if(!stderrfmt.isEmpty()){
+        fprintf(stderr, "%s", makeLog(job, stderrfmt).cc());
         fflush(stderr);
-    } else if(!stderrlog[ZLogSource::all].isEmpty()){
-        fprintf(stderr, "%s", makeLog(job, stderrlog[ZLogSource::all]).cc());
+    } else if(!stderrfmtall.isEmpty()){
+        fprintf(stderr, "%s", makeLog(job, stderrfmtall).cc());
         fflush(stderr);
     }
 
     // Do any file logging
     if(!job->stdio){
-        writemutex.lock();
+//        writemutex.lock();
         for(zu64 i = 0; i < logfiles.size(); ++i){
-            if(!logfiles[i][job->source].isEmpty()){
-                ZFile::createDirsTo(logfiles.key(i));
+            formatmutex.lock();
+            ZPath filename = logfiles.key(i);
+            ZString filefmt = logfiles[i][job->source];
+            ZString filefmtall = logfiles[i][ZLogSource::all];
+            formatmutex.unlock();
 
-                std::ofstream lgfl(logfiles.key(i).str().cc(), std::ios::app);
-                lgfl << makeLog(job, logfiles[i][job->source]);
+            if(!filefmt.isEmpty()){
+                ZFile::createDirsTo(filename);
+
+                std::ofstream lgfl(filename.str().cc(), std::ios::app);
+                lgfl << makeLog(job, filefmt);
                 lgfl.flush();
                 lgfl.close();
-            } else if(!logfiles[i][ZLogSource::all].isEmpty()){
-                ZFile::createDirsTo(logfiles.key(i));
+            } else if(!filefmtall.isEmpty()){
+                ZFile::createDirsTo(filename);
 
-                std::ofstream lgfl(logfiles.key(i).str().cc(), std::ios::app);
-                lgfl << makeLog(job, logfiles[i][ZLogSource::all]);
+                std::ofstream lgfl(filename.str().cc(), std::ios::app);
+                lgfl << makeLog(job, filefmtall);
                 lgfl.flush();
                 lgfl.close();
             }
         }
-        writemutex.unlock();
+//        writemutex.unlock();
     }
 
     // Destroy the job
     delete job;
-
-    formatmutex.unlock();
 }
 
 void ZLogWorker::formatStdout(zlog_source type, ZString fmt){

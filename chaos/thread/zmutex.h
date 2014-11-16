@@ -13,8 +13,12 @@
     #define ZMUTEX_WINTHREADS
 #endif
 
-#ifndef ZMUTEX_WINTHREADS
-    #include <pthread.h>
+#ifdef ZMUTEX_BROKEN
+    #include <mutex>
+#else
+    #ifndef ZMUTEX_WINTHREADS
+        #include <pthread.h>
+    #endif
 #endif
 
 #ifdef ZMUTEX_WINTHREADS
@@ -28,14 +32,13 @@ typedef unsigned long ztid;
 
 // ZMutex Class
 // WARNING: Relatively untested
-// Allows storing of an object in a semi-thread-safe manner.
-// Thread-unique locking, so only the thread that locked the mutex is allowed to unlock it.
-// While the mutex is locked, other threads may get a refrence to the contained object. THREAD RESPONSIBLY. SERIOUSLY.
+// Recursize mutual exclusion object
+// Only the thread that locked a mutex is normally allowed to unlock it
+// Any thread may lock an unlocked mutex
+// If a thread tries to lock a mutex multiple times, it must unlock it as many times for other threads to lock it
 
-
-// An object used to control access to a resource shared by multiple threads
 // Uses a pthread_mutex_t on POSIX
-// Uses a Critical Section on Windows
+// **** Uses a Critical Section on Windows
 class ZMutex {
 public:
     ZMutex();
@@ -56,6 +59,7 @@ public:
     // If mutex is unlocked, returns true. If mutex is locked by calling thread, mutex is unlocked. If mutex is locked by other thread, blocks until mutex is unlocked by other thread.
     void unlock();
 
+#ifndef ZMUTEX_BROKEN
 #ifndef ZMUTEX_WINTHREADS
     // Return true if this thread owns the mutex, else returns false
     bool iOwn();
@@ -68,24 +72,22 @@ public:
         return owner_tid;
     }
 #endif
-
-#ifdef ZMUTEX_WINTHREADS
-    CRITICAL_SECTION *handle();
-#else
-    inline pthread_mutex_t *handle(){
-        return &_mutex;
-    }
 #endif
 
 private:
-#ifdef ZMUTEX_WINTHREADS
-    struct MutexData;
-    MutexData *_mutex;
+#ifdef ZMUTEX_BROKEN
+    std::mutex _mutex;
 #else
-    pthread_mutex_t _mutex;
-    ztid owner_tid;
+    #ifdef ZMUTEX_WINTHREADS
+        struct MutexData;
+        MutexData *_mutex;
+    #else
+        pthread_mutex_t _mutex;
+        pthread_mutexattr_t _attr;
+        ztid owner_tid;
+    #endif
+    //    zu32 lock_depth;
 #endif
-//    zu32 lock_depth;
 };
 
 // //////////////////////////////////////////////////////////////////////////////

@@ -175,6 +175,7 @@
 
 // LibChaos experimental versions
 #define ZARRAY_VERSION /*1*/ 2
+#define ZMUTEX_BROKEN 1
 
 #include <stdint.h>
 
