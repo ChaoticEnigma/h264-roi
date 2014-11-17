@@ -3,7 +3,7 @@
 
 #include "zlog.h"
 
-using namespace std;
+//using namespace std;
 using namespace LibChaos;
 
 int sandbox();

@@ -1,6 +1,8 @@
 #include "test.h"
 
 #include "zthread.h"
+#include "zmutex.h"
+#include "zlock.h"
 //#include <unistd.h>
 
 void *thread_func(void * /*zarg*/){
@@ -64,8 +66,9 @@ int thread_block(){
 #include <stdlib.h>
 #include <assert.h>
 #include <iostream>
-using namespace std;
+//using namespace std;
 
+ZMutex mutex;
 CRITICAL_SECTION gCS; // shared structure
 
 const int gcMaxCount = 10;
@@ -74,15 +77,19 @@ volatile int gCount = 0;
 DWORD threadLoop(void *name){
     while(true){
         TLOG((char *)name << " entering critical Section...");
-        EnterCriticalSection(&gCS);
+//        EnterCriticalSection(&gCS);
+//        mutex.lock();
+        ZLock lock(mutex);
         if(gCount < gcMaxCount){
             TLOG((char *)name << " in critical Section");
             gCount++;
         } else {
-            LeaveCriticalSection(&gCS);
+//            LeaveCriticalSection(&gCS);
+//            mutex.unlock();
             break;
         }
-        LeaveCriticalSection(&gCS);
+//        LeaveCriticalSection(&gCS);
+//        mutex.unlock();
         TLOG((char *)name << " left critical Section");
     }
     return 0;

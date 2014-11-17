@@ -46,7 +46,7 @@ int main(int argc, char **argv){
     system(cd.cc());
 
     ZString cmdstr;
-    int n = 1;
+    zu64 n = 1;
     do {
         cmdstr = cmd + url + ZString::ItoS(n, 10, 3) + ".jpg";
         LOG(cmdstr);

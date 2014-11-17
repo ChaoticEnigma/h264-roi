@@ -175,7 +175,15 @@
 
 // LibChaos experimental versions
 #define ZARRAY_VERSION /*1*/ 2
-#define ZMUTEX_BROKEN 1
+
+#if COMPILER == MSVC
+    //#define ZMUTEX_VERSION 2 // CRITICAL_SECTION
+    //#define ZMUTEX_VERSION 3 // std::mutex
+    #define ZMUTEX_VERSION 4 // Win32 Mutex
+#else
+    #define ZMUTEX_VERSION 1 // POSIX threads
+    //#define ZMUTEX_VERSION 3 // std::mutex
+#endif
 
 #include <stdint.h>
 

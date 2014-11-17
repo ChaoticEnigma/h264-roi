@@ -57,6 +57,7 @@ HEADERS += \
     \
     $$PWD/chaos/misc/zautobuffer.h \
     $$PWD/chaos/misc/zautobufferunit.h \
+    $$PWD/chaos/misc/zmisc.h \
     $$PWD/chaos/misc/zret.h \
     $$PWD/chaos/misc/zuid.h \
     \
@@ -67,6 +68,7 @@ HEADERS += \
     $$PWD/chaos/net/zaddress.h \
     \
     $$PWD/chaos/thread/zcondition.h \
+    $$PWD/chaos/thread/zlock.h \
     $$PWD/chaos/thread/zmutex.h \
     $$PWD/chaos/thread/zthread.h \
     \
@@ -88,9 +90,7 @@ HEADERS += \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
     \
-    $$PWD/bbb/zbbb.h \
-    chaos/misc/zmisc.h \
-    libchaos/chaos/thread/zlock.h
+    $$PWD/bbb/zbbb.h
 
 SOURCES += \
     $$PWD/chaos/base/zerror.cpp \
@@ -120,6 +120,7 @@ SOURCES += \
     $$PWD/chaos/math/znumber.cpp \
     \
     $$PWD/chaos/misc/zautobuffer.cpp \
+    $$PWD/chaos/misc/zmisc.cpp \
     $$PWD/chaos/misc/zuid.cpp \
     \
     $$PWD/chaos/net/zsocket.cpp \
@@ -129,6 +130,7 @@ SOURCES += \
     $$PWD/chaos/net/zaddress.cpp \
     \
     $$PWD/chaos/thread/zcondition.cpp \
+    $$PWD/chaos/thread/zlock.cpp \
     $$PWD/chaos/thread/zmutex.cpp \
     $$PWD/chaos/thread/zthread.cpp \
     \
@@ -173,9 +175,7 @@ SOURCES += \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
     $$PWD/util/duplicatefinder.cpp \
-    $$PWD/util/imagelibrarymanager.cpp \
-    chaos/misc/zmisc.cpp \
-    libchaos/chaos/thread/zlock.cpp
+    $$PWD/util/imagelibrarymanager.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \

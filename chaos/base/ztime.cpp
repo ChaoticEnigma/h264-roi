@@ -28,7 +28,7 @@ ZTime::~ZTime(){
 }
 
 int ZTime::getSecs() const {
-    tm *time;
+    //tm *time;
     return 0;
 }
 
@@ -76,7 +76,7 @@ ZString ZTime::getTime() const {
     return out;
 }
 
-ZString getDate() const {
+ZString ZTime::getDate() const {
     struct tm *time;
     time = localtime(&_time);
     char buffer[20];
