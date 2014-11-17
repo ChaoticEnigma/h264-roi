@@ -7,6 +7,7 @@
 #define ZLOG_H
 
 #include "zlogworker.h"
+#include <atomic>
 
 #define ZLOG_DEBUG_DEPTH 100
 
@@ -119,7 +120,6 @@ public:
     static ZString genLogFileName(ZString prefix);
 
     static void init();
-    static void init(ZPath, ZString fmt = TIMELOG);
 
     static void formatStdout(zlog_source type, ZString fmt);
     static void formatStderr(zlog_source type, ZString fmt);
@@ -129,8 +129,8 @@ public:
 private:
     void flushLog(bool final);
 
-    static bool _init;
-    static ZLogWorker worker;
+    static std::atomic<bool> _init;
+    static ZLogWorker *worker;
     static AsArZ thread_ids;
 
     LogJob *job;

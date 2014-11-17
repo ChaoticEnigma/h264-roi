@@ -8,8 +8,9 @@
 
 namespace LibChaos {
 
-bool ZLog::_init = false;
-ZLogWorker ZLog::worker;
+std::atomic<bool> ZLog::_init(false);
+ZLogWorker *ZLog::worker = nullptr;
+
 AsArZ ZLog::thread_ids;
 
 ZLog::ZLog(zlog_source source) : job(new LogJob), stdiolog(false), newline(true), rawlog(false), /*synclog(false),*/ noqueue(false){
@@ -47,7 +48,7 @@ void ZLog::flushLog(bool final){
     }
 
     if(!noqueue && _init){
-        worker.queue(jobptr);
+        worker->queue(jobptr);
     } else {
         ZLogWorker::doLog(jobptr);
     }
@@ -157,14 +158,9 @@ ZString ZLog::genLogFileName(ZString prefix){
 
 void ZLog::init(){
     if(!_init){
+        worker = new ZLogWorker;
+        worker->run();
         _init = true;
-        worker.run();
-    }
-}
-void ZLog::init(ZPath dlgfl, ZString format){
-    if(!_init){
-        init();
-        addLogFile(dlgfl, ZLogSource::all, format);
     }
 }
 
@@ -179,7 +175,7 @@ void ZLog::addLogFile(ZPath pth, zlog_source type, ZString fmt){
 }
 
 void ZLog::waitEnd(){
-    worker.waitEnd();
+    worker->waitEnd();
 }
 
 }
