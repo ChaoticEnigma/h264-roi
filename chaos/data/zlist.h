@@ -56,9 +56,9 @@ public:
     void pushBack(const T &data){
         Node *node = newNode(data);
         if(head == nullptr){
+            node->prev = node;
+            node->next = node;
             head = node;
-            node->prev = head;
-            node->next = head;
         } else {
             node->prev = head->prev;
             node->next = head;
@@ -71,10 +71,14 @@ public:
 
     void popFront(){
         if(head != nullptr){
-            head->prev->next = head->next;
-            head->next->prev = head->prev;
             Node *old = head;
-            head = head->next;
+            if(_size > 1){
+                head->prev->next = head->next;
+                head->next->prev = head->prev;
+                head = head->next;
+            } else {
+                head = nullptr;
+            }
             --_size;
             _alloc.destroy(old->data);
             _alloc.dealloc(old->data);
@@ -84,9 +88,13 @@ public:
     }
     void popBack(){
         if(head != nullptr){
-            head->prev->prev->next = head;
             Node *old = head->prev;
-            head->prev = head->prev->prev;
+            if(_size > 1){
+                head->prev->prev->next = head;
+                head->prev = head->prev->prev;
+            } else {
+                head = nullptr;
+            }
             --_size;
             _alloc.destroy(old->data);
             _alloc.dealloc(old->data);
