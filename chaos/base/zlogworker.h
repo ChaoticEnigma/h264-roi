@@ -72,7 +72,9 @@ public:
 private:
     static void *zlogWorker(void *);
     static void sigHandle(int);
-    static ZString makeLog(LogJob *job, ZString fmt);
+
+    static ZString getThread(ztid thread);
+    static ZString makeLog(const LogJob *job, ZString fmt);
 
     ZThread work;
 };

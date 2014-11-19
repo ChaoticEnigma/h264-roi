@@ -50,7 +50,7 @@ private:
 
 public:
     ZFile();
-    ZFile(ZPath path, zfile_mode mode = moderead);
+    ZFile(ZPath path, int mode = moderead);
 
     ZFile(const ZFile &){
         throw ZError("Someone tried to copy a ZFile");
@@ -59,8 +59,8 @@ public:
     ~ZFile();
 
     bool open(ZPath path);
-    bool open(ZPath path, zfile_mode mode);
-    void setMode(zfile_mode mode);
+    bool open(ZPath path, int mode);
+    void setMode(int mode);
     bool close();
 
     // ZPosition

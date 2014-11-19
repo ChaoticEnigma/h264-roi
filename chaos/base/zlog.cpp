@@ -11,8 +11,6 @@ namespace LibChaos {
 std::atomic<bool> ZLog::_init(false);
 ZLogWorker *ZLog::worker = nullptr;
 
-AsArZ ZLog::thread_ids;
-
 ZLog::ZLog(zlog_source source) : job(new LogJob), stdiolog(false), newline(true), rawlog(false), /*synclog(false),*/ noqueue(false){
     job->source = source;
     job->time = ZTime::now();
@@ -126,24 +124,6 @@ ZString ZLog::pullBuffer(){
     ZString tmp = job->log;
     job->log.clear();
     return tmp;
-}
-
-ZString ZLog::getThread(){
-    ZString thread = ZThreadA::thisTid();
-    zu64 id;
-    bool found = false;
-    for(zu64 i = 0; i < thread_ids.size(); ++i){
-        if(thread_ids[i] == thread){
-            id = i;
-            found = true;
-            break;
-        }
-    }
-    if(!found){
-        id = thread_ids.size();
-        thread_ids.push(thread);
-    }
-    return ZString(id);
 }
 
 ZString ZLog::genLogFileName(ZString prefix){

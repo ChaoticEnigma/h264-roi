@@ -51,8 +51,8 @@ public:
     // Locks mutex and returns true if unlocked, else returns false.
     bool trylock();
 
-    // Tries to lock the mutex for <timeout_microsec> microseconds, then returns false.
-    bool timelock(zu64 timeout_microsec);
+    // Tries to lock the mutex for <milliseconds> milliseconds, then returns false.
+    bool timelock(zu32 milliseconds);
 
     // If mutex is unlocked, returns true. If mutex is locked by calling thread, mutex is unlocked. If mutex is locked by other thread, blocks until mutex is unlocked by other thread.
     void unlock();

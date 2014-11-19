@@ -25,7 +25,8 @@
 namespace LibChaos {
 
 ZFile::ZFile() : _bits(0 | readbit), _file(NULL){}
-ZFile::ZFile(ZPath name, zfile_mode mode) : ZFile(){
+
+ZFile::ZFile(ZPath name, int mode) : ZFile(){
     open(name, mode);
 }
 
@@ -108,12 +109,12 @@ bool ZFile::open(ZPath path){
 #endif
 }
 
-bool ZFile::open(ZPath path, zfile_mode mode){
+bool ZFile::open(ZPath path, int mode){
     setMode(mode);
     return open(path);
 }
 
-void ZFile::setMode(zfile_mode mode){
+void ZFile::setMode(int mode){
     _bits = 0;
     if(mode & moderead){
         _bits |= readbit;

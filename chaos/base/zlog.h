@@ -131,7 +131,6 @@ private:
 
     static std::atomic<bool> _init;
     static ZLogWorker *worker;
-    static AsArZ thread_ids;
 
     LogJob *job;
 

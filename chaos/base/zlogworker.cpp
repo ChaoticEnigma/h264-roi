@@ -22,6 +22,9 @@ ZMap<ZLogWorker::zlog_source, ZString> stdoutlog;
 ZMap<ZLogWorker::zlog_source, ZString> stderrlog;
 ZAssoc< ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
 
+ZMutex threadidmutex;
+ZMap<ztid, zu16> threadids;
+
 bool ZLogWorker::lastcomp;
 
 ZLogWorker::ZLogWorker(){
@@ -91,7 +94,21 @@ void *ZLogWorker::zlogWorker(void *arg){
     return NULL;
 }
 
-ZString ZLogWorker::makeLog(LogJob *job, ZString fmt){
+ZString ZLogWorker::getThread(ztid thread){
+    zu16 id;
+
+    threadidmutex.lock();
+    if(threadids.exists(thread)){
+        id = threadids[thread];
+    } else {
+        id = threadids.size();
+        threadids.push(thread, id);
+    }
+    threadidmutex.unlock();
+    return ZString(id);
+}
+
+ZString ZLogWorker::makeLog(const LogJob *job, ZString fmt){
     if(!job->raw){
         fmt.replace("%log%", job->log);
 
@@ -99,7 +116,7 @@ ZString ZLogWorker::makeLog(LogJob *job, ZString fmt){
         fmt.replace("%date%", job->time.getDate());
         fmt.replace("%time%", job->time.getTime());
         fmt.replace("%datetime%", job->time.getDate() + " " + job->time.getTime());
-        fmt.replace("%thread%", job->thread);
+        fmt.replace("%thread%", getThread(job->thread));
 
         fmt.replace("%file%", job->file);
         fmt.replace("%line%", job->line);
@@ -151,6 +168,15 @@ void ZLogWorker::doLog(LogJob *job){
 
             if(!filefmt.isEmpty()){
                 ZFile::createDirsTo(filename);
+//                ZFile out(filename, ZFile::modewrite | ZFile::append);
+//                if(out.isOpen()){
+//                    ZString logstr = makeLog(job, filefmt);
+//                    out.write((const zbyte *)logstr.cc(), logstr.size());
+//                } else {
+//                    fprintf(stderr, "%s", "failed to open log file");
+//                    fflush(stderr);
+//                }
+//                out.close();
 
                 std::ofstream lgfl(filename.str().cc(), std::ios::app);
                 lgfl << makeLog(job, filefmt);
@@ -158,6 +184,15 @@ void ZLogWorker::doLog(LogJob *job){
                 lgfl.close();
             } else if(!filefmtall.isEmpty()){
                 ZFile::createDirsTo(filename);
+//                ZFile out(filename, ZFile::modewrite | ZFile::append);
+//                if(out.isOpen()){
+//                    ZString logstr = makeLog(job, filefmtall);
+//                    out.write((const zbyte *)logstr.cc(), logstr.size());
+//                } else {
+//                    fprintf(stderr, "%s", "failed to open log file");
+//                    fflush(stderr);
+//                }
+//                out.close();
 
                 std::ofstream lgfl(filename.str().cc(), std::ios::app);
                 lgfl << makeLog(job, filefmtall);

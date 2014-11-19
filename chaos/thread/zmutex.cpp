@@ -45,7 +45,7 @@ bool ZMutex::trylock(){
     }
 }
 
-bool ZMutex::timelock(zu64 timeout_microsec){
+bool ZMutex::timelock(zu32 timeout_microsec){
     auto end = std::chrono::high_resolution_clock::now() + std::chrono::microseconds(timeout_microsec);
     while(!trylock()){
         // Loop until trylock() succeeds OR timeout is exceeded
@@ -107,7 +107,7 @@ bool ZMutex::trylock(){
     }
 }
 
-bool ZMutex::timelock(zu64 timeout_microsec){
+bool ZMutex::timelock(zu32 timeout_microsec){
     auto end = std::chrono::high_resolution_clock::now() + std::chrono::microseconds(timeout_microsec);
     while(!trylock()){
         // Loop until trylock() succeeds OR timeout is exceeded
@@ -166,7 +166,7 @@ bool ZMutex::trylock(){
     }
 }
 
-bool ZMutex::timelock(zu64 timeout_microsec){
+bool ZMutex::timelock(zu32 timeout_microsec){
     auto end = std::chrono::high_resolution_clock::now() + std::chrono::microseconds(timeout_microsec);
     while(!trylock()){
         // Loop until trylock() succeeds OR timeout is exceeded
@@ -202,12 +202,14 @@ struct ZMutex::MutexData {
     HANDLE mutex;
     CRITICAL_SECTION critical;
     DWORD owner;
+    zu32 depth;
 };
 
 ZMutex::ZMutex() : _data(new MutexData){
+    _data->owner = 0;
+    _data->depth = 0;
     _data->mutex = CreateMutex(NULL, FALSE, NULL);
     InitializeCriticalSection(&_data->critical);
-    _data->owner = 0;
 }
 
 ZMutex::~ZMutex(){
@@ -219,63 +221,85 @@ void ZMutex::lock(){
     EnterCriticalSection(&_data->critical);
     DWORD tid = GetCurrentThreadId();
     if(tid != _data->owner){
+        // This thread does not own the mutex
         LeaveCriticalSection(&_data->critical);
         while(true){
             DWORD ret = WaitForSingleObject(_data->mutex, INFINITE);
             if(ret == WAIT_OBJECT_0){
+                // This thread owns the mutex
                 EnterCriticalSection(&_data->critical);
                 _data->owner = tid;
-                LeaveCriticalSection(&_data->critical);
-                return;
+                break;
             }
         }
     }
-    LeaveCriticalSection(&_data->critical);
     // This thread owns the mutex
+    _data->depth++;
+    LeaveCriticalSection(&_data->critical);
 }
 
 bool ZMutex::trylock(){
     EnterCriticalSection(&_data->critical);
     DWORD tid = GetCurrentThreadId();
     if(tid != _data->owner){
+        // This thread does not own the mutex
         LeaveCriticalSection(&_data->critical);
-        if(/*TryEnterCriticalSection(&_data->mutex) == TRUE*/ false){
-            EnterCriticalSection(&_data->critical);
-            _data->owner = tid;
-            LeaveCriticalSection(&_data->critical);
-            // This thread owns the mutex
-            return true;
-        } else {
-            // This thread does not own the mutex
-            return false;
+        while(true){
+            DWORD ret = WaitForSingleObject(_data->mutex, 0);
+            if(ret == WAIT_OBJECT_0){
+                // This thread owns the mutex
+                EnterCriticalSection(&_data->critical);
+                _data->owner = tid;
+                break; // Mutex was locked
+            } else if(ret == WAIT_TIMEOUT){
+                return false; // Mutex was not locked
+            }
         }
     }
+    // This thread owns the mutex
+    _data->depth++;
     LeaveCriticalSection(&_data->critical);
     return true;
 }
 
-bool ZMutex::timelock(zu64 timeout_microsec){
-    auto end = std::chrono::high_resolution_clock::now() + std::chrono::microseconds(timeout_microsec);
-    while(!trylock()){
-        // Loop until trylock() succeeds OR timeout is exceeded
-        if(std::chrono::high_resolution_clock::now() > end)
-            return false; // Timeout exceeded, mutex is locked by another thread
+bool ZMutex::timelock(zu32 milliseconds){
+    EnterCriticalSection(&_data->critical);
+    DWORD tid = GetCurrentThreadId();
+    if(tid != _data->owner){
+        LeaveCriticalSection(&_data->critical);
+        while(true){
+            DWORD ret = WaitForSingleObject(_data->mutex, milliseconds);
+            if(ret == WAIT_OBJECT_0){
+                EnterCriticalSection(&_data->critical);
+                _data->owner = tid;
+                break; // Mutex was locked
+            } else if(ret == WAIT_TIMEOUT){
+                return false; // Mutex was not locked
+            }
+        }
     }
-    // This thread owns the mutex
+    _data->depth++;
+    LeaveCriticalSection(&_data->critical);
     return true;
 }
 
 void ZMutex::unlock(){
-    lock(); // Make sure we own the mutex first
-    // This thread owns the mutex
-    ReleaseMutex(_data->mutex);
     EnterCriticalSection(&_data->critical);
-    _data->owner = 0;
+    DWORD tid = GetCurrentThreadId();
+    if(tid != _data->owner){
+        LeaveCriticalSection(&_data->critical);
+        lock(); // Make sure we own the mutex first
+        EnterCriticalSection(&_data->critical);
+    }
+    _data->depth--;
+    if(_data->depth == 0){
+        ReleaseMutex(_data->mutex);
+        // Mutex is unlocked
+        _data->owner = 0;
+    }
     LeaveCriticalSection(&_data->critical);
-    // Mutex is unlocked
 }
 
 #endif // ZMUTEX_VERSION
-
 
 }
