@@ -214,7 +214,7 @@ int string_block(){
 
     LOG("-- Explode / Compound:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ZString strarr = "this!will!explode!";
+    ZString strarr = "this!will!!explode!";
     ArZ arr1 = strarr.explode('!');
     ZString cmp1 = ZString::compound(arr1, "-");
     LOG(cmp1);
@@ -232,7 +232,7 @@ int string_block(){
     if(cmp2 != "this-will-sort!of-explode-strstr")
         throw __LINE__;
 
-    ZString strarr3 = "\\!\\!!!this!will\\!also!explode\"strstr\"!";
+    ZString strarr3 = "\\!\\!!!this!will\\!also!!explode\"strstr\"!";
     ArZ arr3 = strarr3.escapedExplode('!');
     ZString cmp3 = ZString::compound(arr3, "-");
     LOG(cmp3);
@@ -241,13 +241,22 @@ int string_block(){
     if(cmp3 != "\\!\\!-this-will\\!also-explode\"strstr\"")
         throw __LINE__;
 
-    ZString strarr4 = "this!.!will!.!explode!.!differently\"strstr\"";
+    ZString strarr4 = "this!.!will!.!explode!.!!.!differently\"strstr\"!.!";
     ArZ arr4 = strarr4.strExplode("!.!");
     ZString cmp4 = ZString::compound(arr4, "---");
     LOG(cmp4);
     if(!(arr4.size() == 4 && arr4[0] == "this" && arr4[1] == "will" && arr4[2] == "explode" && arr4[3] == "differently\"strstr\""))
         throw __LINE__;
     if(cmp4 != "this---will---explode---differently\"strstr\"")
+        throw __LINE__;
+
+    ZString strarr5 = "these!will.all!explode!";
+    ArZ arr5 = strarr5.explodeList(2, '!', '.');
+    ZString cmp5 = ZString::compound(arr5, "-");
+    LOG(cmp5);
+    if(!(arr5.size() == 4 && arr5[0] == "these" && arr5[1] == "will" && arr5[2] == "all" && arr5[3] == "explode"))
+        throw __LINE__;
+    if(cmp5 != "these-will-all-explode")
         throw __LINE__;
 
 //    ArZ explodeList(unsigned nargs, ...);

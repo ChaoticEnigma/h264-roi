@@ -113,8 +113,8 @@ ZBinary writeInfoHeader(const BitmapInfoHeader *infoh){
 
 bool ZBMP::read(ZPath path){
     try {
-        ZBinary buffer = ZFile::readBinary(path);
-        if(buffer.size() < 54){
+        ZBinary buffer;
+        if(ZFile::readBinary(path, buffer) < 54){
             throw ZError("File too small", BMPError::badfile, false);
         }
 
@@ -147,16 +147,7 @@ bool ZBMP::read(ZPath path){
 
         image.setDimensions(width, height, bmp_channels, 8);
 
-        zu32 padding = 0;
-        zu32 scanlinebytes = width * 3;
-        while((scanlinebytes + padding) % 4 != 0)
-            padding++;
-        zu32 psw = scanlinebytes + padding;
-        zu64 outsize = height * psw;
-
-        unsigned char *buff = buffer.storage()->getBlock(fileh.bfOffBits, outsize);
-        unsigned char *pixels = convertBMPDatatoRGB(buff, image.width(), image.height());
-        buffer.storage()->freeBlock(buff);
+        unsigned char *pixels = convertBMPDatatoRGB(buffer.raw() + fileh.bfOffBits, image.width(), image.height());
 
         image.takeData(pixels);
 
@@ -187,7 +178,7 @@ bool ZBMP::write(ZPath path){
     const zu8 fileheadersize = 14;
     const zu8 infoheadersize = 40;
 
-    const zu32 filesize = fileheadersize + infoheadersize + outsize;
+    const zu32 filesize = (zu32)(fileheadersize + infoheadersize + outsize);
 
     ZBinary out;
 
@@ -201,8 +192,8 @@ bool ZBMP::write(ZPath path){
     BitmapInfoHeader infoh;
     memset(&infoh, 0, sizeof(BitmapInfoHeader));
     infoh.biSize = infoheadersize;
-    infoh.biWidth = image.width();
-    infoh.biHeight = image.height();
+    infoh.biWidth = (unsigned)image.width();
+    infoh.biHeight = (unsigned)image.height();
     infoh.biPlanes = 1;
     infoh.biBitCount = image.channels() * image.depth();    // will always be 24, but still
     infoh.biCompression = 0;    // no compression

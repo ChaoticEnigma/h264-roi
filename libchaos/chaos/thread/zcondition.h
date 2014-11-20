@@ -1,71 +1,58 @@
 #ifndef ZCONDITION_H
 #define ZCONDITION_H
 
-#include <pthread.h>
+#include "ztypes.h"
 #include "zmutex.h"
+
+#ifdef ZMUTEX_WINTHREADS
+    struct _RTL_CONDITION_VARIABLE;
+    typedef _RTL_CONDITION_VARIABLE CONDITION_VARIABLE;
+#endif
 
 namespace LibChaos {
 
 class ZCondition {
 public:
-    ZCondition() : mutex(){
-        pthread_mutex_init(&mutex, NULL);
-        pthread_cond_init(&cond, NULL);
-    }
-    ~ZCondition(){
-        pthread_mutex_destroy(&mutex);
-        pthread_cond_destroy(&cond);
-    }
+    ZCondition();
+    ~ZCondition();
 
-    void waitOnce(){
-        pthread_mutex_lock(&mutex);
-        //mutex.lock();
-        //pthread_cond_wait(&cond, mutex.handle());
-        pthread_cond_wait(&cond, &mutex);
-        //mutex.unlock();
-        pthread_mutex_unlock(&mutex);
-    }
+    ZCondition(const ZCondition &) = delete;
+    ZCondition &operator=(const ZCondition &) = delete;
 
-    void waitLock(){
-        //mutex.lock();
-        pthread_mutex_lock(&mutex);
-    }
-    void wait(){
-        //pthread_cond_wait(&cond, mutex.handle());
-        pthread_cond_wait(&cond, &mutex);
-    }
-    void waitUnlock(){
-        //mutex.unlock();
-        pthread_mutex_unlock(&mutex);
-    }
+    void waitOnce();
 
-    void signal(){
-        pthread_mutex_lock(&mutex);
-        //mutex.lock();
-        pthread_cond_signal(&cond);
-        //mutex.unlock();
-        pthread_mutex_unlock(&mutex);
-    }
+    void waitLock();
+    void wait();
+    void waitUnlock();
 
-    void broadcast(){
-        pthread_mutex_lock(&mutex);
-        //mutex.lock();
-        pthread_cond_broadcast(&cond);
-        //mutex.unlock();
-        pthread_mutex_unlock(&mutex);
-    }
+    void signal();
 
-    pthread_cond_t *getHandle(){
+    void broadcast();
+
+#ifdef ZMUTEX_WINTHREADS
+    inline CONDITION_VARIABLE *getHandle(){
+        return cond;
+    }
+    inline CRITICAL_SECTION *getMutex(){
+        return mutex;
+    }
+#else
+    inline pthread_cond_t *getHandle(){
         return &cond;
     }
-    pthread_mutex_t *getMutex(){
+    inline pthread_mutex_t *getMutex(){
         return &mutex;
     }
+#endif
 
 private:
+#ifdef ZMUTEX_WINTHREADS
+    CRITICAL_SECTION *mutex;
+    CONDITION_VARIABLE *cond;
+#else
     pthread_mutex_t mutex;
-    //ZMutex mutex;
     pthread_cond_t cond;
+#endif
 };
 
 }

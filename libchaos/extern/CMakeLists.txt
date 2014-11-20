@@ -1,5 +1,5 @@
 ## LibChaos CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 
 PROJECT(LibChaos_Extern)
 
@@ -7,6 +7,16 @@ OPTION(ENABLE_ZPNG "Link zlib and libpng and build ZPNG" OFF)
 OPTION(ENABLE_ZJPEG "Link libjepg-turbo and build ZJPEG" OFF )
 #OPTION(ENABLE_ZWEBP "Link libwebp and build ZWebP" OFF)
 OPTION(ENABLE_ZH264 "Link libavcodec and libx264 and build ZH264Decoder and ZH264Encoder" OFF)
+
+# Enable all extern classes
+IF(ENABLE_ALL_EXTERN)
+    SET(ENABLE_ZPNG 1)
+    SET(ENABLE_ZPNG 1 PARENT_SCOPE)
+    SET(ENABLE_ZJPEG 1)
+    SET(ENABLE_ZJPEG 1 PARENT_SCOPE)
+    SET(ENABLE_ZH264 1)
+    SET(ENABLE_ZH264 1 PARENT_SCOPE)
+ENDIF()
 
 SET(LibChaos_Extern_HEADERS ### =================== HEADERS =================== ###
     zh264decoder.h
@@ -70,11 +80,6 @@ IF(LibChaos_Extern_SOURCES)
     ENDIF()
     # Link x264 and libavcodec
     IF(ENABLE_ZH264)
-        TARGET_LINK_LIBRARIES(chaosextern avcodec avutil swscale)
-        IF(PLATFORM_WINDOWS)
-            TARGET_LINK_LIBRARIES(chaosextern C:/bin/TDMGCC/MinGW64/lib/libx264.a)
-        ELSE()
-            TARGET_LINK_LIBRARIES(chaosextern x264)
-        ENDIF()
+        TARGET_LINK_LIBRARIES(chaosextern avcodec avutil swscale x264)
     ENDIF()
 ENDIF()

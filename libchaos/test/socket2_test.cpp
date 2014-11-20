@@ -69,12 +69,12 @@ int tcpserver_test(){
 
         ZBinary data;
         client.read(data);
-        LOG("read (" << data.size() << "): \"" << ZString(data.printable().storage()) << "\"");
+        LOG("read (" << data.size() << "): \"" << ZString(data.printable().asChar()) << "\"");
 
         ZString str = "hello back there!";
         ZBinary snddata((const unsigned char *)str.cc(), str.size());
         client.write(snddata);
-        LOG("write (" << snddata.size() << "): \"" << ZString(snddata.printable().storage()) << "\"");
+        LOG("write (" << snddata.size() << "): \"" << ZString(snddata.printable().asChar()) << "\"");
     }
 
     return 0;
@@ -245,7 +245,7 @@ int tcpserver_test2(){
                     case '\n':
                         if(state == beginning){
                             if(breakcounter == 1){
-                                ArZ requestparts = ZString(bin.getSub(0, i-2).storage()).explode(' ');
+                                ArZ requestparts = ZString(bin.printable().asChar()).explode(' ');
                                 if(requestparts.size() == 3){
                                     if(requestparts[2] != "HTTP/1.1" && requestparts[2] != "HTTP/1.0"){
                                         warnings.push(ZString("Bad HTTP-Version"));
@@ -300,7 +300,7 @@ int tcpserver_test2(){
                     if(breakpos != ZBinary::none){
                         ZBinary head = bin.getSub(0, breakpos);
                         head.nullTerm();
-                        ZString header = head.storage();
+                        ZString header = head.printable().asChar();
                         ArZ headers = header.strExplode("\r\n");
                         for(zu64 i = 0; i < headers.size(); ++i){
                             LOG(headers[i]);

@@ -10,7 +10,8 @@ class ZReader : public ZPosition {
 public:
     virtual ~ZReader(){}
 
-    virtual zu64 read(zbyte *dest, zu64 length) = 0;
+    // Read <size> bytes from object at current position into <dest>
+    virtual zu64 read(zbyte *dest, zu64 size) = 0;
 };
 
 }

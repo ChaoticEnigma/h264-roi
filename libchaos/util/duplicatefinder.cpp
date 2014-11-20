@@ -28,7 +28,8 @@ int main(int argc, char **argv){
     ZMap<zu64, ZArray<ZPath>> hashtable;
     for(zu64 i = 0; i < files.size(); ++i){
         ZPath path = files[i];
-        ZBinary bin = ZFile::readBinary(path);
+        ZBinary bin;
+        ZFile::readBinary(path, bin);
         //ZFile(path).read(bin);
         zu64 hash = ZBinary::hash(ZBinary::hashType1, bin);
         //LOG(hash << " - " << bin.size() << " - " << path);

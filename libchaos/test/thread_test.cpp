@@ -1,12 +1,14 @@
 #include "test.h"
 
 #include "zthread.h"
-#include <unistd.h>
+#include "zmutex.h"
+#include "zlock.h"
+//#include <unistd.h>
 
-void *thread_func(void */*zarg*/){
+void *thread_func(void * /*zarg*/){
     //ZThreadArg *arg = (ZThreadArg*)zarg;
     LOG("running " << ZThread::thisTid());
-    sleep(2);
+    ZThread::sleep(2);
     LOG("waited 2 " << ZThread::thisTid());
     return NULL;
 }
@@ -17,7 +19,7 @@ void *thread_func2(void *zarg){
     int i = 0;
     while(!arg->stop()){
         LOG("loop" << ++i << " in " << ZThread::thisTid());
-        usleep(1000000);
+        ZThread::usleep(1000000);
     }
     LOG("broke loop " << ZThread::thisTid());
     return NULL;
@@ -38,7 +40,7 @@ int thread_block(){
     ZString txt = "hello there from here";
     ZThread thr2(thread_func2, txt.c());
     LOG("thread " << thr2.tid() << " created");
-    sleep(5);
+    ZThread::sleep(5);
     LOG("waited 5 " << ZThread::thisTid());
     thr2.stop();
     LOG("stopped " << thr2.tid());
@@ -46,3 +48,84 @@ int thread_block(){
     LOG("joined " << thr2.tid());
     return 0;
 }
+
+//
+//
+//
+
+/**
+ * @author Jeff Tanner, Seattle, jeff_tanner@earthlink.net
+ *
+ * Update volatile global variable until maximum value
+ * is reached using critical sections.
+ */
+
+//#include "stdafx.h"
+#include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <iostream>
+//using namespace std;
+
+ZMutex mutex;
+CRITICAL_SECTION gCS; // shared structure
+
+const int gcMaxCount = 10;
+volatile int gCount = 0;
+
+DWORD threadLoop(void *name){
+    while(true){
+        TLOG((char *)name << " entering critical Section...");
+//        EnterCriticalSection(&gCS);
+//        mutex.lock();
+        ZLock lock(mutex);
+        if(gCount < gcMaxCount){
+            TLOG((char *)name << " in critical Section");
+            gCount++;
+        } else {
+//            LeaveCriticalSection(&gCS);
+//            mutex.unlock();
+            break;
+        }
+//        LeaveCriticalSection(&gCS);
+//        mutex.unlock();
+        TLOG((char *)name << " left critical Section");
+    }
+    return 0;
+}
+
+HANDLE CreateChild(char *name){
+    HANDLE hThread; DWORD dwId;
+    hThread = CreateThread(NULL, 0, threadLoop, (LPVOID)name, 0, &dwId);
+    assert(hThread != NULL);
+    return hThread;
+}
+
+int mutex_block(){
+    HANDLE hT[4];
+    InitializeCriticalSection(&gCS);
+
+    TLOG("Starting...");
+//    Sleep(200);
+
+    // Create multiple child threads
+    hT[0] = CreateChild("Evelyn");
+    hT[1] = CreateChild("Bodie");
+    hT[2] = CreateChild("Rebecca");
+    hT[3] = CreateChild("Jeff");
+
+    WaitForMultipleObjects(4, hT, TRUE, INFINITE);
+    TLOG("Completed!");
+
+    CloseHandle(hT[0]);
+    CloseHandle(hT[1]);
+    CloseHandle(hT[2]);
+    CloseHandle(hT[3]);
+
+    DeleteCriticalSection(&gCS);
+    return 0;
+}
+
+
+

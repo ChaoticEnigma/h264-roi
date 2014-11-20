@@ -34,7 +34,7 @@ public:
 
     ZError getError(){
         ZError err = error;
-        error.clear();
+        error = ZError();
         return err;
     }
 
