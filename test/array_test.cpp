@@ -1,6 +1,6 @@
 #include "test.h"
 #include "zarray.h"
-#include "zerror.h"
+#include "zstack.h"
 
 int array_block(){
     ZArray<int> tst;
@@ -19,12 +19,32 @@ int array_block(){
     else
         throw (int)2;
 
-    char mychars[] = { 'a', 'b', 'c', 'd', 'e' };
-    ZArray<char> tst3(mychars, 5);
+    ZArray<char> tst3({ 'a', 'b', 'c', 'd', 'e' });
     if(tst3.size() == 5 && tst3[0] == 'a' && tst3[1] == 'b' && tst3[2] == 'c' && tst3[3] == 'd' && tst3[4] == 'e')
         LOG(tst3.size() << " " << tst3[0] << "." << tst3[1] << "." << tst3[2] << "." << tst3[3] << "." << tst3[4] << " OK");
     else
         throw (int)3;
+
+    ZArray<ZString> tst4({ "one", "two", "four", "five" });
+    tst4.insert(2, "three");
+    if(tst4.size() == 5 && tst4[0] == "one" && tst4[1] == "two" && tst4[2] == "three" && tst4[3] == "four" && tst4[4] == "five")
+        LOG(tst4.size() << " " << tst4[0] << "." << tst4[1] << "." << tst4[2] << "." << tst4[3] << "." << tst4[4] << " OK");
+    else
+        throw (int)4;
+
+    ZArray<ZString> tst5({ "one", "junk1", "two", "three", "junk2", "four", "five" });
+    tst5.erase(1);
+    tst5.erase(3);
+    if(tst5.size() == 5 && tst5[0] == "one" && tst5[1] == "two" && tst5[2] == "three" && tst5[3] == "four" && tst5[4] == "five")
+        LOG(tst5.size() << " " << tst5[0] << "." << tst5[1] << "." << tst5[2] << "." << tst5[3] << "." << tst5[4] << " OK");
+    else
+        throw (int)5;
+
+    tst5.reverse();
+    if(tst5.size() == 5 && tst5[0] == "five" && tst5[1] == "four" && tst5[2] == "three" && tst5[3] == "two" && tst5[4] == "one")
+        LOG(tst5.size() << " " << tst5[0] << "." << tst5[1] << "." << tst5[2] << "." << tst5[3] << "." << tst5[4] << " OK");
+    else
+        throw (int)6;
 
     return 0;
 }
@@ -38,5 +58,15 @@ int assoc_block(){
     for(unsigned i = 0; i < zarr.size(); ++i){
         LOG(zarr.key(i) << " " << zarr[i]);
     }
+    return 0;
+}
+
+int stack_block(){
+    ZStack<int> tst1;
+
+    zu64 u = 56546;
+    int i = u;
+    LOG(i);
+
     return 0;
 }

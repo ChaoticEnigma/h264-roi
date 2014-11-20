@@ -1,5 +1,5 @@
 ## LibChaos Test CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 
 PROJECT(LibChaos_Test)
 
@@ -13,6 +13,7 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     binary_test.cpp
 
     array_test.cpp
+    list_test.cpp
 
     string_test.cpp
     path_test.cpp

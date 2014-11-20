@@ -1,6 +1,6 @@
 #include "test.h"
 #include "zdatagramsocket.h"
-#include <unistd.h>
+//#include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
 
@@ -50,7 +50,7 @@ int udp_test(){
         } else {
             LOG("failed to send to " << addr.str());
         }
-        usleep(500000);
+        ZThread::usleep(500000);
     }
 
     TLOG("Sent " << count);

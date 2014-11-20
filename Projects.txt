@@ -1,0 +1,22 @@
+LibChaos Projects
+==================================
+LibChaos Core
+LibChaos Extern
+LibChaos Util
+
+Archon - webserver
+ssh://chaos@znnxs.com:89/git/archon.git
+
+Zephyr - game engine
+ssh://chaos@znnxs.com:89/git/zephyr.git
+
+SteamTool - symlink and reparse point multi hard disk data manager
+ssh://chaos@znnxs.com:89/git/steamtool.git
+
+H264-ROI - region of interest encoding in H264
+ssh://chaos@znnxs.com:89/git/h264-roi.git
+
+Windows Audio Output Circular Recorder - record output from windows playback device in a circular buffer
+
+VoIP Client
+- steam integration?

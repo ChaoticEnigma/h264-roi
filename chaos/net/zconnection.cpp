@@ -29,7 +29,7 @@ ZConnection::~ZConnection(){
 }
 
 void ZConnection::close(){
-    close();
+    ZSocket::close();
 }
 
 bool ZConnection::isOpen() const {

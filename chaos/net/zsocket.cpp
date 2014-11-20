@@ -112,15 +112,13 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
     dest = ZAddress::lookUp(dest)[0];
     dest.populate(&addrstorage);
 
-    zbyte *ptr = data.storage()->getBlock(0, data.size());
-
-#if PLATFORM == LINUX
-    long sent = ::sendto(_socket, ptr, data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
-#elif PLATFORM == WINDOWS
-    long sent = ::sendto(_socket, (const char *)ptr, data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
+#if COMPILER == MSVC
+    long sent = ::sendto(_socket, (const char *)data.raw(), (int)data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
+#elif COMPILER == MINGW
+    long sent = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
+#else
+    long sent = ::sendto(_socket, data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
 #endif
-
-    data.storage()->freeBlock(ptr);
 
     if(sent < 0)
         error = ZError("ZSocket: sendto error " + ZError::getSystemError());
@@ -217,15 +215,13 @@ zu64 ZSocket::read(ZBinary &data){
         return 0;
     }
 
-    zbyte *ptr = data.storage()->getBlock(0, data.size());
-
-#if PLATFORM == LINUX
-    long bytes = ::read(_socket, ptr, data.size());
-#elif PLATFORM == WINDOWS
-    long bytes = ::recv(_socket, (char *)ptr, data.size(), 0);
+#if COMPILER == MSVC
+    long bytes = ::recv(_socket, (char *)data.raw(), (int)data.size(), 0);
+#elif COMPILER == MINGW
+    long bytes = ::recv(_socket, (char *)data.raw(), data.size(), 0);
+#else
+    long bytes = ::read(_socket, data.raw(), data.size());
 #endif
-
-    data.storage()->commitBlock(ptr);
 
     if(bytes <= -1){
         error = ZError("ZSocket: read error: " + ZError::getSystemError());
@@ -245,13 +241,13 @@ bool ZSocket::write(const ZBinary &data){
         return false;
     }
 
-    zbyte *ptr = data.storage()->getBlock(0, data.size());
-#if PLATFORM == LINUX
-    long bytes = ::write(_socket, ptr, data.size());
-#elif PLATFORM == WINDOWS
-    long bytes = ::send(_socket, (const char *)ptr, data.size(), 0);
+#if COMPILER == MSVC
+    long bytes = ::send(_socket, (const char *)data.raw(), (int)data.size(), 0);
+#elif COMPILER == MINGW
+    long bytes = ::send(_socket, (const char *)data.raw(), data.size(), 0);
+#else
+    long bytes = ::write(_socket, data.raw(), data.size());
 #endif
-    data.storage()->freeBlock(ptr);
 
     if(bytes <= 0){
         error = ZError("ZSocket: write error: " + ZError::getSystemError());
