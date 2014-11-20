@@ -32,8 +32,10 @@ public:
     // Takes YUV420P data
     bool encode(uint8_t *data[], const int linesize[]);
 
+    ZArray<float> &quantOffsets(){ return blockqps; }
+
 private:
-    bool updateScaling();
+    //bool updateScaling();
 
 private:
     // Context data
@@ -56,6 +58,9 @@ private:
     // Output settings
     zu64 outwidth, outheight;   // Output width and height
     zu32 outfps;                // Output FPS
+
+    // Macroblock setings
+    ZArray<float> blockqps;
 };
 
 }
