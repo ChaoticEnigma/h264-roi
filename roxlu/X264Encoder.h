@@ -34,11 +34,11 @@ public:
     /* params the user should set */
     int in_width;
     int in_height;
-    AVPixelFormat in_pixel_format;
+    PixelFormat in_pixel_format;
 
     int out_width;
     int out_height;
-    AVPixelFormat out_pixel_format;
+    PixelFormat out_pixel_format;
 
     int fps;                                                      /* e.g. 25, 60, etc.. */
 
