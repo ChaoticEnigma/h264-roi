@@ -40,12 +40,8 @@ public:
     };
 
 public:
-    ZString() : _size(0), _realsize(0), _data(nullptr){
-        clear(); // Empty string with null terminator
-    }
-    ~ZString(){
-        _alloc.dealloc(_data);
-    }
+    ZString();
+    ~ZString();
 
 //    ZString(ZStorage *stor) : ZString(){
 //        if(stor != nullptr){
@@ -54,32 +50,32 @@ public:
 //        }
 //    }
 
-    // Assumed UTF-8
-    ZString(const chartype *ptr, zu64 size);
     ZString(const ZString &other);
 
-    // char ZArray constructor
-    ZString(const ZArray<chartype> &array);
+    // Assumed UTF-8
+    ZString(const chartype *str); // Null-terminated C-string
+    ZString(const chartype *ptr, zu64 length);
+    ZString(const ZArray<chartype> &array); //  ZArray<char>
 
     // std strings
     // Assumed UTF-8
     ZString(std::string str);
     std::string str() const;
 
+    // Null-terminated wide string
+    // Assumed UTF-16
+    ZString(const wchar_t *wstr);
+    ZString(const wchar_t *wstr, zu64 length);
+    ZString(const ZArray<wchar_t> &array); //  ZArray<wchar_t>
+
     // std wide strings
-    // Assumed UCS-2 and converted to UTF-8
+    // Assumed UTF-16 and converted to UTF-8
     ZString(std::wstring wstr);
     std::wstring wstr() const;
-
-    // C-string constructor
-    // Assumed UTF-8
-    ZString(const chartype *str);
 
     // Pointer to data
     inline const chartype *cc() const { return _data; }
     inline chartype *c() const { return _data; }
-
-    ZString(const wchar_t *wstr);
 
     // Fill constructor
     ZString(chartype ch, zu64 len = 1);

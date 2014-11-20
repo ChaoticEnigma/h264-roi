@@ -9,34 +9,18 @@
 
 namespace LibChaos {
 
-ZString::ZString(const ZString::chartype *ptr, zu64 size) : _size(0), _realsize(0), _data(nullptr){
-    resize(size);
-    if(size && ptr)
-        _alloc.rawcopy(ptr, _data, size);
+ZString::ZString() : _size(0), _realsize(0), _data(nullptr){
+    clear(); // Empty string with null terminator
+}
+
+ZString::~ZString(){
+    _alloc.dealloc(_data);
 }
 
 ZString::ZString(const ZString &other) : _size(0), _realsize(0), _data(nullptr){
     resize(other._size);
     if(other._size && other._data)
         _alloc.rawcopy(other._data, _data, other._size);
-}
-
-ZString::ZString(const ZArray<ZString::chartype> &array) : _size(0), _realsize(0), _data(nullptr){
-    resize(array.size());
-    if(array.size() && array.ptr())
-        _alloc.rawcopy(array.ptr(), _data, array.size());
-}
-
-ZString::ZString(std::string str) : ZString(str.c_str(), str.size()){}
-std::string ZString::str() const {
-    return std::string(_data, size());
-}
-
-ZString::ZString(std::wstring wstr) : ZString(){
-    fromUtf16(wstr);
-}
-std::wstring ZString::wstr() const {
-    return toUtf16();
 }
 
 ZString::ZString(const ZString::chartype *str) : ZString(){
@@ -49,8 +33,38 @@ ZString::ZString(const ZString::chartype *str) : ZString(){
     }
 }
 
+ZString::ZString(const ZString::chartype *ptr, zu64 length) : _size(0), _realsize(0), _data(nullptr){
+    resize(length);
+    if(length && ptr)
+        _alloc.rawcopy(ptr, _data, length);
+}
+
+ZString::ZString(const ZArray<ZString::chartype> &array) : ZString(array.raw(), array.size()){
+
+}
+
+ZString::ZString(std::string str) : ZString(str.c_str(), str.size()){}
+std::string ZString::str() const {
+    return std::string(_data, size());
+}
+
 ZString::ZString(const wchar_t *wstr) : ZString(){
     fromUtf16(wstr);
+}
+
+ZString::ZString(const wchar_t *wstr, zu64 length) : ZString(){
+    fromUtf16(std::wstring(wstr, length));
+}
+
+ZString::ZString(const ZArray<wchar_t> &array) : ZString(array.raw(), array.size()){
+
+}
+
+ZString::ZString(std::wstring wstr) : ZString(){
+    fromUtf16(wstr);
+}
+std::wstring ZString::wstr() const {
+    return toUtf16();
 }
 
 ZString::ZString(ZString::chartype ch, zu64 len) : _size(0), _realsize(0), _data(nullptr){

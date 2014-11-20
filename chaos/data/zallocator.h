@@ -44,6 +44,10 @@ public:
         }
     }
 
+    void voidcopy(const void *src, void *dest, zu64 bytes){
+        memcpy(dest, src, bytes);
+    }
+
     void rawcopy(const T *src, T *dest, zu64 count){
         memcpy(dest, src, sizeof(T) * count);
     }

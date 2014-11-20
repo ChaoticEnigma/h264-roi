@@ -765,17 +765,37 @@ bool ZError::registerInterruptHandler(signalHandler handler){
     return registerSignalHandler(interrupt, handler);
 }
 
+#if PLATFORM == WINDOWS
+unsigned long ZError::getSystemErrorCode(){
+    return GetLastError();
+}
+#else
+int ZError::getSystemErrorCode(){
+    return errno;
+}
+#endif
+
+int ZError::getSocketErrorCode(){
+#if PLATFORM == WINDOWS
+    return WSAGetLastError();
+#else
+    return errno;
+#endif
+}
+
 ZString ZError::getSystemError(){
-#if PLATFORM == LINUX
+#if  PLATFORM == WINDOWS
+    DWORD err = GetLastError();
+//    wchar_t *str = nullptr;
+    char *str = nullptr;
+    DWORD size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), str, 0, NULL);
+    ZString errstr(str, size);
+    LocalFree(str);
+    return ZString(err) + ": " + errstr;
+#else
     int err = errno;
     return ZString() << err << ": " << strerror(err);
-#elif  PLATFORM == WINDOWS
-    int err = WSAGetLastError();
-    char *s = NULL;
-    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, (DWORD)err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), s, 0, NULL);
-    LocalFree(s);
-    return ZString() << err << ": " << s;
-#endif // PLATFORM
+#endif
 }
 
 }

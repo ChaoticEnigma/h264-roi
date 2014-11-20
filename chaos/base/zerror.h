@@ -48,6 +48,12 @@ public:
     static bool registerInterruptHandler(signalHandler);
     static bool registerSignalHandler(zerror_signal, signalHandler);
 
+#if PLATFORM == WINDOWS
+    static unsigned long getSystemErrorCode();
+#else
+    static int getSystemErrorCode();
+#endif
+    static int getSocketErrorCode();
     static ZString getSystemError();
 
     static ArZ getStackTrace(unsigned trim = 1);
