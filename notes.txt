@@ -1,0 +1,5 @@
+x264.gitcommitdiff
+http://git.videolan.org/gitweb.cgi/x264.git/?p=x264.git;a=commitdiff;h=a6c6afa85053443dc459e096e8e681dc21d43ade
+
+x264 Options Explained
+http://www.digital-digest.com/articles/x264_options_page1.html
