@@ -1,5 +1,7 @@
 #include "H264_Decoder.h"
 
+#include "tinylib.h"
+
 H264_Decoder::H264_Decoder(h264_decoder_callback frameCallback, void* user)
   :codec(NULL)
   ,codec_context(NULL)

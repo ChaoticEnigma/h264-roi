@@ -12,9 +12,9 @@ ADD_SUBDIRECTORY(libchaos)
 SET(H264_ROI_SOURCES ### =================== SOURCES =================== ###
     main.cpp
 
-    roxlu/H264_Decoder.cpp
+#    roxlu/H264_Decoder.cpp
 #    roxlu/Utils.cpp
-    roxlu/X264Encoder.cpp
+#    roxlu/X264Encoder.cpp
 #    roxlu/X264EncoderThreaded.cpp
 #    roxlu/YUV420P.cpp
 )
