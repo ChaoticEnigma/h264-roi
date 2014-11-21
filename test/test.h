@@ -2,8 +2,6 @@
 #define TEST_H
 
 #include "zlog.h"
-
-//using namespace std;
 using namespace LibChaos;
 
 int sandbox();

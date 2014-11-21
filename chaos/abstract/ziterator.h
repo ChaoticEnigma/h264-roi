@@ -9,8 +9,10 @@ template <typename T> class ZIterator {
 public:
     virtual ~ZIterator(){}
 
-    virtual bool hasNext() const = 0;
-    virtual T &next() = 0;
+    virtual bool atEnd() const = 0;
+    virtual void advance() = 0;
+
+    virtual T &operator*() = 0;
 };
 
 }

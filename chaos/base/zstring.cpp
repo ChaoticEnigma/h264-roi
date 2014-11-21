@@ -74,7 +74,21 @@ ZString::ZString(ZString::chartype ch, zu64 len) : _size(0), _realsize(0), _data
             _data[i] = ch;
 }
 
-ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad){
+ZString ZString::ItoS(zu64 value, zu8 base, zu64 pad){
+//    ZString buffer;
+//    if(base < 2 || base > 16)
+//        return buffer;
+//    const char *digits = "0123456789abcdef";
+//    zu64 quotient = value;
+//    do {
+//        buffer += digits[quotient % base];
+//        quotient /= base;
+//    } while(quotient);
+//    buffer.reverse();
+//    if(buffer.size() < pad){
+//        buffer = ZString('0', pad - buffer.size()) + buffer;
+//    }
+//    return buffer;
     std::string buf;
     if(base < 2 || base > 16)
         return buf;
@@ -91,7 +105,20 @@ ZString ZString::ItoS(zu64 value, unsigned base, zu64 pad){
     }
     return tmp;
 }
-ZString ZString::ItoS(zs64 value, unsigned base){
+ZString ZString::ItoS(zs64 value, zu8 base){
+//    ZString buffer;
+//    if(base < 2 || base > 16)
+//        return buffer;
+//    const char *digits = "0123456789abcdef";
+//    zu64 quotient = value;
+//    do {
+//        buffer += digits[quotient % base];
+//        quotient /= base;
+//    } while(quotient);
+//    if(value < 0)
+//        buffer += '-';
+//    buffer.reverse();
+//    return buffer;
     std::string buf;
     if (base < 2 || base > 16)
         return buf;
@@ -106,12 +133,82 @@ ZString ZString::ItoS(zs64 value, unsigned base){
     return ZString(buf);
 }
 
+bool ZString::isInteger() const {
+    if(isEmpty())
+        return false;
+    for(zu64 i = 0; i < size(); ++i){
+        if(operator[](i) < 48 || operator[](i) > 57)
+            return false;
+    }
+    return true;
+}
+
 int ZString::tint() const {
     return atoi(cc());
 }
 
+zu64 ZString::tozu64() const {
+    if(!isInteger())
+        return ZU64_MAX;
+    ZString tmp = reverse(*this);
+    zu64 out = 0;
+    for(zu64 i = 0; i < tmp.size(); ++i){
+        out += ((zu64)(tmp[i] - 48) * (zu64)pow(10, i));
+    }
+    return out;
+}
+
+bool ZString::isFloat() const {
+    if(isEmpty())
+        return false;
+    ZString tmp = *this;
+    if(tmp[0] == '-')
+        tmp.substr(1);
+    ArZ parts = tmp.explode('.');
+    if(parts.size() < 2)
+        return tmp.isInteger();
+    if(parts.size() > 2)
+        return false;
+    if(!parts[0].isInteger() || !parts[1].isInteger())
+        return false;
+    return true;
+}
+
+float ZString::toFloat() const {
+    if(!isFloat())
+        return 0.0f;
+    float out = 0.0f;
+    ZString tmp = *this;
+    bool neg = false;
+    if(tmp[0] == '-'){
+        neg = true;
+        tmp.substr(1);
+    }
+    ArZ parts = split('.');
+    ZString whole = reverse(parts[0]);
+    for(zu64 i = 0; i < whole.size(); ++i){
+        out += ((float)(whole[i] - 48) * pow(10, i));
+    }
+    if(parts.size() > 1){
+        for(zu64 i = 0; i < parts[1].size(); ++i){
+            out += ((float)(parts[1][i] - 48) * pow(10, -i));
+        }
+    }
+    if(neg)
+        out = -out;
+    return out;
+}
+
+ZStringIterator ZString::begin(){
+    return ZStringIterator(this, 0);
+}
+
+ZStringIterator ZString::end(){
+    return ZStringIterator(this, size()-1);
+}
+
 ZString::ZString(double num, unsigned places) : ZString(){
-    std::ostringstream stream;
+    std::stringstream stream;
     stream << num;
     if(places){
         ArZ arr = ZString(stream.str()).split('.');
@@ -661,16 +758,16 @@ ZString ZString::removeWhitespace(){
     return *this;
 }
 
-ZString &ZString::invert(){
+ZString &ZString::reverse(){
     ZString buff;
-    for(zu64 i = 0, j = size(); i < size(); ++i, --j){
-        buff += _data[j];
+    for(zu64 i = size(); i > 0; --i){
+        buff += _data[i-1];
     }
-    operator=(buff);
+    assign(buff);
     return *this;
 }
-ZString ZString::invert(ZString str){
-    return str.invert();
+ZString ZString::reverse(ZString str){
+    return str.reverse();
 }
 
 ZString &ZString::toLower(){

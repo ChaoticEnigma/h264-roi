@@ -172,6 +172,7 @@
 #define FOREACHIN(A, B, C) zu64 iloopvar##A##C##__LINE__ = 0; for(B C = A.size() ? A[iloopvar##A##C##__LINE__] : B(); iloopvar##A##C##__LINE__ < A.size(); ++iloopvar##A##C##__LINE__, C = A[iloopvar##A##C##__LINE__])
 #define MIN(A, B) ((A < B) ? A : B)
 #define MAX(A, B) ((A > B) ? A : B)
+#define ABS(A) (A < 0 ? -A : A)
 
 // LibChaos experimental versions
 #define ZARRAY_VERSION /*1*/ 2

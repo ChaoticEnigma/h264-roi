@@ -9,6 +9,7 @@
 #include "ztypes.h"
 #include "zallocator.h"
 #include "zassoc.h"
+#include "ziterator.h"
 
 #include <cstring>
 
@@ -24,6 +25,7 @@
 namespace LibChaos {
 
 class ZString;
+class ZStringIterator;
 
 typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
@@ -81,8 +83,8 @@ public:
     ZString(chartype ch, zu64 len = 1);
 
     // Interger to string
-    static ZString ItoS(zu64 num, unsigned base = 10, zu64 pad = 0);
-    static ZString ItoS(zs64 num, unsigned base = 10);
+    static ZString ItoS(zu64 num, zu8 base = 10, zu64 pad = 0);
+    static ZString ItoS(zs64 num, zu8 base = 10);
 
     ZString(zuc num) : ZString((zull)num){}
     ZString(zsc num) : ZString((zsll)num){}
@@ -93,11 +95,21 @@ public:
     ZString(zul num) : ZString((zull)num){}
     ZString(zsl num) : ZString((zsll)num){}
 
-    ZString(zull num) : ZString(){ assign(ItoS((zu64)num, 10)); }
-    ZString(zsll num) : ZString(){ assign(ItoS((zs64)num, 10)); }
+    ZString(zull num) : ZString(ItoS((zu64)num, 10)){}
+    ZString(zsll num) : ZString(ItoS((zs64)num, 10)){}
 
-    // String to int
+    // To integer
+    bool isInteger() const;
     int tint() const;
+    zu64 tozu64() const;
+
+    // To floating point
+    bool isFloat() const;
+    float toFloat() const;
+
+    // Iterators
+    ZStringIterator begin();
+    ZStringIterator end();
 
     // Construct from double with <places> decimal points, 0 means all
     ZString(double flt, unsigned places = 0);
@@ -197,8 +209,8 @@ public:
 
     ZString removeWhitespace();
 
-    ZString &invert();
-    static ZString invert(ZString str);
+    ZString &reverse();
+    static ZString reverse(ZString str);
 
     // Convert UPPERCASE characters to lowercase equivalents in <str>
     ZString &toLower();
@@ -276,6 +288,37 @@ inline bool operator==(const ZString &lhs, const ZString &rhs){
 inline bool operator!=(const ZString &lhs, const ZString &rhs){
     return !operator==(lhs, rhs);
 }
+
+class ZStringIterator : public ZIterator<ZString::chartype> {
+public:
+    ZStringIterator(ZString *str, zu64 pos = 0) : str(str), pos(pos){}
+
+    bool atEnd() const {
+        return pos >= str->size();
+    }
+    void advance(){
+        if(!atEnd())
+            ++pos;
+    }
+    void operator++(){ advance(); }
+
+    bool atFront() const {
+        return pos <= 0;
+    }
+    void devance(){
+        if(!atFront())
+            --pos;
+    }
+    void operator--(){ devance(); }
+
+    ZString::chartype &operator*(){
+        return str->operator[](pos);
+    }
+
+private:
+    ZString *str;
+    zu64 pos;
+};
 
 } // namespace LibChaos
 

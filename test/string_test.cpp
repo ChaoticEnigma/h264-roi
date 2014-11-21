@@ -2,6 +2,8 @@
 
 #include "zstring.h"
 #include "zpath.h"
+#include <cmath>
+#include <iostream>
 
 int string_block(){
     ZString str1;
@@ -265,8 +267,42 @@ int string_block(){
 
 //    static bool alphaTest(ZString str1, ZString str2);
 
-//    // Allows ZString to be used with std streams
-//    friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
+    ZString iterstr1 = "abcdefghijklmnopqrstuvwxyz";
+    ZString iterstr2;
+    for(ZStringIterator i = iterstr1.begin(); !i.atEnd(); ++i){
+        iterstr2 += *i;
+    }
+    LOG(iterstr1);
+    LOG(iterstr2);
+    ZString iterstr3;
+    for(ZStringIterator i = iterstr1.end(); !i.atFront(); --i){
+        iterstr3 += *i;
+    }
+    LOG(iterstr3);
+
+    LOG("-- Number Conversion:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ZString numstr1 = "3345";
+    zu64 num1 = numstr1.tozu64();
+    LOG(numstr1 << " " << num1);
+    if(num1 != 3345)
+        throw __LINE__;
+
+    ZString numstr2 = "546567867864512";
+    zu64 num2 = numstr2.tozu64();
+    LOG(numstr2 << " " << num2);
+    if(num2 != 546567867864512)
+        throw __LINE__;
+
+    ZString numstr3 = "45.223";
+    float num3 = numstr3.toFloat();
+    LOG(numstr3 << " " << num3);
+    std::cout << num3 << std::endl;
+
+    ZString numstr4 = "-455";
+    float num4 = numstr4.toFloat();
+    LOG(numstr4 << " " << num4);
+
 
     return 0;
 }
