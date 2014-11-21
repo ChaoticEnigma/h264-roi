@@ -1,32 +1,30 @@
 #include "test.h"
 
 int path_block(){
-    // /a/path/here/test.txt
-    // /this/path/to/another/place
-    // ../../../../../a/path/here/test.txt
+    LOG("-- Parse:");  // /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // /some/short/thing.obj
-    // /some/short/other/path
-    // ../../thing.obj
+    ZPath path1 = ZString("/some/odd/../complic/ated/../path");
+    LOG(path1.prefix());
+    LOG(path1.absolute());
+    LOG(path1);
 
     LOG("-- Sanitize:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ZPath path1 = ZString("/some/odd/../complic/ated/../path");
     path1.sanitize();
     LOG(path1);
-    if(path1.size() != 3 || !path1.absolute() || path1[0] != "some" || path1[1] != "complic" || path1[2] != "path")
+    if(path1.data() != ArZ({ "some","complic","path" }) || !path1.absolute())
         throw 1;
 
     ZPath path2 = "../../another/path";
     path2.sanitize();
     LOG(path2);
-    if(path2.size() != 4 || path2.absolute() || path2[0] != ".." || path2[1] != ".." || path2[2] != "another" || path2[3] != "path")
+    if(path2.data() != ArZ({ "..","..","another","path" }) || path2.absolute())
         throw 2;
 
     ZPath path3 = "/some/../../../path";
     path3.sanitize();
     LOG(path3);
-    if(path3.size() != 3 || !path3.absolute() || path3[0] != ".." || path3[1] != ".." || path3[2] != "path")
+    if(path3.data() != ArZ({ "..","..","path" }) || !path3.absolute())
         throw 3;
 
     LOG("-- Relative To:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,22 +35,43 @@ int path_block(){
     LOG(path5);
     path4.relativeTo(path5);
     LOG(path4);
-    if(path4.size() != 3 || path4.absolute() || path4[0] != "some" || path4[1] != "complic" || path4[2] != "path")
+    if(path4.data() != ArZ({ "some","complic","path" }) || path4.absolute())
         throw 4;
 
-    return 0;
-}
+    ZPath path6 = "/another/long/interesting/path/to/nowhere";
+    ZPath path7 = "/another/short/boring/path";
+    LOG(path6);
+    LOG(path7);
+    path6.relativeTo(path7);
+    LOG(path6);
+    if(path6.data() != ArZ({ "..","..","..","long","interesting","path","to","nowhere" }) || path6.absolute())
+        throw 5;
 
-int path_windows_block(){
-    LOG("=== Path Windows Test...");
-    ZPath here = ZPath::pwd();
-    LOG(here.size() << " " << here.str());
+    // /a/path/here/test.txt
+    // /this/path/to/another/place
+    // ../../../../../a/path/here/test.txt
 
-//    ZPath mk = "over/there/lol.txt";
-//    LOG(mk);
-//    if(mk.createDirsTo())
-//        LOG("ok");
-//    else
-//        LOG("no");
+    ZPath path8 = "/a/path/here/test.txt";
+    ZPath path9 = "/this/path/to/another/place";
+    LOG(path8);
+    LOG(path9);
+    path8.relativeTo(path9);
+    LOG(path8);
+    if(path8.data() != ArZ({ "..","..","..","..","..","a","path","here","test.txt" }) || path8.absolute())
+        throw 6;
+
+    // /some/short/thing.obj
+    // /some/short/other/path
+    // ../../thing.obj
+
+    ZPath path10 = "/some/short/thing.obj";
+    ZPath path11 = "/some/short/other/path";
+    LOG(path10);
+    LOG(path11);
+    path10.relativeTo(path11);
+    LOG(path10);
+    if(path10.data() != ArZ({ "..","..","thing.obj" }) || path10.absolute())
+        throw 7;
+
     return 0;
 }

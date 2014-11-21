@@ -2,6 +2,8 @@
 
 #include "zstring.h"
 #include "zpath.h"
+#include <cmath>
+#include <iostream>
 
 int string_block(){
     ZString str1;
@@ -214,7 +216,7 @@ int string_block(){
 
     LOG("-- Explode / Compound:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ZString strarr = "this!will!explode!";
+    ZString strarr = "this!will!!explode!";
     ArZ arr1 = strarr.explode('!');
     ZString cmp1 = ZString::compound(arr1, "-");
     LOG(cmp1);
@@ -232,7 +234,7 @@ int string_block(){
     if(cmp2 != "this-will-sort!of-explode-strstr")
         throw __LINE__;
 
-    ZString strarr3 = "\\!\\!!!this!will\\!also!explode\"strstr\"!";
+    ZString strarr3 = "\\!\\!!!this!will\\!also!!explode\"strstr\"!";
     ArZ arr3 = strarr3.escapedExplode('!');
     ZString cmp3 = ZString::compound(arr3, "-");
     LOG(cmp3);
@@ -241,7 +243,7 @@ int string_block(){
     if(cmp3 != "\\!\\!-this-will\\!also-explode\"strstr\"")
         throw __LINE__;
 
-    ZString strarr4 = "this!.!will!.!explode!.!differently\"strstr\"";
+    ZString strarr4 = "this!.!will!.!explode!.!!.!differently\"strstr\"!.!";
     ArZ arr4 = strarr4.strExplode("!.!");
     ZString cmp4 = ZString::compound(arr4, "---");
     LOG(cmp4);
@@ -250,14 +252,57 @@ int string_block(){
     if(cmp4 != "this---will---explode---differently\"strstr\"")
         throw __LINE__;
 
+    ZString strarr5 = "these!will.all!explode!";
+    ArZ arr5 = strarr5.explodeList(2, '!', '.');
+    ZString cmp5 = ZString::compound(arr5, "-");
+    LOG(cmp5);
+    if(!(arr5.size() == 4 && arr5[0] == "these" && arr5[1] == "will" && arr5[2] == "all" && arr5[3] == "explode"))
+        throw __LINE__;
+    if(cmp5 != "these-will-all-explode")
+        throw __LINE__;
+
 //    ArZ explodeList(unsigned nargs, ...);
 
 //    bool isUtf8(ZString);
 
 //    static bool alphaTest(ZString str1, ZString str2);
 
-//    // Allows ZString to be used with std streams
-//    friend std::ostream &operator<<(std::ostream& lhs, ZString rhs);
+    ZString iterstr1 = "abcdefghijklmnopqrstuvwxyz";
+    ZString iterstr2;
+    for(ZStringIterator i = iterstr1.begin(); !i.atEnd(); ++i){
+        iterstr2 += *i;
+    }
+    LOG(iterstr1);
+    LOG(iterstr2);
+    ZString iterstr3;
+    for(ZStringIterator i = iterstr1.end(); !i.atFront(); --i){
+        iterstr3 += *i;
+    }
+    LOG(iterstr3);
+
+    LOG("-- Number Conversion:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ZString numstr1 = "3345";
+    zu64 num1 = numstr1.tozu64();
+    LOG(numstr1 << " " << num1);
+    if(num1 != 3345)
+        throw __LINE__;
+
+    ZString numstr2 = "546567867864512";
+    zu64 num2 = numstr2.tozu64();
+    LOG(numstr2 << " " << num2);
+    if(num2 != 546567867864512)
+        throw __LINE__;
+
+    ZString numstr3 = "45.223";
+    float num3 = numstr3.toFloat();
+    LOG(numstr3 << " " << num3);
+    std::cout << num3 << std::endl;
+
+    ZString numstr4 = "-455";
+    float num4 = numstr4.toFloat();
+    LOG(numstr4 << " " << num4);
+
 
     return 0;
 }

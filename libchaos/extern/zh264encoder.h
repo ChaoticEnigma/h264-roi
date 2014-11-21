@@ -33,9 +33,9 @@ public:
     bool encode(uint8_t *data[], const int linesize[]);
 
 private:
-    bool updateScaling();
+    //bool updateScaling();
 
-private:
+public:
     // Context data
     x264_t *encoder;            // x264 Encoder
     x264_param_t *param;        // x264 param
@@ -52,6 +52,7 @@ private:
     // Input settings
     zu64 inwidth, inheight;     // Input width and height
     zu32 infps;                 // Input FPS
+    AVPixelFormat infmt;        // Input pixel format
 
     // Output settings
     zu64 outwidth, outheight;   // Output width and height

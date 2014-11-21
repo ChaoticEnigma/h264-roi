@@ -1,20 +1,20 @@
 ## LibChaos CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 
 PROJECT(LibChaos)
 
 OPTION(IBERTY_DEMANGLE "Use libiberty to demangle symbols" OFF)
 
 SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
-    zclock.h
-    zerror.h
-    zlog.h
-    zlogworker.h
-    zautobuffer.h
-    zautobufferunit.h
-    zret.h
-    ztime.h
     ztypes.h
+
+    base/zclock.h
+    base/zerror.h
+    base/zlog.h
+    base/zlogworker.h
+    base/zpath.h
+    base/zstring.h
+    base/ztime.h
 
     data/zarray.h
     data/zarray2.h
@@ -23,9 +23,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     data/zbinary.h
     data/zdata.h
     data/zmap.h
-    data/zpath.h
     data/zjson.h
-    data/zstring.h
     data/zxml.h
 
     file/database.h
@@ -43,6 +41,12 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 
     math/znumber.h
 
+    misc/zautobuffer.h
+    misc/zautobufferunit.h
+    misc/zmisc.h
+    misc/zret.h
+    misc/zuid.h
+
     lib/sqlite3.h
     #lib/demangle.h
 
@@ -51,27 +55,29 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 )
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
-    zautobuffer.cpp
-    #zclock.cpp
-    zerror.cpp
-    zlog.cpp
-    zlogworker.cpp
-    #ztime.cpp
+
+    base/zclock.cpp
+    base/zerror.cpp
+    base/zlog.cpp
+    base/zlogworker.cpp
+    base/zpath.cpp
+    base/zstring.cpp
+    base/zstring_encode.cpp
+    base/ztime.cpp
 
     data/zbinary.cpp
     data/zjson.cpp
-    data/zpath.cpp
-    data/zstring.cpp
-    data/zstring_encode.cpp
     data/zxml.cpp
 
-    file/database.cpp
+    #file/database.cpp
     file/zbmp.cpp
     file/zfile.cpp
     file/zimage.cpp
     file/zppm.cpp
 
-    lib/sqlite3.c
+    #lib/sqlite3.c
+    lib/xxhash.c
+    #lib/nowide_standalone/src/iostream.cpp
 
     net/zaddress.cpp
     net/zconnection.cpp
@@ -79,8 +85,15 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     net/zdatagramsocket.cpp
     net/zstreamsocket.cpp
 
-    #math/znumber.cpp
+    math/znumber.cpp
+    #math/znumber-reference.cpp
 
+    misc/zautobuffer.cpp
+    misc/zmisc.cpp
+    #misc/zuid.cpp
+
+    thread/zcondition.cpp
+    thread/zmutex.cpp
     thread/zthread.cpp
 )
 
@@ -97,10 +110,12 @@ ENDIF()
 SET(LibChaos_INCLUDE
     ${LibChaos_SOURCE_DIR}
     ${LibChaos_SOURCE_DIR}/abstract
+    ${LibChaos_SOURCE_DIR}/base
     ${LibChaos_SOURCE_DIR}/data
     ${LibChaos_SOURCE_DIR}/file
     ${LibChaos_SOURCE_DIR}/net
     ${LibChaos_SOURCE_DIR}/math
+    ${LibChaos_SOURCE_DIR}/misc
     ${LibChaos_SOURCE_DIR}/thread
 )
 
@@ -110,17 +125,20 @@ SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
 INCLUDE_DIRECTORIES(
     ${LibChaos_SOURCE_DIR}
     abstract
+    base
     data
     file
     lib
+    lib/nowide_standalone
     net
     math
+    misc
     thread
 )
 
 #source_hash(${LibChaos_SOURCE_DIR})
-configure_build("Core" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
-SET(LibChaosCore_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
+configure_build("Core" ${LIBCHAOS_BUILD})
+SET(LibChaosCore_BUILD_STRING ${CONFIGURE_BUILD_STRING} PARENT_SCOPE)
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
 #ADD_DEFINITIONS(-DZLOG_STD_MUTEX)
@@ -133,9 +151,9 @@ ENDIF()
 
 ADD_DEFINITIONS(-DBUILDING)
 
-ADD_LIBRARY(chaos ${LibChaos_SOURCES})
-TARGET_LINK_LIBRARIES(chaos pthread)
+ADD_LIBRARY(chaos STATIC ${LibChaos_SOURCES})
 IF(LIBCHAOS_UNIX)
+    TARGET_LINK_LIBRARIES(chaos pthread)
     IF(IBERTY_DEMANGLE)
         TARGET_LINK_LIBRARIES(chaos iberty)
     ENDIF()
@@ -146,5 +164,10 @@ IF(LIBCHAOS_UNIX)
         TARGET_LINK_LIBRARIES(chaos dl)
     ENDIF()
 ELSEIF(LIBCHAOS_WINDOWS)
-    TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi version)
+    IF(COMPILER_MINGW)
+        TARGET_LINK_LIBRARIES(chaos pthread)
+        TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi version)
+    ELSEIF(COMPILER_MSVC)
+        TARGET_LINK_LIBRARIES(chaos Ws2_32)
+    ENDIF()
 ENDIF()

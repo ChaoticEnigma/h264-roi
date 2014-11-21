@@ -1,20 +1,11 @@
 #TARGET = chaos
 TEMPLATE = lib
-CONFIG += staticlib console
-QT -= core gui widgets
+CONFIG += staticlib console debug
+#QT -= core gui widgets
 
 # LibChaos
 HEADERS += \
-    $$PWD/chaos/zerror.h \
-    $$PWD/chaos/zautobuffer.h \
-    $$PWD/chaos/zautobufferunit.h \
-    $$PWD/chaos/zlog.h \
-    $$PWD/chaos/zlogworker.h \
-    $$PWD/chaos/zsocket.h \
     $$PWD/chaos/ztypes.h \
-    $$PWD/chaos/ztime.h \
-    $$PWD/chaos/zclock.h \
-    $$PWD/chaos/zret.h \
     \
     $$PWD/chaos/abstract/zaccessor.h \
     $$PWD/chaos/abstract/zreader.h \
@@ -25,13 +16,19 @@ HEADERS += \
     $$PWD/chaos/abstract/yindexedaccess.h \
     $$PWD/chaos/abstract/zposition.h \
     $$PWD/chaos/abstract/ziterator.h \
-    $$PWD/chaos/abstract/ylinearaccess.h \
+    $$PWD/chaos/abstract/ypushpopaccess.h \
+    \
+    $$PWD/chaos/base/zerror.h \
+    $$PWD/chaos/base/zclock.h \
+    $$PWD/chaos/base/zlog.h \
+    $$PWD/chaos/base/zlogworker.h \
+    $$PWD/chaos/base/zpath.h \
+    $$PWD/chaos/base/zstring.h \
+    $$PWD/chaos/base/ztime.h \
     \
     $$PWD/chaos/data/zallocator.h \
     $$PWD/chaos/data/zarray.h \
-    $$PWD/chaos/data/zarray2.h \
     $$PWD/chaos/data/zassoc.h \
-    $$PWD/chaos/data/zassoc2.h \
     $$PWD/chaos/data/zbinary.h \
     $$PWD/chaos/data/zdata.h \
     $$PWD/chaos/data/zdefaultstorage.h \
@@ -39,10 +36,10 @@ HEADERS += \
     $$PWD/chaos/data/zjson.h \
     $$PWD/chaos/data/zlist.h \
     $$PWD/chaos/data/zmap.h \
-    $$PWD/chaos/data/zpath.h \
     $$PWD/chaos/data/zpointer.h \
-    $$PWD/chaos/data/zstring.h \
     $$PWD/chaos/data/zxml.h \
+    $$PWD/chaos/data/zqueue.h \
+    $$PWD/chaos/data/zstack.h \
     \
     $$PWD/chaos/file/database.h \
     $$PWD/chaos/file/zbitmap.h \
@@ -52,8 +49,17 @@ HEADERS += \
     $$PWD/chaos/file/zppm.h \
     \
     $$PWD/chaos/lib/sqlite3.h \
+    $$PWD/chaos/lib/xxhash.h \
     \
+    $$PWD/chaos/math/zexpression.h \
+    $$PWD/chaos/math/zformula.h \
     $$PWD/chaos/math/znumber.h \
+    \
+    $$PWD/chaos/misc/zautobuffer.h \
+    $$PWD/chaos/misc/zautobufferunit.h \
+    $$PWD/chaos/misc/zmisc.h \
+    $$PWD/chaos/misc/zret.h \
+    $$PWD/chaos/misc/zuid.h \
     \
     $$PWD/chaos/net/zsocket.h \
     $$PWD/chaos/net/zconnection.h \
@@ -62,6 +68,7 @@ HEADERS += \
     $$PWD/chaos/net/zaddress.h \
     \
     $$PWD/chaos/thread/zcondition.h \
+    $$PWD/chaos/thread/zlock.h \
     $$PWD/chaos/thread/zmutex.h \
     $$PWD/chaos/thread/zthread.h \
     \
@@ -86,19 +93,17 @@ HEADERS += \
     $$PWD/bbb/zbbb.h
 
 SOURCES += \
-    $$PWD/chaos/zautobuffer.cpp \
-    $$PWD/chaos/zerror.cpp \
-    $$PWD/chaos/zlog.cpp \
-    $$PWD/chaos/zlogworker.cpp \
-    $$PWD/chaos/zsocket.cpp \
-    $$PWD/chaos/ztime.cpp \
-    $$PWD/chaos/zclock.cpp \
+    $$PWD/chaos/base/zerror.cpp \
+    $$PWD/chaos/base/zclock.cpp \
+    $$PWD/chaos/base/zlog.cpp \
+    $$PWD/chaos/base/zlogworker.cpp \
+    $$PWD/chaos/base/zpath.cpp \
+    $$PWD/chaos/base/zstring.cpp \
+    $$PWD/chaos/base/zstring_encode.cpp \
+    $$PWD/chaos/base/ztime.cpp \
     \
     $$PWD/chaos/data/zbinary.cpp \
     $$PWD/chaos/data/zjson.cpp \
-    $$PWD/chaos/data/zpath.cpp \
-    $$PWD/chaos/data/zstring.cpp \
-    $$PWD/chaos/data/zstring_encode.cpp \
     $$PWD/chaos/data/zxml.cpp \
     \
     $$PWD/chaos/file/database.cpp \
@@ -107,9 +112,16 @@ SOURCES += \
     $$PWD/chaos/file/zppm.cpp \
     $$PWD/chaos/file/zimage.cpp \
     \
-    $$PWD/chaos/lib/sqlite3.c \
+    #$$PWD/chaos/lib/sqlite3.c \
     \
+    $$PWD/chaos/math/zexpression.cpp \
+    $$PWD/chaos/math/zformula.cpp \
+    $$PWD/chaos/math/znumber-reference.cpp \
     $$PWD/chaos/math/znumber.cpp \
+    \
+    $$PWD/chaos/misc/zautobuffer.cpp \
+    $$PWD/chaos/misc/zmisc.cpp \
+    $$PWD/chaos/misc/zuid.cpp \
     \
     $$PWD/chaos/net/zsocket.cpp \
     $$PWD/chaos/net/zconnection.cpp \
@@ -117,6 +129,9 @@ SOURCES += \
     $$PWD/chaos/net/zdatagramsocket.cpp \
     $$PWD/chaos/net/zaddress.cpp \
     \
+    $$PWD/chaos/thread/zcondition.cpp \
+    $$PWD/chaos/thread/zlock.cpp \
+    $$PWD/chaos/thread/zmutex.cpp \
     $$PWD/chaos/thread/zthread.cpp \
     \
     $$PWD/extern/zh264decoder.cpp \
@@ -159,33 +174,35 @@ SOURCES += \
     $$PWD/util/extensionfixer.cpp \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
-    $$PWD/util/duplicatefinder.cpp
+    $$PWD/util/duplicatefinder.cpp \
+    $$PWD/util/imagelibrarymanager.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
     $$PWD/bbb/CMakeLists.txt \
     $$PWD/chaos/CMakeLists.txt \
-    $$PWD/chaos/lib/libpng-1.2.37/CMakeLists.txt \
-    $$PWD/chaos/lib/zlib-1.2.8/CMakeLists.txt \
     $$PWD/extern/CMakeLists.txt \
     $$PWD/test/CMakeLists.txt \
     $$PWD/ui/CMakeLists.txt \
     $$PWD/util/CMakeLists.txt \
     \
-    $$PWD/configure_build.cmake \
-    $$PWD/hash.sh \
+    $$PWD/cmake/configure_build.cmake \
+    $$PWD/cmake/source_hash.cmake \
+    $$PWD/cmake/hash.sh \
+    \
     $$PWD/LibChaos_Todo_Ideas.txt \
-    $$PWD/source_hash.cmake \
-    $$PWD/todo.txt
+    $$PWD/Projects.txt
 
 INCLUDEPATH += \
     $$PWD \
     $$PWD/bbb \
     $$PWD/chaos \
     $$PWD/chaos/abstract \
+    $$PWD/chaos/base \
     $$PWD/chaos/data \
     $$PWD/chaos/file \
     $$PWD/chaos/lib \
+    $$PWD/chaos/lib/nowide_standalone \
     $$PWD/chaos/math \
     $$PWD/chaos/net \
     $$PWD/chaos/thread \
@@ -195,13 +212,23 @@ INCLUDEPATH += \
     $$PWD/util
 
 # Build
-#DEFINES += ZLOG_STD_MUTEX
 QMAKE_CXXFLAGS += -Wall -Wextra -pedantic -ansi -std=c++11 -std=c++0x
 LIBS += pthread
 
-win32:DEFINES += _LIBCHAOS_PLATFORM_WINDOWS _LIBCHAOS_COMPILER_MINGW DISABLE_LIBPNG
-else:DEFINES += _LIBCHAOS_PLATFORM_LINUX _LIBCHAOS_COMPILER_GCC
+windows {
+    DEFINES += _LIBCHAOS_PLATFORM_WINDOWS
+    *-g++* {
+        DEFINES += _LIBCHAOS_COMPILER_MINGW
+    }
+    *-msvc* {
+        DEFINES += _LIBCHAOS_COMPILER_MSVC
+    }
+}
+unix {
+    DEFINES += _LIBCHAOS_PLATFORM_LINUX _LIBCHAOS_COMPILER_GCC
+}
+
 
 debug:DEFINES += _LIBCHAOS_BUILD_DEBUG
-#else release:DEFINES += _LIBCHAOS_BUILD_RELEASE
+release:DEFINES += _LIBCHAOS_BUILD_RELEASE
 else:DEFINES += _LIBCHAOS_BUILD_NORMAL

@@ -1,19 +1,14 @@
 ## Main LibChaos CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-SET(CMAKE_GENERATOR "Unix Makefiles")
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 
-INCLUDE(configure_build.cmake)
-#INCLUDE(source_hash.cmake)
+INCLUDE(cmake/configure_build.cmake)
+#INCLUDE(cmake/source_hash.cmake)
 
 # Platform Settings
-IF(WIN32)
-    #MESSAGE(STATUS "Windows Build")
-    SET(LIBCHAOS_WINDOWS TRUE)
-    SET(LIBCHAOS_PLATFORM 2)
-ELSEIF(UNIX)
-    #MESSAGE(STATUS "Unix Build")
+IF(UNIX)
     SET(LIBCHAOS_UNIX TRUE)
-    SET(LIBCHAOS_PLATFORM 1)
+ELSEIF(WIN32)
+    SET(LIBCHAOS_WINDOWS TRUE)
 ELSE()
     MESSAGE(ERROR "Unsupported Platform")
 ENDIF()
@@ -35,6 +30,7 @@ ENDIF()
 SET(LibChaos_BUILD ${LIBCHAOS_BUILD} PARENT_SCOPE)
 
 # Options
+OPTION(LIBCHAOS_EXTERN FALSE "Build LibChaos with External Libraries")
 OPTION(LIBCHAOS_TEST FALSE "Build LibChaos Test suite")
 OPTION(LIBCHAOS_UI FALSE "Build LibChaos UI library")
 OPTION(LIBCHAOS_BBB FALSE "Build LibChaos Beaglebone Black library")
@@ -45,7 +41,6 @@ SET(LibChaos_CONFIGURE_CMAKE "${CMAKE_CURRENT_SOURCE_DIR}/configure_build.cmake"
 # LibChaos
 ADD_SUBDIRECTORY(chaos)
 SET(LibChaos_BUILD_STRING "LibChaos - '${LibChaosCore_BUILD_STRING}'")
-SET(LibChaos_INCLUDE ${LibChaos_INCLUDE})
 
 # LibChaos Extern
 IF(LIBCHAOS_EXTERN)

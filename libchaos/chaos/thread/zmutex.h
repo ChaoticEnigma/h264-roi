@@ -6,94 +6,87 @@
 #ifndef ZMUTEX_H
 #define ZMUTEX_H
 
-// ZMutex Class
-// WARNING: Relatively untested
-// Allows storing of an object in a semi-thread-safe manner.
-// Thread-unique locking, so only the thread that locked the mutex is allowed to unlock it.
-// While the mutex is locked, other threads may get a refrence to the contained object. THREAD RESPONSIBLY. SERIOUSLY.
-
 #include "ztypes.h"
 
-#include <pthread.h>
-#include <atomic>
-#include <chrono>
+#if COMPILER == MSVC
+    #define ZMUTEX_WINTHREADS
+#endif
+
+#if ZMUTEX_VERSION == 1
+    #include <pthread.h>
+#elif ZMUTEX_VERSION == 3
+    #include <mutex>
+    #include <thread>
+#endif
+
+#ifdef ZMUTEX_WINTHREADS
+    struct _RTL_CRITICAL_SECTION;
+    typedef _RTL_CRITICAL_SECTION CRITICAL_SECTION;
+#endif
 
 namespace LibChaos {
 
+typedef unsigned long ztid;
+
+// ZMutex Class
+// WARNING: Relatively untested
+// Recursize mutual exclusion object
+// Only the thread that locked a mutex is normally allowed to unlock it
+// Any thread may lock an unlocked mutex
+// If a thread tries to lock a mutex multiple times, it must unlock it as many times for other threads to lock it
+
+// Uses a pthread_mutex_t on POSIX
+// **** Uses a Critical Section on Windows
 class ZMutex {
 public:
-    ZMutex() : locker_tid(0){
-        pthread_mutex_init(&mutex, NULL);
-    }
-    ZMutex(const ZMutex &other) : mutex(other.mutex), locker_tid((pthread_t)other.locker_tid){
+    ZMutex();
+    ~ZMutex();
 
-    }
-    ~ZMutex(){
-        pthread_mutex_destroy(&mutex);
-    }
+    ZMutex(const ZMutex &other) = delete;
+    ZMutex &operator=(const ZMutex &) = delete;
 
     // If mutex is unlocked, mutex is locked by calling thread. If mutex is locked by other thread, function blocks until mutex is unlocked by other thread, then mutex is locked by calling thread.
-    void lock(){
-        if(!iOwn()){
-            pthread_mutex_lock(&mutex);
-            locker_tid = pthread_self();
-        }
-        return; // We own the mutex
-    }
+    void lock();
 
     // Locks mutex and returns true if unlocked, else returns false.
-    bool trylock(){
-        if(!iOwn()){
-            if(pthread_mutex_trylock(&mutex) == 0){
-                locker_tid = pthread_self();
-                return true; // We now own the mutex
-            }
-            return false; // Another thread owns the mutex
-        } else {
-            return true; // We already own the mutex
-        }
-    }
+    bool trylock();
 
-    // Tries to lock the mutex for <timeout_microsec> microseconds, then returns false.
-    bool timelock(zu64 timeout_microsec){
-        auto end = std::chrono::high_resolution_clock::now() + std::chrono::microseconds(timeout_microsec);
-        while(!trylock()){
-            // Loop until trylock() succeeds OR timeout is exceeded
-            if(std::chrono::high_resolution_clock::now() > end)
-                return false; // Timeout exceeded, mutex is locked by another thread
-        }
-        return true; // Locked, and this thread owns it
-    }
+    // Tries to lock the mutex for <milliseconds> milliseconds, then returns false.
+    bool timelock(zu32 milliseconds);
 
     // If mutex is unlocked, returns true. If mutex is locked by calling thread, mutex is unlocked. If mutex is locked by other thread, blocks until mutex is unlocked by other thread.
-    void unlock(){
-        if(locked()){
-            lock(); // Make sure we own the mutex first
-            locker_tid = 0;
-            pthread_mutex_unlock(&mutex);
-        }
-    }
+    void unlock();
 
+#if ZMUTEX_VERSION == 1
+    // Return true if this thread owns the mutex, else returns false
+    bool iOwn();
     // Returns true if mutex is locked, else returns false.
     inline bool locked(){
-        return (bool)locker();
+        return (locker() != 0);
     }
     // Returns locking thread's id, or 0 if unlocked.
-    inline pthread_t locker(){
-        return locker_tid;
+    inline ztid locker(){
+        return owner_tid;
     }
-    // Return true if this thread owns the mutex, else returns false
-    inline bool iOwn(){
-        return (locker() == pthread_self());
-    }
-
-    inline pthread_mutex_t *handle(){
-        return &mutex;
-    }
+#elif ZMUTEX_VERSION == 3
+    bool iOwn();
+    bool locked();
+    ztid locker();
+#endif
 
 private:
-    pthread_mutex_t mutex;
-    std::atomic<pthread_t> locker_tid;
+#if ZMUTEX_VERSION == 1
+    pthread_mutex_t _mutex;
+    pthread_mutexattr_t _attr;
+    ztid owner_tid;
+//    zu32 lock_depth;
+#elif ZMUTEX_VERSION == 2 || ZMUTEX_VERSION == 4
+    struct MutexData;
+    MutexData *_data;
+#elif ZMUTEX_VERSION == 3
+    std::mutex _mutex;
+    std::thread::id _owner;
+#endif
 };
 
 // //////////////////////////////////////////////////////////////////////////////
@@ -116,6 +109,26 @@ public:
 
 private:
     T obj;
+};
+
+// //////////////////////////////////////////////////////////////////////////////
+
+class ZCriticalSection {
+public:
+    ZCriticalSection(ZMutex *mutex) : _mutex(mutex){
+        if(_mutex)
+            _mutex->lock();
+    }
+    ZCriticalSection(ZMutex &mutex) : ZCriticalSection(&mutex){
+
+    }
+    ~ZCriticalSection(){
+        if(_mutex)
+            _mutex->unlock();
+    }
+
+private:
+    ZMutex *_mutex;
 };
 
 } // namespace LibChaos

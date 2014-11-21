@@ -6,13 +6,19 @@
 #ifndef ZTHREAD_H
 #define ZTHREAD_H
 
-#include <pthread.h>
+#include "ztypes.h"
+
+#if COMPILER == MSVC
+    #define ZTHREAD_WINTHREADS
+#endif
+
+#ifndef ZTHREAD_WINTHREADS
+    #include <pthread.h>
+#endif
 
 #include <atomic>
-// WTF ?
-#undef bool
 
-#include "ztypes.h"
+#undef bool // WTF ?
 
 namespace LibChaos {
 
@@ -28,13 +34,17 @@ class ZThread {
 public:
     typedef void *(*funcType)(void *);
 
+#ifdef ZTHREAD_WINTHREADS
+private:
+    typedef unsigned long DWORD;
+    typedef void *LPVOID;
+#endif
+
 public:
     ZThread();
     ZThread(funcType);
     ZThread(funcType, void *);
-    ZThread(const ZThread &other) :_param(other._param), _stop((bool)other._stop), ret(other.ret), thread(other.thread), _alive(other._alive), copyable(other.copyable){
-
-    }
+    ZThread(const ZThread &other);
 
     ~ZThread();
 
@@ -46,8 +56,9 @@ public:
     void detach();
 
     static void yield();
-
-    static void *entry(void *ptr);
+    static void sleep(zu64 seconds);
+    static void msleep(zu64 milliseconds);
+    static void usleep(zu64 microseconds);
 
     void setCopyable();
 
@@ -56,15 +67,29 @@ public:
     static ztid thisTid();
 
 private:
+#ifdef ZTHREAD_WINTHREADS
+    static DWORD entry_win(LPVOID ptr);
+#else
+    static void *entry(void *ptr);
+#endif
+
+private:
     struct zthreadparam {
         funcType funcptr;
         ZThreadArg zarg;
     };
+
+    typedef void * HANDLE;
+
 private:
+#ifdef ZTHREAD_WINTHREADS
+    HANDLE _thread;
+#else
+    pthread_t _thread;
+#endif
     zthreadparam _param;
     std::atomic<bool> _stop;
     int ret;
-    pthread_t thread;
     bool _alive;
     bool copyable;
 };

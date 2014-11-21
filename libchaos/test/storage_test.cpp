@@ -1,4 +1,6 @@
 #include "test.h"
+#include "zstorage.h"
+#include "zdefaultstorage.h"
 
 int storage_block(){
     ZStorage *stor = new ZDefaultStorage;

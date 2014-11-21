@@ -2,27 +2,27 @@
 #define TEST_H
 
 #include "zlog.h"
-
-using namespace std;
 using namespace LibChaos;
 
 int sandbox();
 
 int array_block();
 int assoc_block();
+int stack_block();
 int list_block();
+int queue_block();
 
 int binary_block();
 
 int string_block();
 int path_block();
-int path_windows_block();
 
 int pointer_block();
 int allocator_block();
 int storage_block();
 
 int thread_block();
+int mutex_block();
 
 int number_block();
 
