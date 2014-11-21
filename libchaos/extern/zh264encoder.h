@@ -11,6 +11,8 @@ extern "C" {
     #include <x264.h>
 }
 
+typedef PixelFormat AVPixelFormat;
+
 namespace LibChaos {
 
 class ZH264Encoder {

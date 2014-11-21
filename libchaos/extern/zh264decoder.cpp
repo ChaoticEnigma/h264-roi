@@ -32,16 +32,16 @@ ZH264Decoder::~ZH264Decoder(){
     user = NULL;
 }
 
-AVPixelFormat pickDecodeFormat(AVCodecContext *s, const AVPixelFormat *fmt){
-    return AV_PIX_FMT_YUV420P;
-}
+//AVPixelFormat pickDecodeFormat(AVCodecContext *s, const AVPixelFormat *fmt){
+//    return AV_PIX_FMT_YUV420P;
+//}
 
 bool ZH264Decoder::open(ZPath path, decoderCallback framecallback, void *userptr){
     ok = false;
 
     // Create AVCodec
-//    codec = avcodec_find_decoder(CODEC_ID_H264);
-    codec = avcodec_find_decoder(AV_CODEC_ID_H264);
+    codec = avcodec_find_decoder(CODEC_ID_H264);
+//    codec = avcodec_find_decoder(AV_CODEC_ID_H264);
     if(!codec){
         ELOG("Error: cannot find the H264 codec");
         return false;
@@ -69,7 +69,8 @@ bool ZH264Decoder::open(ZPath path, decoderCallback framecallback, void *userptr
     }
 
     // Init parser
-    frame = av_frame_alloc();
+    frame = avcodec_alloc_frame();
+//    frame = av_frame_alloc();
     parser = av_parser_init(CODEC_ID_H264);
     if(!parser) {
         ELOG("Erorr: cannot create H264 parser");
