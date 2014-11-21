@@ -129,9 +129,10 @@ int mutex_block(){
     return 0;
 }
 
-#endif
+#else
 
 int mutex_block(){
     return 0;
 }
 
+#endif
