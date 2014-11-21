@@ -60,6 +60,8 @@ int thread_block(){
  * is reached using critical sections.
  */
 
+#if PLATFORM == WINDOWS
+
 //#include "stdafx.h"
 #include <windows.h>
 #include <stdio.h>
@@ -127,5 +129,9 @@ int mutex_block(){
     return 0;
 }
 
+#endif
 
+int mutex_block(){
+    return 0;
+}
 
