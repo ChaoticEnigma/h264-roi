@@ -20,6 +20,7 @@ int main(int argc, char **argv){
 
         { "array", array_block },
         { "assoc", assoc_block },
+        { "list", list_block },
 
         { "string", string_block },
         { "path", path_block },

@@ -106,10 +106,6 @@ public:
     inline ZLog &operator<<(const char *text){ return log(text); }
     //inline ZLog &operator<<(const unsigned char *text){ return log(ZString((const char *)text)); }
 
-    inline ZLog &operator<<(void *ptr){
-        return log("0x" + ZString::ItoS((zu64)ptr, 16));
-    }
-
     static zlog_preproc makePreProc(info_type, ZString dat);
     ZLog &operator<<(zlog_preproc info);
 

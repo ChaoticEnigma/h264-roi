@@ -76,12 +76,6 @@ bool ZH264Encoder::open(ZPath path){
     x264_picture_alloc(&inpicture, X264_CSP_I420, outwidth, outheight);
     inpicture.param = param;
 
-    // set block qp offsets
-    if(blockqps.size()){
-        param->rc.i_aq_mode = X264_AQ_VARIANCE;
-        inpicture.prop.quant_offsets = (float*)blockqps.ptr();
-    }
-
     // get the scaling context
     sws = sws_getContext(inwidth, inheight, AV_PIX_FMT_YUV420P, outwidth, outheight, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
     if(!sws){
