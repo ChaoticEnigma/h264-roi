@@ -10,6 +10,7 @@ using namespace LibChaos;
 // Unpack: Decodes WebP images to lossy JPEG (quality 80) in another directory
 
 void packDir(ZPath dir);
+void unPackDir(ZPath dir, ZPath dest);
 
 int main(int argc, char **argv){
     ZLog::formatStdout(ZLogSource::all, "%log%");
@@ -18,7 +19,7 @@ int main(int argc, char **argv){
     if(argc > 1){
         ZString command = argv[1];
         if(command == "packone"){  // Convert all non-WebP images in <dir> to WebP, and rename to fit
-            if(argc < 3){
+            if(argc != 3){
                 LOG("Incorrect arguments for packing");
                 return 3;
             }
@@ -60,51 +61,7 @@ int main(int argc, char **argv){
                 return 4;
             }
             LOG("Unpacking one directory");
-            ZPath dir = argv[2];
-            ZPath dest = argv[3];
-            ArP srcfiles = ZFile::listFiles(dir, false);
-            for(zu64 i = 0; i < srcfiles.size(); ++i){
-                ZPath outfile = srcfiles[i];
-                outfile.relativeTo(dir);
-                ZPath outpath = dest + dir.last() + outfile;
-                if(!ZFile::createDirsTo(outpath)){
-                    LOG("Failed to create dirs");
-                    continue;
-                }
-                if(outpath.getExtension() == ".webp"){
-                    ZPath tmppath = outpath;
-                    tmppath.last().prepend("~").substr(0, tmppath.last().size()-4).append("ppm");
-                    outpath.last().substr(0, outpath.last().size()-4).append("jpg");
-                    LOG("Convert " << srcfiles[i] << " to " << outpath);
-
-                    ZString syscmd = "dwebp \"" + srcfiles[i].str() + "\" -ppm -o \"" + tmppath.str() + "\" > NUL 2>&1";
-                    if(system(syscmd.cc()) != 0){
-                        LOG("System Command failed: " << syscmd);
-                        continue;
-                    }
-
-                    ZString syscmd2 = "cjpeg-static -quality 80 -outfile \"" + outpath.str() + "\" \"" + tmppath.str() + "\" > NUL 2>&1";
-                    if(system(syscmd2.cc()) != 0){
-                        LOG("System Command failed: " << syscmd2);
-                        continue;
-                    }
-
-                    if(!ZFile::remove(tmppath)){
-                        LOG("Retrying to remove file: " << tmppath);
-                        ZThread::msleep(500);
-                        if(!ZFile::remove(tmppath)){
-                            LOG("Failed to remove file: " << tmppath);
-                            continue;
-                        }
-                    }
-                } else {
-                    LOG("Copy " << srcfiles[i] << " to " << outpath);
-                    if(!ZFile::copy(srcfiles[i], outpath)){
-                        LOG("Failed to copy");
-                        continue;
-                    }
-                }
-            }
+            unPackDir(argv[2], argv[3]);
             LOG("Finished unpacking");
 
         } else if(command == "unpack"){ // Convert all the WebP images in <srcdir> to JPEGs in <outdir>, recursively
@@ -149,8 +106,8 @@ void packDir(ZPath dir){
             outpath.last() += ".webp";
             LOG("Convert " << files[j] << " to " << outpath);
 
-            ZString syscmd = "cwebp -short -q 100 -o \"" + outpath.str() + "\" \"" + files[j].str() + "\" > NUL 2>&1";
-            if(system(syscmd.cc()) != 0){
+            ZString syscmd = "cwebp -short -q 100 -o \"" + outpath.str() + "\" \"" + files[j].str() + "\"";
+            if(system((syscmd + " > NUL 2>&1").cc()) != 0){
                 LOG("System Command failed: " << syscmd);
                 continue;
             }
@@ -168,6 +125,61 @@ void packDir(ZPath dir){
             LOG("Move " << files[j] << " to " << outpath);
             if(!ZFile::rename(files[j], outpath)){
                 LOG("Failed to rename " << files[j] << " to " << outpath);
+                continue;
+            }
+        }
+    }
+}
+
+void unPackDir(ZPath dir, ZPath dest){
+    ZPath outdir = dest + dir.last();
+    if(!ZFile::isDir(outdir)){
+        LOG("Creating directory " << outdir);
+        if(!ZFile::createDirsTo(outdir)){
+            LOG("Failed to create dirs to out path");
+            return;
+        }
+        if(!ZFile::makeDir(outdir)){
+            LOG("Failed to create dir at out path");
+            return;
+        }
+    }
+
+    ArP srcfiles = ZFile::listFiles(dir, false);
+    for(zu64 i = 0; i < srcfiles.size(); ++i){
+        ZPath outfile = srcfiles[i];
+        outfile.relativeTo(dir);
+        ZPath outpath = outdir + outfile;
+        if(outpath.getExtension() == ".webp"){
+            ZPath tmppath = outpath;
+            tmppath.last().prepend("~").substr(0, tmppath.last().size() - 5).append(".ppm");
+            outpath.last().substr(0, outpath.last().size() - 5).append(".jpg");
+            LOG("Convert " << srcfiles[i] << " to " << outpath);
+
+            ZString syscmd = "dwebp \"" + srcfiles[i].str() + "\" -ppm -o \"" + tmppath.str() + "\"";
+            if(system((syscmd + " > NUL 2>&1").cc()) != 0){
+                LOG("System Command failed: " << syscmd);
+                continue;
+            }
+
+            ZString syscmd2 = "cjpeg-static -quality 80 -outfile \"" + outpath.str() + "\" \"" + tmppath.str() + "\"";
+            if(system((syscmd2 + " > NUL 2>&1").cc()) != 0){
+                LOG("System Command failed: " << syscmd2);
+                continue;
+            }
+
+            if(!ZFile::remove(tmppath)){
+                LOG("Retrying to remove file: " << tmppath);
+                ZThread::msleep(500);
+                if(!ZFile::remove(tmppath)){
+                    LOG("Failed to remove file: " << tmppath);
+                    continue;
+                }
+            }
+        } else {
+            LOG("Copy " << srcfiles[i] << " to " << outpath);
+            if(!ZFile::copy(srcfiles[i], outpath)){
+                LOG("Failed to copy");
                 continue;
             }
         }
