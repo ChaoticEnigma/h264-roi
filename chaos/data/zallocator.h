@@ -11,6 +11,7 @@ namespace LibChaos {
 template <class T> class ZAllocator {
 public:
     // Allocates memory to hold <count> T's
+    // Does not construct objects
     T *alloc(zu64 count){
         T *ptr = (T *) ::operator new(sizeof(T) * count, std::nothrow);
         if(ptr == nullptr)
@@ -18,14 +19,16 @@ public:
         return ptr;
     }
 
-    // Expects a pointer originally returned by alloc()
+    // Deallocate memory
+    // Expects <ptr> originally returned by alloc()
+    // Objects should be destroy()ed first
     void dealloc(T *ptr){
         ::operator delete(ptr);
     }
 
     // Expects <ptr> originally returned by alloc()
+    // Does not directly allocate memory, but constructors may
     // <ptr> must point to memory large enough to hold <count> T's
-    // Does not allocate memory
     T *construct(T *ptr, zu64 count = 1, T obj = T()){
         T *tmp = ptr;
         for(zu64 i = 0; i < count; ++i){
@@ -36,16 +39,12 @@ public:
     }
 
     // Expects <ptr> originally returned by alloc() and construct()ed
-    // Does not delete memory
+    // Does not dealloc()ate memory
     void destroy(T *ptr, zu64 count = 1){
         for(zu64 i = 0; i < count; ++i){
 //            (ptr++)->~T();
             (&(ptr[i]))->~T();
         }
-    }
-
-    void voidcopy(const void *src, void *dest, zu64 bytes){
-        memcpy(dest, src, bytes);
     }
 
     void rawcopy(const T *src, T *dest, zu64 count){

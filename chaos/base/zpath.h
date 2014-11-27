@@ -79,6 +79,7 @@ public:
     // Size
     zu64 size() const { return _data.size(); }
     zu64 depth() const { return size(); }
+    bool isEmpty() const { return (size() == 0); }
 
 private:
     void fromStr(ZString);

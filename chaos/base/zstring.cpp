@@ -1,4 +1,5 @@
 #include "zstring.h"
+#include "zarray.h"
 
 // std::stringstream
 #include <sstream>
@@ -191,7 +192,7 @@ float ZString::toFloat() const {
     }
     if(parts.size() > 1){
         for(zu64 i = 0; i < parts[1].size(); ++i){
-            out += ((float)(parts[1][i] - 48) * pow(10, -i));
+            out += ((float)(parts[1][i] - 48) * pow(10, -(zs64)i));
         }
     }
     if(neg)
