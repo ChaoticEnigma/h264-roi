@@ -22,6 +22,8 @@
     #define V 2
 #endif
 
+#define ZFILE_COPY_BUFFER_SIZE 32768
+
 namespace LibChaos {
 
 ZFile::ZFile() : _bits(0 | readbit), _file(NULL){}
@@ -333,10 +335,13 @@ ZString ZFile::readString(ZPath path){
 }
 
 zu64 ZFile::copy(ZPath source, ZPath output){
-    FILE* inFile = fopen(source.str().cc(), "rb");
-    FILE* outFile = fopen(output.str().cc(), "wb");
+    FILE *inFile = fopen(source.str().cc(), "rb");
+    FILE *outFile = fopen(output.str().cc(), "wb");
+    if(inFile == NULL || outFile == NULL)
+        return 0;
+
     zu64 total = 0;
-    char *buffer = new char[32768];
+    char *buffer = new char[ZFILE_COPY_BUFFER_SIZE];
     zu64 dats;
     do {
         dats = fread(buffer, 1, sizeof(buffer), inFile);
@@ -478,6 +483,7 @@ bool ZFile::createDirsTo(ZPath dir){
     dir.sanitize();
     ZPath current;
     current.absolute() = dir.absolute();
+    current.prefix() = dir.prefix();
     for(zu64 i = 0; i < dir.size()-1; ++i){
         current.append(dir[i]);
         if(!makeDir(current))

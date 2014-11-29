@@ -9,8 +9,10 @@ using namespace LibChaos;
 // Pack: Encodes PNG and JPEG images to lossless WebP and replaces originals in-place, and names and numers images with name of parent directory
 // Unpack: Decodes WebP images to lossy JPEG (quality 80) in another directory
 
-void packDir(ZPath dir);
+void packDir(ZPath dir, zu64 begin_seq = 10001);
 void unPackDir(ZPath dir, ZPath dest);
+
+void sortNumeric(ArP &list);
 
 int main(int argc, char **argv){
     ZLog::formatStdout(ZLogSource::all, "%log%");
@@ -18,7 +20,7 @@ int main(int argc, char **argv){
 
     if(argc > 1){
         ZString command = argv[1];
-        if(command == "packone"){  // Convert all non-WebP images in <dir> to WebP, and rename to fit
+        if(command == "pack"){  // Convert all non-WebP images in <dir> to WebP, and rename to fit
             if(argc != 3){
                 LOG("Incorrect arguments for packing");
                 return 3;
@@ -27,7 +29,7 @@ int main(int argc, char **argv){
             packDir(argv[2]);
             LOG("Finished packing");
 
-        } else if(command == "pack"){ // Convert all non-WebP images in all dirs under <dir> to WebP, and rename to fit, additional argument are dis to exclude, relative to first dir
+        } else if(command == "packall"){ // Convert all non-WebP images in all dirs under <dir> to WebP, and rename to fit, additional argument are dis to exclude, relative to first dir
             if(argc < 3){
                 LOG("Incorrect arguments for packing");
                 return 3;
@@ -55,7 +57,60 @@ int main(int argc, char **argv){
             }
             LOG("Finished packing");
 
-        } else if(command == "unpackone"){ // Convert all the WebP images in <srcdir> to JPEGs in <outdir>
+        } else if(command == "mergepack"){ // Convert all non-WebP images in <srcdir> to WebP in <outdir>, numbering correctly, and replace originals in <srcdir> with smaller JPEGs
+            if(argc != 4){
+                LOG("Incorrect arguments for mergepacking");
+                return 4;
+            }
+            LOG("Mergepacking...");
+
+            ZPath srcdir = argv[2];
+            ZPath outdir = argv[3];
+
+            ArP tmpfiles = ZFile::listFiles(outdir, false);
+            zu64 seq;
+            if(tmpfiles.isEmpty()){
+                seq = 10001;
+            } else {
+                seq = tmpfiles.back().last().findFirstBetween("(", ")").tozu64() + 1;
+            }
+
+            packDir(srcdir, seq);
+
+            ZString prefix = srcdir.last();
+            prefix.toLower();
+            ArP srcfiles = ZFile::listFiles(srcdir, false);
+            for(zu64 i = 0; i < srcfiles.size(); ++i){
+
+                ZPath outpath = outdir + (prefix + " (" + seq + ")" + srcfiles[i].getExtension());
+                if(!ZFile::createDirsTo(outpath)){
+                    LOG("Failed to create dirs to out path");
+                    continue;
+                }
+
+                LOG("Copy " << srcfiles[i] << " to " << outpath);
+                if(!ZFile::copy(srcfiles[i], outpath)){
+                    LOG("Failed to copy file");
+                    continue;
+                }
+
+                ++seq;
+            }
+
+            ZPath unpackdir = srcdir;
+            //unpackdir.data().popBack();
+            unpackdir = unpackdir + "..";
+            unPackDir(srcdir, unpackdir);
+            for(zu64 i = 0; i < srcfiles.size(); ++i){
+                if(!ZFile::remove(srcfiles[i])){
+                    LOG("Failed to delete file");
+                    continue;
+                }
+            }
+
+            LOG("Finished mergepacking");
+
+        } else if(command == "unpack"){ // Convert all the WebP images in <srcdir> to JPEGs in <outdir>
             if(argc != 4){
                 LOG("Incorrect arguments for unpacking");
                 return 4;
@@ -64,7 +119,7 @@ int main(int argc, char **argv){
             unPackDir(argv[2], argv[3]);
             LOG("Finished unpacking");
 
-        } else if(command == "unpack"){ // Convert all the WebP images in <srcdir> to JPEGs in <outdir>, recursively
+        } else if(command == "unpackall"){ // Convert all the WebP images in <srcdir> to JPEGs in <outdir>, recursively
             if(argc != 4){
                 LOG("Incorrect arguments for unpacking");
                 return 4;
@@ -84,7 +139,17 @@ int main(int argc, char **argv){
     return 0;
 }
 
-void packDir(ZPath dir){
+ZString webpEncodeCommand(ZPath src, ZPath out){
+    return "cwebp -short -q 100 -o \"" + out.str() + "\" \"" + src.str() + "\"";
+}
+ZString webpDecodeCommand(ZPath src, ZPath out){
+    return "dwebp -ppm -o \"" + out.str() + "\" \"" + src.str() + "\"";
+}
+ZString jpegEncodeCommand(ZPath src, ZPath out){
+    return "cjpeg-static -quality 80 -outfile \"" + out.str() + "\" \"" + src.str() + "\"";
+}
+
+void packDir(ZPath dir, zu64 begin_seq){
     ZString prefix = dir.last();
     prefix.toLower();
     ArP tmpfiles = ZFile::listFiles(dir, false);
@@ -100,13 +165,13 @@ void packDir(ZPath dir){
     for(zu64 j = 0; j < files.size(); ++j){
         ZString filename = files[j].last();
         filename.toLower();
-        zu64 seq = 10000 + j + 1;
+        zu64 seq = begin_seq + j;
         ZPath outpath = dir + (prefix + " (" + seq + ")");
         if(filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg")){
             outpath.last() += ".webp";
             LOG("Convert " << files[j] << " to " << outpath);
 
-            ZString syscmd = "cwebp -short -q 100 -o \"" + outpath.str() + "\" \"" + files[j].str() + "\"";
+            ZString syscmd = webpEncodeCommand(files[j], outpath);
             if(system((syscmd + " > NUL 2>&1").cc()) != 0){
                 LOG("System Command failed: " << syscmd);
                 continue;
@@ -156,13 +221,13 @@ void unPackDir(ZPath dir, ZPath dest){
             outpath.last().substr(0, outpath.last().size() - 5).append(".jpg");
             LOG("Convert " << srcfiles[i] << " to " << outpath);
 
-            ZString syscmd = "dwebp \"" + srcfiles[i].str() + "\" -ppm -o \"" + tmppath.str() + "\"";
+            ZString syscmd = webpDecodeCommand(srcfiles[i], tmppath);
             if(system((syscmd + " > NUL 2>&1").cc()) != 0){
                 LOG("System Command failed: " << syscmd);
                 continue;
             }
 
-            ZString syscmd2 = "cjpeg-static -quality 80 -outfile \"" + outpath.str() + "\" \"" + tmppath.str() + "\"";
+            ZString syscmd2 = jpegEncodeCommand(tmppath, outpath);
             if(system((syscmd2 + " > NUL 2>&1").cc()) != 0){
                 LOG("System Command failed: " << syscmd2);
                 continue;
@@ -184,4 +249,67 @@ void unPackDir(ZPath dir, ZPath dest){
             }
         }
     }
+}
+
+zu64 getIntPrefix(ZString str){
+    ZString val;
+    for(zu64 i = 0; i < str.size(); ++i){
+        char c = str[i];
+        if( c == '0' ||
+            c == '1' ||
+            c == '2' ||
+            c == '3' ||
+            c == '4' ||
+            c == '5' ||
+            c == '6' ||
+            c == '7' ||
+            c == '8' ||
+            c == '9'){
+            val += c;
+        } else {
+            break;
+        }
+    }
+    return (zu64)val.tint();
+}
+
+bool numericTest(ZString str1, ZString str2){
+    if(getIntPrefix(str1) > getIntPrefix(str2)){
+        return true;
+    }
+    return false;
+}
+
+bool pathNumericTest(ZPath path1, ZPath path2){
+    for(zu64 i = 0; i < path1.size() && i < path2.size(); ++i){
+        if(path1[i] == path2[i])
+            continue;
+        if(numericTest(path1[i], path2[i]))
+            return true;
+        return false;
+    }
+    if(path1.size() <= path2.size())
+        return true;
+    return false;
+}
+
+void sortNumeric(ArP &list){
+    ArP tmppcfls;
+    for(zu64 i = 0; i < list.size(); ++i){
+        ZPath val = list[i];
+
+        bool found = false;
+        for(zu64 j = 0; j < tmppcfls.size(); ++j){
+            ZPath val2 = tmppcfls[j];
+            if(!pathNumericTest(val, val2)){
+                tmppcfls.insert(j, list[i]);
+                found = true;
+                break;
+            }
+        }
+        if(!found){
+            tmppcfls.push(list[i]);
+        }
+    }
+    list = tmppcfls;
 }
