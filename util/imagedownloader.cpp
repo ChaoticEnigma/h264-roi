@@ -82,8 +82,10 @@ int main(int argc, char **argv){
 
 ZString getPixivPage(ZString url, ZString session, ZString args = ""){
     ZString output = ZString(time(NULL)) + "-" + rand() + ".html";
+
+    ZString agent = "--user-agent=\"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0\"";
     ZString cookies = "--no-cookies --header=\"Cookie: PHPSESSID=" + session + "\"";
-    ZString command = "wget --no-check-certificate " + cookies + " " + args + " -O " + output + " \"" + url + "\"";
+    ZString command = "wget --no-check-certificate " + /*agent + " " +*/ cookies + " " + args + " -O " + output + " \"" + url + "\"";
 
     if(system((command + "1> NUL 2> NUL").cc()) != 0){
         LOG("System command failed");
@@ -96,25 +98,37 @@ ZString getPixivPage(ZString url, ZString session, ZString args = ""){
     return doc;
 }
 
-bool savePixivImage(ZString id, ZString session, ZString &file){
+bool savePixivImage(ZString id, ZString user, ZString session, ZString &file){
     ZString mediumurl = "http://www.pixiv.net/member_illust.php?mode=medium&illust_id=" + id;
-    ZString bigurl = "http://www.pixiv.net/member_illust.php?mode=big&illust_id=" + id;
+//    ZString bigurl = "http://www.pixiv.net/member_illust.php?mode=big&illust_id=" + id;
+
+    ZString medpage = getPixivPage(mediumurl, session);
+    ZString refbigurl = "http://www.pixiv.net/" + medpage.findFirstBetween("<div class=\"works_display\"><a href=\"", "\" target=\"_blank\" class=\"");
+    refbigurl.replace("&amp;", "&");
 
     ZString pixivrefer = "--header=\"Referer: " + mediumurl + "\"";
-    ZString imgpage = getPixivPage(bigurl, session, pixivrefer);
-    ZString imgurl = imgpage.findFirstBetween("</head><body><img src=\"", "\" onclick=\"");
+    ZString imgpage = getPixivPage(refbigurl, session, pixivrefer);
+
+    ZString imgurl;
+    ZString type = refbigurl.findFirstBetween("mode=", "&");
+    if(type == "big"){
+        imgurl = imgpage.findFirstBetween("</head><body><img src=\"", "\" onclick=\"");
+    } else if(type == "manga"){
+        imgurl = imgpage.findFirstBetween("data-filter=\"manga-image\" data-src=\"", "\" data-index=\"");
+    }
 
     ZString agent = "--user-agent=\"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0\"";
     ZString cookies = "--no-cookies --header=\"Cookie: PHPSESSID=" + session + "\"";
-    ZString headers = "--header=\"Host: i4.pixiv.net\"";
-    ZString referer = "--header=\"Referer: " + bigurl + "\"";
-    ZString command = "wget --no-check-certificate " + agent + " " + cookies + " " + headers + " " + referer + " \"" + imgurl + "\"";
+//    ZString headers = "--header=\"Host: i4.pixiv.net\"";
+    ZString headers = "--header=\"Host: " + imgurl.explode('/')[1] + "\"";
+    ZString referer = "--header=\"Referer: " + refbigurl + "\"";
+    ZString command = "wget --no-check-certificate " + /*agent + " " +*/ cookies + " " + headers + " " + referer + " -P " + user + " \"" + imgurl + "\"";
 
     if(system((command + "1> NUL 2> NUL").cc()) != 0){
-        //LOG("System command failed");
+        LOG("Failed: " << command);
         return false;
     } else {
-        file = ZPath(imgurl).last();
+        file = (ZPath(user) + ZPath(imgurl).last()).str();
         return true;
     }
 }
@@ -148,7 +162,14 @@ bool pixivDownload(ZString user_id, ZString session){
     for(zu64 i = 0; i < imglist.size(); ++i){
         ZString item = imglist[i];
         ZString file;
-        if(savePixivImage(item, session, file)){
+
+        int failcount = 0;
+        while(!savePixivImage(item, user_id, session, file) && failcount < 5){
+            ++failcount;
+            LOG(i+1 << "/" << imglist.size() << " retrying " << item);
+        }
+
+        if(failcount == 0){
             LOG(i+1 << "/" << imglist.size() << " Saved " << item << " as " << file);
         } else {
             LOG(i+1 << "/" << imglist.size() << " Failed to download " << item);
@@ -187,7 +208,7 @@ bool pixivBookmarksDownload(ZString user_id, ZString session){
     for(zu64 i = 0; i < imglist.size(); ++i){
         ZString item = imglist[i];
         ZString file;
-        if(savePixivImage(item, session, file)){
+        if(savePixivImage(item, user_id, session, file)){
             LOG(i+1 << "/" << imglist.size() << " Saved " << item << " as " << file);
         } else {
             LOG(i+1 << "/" << imglist.size() << " Failed to download " << item);
