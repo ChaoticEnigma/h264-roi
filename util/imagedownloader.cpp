@@ -95,7 +95,7 @@ ZString getPixivPage(ZString url, ZString session, ZString args = ""){
     }
 
     ZString doc = ZFile::readString(output);
-    ZFile::remove(output);
+//    ZFile::remove(output);
     return doc;
 }
 
@@ -107,8 +107,6 @@ struct PixivImage {
 
 ZArray<PixivImage> getPixivIllustration(ZString id, ZString user, ZString session){
     ZString mediumurl = "http://www.pixiv.net/member_illust.php?mode=medium&illust_id=" + id;
-//    ZString bigurl = "http://www.pixiv.net/member_illust.php?mode=big&illust_id=" + id;
-
     ZString medpage = getPixivPage(mediumurl, session);
     ZString bigurl = "http://www.pixiv.net/" + medpage.findFirstBetween("<div class=\"works_display\"><a href=\"", "\" target=\"_blank\" class=\"");
     bigurl.replace("&amp;", "&");
@@ -119,15 +117,14 @@ ZArray<PixivImage> getPixivIllustration(ZString id, ZString user, ZString sessio
     ZArray<PixivImage> urls;
     ZString type = bigurl.findFirstBetween("mode=", "&");
     if(type == "big"){
-        LOG("BIG");
+//        LOG("BIG");
         PixivImage pix;
-        pix.title = id;
+        pix.title = id + " - " + medpage.findFirstBetween("<li>Photoshop</li></ul></li></ul><h1 class=\"title\">", "</h1>");
         pix.url = bigpage.findFirstBetween("</head><body><img src=\"", "\" onclick=\"");
         pix.refer = bigurl;
         urls.push(pix);
-//        return savePixivImage(imgurl, refbigurl, user, session, file);
     } else if(type == "manga"){
-        LOG("MANGA");
+//        LOG("MANGA");
         ZString search = "data-filter=\"manga-image\" data-src=\"";
         ZArray<zu64> imgs = bigpage.findAll(search);
         for(zu64 i = 0; i < imgs.size(); ++i){
@@ -139,22 +136,6 @@ ZArray<PixivImage> getPixivIllustration(ZString id, ZString user, ZString sessio
             pix.refer = bigurl;
             urls.push(pix);
         }
-
-//        imgurl = bigpage.findFirstBetween("data-filter=\"manga-image\" data-src=\"", "\" data-index=\"");
-//        zu64 pos = imgurl.findFirst("_p");
-//        ZString first = ZString::substr(imgurl, 0, pos + 2);
-//        ZString last = ZString::substr(imgurl, pos + 3);
-
-//        int num = 0;
-//        while(true){
-//            ZString mangaurl = first + num + last;
-//            ++num;
-//            if(!savePixivImage(mangaurl, bigurl, user, session, file))
-//                break;
-//            urls.push({ mangaurl, bigurl });
-//            LOG(mangaurl);
-//        }
-//        return num > 0;
     }
     return urls;
 }
