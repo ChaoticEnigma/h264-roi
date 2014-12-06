@@ -119,7 +119,8 @@ ZArray<PixivImage> getPixivIllustration(ZString id, ZString user, ZString sessio
     if(type == "big"){
 //        LOG("BIG");
         PixivImage pix;
-        pix.title = id + " - " + medpage.findFirstBetween("<li>Photoshop</li></ul></li></ul><h1 class=\"title\">", "</h1>");
+        pix.title = id;
+//        pix.title = id + " - " + medpage.findFirstBetween("</li></ul></li></ul><h1 class=\"title\">", "</h1>");
         pix.url = bigpage.findFirstBetween("</head><body><img src=\"", "\" onclick=\"");
         pix.refer = bigurl;
         urls.push(pix);
