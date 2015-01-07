@@ -11,8 +11,7 @@ using namespace LibChaos;
 
 void packDir(ZPath dir, zu64 begin_seq = 10001);
 void unPackDir(ZPath dir, ZPath dest);
-
-void sortNumeric(ArP &list);
+void mergePackDir(ZPath dir, ZPath dest);
 
 int main(int argc, char **argv){
     ZLog::formatStdout(ZLogSource::all, "%log%");
@@ -63,51 +62,7 @@ int main(int argc, char **argv){
                 return 4;
             }
             LOG("Mergepacking...");
-
-            ZPath srcdir = argv[2];
-            ZPath outdir = argv[3];
-
-            ArP tmpfiles = ZFile::listFiles(outdir, false);
-            zu64 seq;
-            if(tmpfiles.isEmpty()){
-                seq = 10001;
-            } else {
-                seq = tmpfiles.back().last().findFirstBetween("(", ")").tozu64() + 1;
-            }
-
-            packDir(srcdir, seq);
-
-            ZString prefix = srcdir.last();
-            prefix.toLower();
-            ArP srcfiles = ZFile::listFiles(srcdir, false);
-            for(zu64 i = 0; i < srcfiles.size(); ++i){
-
-                ZPath outpath = outdir + (prefix + " (" + seq + ")" + srcfiles[i].getExtension());
-                if(!ZFile::createDirsTo(outpath)){
-                    LOG("Failed to create dirs to out path");
-                    continue;
-                }
-
-                LOG("Copy " << srcfiles[i] << " to " << outpath);
-                if(!ZFile::copy(srcfiles[i], outpath)){
-                    LOG("Failed to copy file");
-                    continue;
-                }
-
-                ++seq;
-            }
-
-            ZPath unpackdir = srcdir;
-            //unpackdir.data().popBack();
-            unpackdir = unpackdir + "..";
-            unPackDir(srcdir, unpackdir);
-            for(zu64 i = 0; i < srcfiles.size(); ++i){
-                if(!ZFile::remove(srcfiles[i])){
-                    LOG("Failed to delete file");
-                    continue;
-                }
-            }
-
+            mergePackDir(argv[2], argv[3]);
             LOG("Finished mergepacking");
 
         } else if(command == "unpack"){ // Convert all the WebP images in <srcdir> to JPEGs in <outdir>
@@ -177,6 +132,7 @@ void packDir(ZPath dir, zu64 begin_seq){
                 continue;
             }
 
+            LOG("Delete " << files[j]);
             if(!ZFile::remove(files[j])){
                 LOG("Retrying to remove file: " << files[j]);
                 ZThread::msleep(500);
@@ -233,6 +189,7 @@ void unPackDir(ZPath dir, ZPath dest){
                 continue;
             }
 
+            LOG("Delete " << tmppath);
             if(!ZFile::remove(tmppath)){
                 LOG("Retrying to remove file: " << tmppath);
                 ZThread::msleep(500);
@@ -251,65 +208,46 @@ void unPackDir(ZPath dir, ZPath dest){
     }
 }
 
-zu64 getIntPrefix(ZString str){
-    ZString val;
-    for(zu64 i = 0; i < str.size(); ++i){
-        char c = str[i];
-        if( c == '0' ||
-            c == '1' ||
-            c == '2' ||
-            c == '3' ||
-            c == '4' ||
-            c == '5' ||
-            c == '6' ||
-            c == '7' ||
-            c == '8' ||
-            c == '9'){
-            val += c;
-        } else {
-            break;
-        }
+void mergePackDir(ZPath srcdir, ZPath outdir){
+    ArP tmpfiles = ZFile::listFiles(outdir, false);
+    zu64 seq;
+    if(tmpfiles.isEmpty()){
+        seq = 10001;
+    } else {
+        seq = tmpfiles.back().last().findFirstBetween("(", ")").tozu64() + 1;
     }
-    return (zu64)val.tint();
-}
 
-bool numericTest(ZString str1, ZString str2){
-    if(getIntPrefix(str1) > getIntPrefix(str2)){
-        return true;
-    }
-    return false;
-}
+    packDir(srcdir, seq);
 
-bool pathNumericTest(ZPath path1, ZPath path2){
-    for(zu64 i = 0; i < path1.size() && i < path2.size(); ++i){
-        if(path1[i] == path2[i])
+    ZString prefix = srcdir.last();
+    prefix.toLower();
+    ArP srcfiles = ZFile::listFiles(srcdir, false);
+    for(zu64 i = 0; i < srcfiles.size(); ++i){
+
+        ZPath outpath = outdir + (prefix + " (" + seq + ")" + srcfiles[i].getExtension());
+        if(!ZFile::createDirsTo(outpath)){
+            LOG("Failed to create dirs to out path");
             continue;
-        if(numericTest(path1[i], path2[i]))
-            return true;
-        return false;
-    }
-    if(path1.size() <= path2.size())
-        return true;
-    return false;
-}
-
-void sortNumeric(ArP &list){
-    ArP tmppcfls;
-    for(zu64 i = 0; i < list.size(); ++i){
-        ZPath val = list[i];
-
-        bool found = false;
-        for(zu64 j = 0; j < tmppcfls.size(); ++j){
-            ZPath val2 = tmppcfls[j];
-            if(!pathNumericTest(val, val2)){
-                tmppcfls.insert(j, list[i]);
-                found = true;
-                break;
-            }
         }
-        if(!found){
-            tmppcfls.push(list[i]);
+
+        LOG("Copy " << srcfiles[i] << " to " << outpath);
+        if(!ZFile::copy(srcfiles[i], outpath)){
+            LOG("Failed to copy file");
+            continue;
+        }
+
+        ++seq;
+    }
+
+    ZPath unpackdir = srcdir;
+    //unpackdir.data().popBack();
+    unpackdir = unpackdir + "..";
+    unPackDir(srcdir, unpackdir);
+    for(zu64 i = 0; i < srcfiles.size(); ++i){
+        LOG("Delete " << srcfiles[i]);
+        if(!ZFile::remove(srcfiles[i])){
+            LOG("Failed to delete file");
+            continue;
         }
     }
-    list = tmppcfls;
 }
