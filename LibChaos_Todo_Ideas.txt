@@ -19,9 +19,9 @@ ZStreamConnection : private ZStreamSocket
 
 ZAutoBuffer
     - write it
-    
-// Archon stuff
 
+// Archon stuff
+-------------------------------------------------------------------------------------
 ZHTTPConnection : public ZStreamConnection { // class to parse HTTP requests / format HTTP responses
     bool parse();
     void close();
@@ -80,7 +80,7 @@ ZUid
         - time
         - MAC
         - content hash
-    
+
 ZDatabase
     - redundancy to protect from corruption
     - lightweight database
@@ -91,7 +91,7 @@ ZDatabase
         - data is stored in a ZParcel
     - columns are stored as offsets
     - column index resolves names to offsets
-    
+
 ZParcel
     - redundancy
     - allocate extra space for index at top
@@ -99,11 +99,11 @@ ZParcel
     ? index could be rebuilt as last resort by reading through file, would be difficult to identify blocks with special labels
     - have a 'freed' list at the end of the file (before second index) that contains the locations and sizes of unused blocks in the file
     ? align blocks to 128/256/512 bytes
-    
+
     - when entry added
         - add to index
         - check freed list for large enough block
-        - write to end of data section
+        - else write to end of data section
     - when entry removed
         - remove from index
         - if at end of file
@@ -123,7 +123,7 @@ ZParcel
             - if no free block, move to end of file
             - add previous block to freed list
             - modify index
-            
+
     - option to optimize parcel
         - rebuild parcel by copying all entries to buffer file
         - should empty freed list, no free block
