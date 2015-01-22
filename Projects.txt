@@ -2,8 +2,13 @@ LibChaos Projects
 ==================================
 LibChaos Core
 LibChaos Extern
+LibChaos UI
+LibChaos Test
 LibChaos Util
+ZParcel
 
+Started Projects
+----------------------------------
 Archon - webserver
 ssh://chaos@znnxs.com:89/git/archon.git
 
@@ -16,7 +21,10 @@ ssh://chaos@znnxs.com:89/git/steamtool.git
 H264-ROI - region of interest encoding in H264
 ssh://chaos@znnxs.com:89/git/h264-roi.git
 
+UnStarted Projects
+----------------------------------
 Windows Audio Output Circular Recorder - record output from windows playback device in a circular buffer
+- multiple channels
 
 VoIP Client
 - steam integration?

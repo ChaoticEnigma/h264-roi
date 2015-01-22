@@ -232,3 +232,5 @@ unix {
 debug:DEFINES += _LIBCHAOS_BUILD_DEBUG
 release:DEFINES += _LIBCHAOS_BUILD_RELEASE
 else:DEFINES += _LIBCHAOS_BUILD_NORMAL
+
+include(zparcel/ZParcel.pri)
