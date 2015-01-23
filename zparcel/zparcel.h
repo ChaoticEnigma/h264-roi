@@ -64,30 +64,34 @@ public:
 
 public:
     ZParcel();
-    ZParcel(ZPath file);
-
     ~ZParcel();
 
-    // Parcel reading
+    // Create new parcel (will overwrite existing parcel)
+    bool create(ZPath file);
+    // Open existing parcel
     bool open(ZPath file);
+    // Test parcel signature
+    bool testParcel(ZPath file) const;
+    // Close file handles
+    void close();
+
+    bool addFile(ZString name, ZPath file);
+    bool addData(ZString name, const ZBinary &data);
+
     bool getSection(ParcelSection location, ZBinary &out);
     ZParcelSection readSection(ZString name);
-    void close();
 
     ZString keyByIndex(zu64 index);
 
     bool getByName(ZString name, ZBinary &out);
     ZBinary operator[](ZString name);
 
-    ZBinary getByIndex(zu64 _index);
+    ZBinary getByIndex(zu64 index);
     //inline ZBinary operator[](zu64 inx){ return getByIndex(inx); }
 
     // Parcel creation
     static zu64 makeParcel(ZPath out, ZAssoc<ZString, ZPath> in);
 
-    bool newParcel(ZPath parcel);
-    bool addFile(ZString name, ZPath file);
-    bool addData(ZString name, const ZBinary &data);
     zu64 finishParcel();
 
     // Extract all parcelled files to a folder

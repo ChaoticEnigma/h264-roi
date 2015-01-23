@@ -19,14 +19,26 @@
 namespace LibChaos {
 
 ZParcel::ZParcel() : _headsize(0){}
-ZParcel::ZParcel(ZPath file) : ZParcel(){
-    _path = file;
-    open(_path);
-}
-
 
 ZParcel::~ZParcel(){
     close();
+}
+
+bool ZParcel::create(ZPath file){
+    if(!_parcel.open(path, ZFile::modewrite)){
+        ELOG("Failed to open parcel file");
+        return false;
+    }
+    _path = path;
+
+    // Write parcel signature
+    if(!writeSig()){
+        ELOG("Failed to write parcel signature");
+        return false;
+    }
+
+    currpos = 0;
+    return true;
 }
 
 bool ZParcel::open(ZPath file){
@@ -78,6 +90,41 @@ bool ZParcel::open(ZPath file){
     return true;
 }
 
+bool ZParcel::testParcel(ZPath file) const {
+
+}
+
+void ZParcel::close(){
+    _parcel.close();
+}
+
+bool ZParcel::addFile(ZString name, ZPath path){
+    zu64 total = ZFile::fileSize(path);
+    // Add size/offset of file to table
+    _index.push(name, { currpos, total, path, false });
+    currpos += total;
+    return true;
+}
+
+bool ZParcel::addData(ZString name, const ZBinary &data){
+    if(!data.size()){
+        ELOG("Data is empty");
+        return false;
+    }
+
+    ZPath tmppath = name + ".tmp";
+    ZFile tmpfile;
+    if(!tmpfile.open(tmppath, ZFile::modewrite))
+        return false;
+    if(!tmpfile.write(data))
+        return false;
+    tmpfile.close();
+    bool ret = addFile(name, tmppath);
+    if(ret)
+        _index.last().istmp = true;
+    return ret;
+}
+
 bool ZParcel::getSection(ParcelSection locat, ZBinary &out){
     switch(_type){
         case version2:
@@ -101,10 +148,6 @@ ZParcelSection ZParcel::readSection(ZString name){
     return ZParcelSection(&_parcel, _headsize + _index[name].pos, _index[name].len);
 }
 
-void ZParcel::close(){
-    _parcel.close();
-}
-
 ZString ZParcel::keyByIndex(zu64 inx){
     return _index.key(inx);
 }
@@ -117,9 +160,9 @@ ZBinary ZParcel::operator[](ZString name){
     getByName(name, out);
     return out;
 }
-ZBinary ZParcel::getByIndex(zu64 inx){
+ZBinary ZParcel::getByIndex(zu64 index){
     ZBinary out;
-    getSection(_index[inx], out);
+    getSection(_index[index], out);
     return out;
 }
 
@@ -138,53 +181,13 @@ zu64 ZParcel::makeParcel(ZPath out, ZAssoc<ZString, ZPath> in){
     return parcel.finishParcel();
 }
 
-bool ZParcel::newParcel(ZPath path){
-    if(!_parcel.open(path, ZFile::modewrite)){
-        ELOG("Failed to open parcel file");
-        return false;
-    }
-    _path = path;
-
-    // Write parcel signature
-    if(!writeSig()){
-        ELOG("Failed to write parcel signature");
-        return false;
-    }
-
-    currpos = 0;
-    return true;
-}
-bool ZParcel::addFile(ZString name, ZPath path){
-    zu64 total = ZFile::fileSize(path);
-    // Add size/offset of file to table
-    _index.push(name, { currpos, total, path, false });
-    currpos += total;
-    return true;
-}
-bool ZParcel::addData(ZString name, const ZBinary &data){
-    if(!data.size()){
-        ELOG("Data is empty");
-        return false;
-    }
-
-    ZPath tmppath = name + ".tmp";
-    ZFile tmpfile;
-    if(!tmpfile.open(tmppath, ZFile::modewrite))
-        return false;
-    if(!tmpfile.write(data))
-        return false;
-    tmpfile.close();
-    bool ret = addFile(name, tmppath);
-    if(ret)
-        _index.last().istmp = true;
-    return ret;
-}
 zu64 ZParcel::finishParcel(){
     if(!_parcel.isOpen()){
         ELOG("Parcel file is not open");
         return 0;
     }
 
+    // Make header
     ZBinary header;
     for(zu64 i = 0; i < _index.size(); ++i){
         unsigned char keylen = MIN(_index.key(i).size(), 255);
@@ -197,6 +200,7 @@ zu64 ZParcel::finishParcel(){
         if(header.write((const zbyte*)&_index.val(i).len, sizeof(zu64)) != sizeof(zu64)) // 8
             return false;
     }
+
     // Write header
     zu64 hsize = header.size();
     _parcel.setPos(ZPARCEL_SIG_SIZE);
@@ -317,13 +321,14 @@ ZParcel::parceltype ZParcel::readSig(){
     }
     // Read 8-byte parcel file signature
     ZBinary sig;
+    _parcel.rewind();
     if(_parcel.read(sig, ZPARCEL_SIG_SIZE) != ZPARCEL_SIG_SIZE)
         return versionunknown;
 
-    if(sig == ZBinary(ZPARCEL_VERSION_3_SIG)){
-        return version3;
-    } else if(sig == ZBinary(ZPARCEL_VERSION_2_SIG)){
+    if(sig == ZBinary(ZPARCEL_VERSION_2_SIG)){
         return version2;
+    } else if(sig == ZBinary(ZPARCEL_VERSION_3_SIG)){
+        return version3;
     } else {
         return versionunknown;
     }
