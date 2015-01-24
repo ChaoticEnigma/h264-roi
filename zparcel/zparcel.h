@@ -67,7 +67,7 @@ public:
     ~ZParcel();
 
     // Create new parcel (will overwrite existing parcel)
-    bool create(ZPath file);
+    bool create(ZPath path);
     // Open existing parcel
     bool open(ZPath file);
     // Test parcel signature

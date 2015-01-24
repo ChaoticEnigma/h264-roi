@@ -43,6 +43,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 
     misc/zautobuffer.h
     misc/zautobufferunit.h
+    misc/zencrypt.h
     misc/zmisc.h
     misc/zret.h
     misc/zuid.h
@@ -89,6 +90,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     #math/znumber-reference.cpp
 
     misc/zautobuffer.cpp
+    misc/zencrypt.cpp
     misc/zmisc.cpp
     #misc/zuid.cpp
 
@@ -113,6 +115,9 @@ SET(LibChaos_INCLUDE
     ${LibChaos_SOURCE_DIR}/base
     ${LibChaos_SOURCE_DIR}/data
     ${LibChaos_SOURCE_DIR}/file
+    ${LibChaos_SOURCE_DIR}/lib
+    ${LibChaos_SOURCE_DIR}/lib/cryptopp562
+    ${LibChaos_SOURCE_DIR}/lib/nowide_standalone
     ${LibChaos_SOURCE_DIR}/net
     ${LibChaos_SOURCE_DIR}/math
     ${LibChaos_SOURCE_DIR}/misc
@@ -123,17 +128,19 @@ SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
 
 # Include Directories
 INCLUDE_DIRECTORIES(
-    ${LibChaos_SOURCE_DIR}
-    abstract
-    base
-    data
-    file
-    lib
-    lib/nowide_standalone
-    net
-    math
-    misc
-    thread
+    ${LibChaos_INCLUDE}
+    #${LibChaos_SOURCE_DIR}
+    #abstract
+    #base
+    #data
+    #file
+    #lib
+    #lib/cryptopp562
+    #lib/nowide_standalone
+    #net
+    #math
+    #misc
+    #thread
 )
 
 #source_hash(${LibChaos_SOURCE_DIR})

@@ -11,10 +11,11 @@
 #include "zerror.h"
 
 #define ZPARCEL_SIG_SIZE 8
-#define ZPARCEL_VERSION_2_SIG { 'P','A','R','C','E','L', '0','2' }
-#define ZPARCEL_VERSION_3_SIG { 'P',143,'R',128,144,'L',  0,  3 }
+#define ZPARCEL_VERSION_2_SIG { 'P','A','R','C','E','L','0','2' }
+#define ZPARCEL_VERSION_3_SIG { 'P',143,'R',128,144,'L', 0 , 3  }
+#define ZPARCEL_VERSION_4_SIG { 'P',143,'R',128,144,'L', 0 , 4  }
 
-#define BUFFER_SIZE 32768
+#define BUFFER_SIZE 32768 // (1 << 15)
 
 namespace LibChaos {
 
@@ -24,7 +25,7 @@ ZParcel::~ZParcel(){
     close();
 }
 
-bool ZParcel::create(ZPath file){
+bool ZParcel::create(ZPath path){
     if(!_parcel.open(path, ZFile::modewrite)){
         ELOG("Failed to open parcel file");
         return false;
@@ -329,6 +330,8 @@ ZParcel::parceltype ZParcel::readSig(){
         return version2;
     } else if(sig == ZBinary(ZPARCEL_VERSION_3_SIG)){
         return version3;
+    } else if(sig == ZBinary(ZPARCEL_VERSION_4_SIG)){
+        return version4;
     } else {
         return versionunknown;
     }

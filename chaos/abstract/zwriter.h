@@ -19,7 +19,7 @@ public:
     // Returns number of bytes written to <this>
     // Should be used to read/write between devices whose storage is out of memory
     virtual zu64 readWrite(ZReader *reader, zu64 size, zu64 blocksize = (1 << 15)){
-        zbyte buffer = new zbyte[blocksize];
+        zbyte *buffer = new zbyte[blocksize];
         zu64 totalwritten = 0;
         while(totalwritten < size){
             // Read into buffer

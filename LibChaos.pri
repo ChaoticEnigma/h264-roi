@@ -90,7 +90,8 @@ HEADERS += \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
     \
-    $$PWD/bbb/zbbb.h
+    $$PWD/bbb/zbbb.h \
+    $$PWD/chaos/misc/zencrypt.h
 
 SOURCES += \
     $$PWD/chaos/base/zerror.cpp \
@@ -175,7 +176,8 @@ SOURCES += \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
     $$PWD/util/duplicatefinder.cpp \
-    $$PWD/util/imagelibrarymanager.cpp
+    $$PWD/util/imagelibrarymanager.cpp \
+    $$PWD/chaos/misc/zencrypt.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -202,6 +204,7 @@ INCLUDEPATH += \
     $$PWD/chaos/data \
     $$PWD/chaos/file \
     $$PWD/chaos/lib \
+    $$PWD/chaos/lib/cryptopp562 \
     $$PWD/chaos/lib/nowide_standalone \
     $$PWD/chaos/math \
     $$PWD/chaos/net \
