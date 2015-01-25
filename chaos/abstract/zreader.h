@@ -2,11 +2,10 @@
 #define ZREADER_H
 
 #include "ztypes.h"
-#include "zposition.h"
 
 namespace LibChaos {
 
-class ZReader : public ZPosition {
+class ZReader {
 public:
     virtual ~ZReader(){}
 

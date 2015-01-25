@@ -9,6 +9,7 @@
 #include "zstring.h"
 #include "zpath.h"
 #include "zbinary.h"
+#include "zposition.h"
 #include "zreader.h"
 #include "zwriter.h"
 #include "zerror.h"
@@ -22,7 +23,7 @@
 
 namespace LibChaos {
 
-class ZFile : public ZReader, public ZWriter {
+class ZFile : public ZPosition, public ZReader, public ZWriter {
 public:
     enum zfile_mode {
         moderead        = 0x001,    // Set to allow reading

@@ -2,13 +2,13 @@
 #define ZWRITER_H
 
 #include "ztypes.h"
-#include "zposition.h"
+
 #include "zreader.h"
 #include "zallocator.h"
 
 namespace LibChaos {
 
-class ZWriter : public ZPosition {
+class ZWriter {
 public:
     virtual ~ZWriter(){}
 

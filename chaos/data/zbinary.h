@@ -4,12 +4,13 @@
 #include "ztypes.h"
 #include "zarray.h"
 #include <string.h>
+#include "zposition.h"
 #include "zreader.h"
 #include "zwriter.h"
 
 namespace LibChaos {
 
-class ZBinary : public ZReader, public ZWriter {
+class ZBinary : public ZPosition, public ZReader, public ZWriter {
 public:
     typedef unsigned char zbinary_type;
 
