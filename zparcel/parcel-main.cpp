@@ -126,7 +126,7 @@ int mainwrap(int argc, char **argv){
 
     // Create multi-step parcel
     ZParcel outparcel;
-    if(!outparcel.newParcel(parcelname)){
+    if(!outparcel.create(parcelname)){
         LOG("Could not make new parcel");
         return EXIT_FAILURE;
     }
@@ -164,7 +164,8 @@ int mainwrap(int argc, char **argv){
     }
     hashes.push("integrity-back.dat", ZBinary::hash(ZBinary::hashType1, integrity));
 
-    zu64 writebytes = outparcel.finishParcel();
+//    zu64 writebytes = outparcel.finishParcel();
+    zu64 writebytes = 0;
 
     if(writebytes > 0){
         LOG("Parcel: " << parcelname);

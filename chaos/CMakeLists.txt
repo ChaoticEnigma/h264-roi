@@ -92,7 +92,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     misc/zautobuffer.cpp
     misc/zencrypt.cpp
     misc/zmisc.cpp
-    #misc/zuid.cpp
+    misc/zuid.cpp
 
     thread/zcondition.cpp
     thread/zmutex.cpp
@@ -173,8 +173,8 @@ IF(LIBCHAOS_UNIX)
 ELSEIF(LIBCHAOS_WINDOWS)
     IF(COMPILER_MINGW)
         TARGET_LINK_LIBRARIES(chaos pthread)
-        TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi version)
+        TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi iphlpapi version)
     ELSEIF(COMPILER_MSVC)
-        TARGET_LINK_LIBRARIES(chaos Ws2_32)
+        TARGET_LINK_LIBRARIES(chaos Ws2_32 iphlpapi)
     ENDIF()
 ENDIF()

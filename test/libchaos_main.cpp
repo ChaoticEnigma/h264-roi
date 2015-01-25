@@ -31,6 +31,7 @@ int main(int argc, char **argv){
         { "mutex", mutex_block },
 
         { "number", number_block },
+        { "uid", uid_block },
 
         { "file", file_block },
         { "autobuffer", autobuffer_block },

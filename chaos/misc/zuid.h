@@ -8,15 +8,33 @@ namespace LibChaos {
 
 class ZUID {
 public:
-    ZUID();
+    struct ID {
+        union {
+            zoctet octets[16];
+            struct {
+                zu64 first : 64;
+                zu64 second : 64;
+            };
+            struct { // RFC 4122 time-based UUID
+                zu32 time_low                 : 32;
+                zu16 time_mid                 : 16;
+                zu16 time_hi_and_version      : 16;
+                zu8 clock_seq_hi_and_reserved : 8;
+                zu8 clock_seq_low             : 8;
+                zu64 node                     : 48;
+            };
+        };
+    };
 
-    ZString str();
+public:
+    ZUID();
+    ZUID(ZString str);
+
+    ID getID() const { return _id; }
+    ZString str() const;
 
 private:
-    struct ID {
-        zu64 first;
-        zu64 second;
-    } _id;
+    ID _id;
 };
 
 }

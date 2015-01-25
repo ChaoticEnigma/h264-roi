@@ -134,11 +134,19 @@ ZString ZString::ItoS(zs64 value, zu8 base){
     return ZString(buf);
 }
 
-bool ZString::isInteger() const {
+bool ZString::isInteger(zu8 base) const {
     if(isEmpty())
         return false;
+    if(base > 16) // Only supports up to hexadecimal
+        return false;
+    const char *digits = "0123456789abcdef";
     for(zu64 i = 0; i < size(); ++i){
-        if(operator[](i) < 48 || operator[](i) > 57)
+        bool yes = false;
+        for(zu8 j = 0; j < base; ++j){
+            if(tolower(operator[](i)) == digits[j])
+                yes = true;
+        }
+        if(!yes)
             return false;
     }
     return true;
@@ -148,13 +156,15 @@ int ZString::tint() const {
     return atoi(cc());
 }
 
-zu64 ZString::tozu64() const {
-    if(!isInteger())
+zu64 ZString::tozu64(zu8 base) const {
+    if(!isInteger(base))
         return ZU64_MAX;
     ZString tmp = reverse(*this);
     zu64 out = 0;
     for(zu64 i = 0; i < tmp.size(); ++i){
-        out += ((zu64)(tmp[i] - 48) * (zu64)pow(10, i));
+        char ch = tolower(tmp[i]);
+        char digit = (ch < 58 ? (ch - 48) : (ch - 97 + 10));
+        out += ((zu64)(digit) * (zu64)pow(base, i));
     }
     return out;
 }

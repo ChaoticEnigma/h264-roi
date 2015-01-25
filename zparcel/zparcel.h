@@ -52,6 +52,7 @@ public:
         versionunknown = 0,
         version2,
         version3,
+        version4,
     };
 
     struct ParcelSection {
@@ -71,7 +72,7 @@ public:
     // Open existing parcel
     bool open(ZPath file);
     // Test parcel signature
-    bool testParcel(ZPath file) const;
+    static bool testParcel(ZPath file);
     // Close file handles
     void close();
 
@@ -89,11 +90,6 @@ public:
     ZBinary getByIndex(zu64 index);
     //inline ZBinary operator[](zu64 inx){ return getByIndex(inx); }
 
-    // Parcel creation
-    static zu64 makeParcel(ZPath out, ZAssoc<ZString, ZPath> in);
-
-    zu64 finishParcel();
-
     // Extract all parcelled files to a folder
     zu64 unParcel();
 
@@ -106,7 +102,7 @@ public:
 private:
     ZPath tmpParcelPath();
 
-    parceltype readSig();
+    static parceltype readSig(ZPath file);
     bool writeSig();
 
 private:

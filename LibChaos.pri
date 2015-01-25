@@ -177,7 +177,8 @@ SOURCES += \
     $$PWD/util/imagedownloader.cpp \
     $$PWD/util/duplicatefinder.cpp \
     $$PWD/util/imagelibrarymanager.cpp \
-    $$PWD/chaos/misc/zencrypt.cpp
+    $$PWD/chaos/misc/zencrypt.cpp \
+    $$PWD/test/misc_test.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -207,6 +208,7 @@ INCLUDEPATH += \
     $$PWD/chaos/lib/cryptopp562 \
     $$PWD/chaos/lib/nowide_standalone \
     $$PWD/chaos/math \
+    $$PWD/chaos/misc \
     $$PWD/chaos/net \
     $$PWD/chaos/thread \
     $$PWD/extern \

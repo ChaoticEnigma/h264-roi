@@ -49,7 +49,7 @@ bool ZParcel::open(ZPath file){
         return false;
     }
 
-    _type = readSig();
+    _type = readSig(_path);
     switch(_type){
         case version3: {
             zu64 headersize;
@@ -91,8 +91,8 @@ bool ZParcel::open(ZPath file){
     return true;
 }
 
-bool ZParcel::testParcel(ZPath file) const {
-
+bool ZParcel::testParcel(ZPath file){
+    return (readSig(file) != versionunknown);
 }
 
 void ZParcel::close(){
@@ -167,21 +167,7 @@ ZBinary ZParcel::getByIndex(zu64 index){
     return out;
 }
 
-zu64 ZParcel::makeParcel(ZPath out, ZAssoc<ZString, ZPath> in){
-    ZParcel parcel;
-    if(!parcel.newParcel(out)){
-        ELOG("Could not create new parcel");
-        return 0;
-    }
-    for(zu64 i = 0; i < in.size(); ++i){
-        if(!parcel.addFile(in.key(i), in.val(i))){
-            ELOG("Could not add file to parcel");
-            continue;
-        }
-    }
-    return parcel.finishParcel();
-}
-
+/*
 zu64 ZParcel::finishParcel(){
     if(!_parcel.isOpen()){
         ELOG("Parcel file is not open");
@@ -258,6 +244,7 @@ zu64 ZParcel::finishParcel(){
 
     return total;
 }
+*/
 
 zu64 ZParcel::unParcel(){
     ZPath base = _path;
@@ -315,15 +302,16 @@ ZPath ZParcel::tmpParcelPath(){
     return tmp;
 }
 
-ZParcel::parceltype ZParcel::readSig(){
-    if(!_parcel.isOpen()){
-        ELOG("Parcel is not open");
+ZParcel::parceltype ZParcel::readSig(ZPath path){
+    ZFile file;
+    if(!file.open(path)){
+        ELOG("Failed to open parcel file");
         return versionunknown;
     }
+
     // Read 8-byte parcel file signature
     ZBinary sig;
-    _parcel.rewind();
-    if(_parcel.read(sig, ZPARCEL_SIG_SIZE) != ZPARCEL_SIG_SIZE)
+    if(file.read(sig, ZPARCEL_SIG_SIZE) != ZPARCEL_SIG_SIZE)
         return versionunknown;
 
     if(sig == ZBinary(ZPARCEL_VERSION_2_SIG)){
@@ -336,6 +324,7 @@ ZParcel::parceltype ZParcel::readSig(){
         return versionunknown;
     }
 }
+
 bool ZParcel::writeSig(){
     if(!_parcel.isOpen()){
         ELOG("Parcel is not open");

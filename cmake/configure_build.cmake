@@ -9,11 +9,13 @@ FUNCTION(configure_build NAME BUILD)
         SET(CXXGNU "${CXXGNU} -g")
         SET(CXXVC "${CXXVC} /Zi /MDd")
         SET(BUILD_STRING "${BUILD_STRING} Debug")
+        SET(DEBUG TRUE)
     ELSEIF(BUILD MATCHES 2) # Release
         ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_RELEASE)
         SET(CXXGNU "${CXXGNU} -O3")
         SET(CXXVC "${CXXVC} /GL /MD")
         SET(BUILD_STRING "${BUILD_STRING} Release")
+        SET(RELEASE TRUE)
     ELSE() # Normal
         ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_NORMAL)
         SET(BUILD_STRING "${BUILD_STRING} Normal")
@@ -52,20 +54,25 @@ FUNCTION(configure_build NAME BUILD)
     SET(CONFIGURE_BUILD_STRING "${BUILD_STRING}" PARENT_SCOPE)
 
     IF(GNU_FLAGS)
-        SET(CXXGNU "-std=c++11 -Wall -Wextra -Wpedantic")
-        #SET(CXXF "${CXXF} -Wbloody_everything") # Some day...
-        SET(CXXGNU "${CXXGNU} -Wcast-align -Wcast-qual -Wsign-conversion -Wsign-promo")
-        SET(CXXGNU "${CXXGNU} -Wformat=2 -Winit-self -Wlogical-op")
-        SET(CXXGNU "${CXXGNU} -Wmissing-include-dirs -Wnoexcept -Woverloaded-virtual")
-        SET(CXXGNU "${CXXGNU} -Wredundant-decls -Wstrict-null-sentinel -Wctor-dtor-privacy -Wdisabled-optimization")
-        SET(CXXGNU "${CXXGNU} -Wstrict-overflow=5 -Wswitch-default -Wundef")
+        SET(CXXGNU "-std=c++11")
 
-        SET(CXXGNU "${CXXGNU} -Werror=return-type") # Should be errors
-        #SET(CXXF "${CXXF} -Wshadow ") # Some warnings are too verbose to be useful
-        #SET(CXXF "${CXXF} -Wmissing-declarations -Wold-style-cast") # Not actually errors
-        SET(CXXGNU "${CXXGNU} -Wno-unused-parameter -Wno-unused") # Disabled Warnings
-        IF(NOT COMPILER_MINGW)
-            SET(CXXGNU "${CXXGNU} -Wno-comment") # Not recognized on MinGW
+        IF(DEBUG) # Enable gratuitous warnings on debug build
+            SET(CXXGNU "${CXXGNU} -Wall -Wextra -Wpedantic")
+            #SET(CXXGNU "${CXXGNU} -fms-extensions")
+            #SET(CXXF "${CXXF} -Wbloody_everything") # Some day...
+            SET(CXXGNU "${CXXGNU} -Wcast-align -Wcast-qual -Wsign-conversion -Wsign-promo")
+            SET(CXXGNU "${CXXGNU} -Wformat=2 -Winit-self -Wlogical-op")
+            SET(CXXGNU "${CXXGNU} -Wmissing-include-dirs -Wnoexcept -Woverloaded-virtual")
+            SET(CXXGNU "${CXXGNU} -Wredundant-decls -Wstrict-null-sentinel -Wctor-dtor-privacy -Wdisabled-optimization")
+            SET(CXXGNU "${CXXGNU} -Wstrict-overflow=5 -Wswitch-default -Wundef")
+
+            SET(CXXGNU "${CXXGNU} -Werror=return-type") # Should be errors
+            #SET(CXXF "${CXXF} -Wshadow ") # Some warnings are too verbose to be useful
+            #SET(CXXF "${CXXF} -Wmissing-declarations -Wold-style-cast") # Not actually errors
+            SET(CXXGNU "${CXXGNU} -Wno-unused-parameter -Wno-unused") # Disabled Warnings
+            IF(NOT COMPILER_MINGW)
+                SET(CXXGNU "${CXXGNU} -Wno-comment") # Not recognized on MinGW
+            ENDIF()
         ENDIF()
 
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXXGNU}" PARENT_SCOPE)
