@@ -78,16 +78,6 @@ ZLog &ZLog::log(ZString logtext){
     return *this;
 }
 
-ZLog &ZLog::operator<<(ZBinary bin){
-    ZString text;
-    for(zu64 i = 0; i < bin.size(); ++i){
-        unsigned char tmp = bin[i];
-        // Log in hexadecimal pairs
-        text += ZString::ItoS(tmp, 16, 2);
-    }
-    return log(text);
-}
-
 ZLog &ZLog::operator<<(ZLogInfo in){
     if(job){
         switch(in.type){
@@ -116,6 +106,16 @@ ZLog &ZLog::operator<<(ZLogInfo in){
         }
     }
     return *this;
+}
+
+ZLog &ZLog::operator<<(ZBinary bin){
+    ZString text;
+    for(zu64 i = 0; i < bin.size(); ++i){
+        unsigned char tmp = bin[i];
+        // Log in hexadecimal pairs
+        text += ZString::ItoS(tmp, 16, 2);
+    }
+    return log(text);
 }
 
 ZString ZLog::pullBuffer(){

@@ -76,6 +76,23 @@ public:
     static void memcopy(const void *src, void *dest, zu64 size){
         memcpy(dest, src, size);
     }
+
+public:
+    class RAW {
+    public:
+        static void *setRaw(void *dest, zu8 src, zu64 size){
+            if(dest && size)
+                memset((unsigned char *)dest, src, size);
+            return dest;
+        }
+
+        static void *fillRaw(void *dest, const void *src, zu64 src_size, zu64 dest_count){
+            for(zu64 i = 0; i < dest_count; ++i){
+                memcpy((unsigned char *)dest + i, src, src_size);
+            }
+            return dest;
+        }
+    };
 };
 
 template <> class ZAllocator<void> {

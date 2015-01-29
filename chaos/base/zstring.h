@@ -12,7 +12,6 @@
 #include "ziterator.h"
 
 #include <cstring>
-
 //#include <bits/stringfwd.h>
 #include <string>
 #include <iosfwd>

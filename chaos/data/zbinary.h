@@ -23,18 +23,6 @@ public:
     };
 
 public:
-    class RAW {
-    public:
-        static void *fillRaw(void *dest, const void *src, zu64 src_size, zu64 dest_count){
-            for(zu64 i = 0; i < dest_count; ++i){
-                memcpy((unsigned char *)dest + i, src, src_size);
-            }
-            return dest;
-        }
-    };
-
-
-public:
     ZBinary() : _data(nullptr), _size(0), _rwpos(0){
 
     }
@@ -60,7 +48,7 @@ public:
         }
     }
     ZBinary(const ZBinary &other) : ZBinary(other._data, other._size){
-
+        // _rwpos is not copied
     }
 
     ~ZBinary(){
