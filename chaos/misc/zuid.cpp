@@ -37,7 +37,7 @@ ZBinary getMACAddress(){
             ArZ mac;
             for(zu64 i = 0; i < 6; ++i)
                 mac.push(ZString::ItoS(adapterInfoList->Address[i], 16, 2));
-            LOG(ZString::compound(mac, "-") << " " << adapterInfoList->AdapterName << " " << adapterInfoList->Description);
+            LOG(ZString::compound(mac, ":") << " " << adapterInfoList->AdapterName << " " << adapterInfoList->Description);
             adapterInfoList = adapterInfoList->Next; // Progress through
         } while(adapterInfoList); // Terminate if last adapter
 
@@ -62,22 +62,30 @@ ZBinary getMACAddress(){
     struct ifreq* it = ifc.ifc_req;
     const struct ifreq* const end = it + (ifc.ifc_len / sizeof(struct ifreq));
 
-    for (; it != end; ++it) {
+    for(; it != end; ++it){
         strcpy(ifr.ifr_name, it->ifr_name);
-        if (ioctl(sock, SIOCGIFFLAGS, &ifr) == 0) {
-            if (! (ifr.ifr_flags & IFF_LOOPBACK)) { // don't count loopback
-                if (ioctl(sock, SIOCGIFHWADDR, &ifr) == 0) {
-                    success = 1;
-                    break;
+        if(ioctl(sock, SIOCGIFFLAGS, &ifr) == 0){
+            if(!(ifr.ifr_flags & IFF_LOOPBACK)){ // skip loopback
+                if(ioctl(sock, SIOCGIFHWADDR, &ifr) == 0){
+                    unsigned char mac_address[6];
+                    memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
+                    ArZ mac;
+                    for(zu64 i = 0; i < 6; ++i)
+                        mac.push(ZString::ItoS(mac_address[i], 16, 2));
+                    LOG(ZString::compound(mac, ":") << " " << ifr.ifr_name);
+
+                    ZBinary bin(mac_address, 6);
+                    return bin;
                 }
             }
+        } else {
+            /* handle error */
         }
-        else { /* handle error */ }
     }
 
     unsigned char mac_address[6];
-
-    if (success) memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
+    if(success)
+        memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
 #endif
 
     // Otherwise, generate random 6 bytes
@@ -87,21 +95,12 @@ ZBinary getMACAddress(){
 }
 
 ZUID::ZUID(){
-    memset(_id.octets, 0, 6);
-//    _id.first = 0;
-//    _id.second = 0;
+    for(zu8 i = 0; i < 16; ++i)
+        _id.octets[i] = 0;
+//    memset(_id.octets, 0, 6);
 
     ZBinary mac = getMACAddress();
-    LOG(mac.getPos());
-    //mac.rewind();
     mac.read(_id.octets + 10, 6);
-//    for(zu64 i = 0; i < 6; ++i)
-//        _id.octets[10+i] = mac[i];
-
-    ArZ macaddr;
-    for(zu64 i = 0; i < 6; ++i)
-        macaddr.push(ZString::ItoS(mac[i], 16, 2));
-    LOG(ZString::compound(macaddr, "-"));
 
     //clock_t clicks = clock();
     //time_t rawtime = time(NULL);
@@ -112,23 +111,26 @@ ZUID::ZUID(){
 ZUID::ZUID(ZString str){
     str.replace("-", "");
     if(str.size() == 32 && str.isInteger(16)){
-        for(zu8 i = 0; i < 16; ++i){
-            _id.octets[i] = (zu8)ZString::substr(str, i*2, 2).tozu64();
-        }
-//        ZString p1 = ZString::substr(str, 0, 16);
-//        ZString p2 = ZString::substr(str, 16, 16);
-//        _id.first = p1.tozu64(16);
-//        _id.second = p2.tozu64(16);
+        for(zu8 i = 0; i < 16; ++i)
+            _id.octets[i] = (zu8)ZString::substr(str, i*2, 2).tozu64(16);
+    } else {
+        for(zu8 i = 0; i < 16; ++i)
+            _id.octets[i] = 0;
     }
 }
+
+bool ZUID::operator==(const ZUID &uid){
+    for(zu8 i = 0; i < 16; ++i)
+        if(_id.octets[i] != uid._id.octets[i])
+            return false;
+    return true;
+}
+
 
 ZString ZUID::str() const {
     ZString uid;
     for(zu8 i = 0; i < 16; ++i)
         uid += ZString::ItoS(_id.octets[i], 16, 2);
-//    ZString p1 = ZString::ItoS(_id.first, 16, 16);
-//    ZString p2 = ZString::ItoS(_id.second, 16, 16);
-//    ZString str = p1 + p2;
     uid.insert(8, "-");
     uid.insert(8 + 1 + 4, "-");
     uid.insert(8 + 1 + 4 + 1 + 4, "-");

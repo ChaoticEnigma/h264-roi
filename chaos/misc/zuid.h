@@ -4,6 +4,8 @@
 #include "ztypes.h"
 #include "zstring.h"
 
+#define ZUID_NIL ZUID("00000000-0000-0000-0000-000000000000")
+
 namespace LibChaos {
 
 class ZUID {
@@ -32,6 +34,8 @@ public:
 public:
     ZUID();
     ZUID(ZString str);
+
+    bool operator==(const ZUID &uid);
 
     ID getID() const { return _id; }
     ZString str() const;
