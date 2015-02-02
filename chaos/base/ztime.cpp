@@ -11,12 +11,14 @@ namespace LibChaos {
 ZTime::ZTime(){
     SYSTEMTIME systime;
     GetLocalTime(&systime);
-    FILETIME time;
-    SystemTimeToFileTime(&systime, &time);
+    FILETIME filetime;
+    SystemTimeToFileTime(&systime, &filetime);
 
     // Smash FILETIME into _time
     // It works, I promise*
-    memcpy(&_time, &time, 8);
+    timet time;
+    memcpy(&time, &filetime, 8);
+    _time = time;
 }
 
 ZTime::ZTime(const ZTime &other) : _time(other._time){

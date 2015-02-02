@@ -37,7 +37,7 @@ ZBinary getMACAddress(){
             ArZ mac;
             for(zu64 i = 0; i < 6; ++i)
                 mac.push(ZString::ItoS(adapterInfoList->Address[i], 16, 2));
-            LOG(ZString::compound(mac, ":") << " " << adapterInfoList->AdapterName << " " << adapterInfoList->Description);
+            LOG(ZString::compound(mac, ":") << " " << adapterInfoList->Description);
             adapterInfoList = adapterInfoList->Next; // Progress through
         } while(adapterInfoList); // Terminate if last adapter
 
@@ -91,6 +91,8 @@ ZBinary getMACAddress(){
     // Otherwise, generate random 6 bytes
     ZBinary rand;
     rand.resize(6);
+    // TODO: Randomness here
+    rand[0] |= 0x01; // Avoid collision with IEEE 802 MAC Addresses
     return rand;
 }
 
@@ -98,6 +100,14 @@ ZUID::ZUID(){
     for(zu8 i = 0; i < 16; ++i)
         _id.octets[i] = 0;
 //    memset(_id.octets, 0, 6);
+
+#if PLATFORM == WINDOWS
+    SYSTEMTIME systime;
+    GetSystemTime(&systime);
+    FILETIME filetime;
+    SystemTimeToFileTime(&systime, &filetime);
+    LOG(filetime.dwHighDateTime << " " << filetime.dwLowDateTime);
+#endif
 
     ZBinary mac = getMACAddress();
     mac.read(_id.octets + 10, 6);
