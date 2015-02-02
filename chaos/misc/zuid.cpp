@@ -101,13 +101,38 @@ ZUID::ZUID(){
         _id.octets[i] = 0;
 //    memset(_id.octets, 0, 6);
 
+    zu64 utctime;
+
 #if PLATFORM == WINDOWS
     SYSTEMTIME systime;
     GetSystemTime(&systime);
     FILETIME filetime;
     SystemTimeToFileTime(&systime, &filetime);
-    LOG(filetime.dwHighDateTime << " " << filetime.dwLowDateTime);
+    zu64 mstime = ((zu64)filetime.dwHighDateTime << 32) | filetime.dwLowDateTime;
+    // Microsoft UTC starts January 1, 1601, 00:00000000000
+    // We need UTC since October 15, 1582, 00:00:000000000
+    // Add 17 days in Oct + 30 days in Nov + 31 days in Dec + 18 years + 5 leap days
+    utctime = mstime + (zu64)(1000*1000*10) * (zu64)(60*60*24) * (zu64)(17+30+31+(365*18)+5);
 #endif
+
+#if PLATFORM == WINDOWS
+
+#endif
+
+    zu32 utchi = (utctime >> 32);
+    zu32 utclo = (utctime & 0xFFFFFFFF);
+
+    _id.octets[0] = (zu8)((utclo >> 24) & 0xFF); // time_lo
+    _id.octets[1] = (zu8)((utclo >> 16) & 0xFF);
+    _id.octets[2] = (zu8)((utclo >> 8)  & 0xFF);
+    _id.octets[3] = (zu8) (utclo        & 0xFF);
+    _id.octets[4] = (zu8)((utchi >> 8)  & 0xFF); // time_med
+    _id.octets[5] = (zu8) (utchi        & 0xFF);
+    _id.octets[6] = (zu8)((utchi >> 24) & 0xFF); // time_hi
+    _id.octets[7] = (zu8)((utchi >> 16) & 0xFF);
+
+    _id.octets[6] &= 0x0F; // Clear the 4 highest bits of the 7th byte
+    _id.octets[6] |= 0x10; // Insert UUID version 1
 
     ZBinary mac = getMACAddress();
     mac.read(_id.octets + 10, 6);

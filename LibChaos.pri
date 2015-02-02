@@ -91,7 +91,8 @@ HEADERS += \
     $$PWD/ui/align.h \
     \
     $$PWD/bbb/zbbb.h \
-    $$PWD/chaos/misc/zencrypt.h
+    $$PWD/chaos/misc/zencrypt.h \
+    $$PWD/chaos/misc/zrandom.h
 
 SOURCES += \
     $$PWD/chaos/base/zerror.cpp \
@@ -178,7 +179,8 @@ SOURCES += \
     $$PWD/util/duplicatefinder.cpp \
     $$PWD/util/imagelibrarymanager.cpp \
     $$PWD/chaos/misc/zencrypt.cpp \
-    $$PWD/test/misc_test.cpp
+    $$PWD/test/misc_test.cpp \
+    $$PWD/chaos/misc/zrandom.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
