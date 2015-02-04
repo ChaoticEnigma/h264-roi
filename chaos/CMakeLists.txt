@@ -44,6 +44,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     misc/zautobuffer.h
     misc/zautobufferunit.h
     misc/zencrypt.h
+    misc/zrandom.h
     misc/zmisc.h
     misc/zret.h
     misc/zuid.h
@@ -92,6 +93,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     misc/zautobuffer.cpp
     misc/zencrypt.cpp
     misc/zmisc.cpp
+    misc/zrandom.cpp
     misc/zuid.cpp
 
     thread/zcondition.cpp

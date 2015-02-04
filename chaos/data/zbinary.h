@@ -10,6 +10,9 @@
 
 namespace LibChaos {
 
+class ZBinary;
+typedef ZBinary ZBuffer;
+
 class ZBinary : public ZPosition, public ZReader, public ZWriter {
 public:
     typedef unsigned char zbinary_type;
@@ -25,6 +28,10 @@ public:
 public:
     ZBinary() : _data(nullptr), _size(0), _rwpos(0){
 
+    }
+    ZBinary(zu64 size) : ZBinary(){
+        _size = size;
+        _data = new zbinary_type[_size];
     }
     ZBinary(const void *ptr, zu64 size) : ZBinary(){
         if(ptr && size){

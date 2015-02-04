@@ -4,44 +4,30 @@
 #include "ztypes.h"
 #include "zstring.h"
 
-#define ZUID_NIL ZUID("00000000-0000-0000-0000-000000000000")
+#define ZUID_NIL LibChaos::ZUID(LibChaos::ZUID::nil)
 
 namespace LibChaos {
 
+// Generates IETF RFC 4122 UUIDs
 class ZUID {
 public:
-    struct ID {
-        zoctet octets[16];
+    enum uuidtype {
+        nil = 0,
+        time,
+        random,
     };
-//    struct ID {
-//        union {
-//            zoctet octets[16];
-//            struct {
-//                zu64 first : 64;
-//                zu64 second : 64;
-//            };
-//            struct { // RFC 4122 time-based UUID
-//                zu32 time_low                 : 32;
-//                zu16 time_mid                 : 16;
-//                zu16 time_hi_and_version      : 16;
-//                zu8 clock_seq_hi_and_reserved : 8;
-//                zu8 clock_seq_low             : 8;
-//                zu64 node                     : 48;
-//            };
-//        };
-//    };
 
 public:
-    ZUID();
+    ZUID(uuidtype type = time);
     ZUID(ZString str);
 
     bool operator==(const ZUID &uid);
 
-    ID getID() const { return _id; }
+    const zoctet *getID() const { return _id_octets; }
     ZString str() const;
 
 private:
-    ID _id;
+    zoctet _id_octets[16];
 };
 
 }
