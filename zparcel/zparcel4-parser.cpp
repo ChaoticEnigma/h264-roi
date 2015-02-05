@@ -19,7 +19,7 @@ bool ZParcel4Parser::create(){
     if(_file->write(&_pagesize, 1) != 1)
         return false;
 
-    if(_file)
+    if(_file->write())
 
     return true;
 }
