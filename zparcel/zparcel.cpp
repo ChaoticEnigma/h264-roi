@@ -10,10 +10,8 @@
 #include "ztypes.h"
 #include "zerror.h"
 
-#define ZPARCEL_SIG_SIZE 8
 #define ZPARCEL_VERSION_2_SIG { 'P','A','R','C','E','L','0','2' }
 #define ZPARCEL_VERSION_3_SIG { 'P',143,'R',128,144,'L', 0 , 3  }
-#define ZPARCEL_VERSION_4_SIG { 'P',143,'R',128,144,'L', 0 , 4  }
 
 #define BUFFER_SIZE 32768 // (1 << 15)
 
@@ -26,11 +24,16 @@ ZParcel::~ZParcel(){
 }
 
 bool ZParcel::create(ZPath path){
-    if(!_parcel.open(path, ZFile::modewrite)){
-        ELOG("Failed to open parcel file");
-        return false;
-    }
     _path = path;
+    bool ret = _file.open(_path, ZFile::modewrite | ZFile::create);
+    if(!ret){
+        ELOG("Failed to create parcel file");
+    }
+    _version = version4;
+    _parser = new ZParcel4Parser(_file);
+
+    _parser->create();
+    return false;
 
     // Write parcel signature
     if(!writeSig()){
@@ -44,7 +47,7 @@ bool ZParcel::create(ZPath path){
 
 bool ZParcel::open(ZPath file){
     _path = file;
-    if(!_parcel.open(_path, ZFile::moderead)){
+    if(!_file.open(_path, ZFile::moderead)){
         ELOG("Could not open parcel");
         return false;
     }
@@ -53,10 +56,10 @@ bool ZParcel::open(ZPath file){
     switch(_type){
         case version3: {
             zu64 headersize;
-            if(_parcel.read((zbyte*)&headersize, sizeof(zu64)) != sizeof(zu64)) // 8
+            if(_file.read((zbyte*)&headersize, sizeof(zu64)) != sizeof(zu64)) // 8
                 return false;
             ZBinary header;
-            if(_parcel.read(header, headersize) != headersize) // headersize
+            if(_file.read(header, headersize) != headersize) // headersize
                 return false;
             header.rewind();
 
@@ -96,7 +99,7 @@ bool ZParcel::testParcel(ZPath file){
 }
 
 void ZParcel::close(){
-    _parcel.close();
+    _file.close();
 }
 
 bool ZParcel::addFile(ZString name, ZPath path){
@@ -130,10 +133,10 @@ bool ZParcel::getSection(ParcelSection locat, ZBinary &out){
     switch(_type){
         case version2:
         case version3: {
-            zu64 newpos = _parcel.setPos(_headsize + locat.pos);
+            zu64 newpos = _file.setPos(_headsize + locat.pos);
             if(newpos != (_headsize + locat.pos))
                 return false;
-            if(_parcel.read(out, locat.len) != locat.len)
+            if(_file.read(out, locat.len) != locat.len)
                 return false;
             return true;
             break;
@@ -146,7 +149,7 @@ bool ZParcel::getSection(ParcelSection locat, ZBinary &out){
 }
 
 ZParcelSection ZParcel::readSection(ZString name){
-    return ZParcelSection(&_parcel, _headsize + _index[name].pos, _index[name].len);
+    return ZParcelSection(&_file, _headsize + _index[name].pos, _index[name].len);
 }
 
 ZString ZParcel::keyByIndex(zu64 inx){
@@ -258,7 +261,7 @@ zu64 ZParcel::unParcel(){
         zu64 len = _index[i].len;
         ZPath outpath = base + _index.key(i);
         ZFile::createDirsTo(outpath);
-        ZParcelSection section(&_parcel, _index[i].pos, _index[i].len);
+        ZParcelSection section(&_file, _index[i].pos, _index[i].len);
         ZFile outfl;
         if(!outfl.open(outpath, ZFile::modewrite)){
             ELOG("Out file " << outpath << " not opened");
@@ -326,13 +329,13 @@ ZParcel::parceltype ZParcel::readSig(ZPath path){
 }
 
 bool ZParcel::writeSig(){
-    if(!_parcel.isOpen()){
+    if(!_file.isOpen()){
         ELOG("Parcel is not open");
         return false;
     }
     // Write 8-byte parcel file signature
     ZBinary sig = ZPARCEL_VERSION_3_SIG;
-    return (_parcel.write(sig) == ZPARCEL_SIG_SIZE);
+    return (_file.write(sig) == ZPARCEL_SIG_SIZE);
 }
 
 }

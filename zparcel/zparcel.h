@@ -8,6 +8,8 @@
 #include "zjson.h"
 #include "zfile.h"
 
+#include "zparcel4-parser.h"
+
 namespace LibChaos {
 
 class ZParcelSection : public ZReader {
@@ -50,9 +52,9 @@ class ZParcel {
 public:
     enum parceltype {
         versionunknown = 0,
-        version2,
-        version3,
-        version4,
+//        version2,
+//        version3,
+        version4 = 4,
     };
 
     struct ParcelSection {
@@ -76,56 +78,13 @@ public:
     // Close file handles
     void close();
 
-    bool addFile(ZString name, ZPath file);
-    bool addData(ZString name, const ZBinary &data);
-
-    bool getSection(ParcelSection location, ZBinary &out);
-    ZParcelSection readSection(ZString name);
-
-    ZString keyByIndex(zu64 index);
-
-    bool getByName(ZString name, ZBinary &out);
-    ZBinary operator[](ZString name);
-
-    ZBinary getByIndex(zu64 index);
-    //inline ZBinary operator[](zu64 inx){ return getByIndex(inx); }
-
-    // Extract all parcelled files to a folder
-    zu64 unParcel();
-
-    zu64 parcelContSize();
-
-    inline ZPath parcelFile() const { return _path; }
-    inline ParcelSectionList getIndex() const { return _index; }
-    inline zu64 size() const { return _index.size(); }
-
-private:
-    ZPath tmpParcelPath();
-
-    static parceltype readSig(ZPath file);
-    bool writeSig();
-
 private:
     // Parcel file
     ZPath _path;
-    ZFile _parcel;
-//    ZFile _tmpfl;
-
-    // Parcel index
-    ParcelSectionList _index;
-
-    // Read
-    parceltype _type;
-    zu64 _headsize;
-
-    // Write
-    zu64 currpos;
+    ZFile _file;
+    parceltype _version;
+    ZParcelParser *_parser;
 };
-
-typedef ZParcel::ParcelSection PcSc;
-typedef ZParcel::ParcelSectionList PcScLs;
-typedef ZParcel::ParcelSection PclSec;
-typedef ZParcel::ParcelSectionList PclSecLst;
 
 } // namespace LibChaos
 
