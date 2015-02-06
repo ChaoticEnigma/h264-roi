@@ -12,9 +12,16 @@ public:
     bool create();
     bool open();
 
+    void setPageSize(zu8 size){ _pagesize = size; }
+    void setMaxPages(zu32 pages){ _maxpages = pages; }
+
+    bool commit();
 
     ZString getName();
     void setName(ZString name);
+
+private:
+    void writeHeadPage();
 
 private:
     ZFile *_file;
@@ -26,27 +33,59 @@ private:
 }
 
 /* ZParcel version 4 format
+  A ZParcel 4 file is page-based
+  Pages may be in any order, except the head page, which must be the first page
+  The page size is the smallest operation that may be performed at a time
 
-  Head Page (once at beginning of file)
+  Head Page - defines parcel options
   48 bits: parcel signature
    8 bits: parcel category (1)
    8 bits: parcel version (4)
-   8 bits: page size power (minimum 512, default 1K)
-  32 bits: maximum number of pages
+   8 bits: page size power (minimum 5 (32), default 10 (1K), maximum 32 (4G))
+  32 bits: maximum number of pages (default 64K)
+  32 bits: tables page number
+  32 bits: freelist page number (0 if none)
+  .. zero padding ..
+
+
+  Table Page - defines the tables and their columns in this file
+   8 bits: page type id (1)
+  32 bits: previous page number
+   8 bits: table id
+  32 bits: first record page
    8 bits: table name length (n)
    n bits: table name
-  .. remaining bits to next page are 0 ..
+  16 bits: number of columns
 
-  Record Page
+  .. more tables ..
+  32 bits: next page number
+
+
+  Freelist Page - list of pages that are unused and not at the end of the file
+   8 bits: page type id (2)
+  32 bits: previous page number (0 if none)
+
+  32 bits: next page number (0 if none)
+
+
+  Record Page - contains table rows
+   8 bits: page type id (3)
+  32 bits: previous page number (0 if none)
+
+  32 bits: next page number (0 if none)
 
 
   Blob Page
+   8 bits: page type id (4)
+  32 bits: previous page number (0 if none)
+
+  32 bits: next page number (0 if none)
 
 
   History Page
+   8 bits: page type id (5)
 
 
 */
 
 #endif // ZPARCEL4PARSER
-
