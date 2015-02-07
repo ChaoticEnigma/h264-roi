@@ -35,7 +35,7 @@ private:
 /* ZParcel version 4 format
   A ZParcel 4 file is page-based
   Pages may be in any order, except the head page, which must be the first page
-  The page size is the smallest operation that may be performed at a time
+  The page size is the smallest I/O operation that may be performed at a time
 
   Head Page - defines parcel options
   48 bits: parcel signature
