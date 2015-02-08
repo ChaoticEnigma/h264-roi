@@ -7,6 +7,31 @@ namespace LibChaos {
 
 class ZParcel4Parser : public ZParcelParser {
 public:
+    typedef zu32 pageid;
+    enum pagetype {
+        freepage,
+        fieldpage,
+        freelistpage,
+        indexpage,
+        recordpage,
+        blobpage,
+        historypage,
+        headpage,
+    };
+
+    typedef zu16 fieldid;
+    enum fieldtype {
+
+    };
+
+    struct Field {
+        fieldid id;
+        ZBinary data;
+    };
+
+    typedef ZArray<Field> FieldList;
+
+public:
     ZParcel4Parser(ZFile *file);
 
     bool create();
@@ -15,19 +40,31 @@ public:
     void setPageSize(zu8 size){ _pagesize = size; }
     void setMaxPages(zu32 pages){ _maxpages = pages; }
 
-    bool commit();
+    fieldid addField(ZString name, fieldtype type);
+    fieldid getFieldId(ZString name);
 
-    ZString getName();
-    void setName(ZString name);
+    bool addRecord(FieldList fields);
 
 private:
-    void writeHeadPage();
+    bool readPage(pageid page, ZBinary &data);
+
+    pageid insertPage(pagetype type);
+    bool writeHeadPage();
+
+    bool freePage(pageid page);
+    bool addToFreelist(pageid page);
+
+    static ZBinary toFile8Bits(zu8 num);
+    static ZBinary toFile16Bits(zu16 num);
+    static ZBinary toFile32Bits(zu32 num);
 
 private:
     ZFile *_file;
     zu8 _pagesize;
     zu32 _maxpages;
     zu32 _pagecount;
+    pageid _fieldpage;
+    pageid _freelistpage;
 };
 
 }
@@ -43,64 +80,81 @@ private:
    8 bits: parcel version (4)
    8 bits: page size power (minimum 5 (32), default 10 (1K), maximum 32 (4G))
   32 bits: maximum number of pages (default 64K)
-  32 bits: tables page number
+  32 bits: field page number
   32 bits: freelist page number (0 if none)
   .. zero padding ..
 
 
-  Table Page - defines the tables and their columns in this file
-   8 bits: page type id (1)
+  Field Page - defines the usable fields in this file
+   8 bits: page type
   32 bits: previous page number
-  16 bits: number of tables
-  16 bits: table id
-  32 bits: first index page
-  32 bits: first record page
-   8 bits: table name length (n)
-   n bits: table name
-  16 bits: number of columns
-   8 bits: column type id
-   8 bits: column name length (m)
-   m bits: column name
-  .. more columns ..
-  .. more tables ..
+  16 bits: number of fields
+  16 bits: field id
+   8 bits: field type
+   8 bits: field name length (n)
+   n bits: field name
+  .. more fields ..
   32 bits: next page number
 
 
   Freelist Page - list of pages that are unused and not at the end of the file
-   8 bits: page type id (2)
+   8 bits: page type
   32 bits: previous page number (0 if none)
   32 bits: free page number
   .. more free pages ..
   32 bits: next page number (0 if none)
 
   Free Page
-   8 bits: page type id(0)
+   8 bits: page type
   .. zeroes ...
 
 
-  Index Page -
+  Index Page - shortlist of record locations
+   8 bits: page type
+  32 bits: previous page number
+  16 bits: field id
+   n bits: field data
+  32 bits: page number
+  32 bits: page byte
+  .. more record locations ..
+  32 bits: next page number
 
 
-  Record Page - contains table rows
-   8 bits: page type id (3)
+  Record Page - contains records
+   8 bits: page type
   32 bits: previous page number (0 if none)
-   n bits: record
-   m bits: column
-  .. more columns ..
+  16 bits: number of fields in record
+  16 bits: field id
+   n bits: field data
+  .. more fields ..
   .. more records ..
   32 bits: next page number (0 if none)
 
 
   Blob Page
-   8 bits: page type id (4)
+   8 bits: page type
   32 bits: previous page number (0 if none)
    n bits: blob data
   32 bits: next page number (0 if none)
 
 
   History Page
-   8 bits: page type id (5)
+   8 bits: page type
 
+
+  Page Types
+   0: free page
+   1: field page
+   2: freelist page
+   3: index page
+   4: record page
+   5: blob page
+   6: history page
+  80: head page
+
+  Field Types
+   0:
+   1:
 
 */
 
