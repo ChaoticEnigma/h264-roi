@@ -51,12 +51,17 @@ private:
   Table Page - defines the tables and their columns in this file
    8 bits: page type id (1)
   32 bits: previous page number
-   8 bits: table id
+  16 bits: number of tables
+  16 bits: table id
+  32 bits: first index page
   32 bits: first record page
    8 bits: table name length (n)
    n bits: table name
   16 bits: number of columns
-
+   8 bits: column type id
+   8 bits: column name length (m)
+   m bits: column name
+  .. more columns ..
   .. more tables ..
   32 bits: next page number
 
@@ -64,21 +69,32 @@ private:
   Freelist Page - list of pages that are unused and not at the end of the file
    8 bits: page type id (2)
   32 bits: previous page number (0 if none)
-
+  32 bits: free page number
+  .. more free pages ..
   32 bits: next page number (0 if none)
+
+  Free Page
+   8 bits: page type id(0)
+  .. zeroes ...
+
+
+  Index Page -
 
 
   Record Page - contains table rows
    8 bits: page type id (3)
   32 bits: previous page number (0 if none)
-
+   n bits: record
+   m bits: column
+  .. more columns ..
+  .. more records ..
   32 bits: next page number (0 if none)
 
 
   Blob Page
    8 bits: page type id (4)
   32 bits: previous page number (0 if none)
-
+   n bits: blob data
   32 bits: next page number (0 if none)
 
 
