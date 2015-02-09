@@ -13,7 +13,4 @@
 
 using namespace LibChaos;
 
-ZArray<ZPath> autoFiles(ArZ args);
-ZArray<ZPath> manualFiles(ArZ args);
-
 #endif // PARCELMAIN_H

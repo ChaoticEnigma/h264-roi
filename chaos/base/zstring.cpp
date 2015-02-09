@@ -603,6 +603,10 @@ ZString &ZString::label(const AsArZ &values){
 ArZ ZString::split(ZString delim) const {
     ArZ out;
     zu64 pos = findFirst(*this, delim);
+    if(pos == none){
+        out.push(*this);
+        return out;
+    }
     out.push(substr(_data, 0, pos));
     out.push(substr(_data, pos + delim.size()));
     return out;

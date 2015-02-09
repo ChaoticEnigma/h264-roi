@@ -11,12 +11,10 @@ namespace LibChaos {
 class ZParcelParser {
 public:
 //    ZParcelParser(ZFile *file);
+    virtual ~ZParcelParser(){}
 
     virtual bool create() = 0;
     virtual bool open() = 0;
-
-    virtual ZString getName() = 0;
-    virtual void setName(ZString name) = 0;
 };
 
 }

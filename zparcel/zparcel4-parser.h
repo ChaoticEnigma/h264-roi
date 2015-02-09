@@ -5,67 +5,99 @@
 
 namespace LibChaos {
 
+namespace ZParcelTypes {
+
+typedef zu32 pageid;
+enum pagetype {
+    freepage,
+    fieldpage,
+    freelistpage,
+    indexpage,
+    recordpage,
+    blobpage,
+    historypage,
+    headpage,
+};
+
+typedef zu16 fieldid;
+enum fieldtype {
+    nullfield,
+    unsignedintfield,
+    signedintfield,
+    zuidfield,
+    stringfield,
+    filefield,
+};
+
+struct Field {
+    fieldid id;
+    ZBinary data;
+};
+
+typedef ZArray<Field> FieldList;
+
+}
+
 class ZParcel4Parser : public ZParcelParser {
-public:
-    typedef zu32 pageid;
-    enum pagetype {
-        freepage,
-        fieldpage,
-        freelistpage,
-        indexpage,
-        recordpage,
-        blobpage,
-        historypage,
-        headpage,
-    };
-
-    typedef zu16 fieldid;
-    enum fieldtype {
-
-    };
-
-    struct Field {
-        fieldid id;
-        ZBinary data;
-    };
-
-    typedef ZArray<Field> FieldList;
-
 public:
     ZParcel4Parser(ZFile *file);
 
     bool create();
     bool open();
 
-    void setPageSize(zu8 size){ _pagesize = size; }
-    void setMaxPages(zu32 pages){ _maxpages = pages; }
+    zu32 getPageSize() const { return _pagesize; }
+    zu32 getMaxPages() const { return _maxpages; }
 
-    fieldid addField(ZString name, fieldtype type);
-    fieldid getFieldId(ZString name);
+    void setPageSize(zu8 power);
+    void setMaxPages(zu32 pages);
 
-    bool addRecord(FieldList fields);
+    ZParcelTypes::fieldid addField(ZString name, ZParcelTypes::fieldtype type);
+    ZParcelTypes::fieldid getFieldId(ZString name);
+    ZParcelTypes::fieldtype getFieldType(ZParcelTypes::fieldid id);
+
+    bool addRecord(ZParcelTypes::FieldList fields);
+
+    static ZParcelTypes::fieldtype fieldFileIdToFieldType(zu16 type);
+    static ZString getFieldTypeName(ZParcelTypes::fieldtype type);
 
 private:
-    bool readPage(pageid page, ZBinary &data);
+    bool readPage(ZParcelTypes::pageid page, ZBinary &data);
+    bool loadHeadPage();
 
-    pageid insertPage(pagetype type);
+    ZParcelTypes::pageid insertPage(ZParcelTypes::pagetype type);
     bool writeHeadPage();
 
-    bool freePage(pageid page);
-    bool addToFreelist(pageid page);
+    bool zeroPad();
 
-    static ZBinary toFile8Bits(zu8 num);
-    static ZBinary toFile16Bits(zu16 num);
-    static ZBinary toFile32Bits(zu32 num);
+    bool freePage(ZParcelTypes::pageid page);
+    bool addToFreelist(ZParcelTypes::pageid page);
 
 private:
     ZFile *_file;
-    zu8 _pagesize;
-    zu32 _maxpages;
+    bool _init;
+    zu32 _pagesize;
     zu32 _pagecount;
-    pageid _fieldpage;
-    pageid _freelistpage;
+
+    zu8 _pagepower;
+    zu32 _maxpages;
+    ZParcelTypes::pageid _freelistpage;
+    ZParcelTypes::pageid _fieldpage;
+    ZParcelTypes::pageid _indexpage;
+    ZParcelTypes::pageid _recordpage;
 };
+
+namespace ZParcelConvert {
+    ZBinary toFileFormat(ZParcelTypes::fieldtype type, ZString str);
+
+    ZBinary toFile8Bits(zu8 num);
+    ZBinary toFile16Bits(zu16 num);
+    ZBinary toFile32Bits(zu32 num);
+    ZBinary toFile64Bits(zu64 num);
+    zu8 fromFile8Bits(ZBinary num);
+    zu16 fromFile16Bits(ZBinary num);
+    zu32 fromFile32Bits(ZBinary num);
+    zu64 fromFile64Bits(ZBinary num);
+}
 
 }
 
@@ -80,8 +112,10 @@ private:
    8 bits: parcel version (4)
    8 bits: page size power (minimum 5 (32), default 10 (1K), maximum 32 (4G))
   32 bits: maximum number of pages (default 64K)
-  32 bits: field page number
   32 bits: freelist page number (0 if none)
+  32 bits: field page number
+  32 bits: index page number
+  32 bits: record page number
   .. zero padding ..
 
 

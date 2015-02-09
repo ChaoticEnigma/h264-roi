@@ -1,6 +1,9 @@
 #include "parcel-main.h"
 #include "zerror.h"
 
+using namespace ZParcelTypes;
+using namespace ZParcelConvert;
+
 int mainwrap(int argc, char **argv){
     ZLog::formatStdout(ZLogSource::normal, "%log%");
     ZLog::formatStdout(ZLogSource::debug, "%time% (%file%:%line%) - %log%");
@@ -25,199 +28,88 @@ int mainwrap(int argc, char **argv){
 
     LOG("Parcelor Command: \"" << cmdstr << "\"");
 
-    // Select mode and get file list
-    ZArray<ZPath> parcelpths;
-    if(args.size() > 0 && args[0] == "auto"){
-        // Auto parcel directory
-        parcelpths = autoFiles(args);
-    } else if(args.size() > 0 && args[0] == "manual"){
-        // Manual parcel files
-        parcelpths = manualFiles(args);
-    } else if(args.size() > 0 && args[0] == "create"){
-        // Create empty parcel
-
-    } else if(args.size() > 0 && args[0] == "list"){
-        // List parcel contents
-        if(args.size() > 1){
-            ZParcel parcel;
-            parcel.open(args[1]);
-            for(zu64 i = 0; i < parcel.getIndex().size(); ++i){
-                LOG(parcel.getIndex().key(i) << " " << parcel.getIndex()[i].pos << " " << parcel.getIndex()[i].len);
-            }
-        } else {
-            LOG("No parcel file specified");
-        }
-        return EXIT_SUCCESS;
-    } else if(args.size() > 0 && args[0] == "unpack"){
-        // Extract parcel contents
-        if(args.size() > 1){
-            ZParcel parcel;
-            parcel.open(args[1]);
-            for(zu64 i = 0; i < parcel.getIndex().size(); ++i){
-                LOG(parcel.getIndex().key(i) << " " << parcel.getIndex()[i].pos << " " << parcel.getIndex()[i].len);
-            }
-        } else {
-            LOG("No parcel file specified");
-        }
-        return EXIT_SUCCESS;
-    } else {
-        LOG("Usage:");
-        LOG("    zparcel auto <source_dir> [... more source dirs  ...]");
-        LOG("    zparcel manual <file> [... more files ...]");
-        LOG("    zparcel create <new_parcel>");
-        LOG("    zparcel list <parcel>");
-        LOG("    zparcel unpack <parcel>");
-        return EXIT_SUCCESS;
-    }
-
-    // Settings
-    ZPath pwd = ZPath::pwd();
-    ZPath parcelname = "parcel.zparcel";
-    ZPath reldir = pwd;
-
-    // Get flag settings
-    for(zu64 i = 0; i < flags.size(); ++i){
-        if(flags[i].startsWith("-output=", false)){
-            parcelname = flags[i].substr(8);
-        } else if(flags[i].startsWith("-relative=", false)){
-            reldir = flags[i].substr(10);
-        } else {
-            LOG("Unknown Flag: " << flags[i]);
-        }
-    }
-
-    // Resolve parcel location
-    if(!parcelname.absolute())
-        parcelname = pwd + parcelname;
-
-    // Create section list
-    ZAssoc<ZString, ZPath> parcelfls;
-    for(zu64 i = 0; i < parcelpths.size(); ++i){
-        ZPath pth = parcelpths[i];
-        pth.relativeTo(reldir);
-        //LOG(parcelpths[i] << " --> " << pth);
-        parcelfls[pth.str('/')] = parcelpths[i];
-    }
-
-    // Sort files
-    ZAssoc<ZString, ZPath> tmppcfls;
-    for(zu64 i = 0; i < parcelfls.size(); ++i){
-        ZString key = parcelfls.key(i);
-        ZPath val = parcelfls[i];
-        bool found = false;
-        for(zu64 j = 0; j < tmppcfls.size(); ++j){
-            ZString old = tmppcfls.key(j);
-            if(ZString::alphaTest(key, old)){
-                tmppcfls.insert(j, key, val);
-                found = true;
-                break;
-            }
-        }
-        if(!found){
-            tmppcfls.push(key, val);
-        }
-    }
-    parcelfls = tmppcfls;
-
-    LOG("Parcelling " << parcelfls.size() << " Files:");
-    LOG("Naming Parcel Contents Relative to: " << reldir);
-
-    ZFile::remove(parcelname);
-
-    // Create multi-step parcel
-    ZParcel outparcel;
-    if(!outparcel.create(parcelname)){
-        LOG("Could not make new parcel");
-        return EXIT_FAILURE;
-    }
-
-    ZAssoc<ZString, zu64> hashes;
-
-    // Add first integrity block
-    ZBinary integrity = ZBinary("\xFF\x00ZEPHYR INTEGRITY TEST FRONT\x00\xFF", 31);
-    if(!outparcel.addData("integrity-front.dat", integrity)){
-        LOG("Could not add data to parcel");
-        return EXIT_FAILURE;
-    }
-    hashes.push("integrity-front.dat", ZBinary::hash(ZBinary::hashType1, integrity));
-
-    // Add files to parcel
-    for(zu64 i = 0; i < parcelfls.size(); ++i){
-//        ZBinary dat;
-//        ZFile::readBinary(parcelfls[i], dat);
-//        if(!outparcel.addData(parcelfls.key(i), dat)){
-//            LOG("Could not add file to parcel");
-//            return EXIT_FAILURE;
-//        }
-        hashes.push(parcelfls.key(i), ZFile::fileHash(parcelfls[i]));
-        if(!outparcel.addFile(parcelfls.key(i), parcelfls[i])){
-            LOG("Could not add file to parcel");
+    if(args.size() > 0 && args[0] == "create"){
+        if(!(args.size() > 1)){
+            LOG("Usgae: create <file>");
             return EXIT_FAILURE;
         }
-    }
+        LOG("Creating New ZParcel " << args[1]);
+        ZFile file(args[1], ZFile::modereadwrite);
+        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
 
-    // Add last integrity block
-    integrity = ZBinary("\xFF\x00ZEPHYR INTEGRITY TEST BACK\x00\xFF", 30);
-    if(!outparcel.addData("integrity-back.dat", integrity)){
-        LOG("Could not add data to parcel");
-        return EXIT_FAILURE;
-    }
-    hashes.push("integrity-back.dat", ZBinary::hash(ZBinary::hashType1, integrity));
+        parcel->setPageSize(11);
+        parcel->setMaxPages(64 * 1024 * 2);
+        parcel->create();
 
-//    zu64 writebytes = outparcel.finishParcel();
-    zu64 writebytes = 0;
-
-    if(writebytes > 0){
-        LOG("Parcel: " << parcelname);
-        LOG("Parcelled Bytes: " << writebytes);
-
-        ZParcel parcel;
-        if(!parcel.open(parcelname)){
-            ELOG("Parcel " << parcelname << " failed to open");
+        delete parcel;
+    } else if(args.size() > 0 && args[0] == "add"){
+        if(!(args.size() > 2)){
+            LOG("Usgae: add <file> <field:value> [field:value] ..");
             return EXIT_FAILURE;
         }
+        LOG("Adding Record to ZParcel " << args[1]);
+        ZFile file(args[1], ZFile::modereadwrite);
+        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
 
-        zu64 contsize = parcel.parcelContSize();
-        LOG("Section Bytes: " << contsize);
-        if(contsize != writebytes){
-            ELOG("Parcelled Size Mismatch!");
-        }
-
-        zu64 unparcelsize = parcel.unParcel();
-        LOG("UnParcel Bytes: " << unparcelsize);
-        if(unparcelsize != writebytes){
-            ELOG("UnParcelled Size Mismatch!");
-        }
-
-        ZPath base = parcel.parcelFile();
-        base.last().replace(".", "_").append("_cont");
-        base.getAbsolute();
-
-        zu64 pass = 0;
-        for(zu64 i = 0; i < hashes.size(); ++i){
-//            ZBinary data;
-//            if(!parcel.getByName(hashes.key(i), data)){
-//                ELOG("Failed to get section " << hashes.key(i) << " for hash " << data.size());
-//                continue;
-//            }
-
-            zu64 hash = ZFile::fileHash(base + hashes.key(i));
-            //LOG(i << " : " << hash << " - " << hashes[i] << " : " << hashes.key(i));
-            if(hash == hashes[i]){
-                ++pass;
+        parcel->open();
+        FieldList fieldlist;
+        for(zu64 i = 2; i < args.size(); ++i){
+            ArZ pair = args[i].split(":");
+            ArZ fieldpair = pair[0].split("#");
+            ZString fieldname = fieldpair[0];
+            zu16 newfieldtype = (fieldpair.size() == 2 ? (zu16)fieldpair[1].tozu64() : 0);
+            fieldtype ftype = ZParcel4Parser::fieldFileIdToFieldType(newfieldtype);
+            //LOG(fieldname << "(" << ZParcel4Parser::getFieldTypeName(ftype) << ") : " << pair[1]);
+            fieldid fid = parcel->getFieldId(fieldname);
+            if(fid == 0){
+                if(ftype == nullfield){
+                    ELOG("Invalid field type");
+                } else {
+                    LOG("New field: " << fieldname << "(" << ZParcel4Parser::getFieldTypeName(ftype) << ")");
+                    fid = parcel->addField(fieldname, ftype);
+                }
             } else {
-                ELOG("Hash fail on " << hashes.key(i) << " " << hash);
+                if(ftype != parcel->getFieldType(fid))
+                    ELOG("Different field type specifid: " << ZParcel4Parser::getFieldTypeName(ftype) << ", " << ZParcel4Parser::getFieldTypeName(parcel->getFieldType(fid)));
             }
+            if(fid != 0 && ftype != nullfield)
+                fieldlist.push({ fid, toFileFormat(ftype, pair[1]) });
         }
 
-        if(pass == hashes.size())
-            LOG("All Hashes passed");
-        else
-            LOG(pass << "/" << hashes.size() << " Hashes passed");
+        for(zu64 i = 0; i < fieldlist.size(); ++i){
+            LOG(fieldlist[i].id << " : " << fieldlist[i].data.size() << " bytes");
+        }
 
+        delete parcel;
+    } else if(args.size() > 0 && args[0] == "modify"){
+        if(!(args.size() > 2)){
+            LOG("Usgae: modify <file> <command>");
+            return EXIT_FAILURE;
+        }
+        LOG("Modifying ZParcel Options" << args[1]);
+        ZFile file(args[1], ZFile::modereadwrite);
+        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
+
+        parcel->open();
+        LOG(args[2]);
+
+        delete parcel;
+    } else if(args.size() > 0 && args[0] == "list"){
+        if(!(args.size() > 1)){
+            LOG("Usgae: list <file>");
+            return EXIT_FAILURE;
+        }
+        LOG("Listing Records in ZParcel " << args[1]);
+        ZFile file(args[1], ZFile::modereadwrite);
+        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
+
+        parcel->open();
+        LOG("Page Size: " << parcel->getPageSize());
+        LOG("Max Pages: " << parcel->getMaxPages());
+
+        delete parcel;
     } else {
-        LOG("Parcel Building Failed");
-        return EXIT_FAILURE;
+        LOG("Unknown Command");
     }
 
     return EXIT_SUCCESS;
