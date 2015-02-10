@@ -6,6 +6,7 @@
 #define SIG_SIZE 8
 #define DEFAULT_PAGE_SIZE 10 // 2 ^ 10 = 1024
 #define DEFAULT_MAX_PAGES (64 * 1024)
+#define FIELD_NULL 0
 
 namespace LibChaos {
 
@@ -83,7 +84,7 @@ void ZParcel4Parser::setMaxPages(zu32 pages){
 
 fieldid ZParcel4Parser::addField(ZString name, fieldtype type){
     fieldid id = getFieldId(name);
-    if(id && type == getFieldType(id))
+    if(id != FIELD_NULL && type == getFieldType(id))
         return id;
 
     return 0;
@@ -238,6 +239,10 @@ bool ZParcel4Parser::addToFreelist(pageid page){
     return false;
 }
 
+// /////////////////////////////////////////
+// ZParcelConvert
+// /////////////////////////////////////////
+
 namespace ZParcelConvert {
 
 ZBinary toFileFormat(fieldtype type, ZString str){
@@ -306,6 +311,48 @@ zu32 fromFile32Bits(ZBinary num){
 zu64 fromFile64Bits(ZBinary num){
     return ((zu64)num[0] << 56) + ((zu64)num[1] << 48) + ((zu64)num[2] << 40) + ((zu64)num[3] << 32) + ((zu64)num[4] << 24) + ((zu64)num[5] << 16) + ((zu64)num[6] << 8) + (zu64)num[7];
 }
+
+}
+
+// /////////////////////////////////////////
+// ParcelPage
+// /////////////////////////////////////////
+
+ParcelPage::ParcelPage(ZFile *file, zu32 page, zu32 pagesize) : _file(file), _page(page), _pagesize(pagesize), _rwpos(0){
+
+}
+
+zu64 ParcelPage::read(zbyte *dest, zu64 size){
+    _file->setPos(_page * _pagesize + _rwpos);
+    return _file->read(dest, size);
+}
+
+zu64 ParcelPage::write(const zbyte *src, zu64 size){
+    return _file->write(src, size);
+}
+
+bool ParcelPage::atEnd() const{
+    return _file->atEnd();
+}
+
+// /////////////////////////////////////////
+// FieldPage
+// /////////////////////////////////////////
+
+FieldPage::FieldPage(ZFile *file, zu32 page, zu32 pagesize) : ParcelPage(file, page, pagesize){
+    ZBinary buff;
+    buff.resize(1);
+    read(buff.raw(), 1);
+    if(fieldtypes[fromFile8Bits(buff)] != fieldpage){
+        ELOG("FieldPage created on wrong page type");
+        return;
+    }
+    buff.resize(4);
+    read(buff.raw(), 4);
+    _prevpage = fromFile32Bits(buff);
+    setPos(_pagesize - 4);
+    read(buff.raw(), 4);
+    _nextpage = fromFile32Bits(buff);
 
 }
 

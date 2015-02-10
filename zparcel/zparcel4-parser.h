@@ -86,6 +86,35 @@ private:
     ZParcelTypes::pageid _recordpage;
 };
 
+class ParcelPage : public ZWriter, public ZReader, public ZPosition {
+public:
+    ParcelPage(ZFile *file, zu32 page, zu32 pagesize);
+
+    zu64 read(zbyte *dest, zu64 size);
+    zu64 write(const zbyte *src, zu64 size);
+
+    void setPos(zu64 pos){ _rwpos = pos; }
+    zu64 getPos() const { return _rwpos; }
+    bool atEnd() const;
+
+protected:
+    ZFile *_file;
+    ZParcelTypes::pageid _page;
+    zu32 _pagesize;
+    zu64 _rwpos;
+};
+
+class FieldPage : public ParcelPage {
+public:
+    FieldPage(ZFile *file, zu32 page, zu32 pagesize);
+
+
+
+    ZParcelTypes::pagetype _pagetype;
+    ZParcelTypes::pageid _prevpage;
+    ZParcelTypes::pageid _nextpage;
+};
+
 namespace ZParcelConvert {
     ZBinary toFileFormat(ZParcelTypes::fieldtype type, ZString str);
 
