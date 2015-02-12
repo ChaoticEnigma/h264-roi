@@ -21,6 +21,7 @@ int main(int argc, char **argv){
         { "array", array_block },
         { "assoc", assoc_block },
         { "stack", stack_block },
+        { "map", map_block },
         { "list", list_block },
         { "queue", queue_block },
 

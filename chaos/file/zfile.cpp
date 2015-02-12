@@ -26,7 +26,7 @@
 
 namespace LibChaos {
 
-ZFile::ZFile() : _bits(0 | readbit), _file(NULL){}
+ZFile::ZFile() : _options(0 | readbit), _handle(NULL){}
 
 ZFile::ZFile(ZPath name, int mode) : ZFile(){
     open(name, mode);
@@ -42,11 +42,11 @@ bool ZFile::open(ZPath path){
     _path = path;
 
     // Must open for read or write or both
-    if(!(_bits & readbit) && !(_bits & writebit))
+    if(!(_options & readbit) && !(_options & writebit))
         return false;
 
     // If we're not allowed to create
-    if(!(_bits & createbit)){
+    if(!(_options & createbit)){
         // Make sure the file exists
         if(!isFile(_path)){
             // Fail if it doesn't
@@ -56,23 +56,23 @@ bool ZFile::open(ZPath path){
 
 #if PLATFORM == WINDOWS
     DWORD access = 0;
-    if(_bits & readbit)
+    if(_options & readbit)
         access |= GENERIC_READ;
-    if(_bits & writebit)
+    if(_options & writebit)
         access |= GENERIC_WRITE;
 
     DWORD share = 0;
-    if(_bits & readbit && !(_bits & writebit))
+    if(_options & readbit && !(_options & writebit))
         share = FILE_SHARE_READ; // Share read access if only reading
 
     DWORD create;
-    if(_bits & createbit){
-        if(_bits & apptruncbit)
+    if(_options & createbit){
+        if(_options & apptruncbit)
             create = CREATE_ALWAYS; // Always create new empty file
         else
             create = OPEN_ALWAYS; // Always open a file, create if not exists
     } else {
-        if(_bits & apptruncbit)
+        if(_options & apptruncbit)
             create = TRUNCATE_EXISTING; // Truncate exiting file
         else
             create = OPEN_EXISTING; // Open file only if it exists
@@ -80,9 +80,9 @@ bool ZFile::open(ZPath path){
 
     DWORD attr = FILE_ATTRIBUTE_NORMAL;
 
-    _file = CreateFile(_path.str('\\').wstr().c_str(), access, share, NULL, create, attr, NULL);
-    if(_file == INVALID_HANDLE_VALUE){
-        _file = NULL;
+    _handle = CreateFile(_path.str('\\').wstr().c_str(), access, share, NULL, create, attr, NULL);
+    if(_handle == INVALID_HANDLE_VALUE){
+        _handle = NULL;
         return false;
     }
 
@@ -117,34 +117,34 @@ bool ZFile::open(ZPath path, int mode){
 }
 
 void ZFile::setMode(int mode){
-    _bits = 0;
+    _options = 0;
     if(mode & moderead){
-        _bits |= readbit;
+        _options |= readbit;
     }
 
     if(mode & modewrite){
         if(mode & nocreate){
-            _bits |= writebit;
+            _options |= writebit;
         } else {
-            _bits |= writebit;
-            _bits |= createbit;
+            _options |= writebit;
+            _options |= createbit;
         }
     }
 
     // If append not set and truncate set
     if(!(mode & append) && mode & truncate)
-        _bits |= apptruncbit;
+        _options |= apptruncbit;
 }
 
 bool ZFile::close(){
     if(!isOpen())
         return true;
 #if PLATFORM == WINDOWS
-    bool ret = CloseHandle(_file) != 0;
+    bool ret = CloseHandle(_handle) != 0;
 #else
     bool ret = (fclose(_file) == 0);
 #endif
-    _file = NULL;
+    _handle = NULL;
     return ret;
 }
 
@@ -155,7 +155,7 @@ zu64 ZFile::getPos() const {
     LARGE_INTEGER distance;
     distance.QuadPart = 0;
     LARGE_INTEGER newpos;
-    SetFilePointerEx(_file, distance, &newpos, FILE_CURRENT);
+    SetFilePointerEx(_handle, distance, &newpos, FILE_CURRENT);
     return (zu64)newpos.QuadPart;
 #else
     // Tell file pointer position
@@ -169,7 +169,7 @@ zu64 ZFile::setPos(zu64 pos){
     LARGE_INTEGER distance;
     distance.QuadPart = (long long)pos;
     LARGE_INTEGER newpos;
-    SetFilePointerEx(_file, distance, &newpos, FILE_BEGIN);
+    SetFilePointerEx(_handle, distance, &newpos, FILE_BEGIN);
     return (zu64)newpos.QuadPart;
 #else
     // Seek file pointer to position
@@ -190,11 +190,11 @@ bool ZFile::atEnd() const {
 // ZReader
 zu64 ZFile::read(zbyte *dest, zu64 size){
     // Check file is open and has read bit set
-    if(!isOpen() || !(_bits & readbit))
+    if(!isOpen() || !(_options & readbit))
         return 0;
 #if PLATFORM == WINDOWS
     DWORD read;
-    bool ret = ReadFile(_file, dest, size, &read, NULL) != 0;
+    bool ret = ReadFile(_handle, dest, size, &read, NULL) != 0;
     if(!ret)
         return 0;
     return (zu64)read;
@@ -206,11 +206,11 @@ zu64 ZFile::read(zbyte *dest, zu64 size){
 // ZWriter
 zu64 ZFile::write(const zbyte *src, zu64 size){
     // Check file is open and has write bit set
-    if(!isOpen() || !(_bits & writebit))
+    if(!isOpen() || !(_options & writebit))
         return 0;
 #if PLATFORM == WINDOWS
     DWORD write;
-    bool ret = WriteFile(_file, src, size, &write, NULL) != 0;
+    bool ret = WriteFile(_handle, src, size, &write, NULL) != 0;
     if(!ret)
         return 0;
     return (zu64)write;
@@ -257,7 +257,16 @@ bool ZFile::remove(ZPath file){
 
 bool ZFile::resizeFile(zu64 size){
 #if PLATFORM == WINDOWS
-    return false;
+    LARGE_INTEGER dist;
+    dist.QuadPart = size;
+    LARGE_INTEGER pos;
+    if(SetFilePointerEx(_handle, dist, &pos, FILE_BEGIN) == 0)
+        return false;
+    if(dist.QuadPart != pos.QuadPart)
+        return false;
+    if(SetEndOfFile(_handle) == 0)
+        return false;
+    return true;
 #else
     int fd = fileno(_file);
     if(ftruncate64(fd, (long long)size) != 0)
@@ -269,10 +278,10 @@ bool ZFile::resizeFile(zu64 size){
 zu64 ZFile::fileSize() const {
 #if PLATFORM == WINDOWS
     // Check file is open and has read bit set
-    if(!isOpen() || !(_bits & readbit))
+    if(!isOpen() || !(_options & readbit))
         return 0;
     LARGE_INTEGER lint;
-    if(!GetFileSizeEx(_file, &lint))
+    if(!GetFileSizeEx(_handle, &lint))
         return 0;
     return (zu64)lint.QuadPart;
 #else

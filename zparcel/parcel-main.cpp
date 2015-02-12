@@ -54,8 +54,8 @@ int mainwrap(int argc, char **argv){
         parcel->open();
         FieldList fieldlist;
         for(zu64 i = 2; i < args.size(); ++i){
-            ArZ pair = args[i].split(":");
-            ArZ fieldpair = pair[0].split("#");
+            ArZ pair = args[i].split("=");
+            ArZ fieldpair = pair[0].split(":");
             ZString fieldname = fieldpair[0];
             zu16 newfieldtype = (fieldpair.size() == 2 ? (zu16)fieldpair[1].tozu64() : 0);
             fieldtype ftype = ZParcel4Parser::fieldFileIdToFieldType(newfieldtype);

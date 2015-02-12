@@ -86,12 +86,16 @@ public:
     zu64 fileSize() const;
     static zu64 fileSize(ZPath path);
 
+#if PLATFORM == WINDOWS
+    bool isOpen() const { return (_handle != NULL); }
+#else
     bool isOpen() const { return (_file != NULL); }
-    int &bits(){ return _bits; }
+#endif
+    int &bits(){ return _options; }
     ZPath path() const { return _path; }
 
 #if PLATFORM == WINDOWS
-    HANDLE handle(){ return _file; }
+    HANDLE handle(){ return _handle; }
 #else
     FILE *fp(){ return _file; }
 #endif
@@ -128,10 +132,10 @@ public:
     static zu64 fileHash(ZPath path);
 
 private:
-    int _bits;
+    int _options;
     ZPath _path;
 #if PLATFORM == WINDOWS
-    HANDLE _file;
+    HANDLE _handle;
 #else
     FILE *_file;
 #endif

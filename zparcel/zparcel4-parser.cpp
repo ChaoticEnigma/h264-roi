@@ -8,6 +8,15 @@
 #define DEFAULT_MAX_PAGES (64 * 1024)
 #define FIELD_NULL 0
 
+#define FREEPAGE        0
+#define FIELDPAGE       1
+#define FREELISTPAGE    2
+#define INDEXPAGE       3
+#define RECORDPAGE      4
+#define BLOBPAGE        5
+#define HISTORYPAGE     6
+#define HEADPAGE        80
+
 namespace LibChaos {
 
 using namespace ZParcelTypes;
@@ -59,7 +68,7 @@ bool ZParcel4Parser::open(){
         ELOG("open: parcel already initialized");
     _init = false;
     if(!loadHeadPage()){
-        ELOG("open: failed load head page");
+        ELOG("open: failed to load head page");
         return false;
     }
     _init = true;
@@ -86,6 +95,7 @@ fieldid ZParcel4Parser::addField(ZString name, fieldtype type){
     fieldid id = getFieldId(name);
     if(id != FIELD_NULL && type == getFieldType(id))
         return id;
+
 
     return 0;
 }
@@ -343,7 +353,7 @@ FieldPage::FieldPage(ZFile *file, zu32 page, zu32 pagesize) : ParcelPage(file, p
     ZBinary buff;
     buff.resize(1);
     read(buff.raw(), 1);
-    if(fieldtypes[fromFile8Bits(buff)] != fieldpage){
+    if(fromFile8Bits(buff) != FIELDPAGE){
         ELOG("FieldPage created on wrong page type");
         return;
     }

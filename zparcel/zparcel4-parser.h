@@ -93,7 +93,7 @@ public:
     zu64 read(zbyte *dest, zu64 size);
     zu64 write(const zbyte *src, zu64 size);
 
-    void setPos(zu64 pos){ _rwpos = pos; }
+    zu64 setPos(zu64 pos){ _rwpos = pos; return _rwpos; }
     zu64 getPos() const { return _rwpos; }
     bool atEnd() const;
 

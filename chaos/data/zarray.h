@@ -112,21 +112,21 @@ public:
     inline const T &at(zu64 index) const { return _data[index]; }
     inline const T &operator[](zu64 index) const { return at(index); }
 
-    // Resize (IMPORTANT: this is the only place memory is allocated)
+    // Resize: chnage logical number of elements
     ZArray<T> &resize(zu64 size, const T &value = T()){
         reserve(size);
         if(size > _size){
             _alloc.construct(_data + _size, size - _size, value); // Construct new objects
         } else if(size < _size){
-            _alloc.destroy(_data, _size - size); // Destroy extra objects
+            _alloc.destroy(_data + size, _size - size); // Destroy extra objects
         }
         _size = size;
         return *this;
     }
 
-    // Resize the real buffer
+    // Resize the real buffer (IMPORTANT: this is the only place memory is allocated)
     // If new size is larger, adds uninitialized space for more elements (subsequent resizes may not have to reallocate)
-    // Otherwise does nothing
+    // Never reallocates a smaller buffer! resize() assumes the new buffer is never smaller so it can destroy objects
     void reserve(zu64 size){
         if(size > _realsize){
             zu64 newsize = MAX(_size * 2, size);

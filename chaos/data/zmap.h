@@ -23,16 +23,16 @@ public:
     };
 
     ZMap(){}
-    ZMap(std::initializer_list<Data> list) : data(list){}
+    ZMap(std::initializer_list<Data> list) : _data(list){}
 
     ~ZMap(){}
 
     T &at(K key_){
-        for(zu64 i = 0; i < data.size(); ++i){
-            if(data[i].key == key_)
-                return data[i].val;
+        for(zu64 i = 0; i < _data.size(); ++i){
+            if(_data[i].key == key_)
+                return _data[i].val;
         }
-        data.push({ key_, T() });
+        _data.push({ key_, T() });
         return at(key_);
     }
     T &operator[](K key_){
@@ -40,11 +40,11 @@ public:
     }
 
     Data &position(zu64 index){
-        return data[index];
+        return _data[index];
     }
 
     ZMap<K, T> &push(K key_, T value){
-        data.push({ key_, value });
+        _data.push({ key_, value });
         return *this;
     }
 
@@ -56,12 +56,12 @@ public:
     }
 
     void erase(K test){
-        data.erase(indexOf(test));
+        _data.erase(indexOf(test));
     }
 
     zu64 indexOf(K test) const {
         for(zu64 i = 0; i < size(); ++i){
-            if(data[i].key == test)
+            if(_data[i].key == test)
                 return i;
         }
         return none;
@@ -69,32 +69,32 @@ public:
 
     bool exists(K test){
         for(unsigned i = 0; i < size(); ++i){
-            if(data[i].key == test)
+            if(_data[i].key == test)
                 return true;
         }
         return false;
     }
     bool contains(T test){
         for(unsigned i = 0; i < size(); ++i){
-            if(data[i].val == test)
+            if(_data[i].val == test)
                 return true;
         }
         return false;
     }
 
     bool empty() const {
-        return data.isEmpty();
+        return _data.isEmpty();
     }
 
     unsigned size() const {
-        return data.size();
+        return _data.size();
     }
     ZArray<Data> &dat(){
-        return data;
+        return _data;
     }
 
 private:
-    ZArray<Data> data;
+    ZArray<Data> _data;
 };
 
 }

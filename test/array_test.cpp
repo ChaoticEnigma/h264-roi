@@ -70,3 +70,16 @@ int stack_block(){
 
     return 0;
 }
+
+int map_block(){
+    ZMap<ZString, zu64> map1;
+    map1.push("test1", 1);
+    map1.push("test2", 2);
+    map1.push("test3", 3);
+    map1.push("test4", 4);
+
+    for(zu64 i = 0; i < map1.size(); ++i){
+        LOG(map1.position(i).key << " " << map1.position(i).val);
+    }
+    return 0;
+}
