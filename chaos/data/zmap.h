@@ -6,7 +6,7 @@
 #ifndef ZMAP_H
 #define ZMAP_H
 
-#include "zarray.h"
+#include "zallocator.h"
 
 namespace LibChaos {
 
@@ -18,85 +18,96 @@ public:
 
 public:
     struct Data {
-        K key;
-        T val;
+        K *key;
+        T *val;
     };
 
-    ZMap(){}
-    ZMap(std::initializer_list<Data> list) : _data(list){}
+    ZMap(ZAllocator<Data> alloc = new ZAllocator<Data>()) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0){}
+    ZMap(std::initializer_list<Data> list) : ZMap(){
+        reserve(ls.size());
+        zu64 i = 0;
+        for(auto item = ls.begin(); item < ls.end(); ++item){
+            _alloc.construct(&_data[i], 1, *item);
+            ++i;
+        }
+        _size = ls.size();
+    }
 
     ~ZMap(){}
 
-    T &at(K key_){
-        for(zu64 i = 0; i < _data.size(); ++i){
-            if(_data[i].key == key_)
-                return _data[i].val;
+    void add(K &key, T &value){
+        Data set;
+        set.key = _kalloc.alloc(1);
+        _kalloc.construct(set.key, 1, key);
+        set.val = _talloc.alloc(1);
+        _talloc.construct(set.val, 1, value);
+    }
+
+//    T &get(K key_){
+
+//    }
+//    T &operator[](K key_){
+
+//    }
+
+//    ZMap<K, T> &push(K key_, T value){
+//        _data.push({ key_, value });
+//        return *this;
+//    }
+
+//    ZMap<K, T> &combine(ZMap<K, T> in){
+//        for(zu64 i = 0; i < in.size(); ++i){
+//            push(in.position(i).key, in.position(i).val);
+//        }
+//        return *this;
+//    }
+
+    // Resize the real buffer (IMPORTANT: this is the only place memory is allocated)
+    // If new size is larger, adds uninitialized space for more elements (subsequent resizes may not have to reallocate)
+    // Never reallocates a smaller buffer! resize() assumes the new buffer is never smaller so it can destroy objects
+    void resize(zu64 size){
+        if(size > _realsize){
+//            zu64 newsize = _realsize * 2; // Double old buffer
+            zu64 newsize = 1;
+            while(newsize < size)
+                size <<= 1; // Get next power of 2
+            T *data = _alloc.alloc(newsize);
+            _alloc.rawcopy(_data, data, _size); // Copy data to new buffer
+            _alloc.dealloc(_data); // Delete old buffer without calling destructors
+            _data = data;
+            _realsize = newsize;
         }
-        _data.push({ key_, T() });
-        return at(key_);
-    }
-    T &operator[](K key_){
-        return at(key_);
-    }
-
-    Data &position(zu64 index){
-        return _data[index];
-    }
-
-    ZMap<K, T> &push(K key_, T value){
-        _data.push({ key_, value });
-        return *this;
-    }
-
-    ZMap<K, T> &combine(ZMap<K, T> in){
-        for(zu64 i = 0; i < in.size(); ++i){
-            push(in.position(i).key, in.position(i).val);
-        }
-        return *this;
     }
 
     void erase(K test){
-        _data.erase(indexOf(test));
+
     }
 
     zu64 indexOf(K test) const {
-        for(zu64 i = 0; i < size(); ++i){
-            if(_data[i].key == test)
-                return i;
-        }
         return none;
     }
 
     bool exists(K test){
-        for(unsigned i = 0; i < size(); ++i){
-            if(_data[i].key == test)
-                return true;
-        }
         return false;
     }
     bool contains(T test){
-        for(unsigned i = 0; i < size(); ++i){
-            if(_data[i].val == test)
-                return true;
-        }
         return false;
     }
 
-    bool empty() const {
-        return _data.isEmpty();
+    zu64 size() const {
+        return _size;
+    }
+    bool isEmpty() const {
+        return (_data == nullptr) || _size == 0;
     }
 
-    unsigned size() const {
-        return _data.size();
-    }
-    ZArray<Data> &dat(){
-        return _data;
-    }
-
-private:
-    ZArray<Data> _data;
+protected:
+    ZAllocator<Data> _alloc;
+    ZAllocator<K> _kalloc;
+    ZAllocator<T> _talloc;
+    Data *_data;
+    zu64 _size;
+    zu64 _realsize;
 };
-
-}
 
 #endif // ZMAP_H
