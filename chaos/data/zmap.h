@@ -7,40 +7,38 @@
 #define ZMAP_H
 
 #include "zallocator.h"
+#include "zhashable.h"
 
 namespace LibChaos {
 
 template <class K, class T> class ZMap {
 public:
-    enum {
-        none = ZU64_MAX
-    };
-
+    enum { none = ZU64_MAX };
 public:
-    struct Data {
-        K *key;
-        T *val;
+    struct MapSet {
+        K key;
+        T value;
     };
 
-    ZMap(ZAllocator<Data> alloc = new ZAllocator<Data>()) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0){}
-    ZMap(std::initializer_list<Data> list) : ZMap(){
-        reserve(ls.size());
-        zu64 i = 0;
-        for(auto item = ls.begin(); item < ls.end(); ++item){
-            _alloc.construct(&_data[i], 1, *item);
-            ++i;
+    ZMap(ZAllocator<K> kalloc = new ZAllocator<K>(), ZAllocator<T> talloc = new ZAllocator<T>()) : _alloc(new ZAllocator<MapData>()), _kalloc(kalloc), _talloc(talloc), _data(nullptr), _size(0), _realsize(0){}
+    ZMap(std::initializer_list<MapSet> list) : ZMap(){
+        resize(list.size());
+        for(auto item = list.begin(); item < list.end(); ++item){
+            add(item->key, item->value);
         }
-        _size = ls.size();
+    }
+    ~ZMap(){
+
     }
 
-    ~ZMap(){}
-
     void add(K &key, T &value){
-        Data set;
+        zu64 hash =
+        MapData set;
         set.key = _kalloc.alloc(1);
         _kalloc.construct(set.key, 1, key);
         set.val = _talloc.alloc(1);
         _talloc.construct(set.val, 1, value);
+        ++_size;
     }
 
 //    T &get(K key_){
@@ -102,10 +100,15 @@ public:
     }
 
 protected:
-    ZAllocator<Data> _alloc;
+    struct MapData {
+        K *key;
+        T *val;
+    };
+
+    ZAllocator<MapData> _alloc;
     ZAllocator<K> _kalloc;
     ZAllocator<T> _talloc;
-    Data *_data;
+    MapData *_data;
     zu64 _size;
     zu64 _realsize;
 };

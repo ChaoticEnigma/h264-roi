@@ -92,7 +92,10 @@ HEADERS += \
     \
     $$PWD/bbb/zbbb.h \
     $$PWD/chaos/misc/zencrypt.h \
-    $$PWD/chaos/misc/zrandom.h
+    $$PWD/chaos/misc/zrandom.h \
+    $$PWD/chaos/misc/zhash.h \
+    $$PWD/chaos/abstract/zhashable.h \
+    $$PWD/chaos/abstract/zbase.h
 
 SOURCES += \
     $$PWD/chaos/base/zerror.cpp \
