@@ -6,29 +6,98 @@
 
 namespace LibChaos {
 
-template <typename T> class has_mapHash {
-    typedef char one;
-    typedef long two;
-    template <typename C> static one test(typeof(&C::mapHash)) ;
-    template <typename C> static two test(...);
+class ZHashBase {
 public:
-    enum { value = sizeof(test<T>(0)) == sizeof(char) };
+    ZHashBase(zu64 hashval) : _hash(hashval){}
+    zu64 hash() const { return _hash; }
+protected:
+    zu64 _hash;
 };
 
-template <typename T> zu64 mapHash(T &data){
-    if(has_mapHash<T>::value){
-        return ((ZHashable*)data)->mapHash();
-    } else {
-        return 0;
-    }
-}
+template <typename T> class ZHash : public ZHashBase {
+public:
+    ZHash(T &data) : ZHashBase(0){}
+};
 
-template <> zu64 mapHash<zu64>(zu64 num){
-    return num;
-}
-template <> zu64 mapHash<zs64>(zs64 num){
-    return (zu64)num;
-}
+// zu
+template <> class ZHash<zu8> : public ZHashBase {
+public:
+    ZHash(zu8 data) : ZHashBase(data){}
+};
+template <> class ZHash<zu16> : public ZHashBase {
+public:
+    ZHash(zu16 data) : ZHashBase(data){}
+};
+template <> class ZHash<zu32> : public ZHashBase {
+public:
+    ZHash(zu32 data) : ZHashBase(data){}
+};
+template <> class ZHash<zu64> : public ZHashBase {
+public:
+    ZHash(zu64 data) : ZHashBase(data){}
+};
+
+// zs
+template <> class ZHash<zs8> : public ZHashBase {
+public:
+    ZHash(zs8 data) : ZHashBase((zu64)data){}
+};
+template <> class ZHash<zs16> : public ZHashBase {
+public:
+    ZHash(zs16 data) : ZHashBase((zu64)data){}
+};
+template <> class ZHash<zs32> : public ZHashBase {
+public:
+    ZHash(zs32 data) : ZHashBase((zu64)data){}
+};
+template <> class ZHash<zs64> : public ZHashBase {
+public:
+    ZHash(zs64 data) : ZHashBase((zu64)data){}
+};
+
+// signed
+template <> class ZHash<char> : public ZHashBase {
+public:
+    ZHash(char data) : ZHashBase((zu64)data){}
+};
+//template <> class ZHash<short> : public ZHashBase {
+//public:
+//    ZHash(short data) : ZHashBase((zu64)data){}
+//};
+//template <> class ZHash<int> : public ZHashBase {
+//public:
+//    ZHash(int data) : ZHashBase((zu64)data){}
+//};
+template <> class ZHash<long> : public ZHashBase {
+public:
+    ZHash(long data) : ZHashBase((zu64)data){}
+};
+//template <> class ZHash<long long> : public ZHashBase {
+//public:
+//    ZHash(long long data) : ZHashBase((zu64)data){}
+//};
+
+// unsigned
+//template <> class ZHash<unsigned char> : public ZHashBase {
+//public:
+//    ZHash(unsigned char data) : ZHashBase((zu64)data){}
+//};
+//template <> class ZHash<unsigned short> : public ZHashBase {
+//public:
+//    ZHash(unsigned short data) : ZHashBase((zu64)data){}
+//};
+//template <> class ZHash<unsigned int> : public ZHashBase {
+//public:
+//    ZHash(unsigned int data) : ZHashBase((zu64)data){}
+//};
+template <> class ZHash<unsigned long> : public ZHashBase {
+public:
+    ZHash(unsigned long data) : ZHashBase((zu64)data){}
+};
+//template <> class ZHash<unsigned long long> : public ZHashBase {
+//public:
+//    ZHash(unsigned long long data) : ZHashBase((zu64)data){}
+//};
 
 }
 

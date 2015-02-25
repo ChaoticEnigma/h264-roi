@@ -7,7 +7,7 @@ namespace LibChaos {
 
 class ZHashable {
 public:
-    zu64 mapHash() const = 0;
+    virtual zu64 mapHash() const = 0;
 };
 
 }

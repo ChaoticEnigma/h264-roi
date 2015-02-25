@@ -8,6 +8,7 @@
 
 #include "zallocator.h"
 #include "zhashable.h"
+#include "zhash.h"
 
 namespace LibChaos {
 
@@ -20,7 +21,7 @@ public:
         T value;
     };
 
-    ZMap(ZAllocator<K> kalloc = new ZAllocator<K>(), ZAllocator<T> talloc = new ZAllocator<T>()) : _alloc(new ZAllocator<MapData>()), _kalloc(kalloc), _talloc(talloc), _data(nullptr), _size(0), _realsize(0){}
+    ZMap(ZAllocator<K> *kalloc = new ZAllocator<K>(), ZAllocator<T> *talloc = new ZAllocator<T>()) : _alloc(new ZAllocator<MapData>()), _kalloc(kalloc), _talloc(talloc), _data(nullptr), _size(0), _realsize(0), _factor(0.5){}
     ZMap(std::initializer_list<MapSet> list) : ZMap(){
         resize(list.size());
         for(auto item = list.begin(); item < list.end(); ++item){
@@ -32,12 +33,19 @@ public:
     }
 
     void add(K &key, T &value){
-        zu64 hash =
+        zu64 hash = ZHash<K>(key).hash();
+        zu64 pos = hash % _realsize;
+        if(_data[pos].key != nullptr || _data[pos]){
+
+        }
+        _data[pos].value
+
         MapData set;
-        set.key = _kalloc.alloc(1);
-        _kalloc.construct(set.key, 1, key);
-        set.val = _talloc.alloc(1);
-        _talloc.construct(set.val, 1, value);
+        set.key = _kalloc->alloc(1);
+        _kalloc->construct(set.key, 1, key);
+        set.value = _talloc->alloc(1);
+        _talloc->construct(set.value, 1, value);
+
         ++_size;
     }
 
@@ -69,9 +77,9 @@ public:
             zu64 newsize = 1;
             while(newsize < size)
                 size <<= 1; // Get next power of 2
-            T *data = _alloc.alloc(newsize);
-            _alloc.rawcopy(_data, data, _size); // Copy data to new buffer
-            _alloc.dealloc(_data); // Delete old buffer without calling destructors
+            T *data = _alloc->alloc(newsize);
+            _alloc->rawcopy(_data, data, _size); // Copy data to new buffer
+            _alloc->dealloc(_data); // Delete old buffer without calling destructors
             _data = data;
             _realsize = newsize;
         }
@@ -101,16 +109,20 @@ public:
 
 protected:
     struct MapData {
+        bool deleted;
         K *key;
-        T *val;
+        T *value;
     };
 
-    ZAllocator<MapData> _alloc;
-    ZAllocator<K> _kalloc;
-    ZAllocator<T> _talloc;
+    ZAllocator<MapData> *_alloc;
+    ZAllocator<K> *_kalloc;
+    ZAllocator<T> *_talloc;
     MapData *_data;
     zu64 _size;
     zu64 _realsize;
+    float _factor;
 };
+
+}
 
 #endif // ZMAP_H
