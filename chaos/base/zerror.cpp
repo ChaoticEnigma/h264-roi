@@ -32,6 +32,8 @@
     #endif // FUCK_WINDOWS
 #endif // PLATFORM
 
+#include <assert.h>
+
 namespace LibChaos {
 
 // Map of signals to signal handling functions
@@ -54,6 +56,10 @@ ZString ZError::traceStr() const {
 
 void ZError::logStackTrace() const {
     ELOG(ZLog::raw << trace() << ZLog::newln);
+}
+
+void ZError::assert(bool condition){
+    assert(condition);
 }
 
 #if PLATFORM == LINUX

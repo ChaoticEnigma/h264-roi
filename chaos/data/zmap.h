@@ -21,7 +21,9 @@ public:
         T value;
     };
 
-    ZMap(ZAllocator<K> *kalloc = new ZAllocator<K>(), ZAllocator<T> *talloc = new ZAllocator<T>()) : _alloc(new ZAllocator<MapData>()), _kalloc(kalloc), _talloc(talloc), _data(nullptr), _size(0), _realsize(0), _factor(0.5){}
+    ZMap(ZAllocator<K> *kalloc = new ZAllocator<K>(), ZAllocator<T> *talloc = new ZAllocator<T>()) : _alloc(new ZAllocator<MapData>()), _kalloc(kalloc), _talloc(talloc), _data(nullptr), _size(0), _realsize(0), _factor(0.5){
+        resize(16);
+    }
     ZMap(std::initializer_list<MapSet> list) : ZMap(){
         resize(list.size());
         for(auto item = list.begin(); item < list.end(); ++item){
@@ -33,12 +35,25 @@ public:
     }
 
     void add(K &key, T &value){
-        zu64 hash = ZHash<K>(key).hash();
-        zu64 pos = hash % _realsize;
-        if(_data[pos].key != nullptr || _data[pos]){
-
+        if(((float)_size / (float)_realsize) >= _factor){
+            resize(_realsize << 1);
         }
-        _data[pos].value
+
+        zu64 hash = ZHash<K>(key).hash();
+        zu64 ipos = hash % _realsize;
+        for(zu64 i = 0; i < _realsize; ++i){
+            zu64 pos = (ipos + i) % _realsize;
+            if(_data[pos].key == nullptr || _data[pos].deleted){
+
+                break;
+            }
+        }
+
+        MapData *ptr = _data + pos;
+        while(_data[pos].key != nullptr && !_data[pos].deleted){
+            ++ptr;
+        }
+        _talloc->construct(ptr->value, 1, value);
 
         MapData set;
         set.key = _kalloc->alloc(1);
@@ -109,9 +124,9 @@ public:
 
 protected:
     struct MapData {
-        bool deleted;
         K *key;
         T *value;
+        bool deleted;
     };
 
     ZAllocator<MapData> *_alloc;

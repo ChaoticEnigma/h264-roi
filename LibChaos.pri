@@ -95,7 +95,8 @@ HEADERS += \
     $$PWD/chaos/misc/zrandom.h \
     $$PWD/chaos/misc/zhash.h \
     $$PWD/chaos/abstract/zhashable.h \
-    $$PWD/chaos/abstract/zbase.h
+    $$PWD/chaos/abstract/zbase.h \
+    $$PWD/chaos/base/zerror_min.h
 
 SOURCES += \
     $$PWD/chaos/base/zerror.cpp \

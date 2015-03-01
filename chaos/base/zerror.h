@@ -44,6 +44,8 @@ public:
     void logStackTrace() const;
 
 public:
+    static void assert(bool condition);
+
     static void registerSigSegv();
     static bool registerInterruptHandler(signalHandler);
     static bool registerSignalHandler(zerror_signal, signalHandler);
