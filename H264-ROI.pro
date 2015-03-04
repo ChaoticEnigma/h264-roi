@@ -32,3 +32,7 @@ INCLUDEPATH += \
     $$OUT_PWD/glxw/include
 
 include(libchaos/LibChaos.pri)
+
+DISTFILES += \
+    roi.sh \
+    roi.bat
