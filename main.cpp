@@ -31,7 +31,7 @@ bool cont = true;
 //void decoderCallback(AVFrame *frame, AVPacket *pkt, const H264_Decoder *decode, void *user){
 void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder *decode, void *user){
 
-    if(!setup && (decode->context->pix_fmt != AV_PIX_FMT_YUV420P || frame->format != AV_PIX_FMT_YUV420P)){
+    if(!setup && (decode->context->pix_fmt != PIX_FMT_YUV420P || frame->format != PIX_FMT_YUV420P)){
         LOG("Incorrect decode pixel format " << decode->context->pix_fmt << " " << frame->format);
     }
 

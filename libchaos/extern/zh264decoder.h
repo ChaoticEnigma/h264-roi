@@ -9,6 +9,14 @@ extern "C" {
     #include <libavutil/avutil.h>
 }
 
+//typedef int AVPixelFormat;
+//typedef PixelFormat AVPixelFormat;
+
+//enum {
+//    AV_PIX_FMT_YUV420P = PIX_FMT_YUV420P,
+//    AV_CODEC_ID_H264 = CODEC_ID_H264
+//};
+
 #define ZH264_READ_CHUNK_SIZE 16384
 
 namespace LibChaos {
