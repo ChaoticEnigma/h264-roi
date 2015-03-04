@@ -22,17 +22,15 @@ SOURCES += \
     roxlu/Utils.cpp
 
 OTHER_FILES += \
-    CMakeLists.txt
+    CMakeLists.txt \
+    roi.sh \
+    roi.bat
 
 INCLUDEPATH += \
     roxlu #\
     #$$PWD/../x264 \
     #$$PWD/../libuv/include \
     #$$PWD/../ffmpeg \
-    $$OUT_PWD/glxw/include
+    #$$OUT_PWD/glxw/include
 
 include(libchaos/LibChaos.pri)
-
-DISTFILES += \
-    roi.sh \
-    roi.bat

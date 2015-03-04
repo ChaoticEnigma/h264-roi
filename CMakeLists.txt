@@ -32,7 +32,6 @@ ENDIF()
 INCLUDE_DIRECTORIES(
     ${H264_ROI_SOURCE_DIR}
     ${LibChaos_INCLUDE}
-    roxlu
 )
 
 ### =================== BUILD =================== ###
