@@ -3,7 +3,8 @@
 
 namespace LibChaos {
 
-ZH264Decoder::ZH264Decoder() : codec(NULL), context(NULL), parser(NULL), frame(NULL), ok(false), callback(nullptr){
+ZH264Decoder::ZH264Decoder() : format(NULL), codec(NULL), context(NULL), parser(NULL), frame(NULL), ok(false), callback(nullptr){
+//    av_register_all();
     avcodec_register_all();
 }
 
@@ -12,6 +13,12 @@ ZH264Decoder::ZH264Decoder(ZPath path, decoderCallback callback, void *userptr) 
 }
 
 ZH264Decoder::~ZH264Decoder(){
+//    if(format){
+//        avformat_close_input(&format);
+//        avformat_free_context(format);
+//        format = NULL;
+//    }
+
     if(parser) {
         av_parser_close(parser);
         parser = NULL;
@@ -38,6 +45,24 @@ ZH264Decoder::~ZH264Decoder(){
 
 bool ZH264Decoder::open(ZPath path, decoderCallback framecallback, void *userptr){
     ok = false;
+    int ret;
+
+    // Create AVFormatContext
+//    format = avformat_alloc_context();
+//    if(!format){
+//        ELOG("Error: cannot create format context");
+//        return false;
+//    }
+//    ret = avformat_open_input(&format, path.str().cc(), NULL, NULL);
+//    if(ret != 0){
+//        ELOG("Error: format open input failed: " << path);
+//        return false;
+//    }
+//    ret = avformat_find_stream_info(format, NULL);
+//    if(ret < 0){
+//        ELOG("Error: format find stream info failed");
+//        return false;
+//    }
 
     // Create AVCodec
     codec = avcodec_find_decoder(CODEC_ID_H264);
@@ -64,7 +89,7 @@ bool ZH264Decoder::open(ZPath path, decoderCallback framecallback, void *userptr
     // Open file
     file.open(path);
     if(!file.isOpen()){
-        ELOG("Error: could not open file");
+        ELOG("Error: could not open file: " << path);
         return false;
     }
 
@@ -85,12 +110,23 @@ bool ZH264Decoder::open(ZPath path, decoderCallback framecallback, void *userptr
     return true;
 }
 
-double ZH264Decoder::getFPS(){
+double ZH264Decoder::getFPS() const {
     if(!ok)
         return 0;
 
-    AVRational rational = context->time_base;
+//    AVRational rational = context->time_base;
+    AVRational rational = context->framerate;
     return av_q2d(rational);
+}
+
+zu64 ZH264Decoder::getFrameCount() const {
+    if(!ok)
+        return 0;
+
+//    zu64 frames = format->streams[0]->nb_frames;
+    zu64 frames = 0;
+//    int64_t duration = pFormatCtx->duration;
+    return frames;
 }
 
 bool ZH264Decoder::readFrame(){
@@ -126,6 +162,8 @@ void ZH264Decoder::readData(){
     zu64 oldsize = buffer.size();
     buffer.resize(oldsize + ZH264_READ_CHUNK_SIZE);
     zu64 len = file.read(buffer.raw() + oldsize, ZH264_READ_CHUNK_SIZE);
+    if(len == 0)
+        throw ZError("Out of Data", 5);
     if(len < ZH264_READ_CHUNK_SIZE)
         buffer.resize(oldsize + len);
 }

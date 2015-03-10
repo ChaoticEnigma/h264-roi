@@ -22,11 +22,17 @@ struct UserData {
     ZPath output;
     float baseqp;
     ZList<Region> regions;
+    zu64 framecount;
 };
 
 bool brear = false;
 bool setup = false;
 bool cont = true;
+
+void freeQuantOffsets(void *ptr){
+    LOG("Free quantizer offsets");
+    delete[] (float*)ptr;
+}
 
 //void decoderCallback(AVFrame *frame, AVPacket *pkt, const H264_Decoder *decode, void *user){
 void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder *decode, void *user){
@@ -38,11 +44,15 @@ void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder
     if(user != nullptr){
         UserData *userdata = (UserData*)user;
         ZH264Encoder *encoder = userdata->encoder;
+
         if(!setup){
             // Setup encoder
-            LOG(encoder->inputSetup(frame->width, frame->height, 0));
-            LOG(encoder->outputSetup(frame->width, frame->height, 30));
+            LOG("FPS: " << decode->getFPS());
+            LOG("Input Setup: " << encoder->inputSetup(frame->width, frame->height, decode->getFPS()));
+            LOG("Output Setup: " << encoder->outputSetup(frame->width, frame->height, decode->getFPS()));
             encoder->infmt = decode->context->pix_fmt;
+
+            userdata->framecount = 0;
 
             // Set up regions in macroblocks
             zu32 xblocks = frame->width / 16 + (frame->width % 16 ? 1 : 0);
@@ -52,9 +62,9 @@ void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder
             for(zu64 i = 0; i < xblocks * yblocks; ++i){
                 encoder->quantOffsets()[i] = userdata->baseqp;
             }
-            LOG("Setting " << userdata->regions.size() << " regions");
+            LOG("Setting " << userdata->regions.size() << " regions:");
             for(zu64 i = 0; i < userdata->regions.size(); ++i){
-                LOG(userdata->regions[i].x1 << "," << userdata->regions[i].y1 << "," << userdata->regions[i].x2 << "," << userdata->regions[i].y2 << ":" << userdata->regions[i].offset);
+                LOG(i << ": " << userdata->regions[i].x1 << "," << userdata->regions[i].y1 << "," << userdata->regions[i].x2 << "," << userdata->regions[i].y2 << "  qp: " << userdata->regions[i].offset);
                 for(zu32 y = userdata->regions[i].y1; y <= userdata->regions[i].y2 && y < yblocks; ++y){
                     for(zu32 x = userdata->regions[i].x1; x <= userdata->regions[i].x2 && x < xblocks; ++x){
                         encoder->quantOffsets()[x + y * xblocks] = userdata->regions[i].offset;
@@ -65,45 +75,24 @@ void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder
             if(!encoder->open(userdata->output)){
                 throw ZError("Failed to open encoder");
             }
-            LOG("Encoder Open");
+            LOG("Encoder Opened: " << userdata->output);
             setup = true;
         }
+
         encoder->encode(frame->data, frame->linesize);
+
+        //userdata->framecount = decode->getFrameCount();
+
+        if(num % 10 == 0){
+            RLOG("\r" << "Update: " << num << "/" << userdata->framecount);
+        }
+        if(num == userdata->framecount){
+            cont = false;
+        }
+
     } else {
-        ELOG("Couldn't encode");
+        ELOG("Couldn't encode (user == nullptr)");
     }
-
-    if(num % 10 == 0){
-        LOG("Update: " << num);
-    }
-
-//    LOG("Read frame: " << frame->coded_picture_number);
-
-//    if(frame->coded_picture_number == 300){
-//        LOG("Read frame: "
-//            << frame->width << "x" << frame->height << " "
-//            << frame->coded_picture_number << " " << frame->display_picture_number << " " << pkt->stream_index << " "
-//            << frame->linesize[0] << "," << frame->linesize[1] << "," << frame->linesize[2] << " "
-//            //<< frame->channels
-//        );
-
-//        ZImage image;
-//        image.convertYUV420toRGB24(frame->width, frame->height, frame->data[0], frame->data[1], frame->data[2]);
-
-//        ZPPM ppm(image);
-//        LOG(ppm.write("outppm.ppm"));
-
-//        ZBMP bmp(image);
-//        LOG(bmp.write("outbmp.bmp"));
-
-//        if(brear)
-//            cont = false;
-//    }
-}
-
-void freeQuants(void *ptr){
-    LOG("Free quantizer offsets");
-    //delete[] (float*)ptr;
 }
 
 int main(int argc, char **argv){
@@ -114,7 +103,9 @@ int main(int argc, char **argv){
 
     ArZ args;
     for(int i = 1; i < argc; ++i){
-        args.push(argv[i]);
+        ZString arg = argv[i];
+        arg.strip('"');
+        args.push(arg);
     }
 
     if(args.size() < 3){
@@ -142,7 +133,7 @@ int main(int argc, char **argv){
         ELOG("Failed to open decoder");
         return 4;
     }
-    LOG("Decoder Open");
+    LOG("Decoder Opened: " << input);
 
     ZH264Encoder encoder;
     userdata.output = output;
@@ -153,13 +144,17 @@ int main(int argc, char **argv){
     LOG("Reading frames...");
 
     brear = true;
+
     while(cont){
+        try {
         decoder.readFrame();
-//        if(!decoder.readFrame()){
-//            LOG("Failed to decode frame");
-//            break;
-//        }
+        } catch(ZError e){
+            if(e.code() != 5)
+                ELOG("Exception caught!");
+            break;
+        }
     }
+    RLOG(ZLog::newln);
 
     encoder.close();
 

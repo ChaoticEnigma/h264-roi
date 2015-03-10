@@ -5,8 +5,9 @@
 #include "zimage.h"
 
 extern "C" {
-    #include <libavcodec/avcodec.h>
-    #include <libavutil/avutil.h>
+#include <libavcodec/avcodec.h>
+#include <libavutil/avutil.h>
+#include <libavformat/avformat.h>
 }
 
 //typedef int AVPixelFormat;
@@ -33,7 +34,8 @@ public:
     bool open(ZPath path, decoderCallback framecallback, void *userptr);
     bool isOk() const { return ok; }
 
-    double getFPS();
+    double getFPS() const;
+    zu64 getFrameCount() const;
 
     bool readFrame();
 
@@ -42,6 +44,7 @@ private:
     void decodeFrame(zbyte *data, zu64 size);
 
 public:
+    AVFormatContext *format;        // File format decoder context
     AVCodec *codec;                 // h264 decoder
     AVCodecContext *context;        // Decoder state
     AVCodecParserContext *parser;   // h264 bitstream parser

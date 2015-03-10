@@ -2,7 +2,7 @@
 #include "zlog.h"
 
 extern "C" {
-    #include <libavutil/pixfmt.h>
+#include <libavutil/pixfmt.h>
 }
 
 namespace LibChaos {
@@ -18,10 +18,9 @@ ZH264Encoder::~ZH264Encoder(){
     delete param;
 }
 
-bool ZH264Encoder::inputSetup(zu64 width, zu64 height, zu32 fps){
+bool ZH264Encoder::inputSetup(zu64 width, zu64 height, double fps){
     inwidth = width;
     inheight = height;
-    infps = fps;
 
     if(!validSettings())
         return false;
@@ -29,7 +28,7 @@ bool ZH264Encoder::inputSetup(zu64 width, zu64 height, zu32 fps){
     return true;
 }
 
-bool ZH264Encoder::outputSetup(zu64 width, zu64 height, zu32 fps){
+bool ZH264Encoder::outputSetup(zu64 width, zu64 height, double fps){
     outwidth = width;
     outheight = height;
     outfps = fps;
@@ -73,7 +72,7 @@ bool ZH264Encoder::open(ZPath path){
     param->i_threads = 1;
     param->i_width = outwidth;
     param->i_height = outheight;
-    param->i_fps_num = outfps;
+    param->i_fps_num = (zu32)outfps;
     param->i_fps_den = 1;
 
     // alloc picture buffer

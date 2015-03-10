@@ -34,6 +34,8 @@ INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
 )
 
+CONFIGURE_FILE(roi.sh roi.sh COPYONLY)
+
 ### =================== BUILD =================== ###
 
 ADD_DEFINITIONS(-DBUILDING)
@@ -46,5 +48,5 @@ IF(PLATFORM_WINDOWS)
     #TARGET_LINK_LIBRARIES(h264_roi C:/bin/TDMGCC/MinGW64/lib/libfdk-aac.a)
     #TARGET_LINK_LIBRARIES(h264_roi C:/bin/TDMGCC/MinGW64/lib/libx264.a)
 ELSE()
-    TARGET_LINK_LIBRARIES(h264_roi avformat avcodec avdevice avutil swscale swresample x264 z)
+    TARGET_LINK_LIBRARIES(h264_roi avformat avcodec avdevice avutil swscale swresample x264 z mp3lame)
 ENDIF()

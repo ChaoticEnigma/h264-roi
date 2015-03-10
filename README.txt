@@ -1,0 +1,65 @@
+H264-ROI
+(H264 Region Of Interest) Encoder
+
+h264-roi written by Charlie Waters
+Programs used and linked libraries are copyright of their respective owners
+
+h264-roi Build Dependencies:
+libavformat
+libavcodec
+libavdevice
+libavutil
+libswscale
+libswresample
+libx264
+libz
+libmp3lame (sometimes the linker demands this, depending on avconfig.h config)
+
+roi.sh Run Dependencies:
+ffmpeg
+libx264
+libmp3lame
+
+Specifically, ffmpeg must be built with support for libx264 and libmp3lame. This goes something like:
+$ git clone git://source.ffmpeg.org/ffmpeg.git ffmpeg
+$ cd ffmpeg
+$ ./configure --enable-gpl --enable-libx264 --enable-libmp3lame
+$ make
+# make install
+
+h264-roi Building:
+$ git clone <h264-roi git url> h264-roi
+$ mkdir h264-roi-build
+$ cd h264-roi-build
+$ cmake ../h264-roi
+$ make
+
+h264-roi Usage:
+$ h264_roi <input_file> <output_file> <base_qp> [region] [...]
+Where:
+input_file = A planar (YUV) H264 video file (NO OTHER CHANNELS, THIS IS WHAT roi.sh IS FOR)
+output_file = Where to write a planar (YUV420P) H264 video file
+base_qp = Quantizer value from 0 to 51, where 0 is lossless, 51 is no longer video. This "compression factor" is applied to the entire frame.
+region = A rectengle to specify a different quantizer value for. Edges are rouned to the macroblock (16x16 pixels). See below for format.
+
+Region Format:
+First specify two corners of a rectangle, then the desired quantization factor of the pixel inside the rectangle.
+<first_corner_x>,<first_corner_y>,<second_corner_x>,<second_corner_y>:<quantizer_value>
+Example: Leave the pixels in the rectangle with opposite corners (100,100) and (500,400) uncompressed: 100,100,500,400:0
+
+roi.sh Usage:
+$ sh roi.sh <input_file> <output_file> <base_qp> [region] [...]
+Where:
+input_file = A video file with audio
+output_file = Where to write an MP4 file with H264 video and MP3 audio
+base_qp = Same as above
+region = Same as above
+
+Exmaples:
+(in build directory)
+
+Re-Encode lol.avi (1920x1080) as lol.control.5.mp4 with base qp of 5, no regions of interest:
+$ sh roi.sh "lol.avi" "lol.control.5.mp4" 5
+
+Re-Encode lol.avi (1920x1080) as lol.roi.mp4 with base qp of 20 and qp of 5 in specified regions of interest:
+$ sh roi.sh "lol.avi" "lol.roi.mp4" 20 0,125,102,681:5 0,828,324,1080:5 1810,118,1920,689:5 1608,766,1920,1080:5 572,839,1352,1080:5

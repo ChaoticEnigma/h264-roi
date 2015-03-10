@@ -24,7 +24,8 @@ SOURCES += \
 OTHER_FILES += \
     CMakeLists.txt \
     roi.sh \
-    roi.bat
+    roi.bat \
+    README.txt
 
 INCLUDEPATH += \
     roxlu #\

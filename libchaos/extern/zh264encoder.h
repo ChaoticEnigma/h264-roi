@@ -6,9 +6,9 @@
 #include "zimage.h"
 
 extern "C" {
-    #include <libswscale/swscale.h>
-    #include <libavcodec/avcodec.h>
-    #include <x264.h>
+#include <libswscale/swscale.h>
+#include <libavcodec/avcodec.h>
+#include <x264.h>
 }
 
 typedef PixelFormat AVPixelFormat;
@@ -20,8 +20,8 @@ public:
     ZH264Encoder();
     ~ZH264Encoder();
 
-    bool inputSetup(zu64 width, zu64 height, zu32 fps);
-    bool outputSetup(zu64 width, zu64 height, zu32 fps);
+    bool inputSetup(zu64 width, zu64 height, double fps);
+    bool outputSetup(zu64 width, zu64 height, double fps);
     bool validSettings();
 
     bool open(ZPath path);
@@ -55,12 +55,12 @@ public:
 
     // Input settings
     zu64 inwidth, inheight;     // Input width and height
-    zu32 infps;                 // Input FPS
+    double infps;               // Input FPS
     AVPixelFormat infmt;        // Input pixel format
 
     // Output settings
     zu64 outwidth, outheight;   // Output width and height
-    zu32 outfps;                // Output FPS
+    double outfps;              // Output FPS
 
     // Macroblock setings
     ZArray<float> blockqps;

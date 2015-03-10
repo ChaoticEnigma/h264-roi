@@ -7,16 +7,32 @@ do
     ((++i))
 done
 
-args[0]="\"$1.h264\""
-args[1]="\"$1.roi.h264\""
+in=$1
+out=$2
 
-echo ffmpeg -i "$1" -c:v libx264 -pix_fmt yuv420p -preset slow -qp 10 -an "$1.h264"
-echo ffmpeg -i "$1" -vn -c:a copy "$1.audio"
-#ffmpeg -i "$1" -c:v libx264 -pix_fmt yuv420p -preset slow -qp 10 -an "$1.h264"
-#ffmpeg -i "$1" -vn -c:a copy "$1.audio"
+args[0]="\"$in.h264\""
+args[1]="\"$in.roi.h264\""
 
-echo h264_roi ${args[@]}
-#./h264_roi ${args[@]}
+echo
+echo "### Extract Video ##############################################################"
+echo ffmpeg -i "$in" -codec:v libx264 -pix_fmt yuv420p -preset slow -qp 10 -an "$in.h264"
+echo
+ffmpeg -i "$in" -codec:v libx264 -pix_fmt yuv420p -preset slow -qp 10 -an "$in.h264"
 
-echo ffmpeg -i "$1.roi.h264" -i "$1.audio" -c:v copy -c:a copy "$2"
-#ffmpeg -i "$1.roi.h264" -i "$1.audio" -c:v copy -c:a copy "$2"
+echo
+echo "### Extract Audio ##############################################################"
+echo ffmpeg -i "$in" -codec:a libmp3lame -qscale:a 3 -vn "$in.mp3"
+echo
+ffmpeg -i "$in" -codec:a libmp3lame -qscale:a 3 -vn "$in.mp3"
+
+echo
+echo "### ROI Video ##################################################################"
+echo ./h264_roi ${args[@]}
+echo
+./h264_roi ${args[@]}
+
+echo
+echo "## Mux Audio/Video ############################################################"
+echo ffmpeg -i "$in.roi.h264" -i "$in.mp3" -c:v copy -c:a copy "$out"
+echo
+ffmpeg -i "$in.roi.h264" -i "$in.mp3" -c:v copy -c:a copy "$out"
