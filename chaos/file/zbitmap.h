@@ -2,7 +2,7 @@
 #define ZBITMAP_H
 
 #include "ztypes.h"
-#include "zerror.h"
+#include "zexception.h"
 #include "zbinary.h"
 #include <cstring>
 

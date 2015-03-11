@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "zerror.h"
+#include "zexception.h"
 #include "zlog.h"
 #include "zfile.h"
 
@@ -20,22 +20,22 @@ bool ZPNG::decode(ZBinary &pngdata_in){
 
     try {
         if(!pngdata_in.size())
-            throw ZError("PNG Read: empty input", PNGError::emptyinput, false);
+            throw ZException("PNG Read: empty input", PNGError::emptyinput, false);
 
         data->filedata = &pngdata_in;
 
         int result = readpng_init(data);
         switch(result){
         case 1:
-            throw ZError("PNG Read: signature read fail", PNGError::sigreadfail, false);
+            throw ZException("PNG Read: signature read fail", PNGError::sigreadfail, false);
         case 2:
-            throw ZError("PNG Read: signature check fail", PNGError::sigcheckfail, false);
+            throw ZException("PNG Read: signature check fail", PNGError::sigcheckfail, false);
         case 3:
-            throw ZError("PNG Read: read struct create fail", PNGError::readstructfail, false);
+            throw ZException("PNG Read: read struct create fail", PNGError::readstructfail, false);
         case 4:
-            throw ZError("PNG Read: info struct create fail", PNGError::infostructfail, false);
+            throw ZException("PNG Read: info struct create fail", PNGError::infostructfail, false);
         case 5:
-            throw ZError(ZString("PNG Read: ") + data->err_str, PNGError::libpngerror, false);
+            throw ZException(ZString("PNG Read: ") + data->err_str, PNGError::libpngerror, false);
         default:
             break;
         }
@@ -66,28 +66,28 @@ bool ZPNG::decode(ZBinary &pngdata_in){
         result = readpng_get_image(data, default_display_exponent);
         switch(result){
         case 1:
-            throw ZError(ZString("PNG Read: ") + data->err_str, PNGError::libpngerror, false);
+            throw ZException(ZString("PNG Read: ") + data->err_str, PNGError::libpngerror, false);
         case 2:
-            throw ZError("PNG Read: invalid color type", PNGError::invalidcolortype, false);
+            throw ZException("PNG Read: invalid color type", PNGError::invalidcolortype, false);
         case 3:
-            throw ZError("PNG Read: failed to alloc image data", PNGError::imageallocfail, false);
+            throw ZException("PNG Read: failed to alloc image data", PNGError::imageallocfail, false);
         case 4:
-            throw ZError("PNG Read: failed to alloc row pointers", PNGError::rowallocfail, false);
+            throw ZException("PNG Read: failed to alloc row pointers", PNGError::rowallocfail, false);
         default:
             break;
         }
 
         if(!data->image_data){
-            throw ZError("readpng_get_image failed", PNGError::badpointer, false);
+            throw ZException("readpng_get_image failed", PNGError::badpointer, false);
         }
 
         image.setDimensions(data->width, data->height, data->channels, data->bit_depth);
         if(!image.validDimensions())
-            throw ZError(ZString("PNG Read: invalid dimensions ") + image.width() + "x" + image.height() + " " + image.channels() + "," + image.depth() + " " + data->color_type, PNGError::invaliddimensions, false);
+            throw ZException(ZString("PNG Read: invalid dimensions ") + image.width() + "x" + image.height() + " " + image.channels() + "," + image.depth() + " " + data->color_type, PNGError::invaliddimensions, false);
         image.takeData(data->image_data);
         data->image_data = NULL;
 
-    } catch(ZError e){
+    } catch(ZException e){
         error = e;
         //ELOG("ZPNG Read error " << e.code() << ": " << e.what());
         pngdata_in.rewind();
@@ -111,7 +111,7 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
 
     try {
         if(!image.isLoaded())
-            throw ZError("PNG Write: empty image", PNGError::emptyimage, false);
+            throw ZException("PNG Write: empty image", PNGError::emptyimage, false);
 
         data->filedata = &pngdata_out;
 
@@ -138,18 +138,18 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
         else if(image.channels() == 4)
             data->color_type = PNG_COLOR_TYPE_RGB_ALPHA;
         else
-            throw ZError("PNG Read: unsupported image channel count", PNGError::unsupportedchannelcount, false);
+            throw ZException("PNG Read: unsupported image channel count", PNGError::unsupportedchannelcount, false);
 
         data->interlaced = options & PNGWrite::interlace;
 
         int result = writepng_init(data, text);
         switch(result){
         case 1:
-            throw ZError("PNG Write: write struct create fail", PNGError::writestructfail, false);
+            throw ZException("PNG Write: write struct create fail", PNGError::writestructfail, false);
         case 2:
-            throw ZError("PNG Write: info struct create fail", PNGError::infostructfail, false);
+            throw ZException("PNG Write: info struct create fail", PNGError::infostructfail, false);
         case 3:
-            throw ZError(ZString("PNG Write: ") + data->err_str, PNGError::libpngerror, false);
+            throw ZException(ZString("PNG Write: ") + data->err_str, PNGError::libpngerror, false);
         default:
             break;
         }
@@ -163,7 +163,7 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
             result = writepng_encode_image(data);
             switch(result){
             case 1:
-                throw ZError(ZString("PNG Write: ") + data->err_str, PNGError::libpngerror, false);
+                throw ZException(ZString("PNG Write: ") + data->err_str, PNGError::libpngerror, false);
             default:
                 break;
             }
@@ -173,7 +173,7 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
                 result = writepng_encode_row(data, row);
                 switch(result){
                 case 1:
-                    throw ZError(ZString("PNG Write: ") + data->err_str, PNGError::libpngerror, false);
+                    throw ZException(ZString("PNG Write: ") + data->err_str, PNGError::libpngerror, false);
                 default:
                     break;
                 }
@@ -182,13 +182,13 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
             result = writepng_encode_finish(data);
             switch(result){
             case 1:
-                throw ZError(ZString("PNG Write: ") + data->err_str, PNGError::libpngerror, false);
+                throw ZException(ZString("PNG Write: ") + data->err_str, PNGError::libpngerror, false);
             default:
                 break;
             }
         }
 
-    } catch(ZError e){
+    } catch(ZException e){
         error = e;
         //ELOG("ZPNG Write error " << e.code() << ": " << e.what());
         writepng_cleanup(data);
@@ -206,13 +206,13 @@ bool ZPNG::read(ZPath path){
     ZBinary data;
     try {
         data = ZFile::readBinary(path);
-    } catch(ZError e){
+    } catch(ZException e){
         error = e;
         return false;
     }
 
     if(!data.size()){
-        error = ZError("PNG Read: empty read file", PNGError::badfile, false);
+        error = ZException("PNG Read: empty read file", PNGError::badfile, false);
         return false;
     }
 
@@ -225,7 +225,7 @@ bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
         return false;
 
     if(!ZFile::writeBinary(path, data))
-        error = ZError("PNG Read: cannot write file", PNGError::badwritefile, false);
+        error = ZException("PNG Read: cannot write file", PNGError::badwritefile, false);
 
     return true;
 }

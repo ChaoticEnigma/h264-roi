@@ -8,7 +8,7 @@
 #include "zfile.h"
 #include "zlog.h"
 #include "ztypes.h"
-#include "zerror.h"
+#include "zexception.h"
 
 #define ZPARCEL_VERSION_2_SIG { 'P','A','R','C','E','L','0','2' }
 #define ZPARCEL_VERSION_3_SIG { 'P',143,'R',128,144,'L', 0 , 3  }

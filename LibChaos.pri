@@ -18,7 +18,6 @@ HEADERS += \
     $$PWD/chaos/abstract/ziterator.h \
     $$PWD/chaos/abstract/ypushpopaccess.h \
     \
-    $$PWD/chaos/base/zerror.h \
     $$PWD/chaos/base/zclock.h \
     $$PWD/chaos/base/zlog.h \
     $$PWD/chaos/base/zlogworker.h \
@@ -96,7 +95,8 @@ HEADERS += \
     $$PWD/chaos/misc/zhash.h \
     $$PWD/chaos/abstract/zhashable.h \
     $$PWD/chaos/abstract/zbase.h \
-    $$PWD/chaos/base/zerror_min.h
+    $$PWD/chaos/base/zerror_min.h \
+    $$PWD/chaos/base/zexception.h
 
 SOURCES += \
     $$PWD/chaos/base/zerror.cpp \
@@ -201,6 +201,9 @@ OTHER_FILES += \
     \
     $$PWD/LibChaos_Todo_Ideas.txt \
     $$PWD/Projects.txt
+
+DISTFILES += \
+    $$PWD/README.txt
 
 INCLUDEPATH += \
     $$PWD \

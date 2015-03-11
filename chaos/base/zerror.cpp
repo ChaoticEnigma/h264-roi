@@ -1,4 +1,4 @@
-#include "zerror.h"
+#include "zexception.h"
 #include "zlog.h"
 #include "zmap.h"
 
@@ -32,20 +32,20 @@
     #endif // FUCK_WINDOWS
 #endif // PLATFORM
 
-#include <assert.h>
+//#include <assert.h>
 
 namespace LibChaos {
 
 // Map of signals to signal handling functions
-ZMap<int, ZError::sigset> sigmap;
+ZMap<int, ZException::sigset> sigmap;
 
 
-ZError::ZError(ZString str, int code, bool trace) : desc(str), err(code){
+ZException::ZException(ZString str, int code, bool trace) : desc(str), err(code){
     if(trace)
         stacktrace = getStackTrace(2);
 }
 
-ZString ZError::traceStr() const {
+ZString ZException::traceStr() const {
     ZString str = "**************************************\n";
     for(zu64 i = 0; i < stacktrace.size(); ++i){
         str += stacktrace[i] + "\n";
@@ -54,12 +54,12 @@ ZString ZError::traceStr() const {
     return str;
 }
 
-void ZError::logStackTrace() const {
+void ZException::logStackTrace() const {
     ELOG(ZLog::raw << trace() << ZLog::newln);
 }
 
-void ZError::assert(bool condition){
-    assert(condition);
+void ZException::assert(bool condition){
+    //assert(condition);
 }
 
 #if PLATFORM == LINUX
@@ -636,7 +636,7 @@ void appendCallTrace( std::string & errorMessage ){
 
 #endif // FUCK_WINDOWS
 
-ArZ ZError::getStackTrace(unsigned trim){
+ArZ ZException::getStackTrace(unsigned trim){
     ArZ trace;
 
 #ifndef FUCK_WINDOWS
@@ -666,7 +666,7 @@ ArZ ZError::getStackTrace(unsigned trim){
 
 #endif // PLATFORM
 
-void ZError::registerSigSegv(){
+void ZException::registerSigSegv(){
 #if PLATFORM == LINUX
     signal(SIGSEGV, fatalSignalHandler);
 #endif
@@ -699,7 +699,7 @@ BOOL WINAPI ConsoleHandler(DWORD dwType){
 
 #endif // PLATFORM
 
-bool ZError::registerSignalHandler(zerror_signal sigtype, signalHandler handler){
+bool ZException::registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
 
 #if PLATFORM == LINUX
@@ -767,12 +767,12 @@ bool ZError::registerSignalHandler(zerror_signal sigtype, signalHandler handler)
     return true;
 }
 
-bool ZError::registerInterruptHandler(signalHandler handler){
+bool ZException::registerInterruptHandler(signalHandler handler){
     return registerSignalHandler(interrupt, handler);
 }
 
 #if PLATFORM == WINDOWS
-unsigned long ZError::getSystemErrorCode(){
+unsigned long ZException::getSystemErrorCode(){
     return GetLastError();
 }
 #else
@@ -781,7 +781,7 @@ int ZError::getSystemErrorCode(){
 }
 #endif
 
-int ZError::getSocketErrorCode(){
+int ZException::getSocketErrorCode(){
 #if PLATFORM == WINDOWS
     return WSAGetLastError();
 #else
@@ -789,7 +789,7 @@ int ZError::getSocketErrorCode(){
 #endif
 }
 
-ZString ZError::getSystemError(){
+ZString ZException::getSystemError(){
 #if  PLATFORM == WINDOWS
     DWORD err = GetLastError();
 //    wchar_t *str = nullptr;

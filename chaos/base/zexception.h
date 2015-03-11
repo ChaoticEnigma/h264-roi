@@ -12,7 +12,7 @@
 
 namespace LibChaos {
 
-class ZError {
+class ZException {
 public:
     enum zerror_signal {
         unknown = 0,
@@ -33,7 +33,7 @@ public:
     };
 
 public:
-    ZError(ZString desc = ZString(), int code = 0, bool trace = true);
+    ZException(ZString desc = ZString(), int code = 0, bool trace = true);
 
     inline const ZString &what() const { return desc; }
     inline int code() const { return err; }

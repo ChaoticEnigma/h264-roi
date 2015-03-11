@@ -1,7 +1,7 @@
 #include "zfile.h"
 
 #include "zlog.h"
-#include "zerror.h"
+#include "zexception.h"
 
 #include <stdlib.h>
 #include <cstring>
@@ -300,11 +300,11 @@ zu64 ZFile::fileSize(ZPath path){
 
 zu64 ZFile::readBinary(ZPath file, ZBinary &out){
     if(isFile(file))
-        throw ZError("ZFile: file is directory");
+        throw ZException("ZFile: file is directory");
 
     FILE *fp = fopen(file.str().cc(), "rb");
     if(fp == NULL)
-        throw ZError("ZFile: fopen error");
+        throw ZException("ZFile: fopen error");
 
     fseek(fp, 0, SEEK_END);
     zu64 size = (zu64)ftell(fp);
@@ -312,12 +312,12 @@ zu64 ZFile::readBinary(ZPath file, ZBinary &out){
 
     unsigned char *buffer = new (std::nothrow) unsigned char[size];
     if(buffer == nullptr)
-        throw ZError("ZFile: new alloc error");
+        throw ZException("ZFile: new alloc error");
 
     zu64 len = fread(buffer, 1, size, fp);
     fclose(fp);
     if(len != size)
-        throw ZError("ZFile: fread error");
+        throw ZException("ZFile: fread error");
 
     out.write(buffer, size);
     delete[] buffer;
@@ -326,7 +326,7 @@ zu64 ZFile::readBinary(ZPath file, ZBinary &out){
 
 zu64 ZFile::writeBinary(ZPath path, const ZBinary &data){
     if(!ZFile::createDirsTo(path))
-        throw ZError("could not create dirs to file");
+        throw ZException("could not create dirs to file");
 
     ZFile file(path, ZFile::modewrite);
     if(!file.isOpen())

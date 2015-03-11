@@ -4,7 +4,7 @@
 #include "ztypes.h"
 #include "zstring.h"
 #include "zbinary.h"
-#include "zerror.h"
+#include "zexception.h"
 #include "zaddress.h"
 
 #define ZSOCKET_UDP_BUFFER  1024 * 64
@@ -68,7 +68,7 @@ public:
         return _bound;
     }
 
-    ZError getError() const {
+    ZException getError() const {
         return error;
     }
 
@@ -89,7 +89,7 @@ private:
     zu32 buffersize;
     bool reuseaddr;
     ZAddress _bound;
-    ZError error;
+    ZException error;
 };
 
 }

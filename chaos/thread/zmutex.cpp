@@ -1,5 +1,5 @@
 #include "zmutex.h"
-#include "zerror.h"
+#include "zexception.h"
 
 #if ZMUTEX_VERSION == 1
     #include <pthread.h>

@@ -1,5 +1,5 @@
 #include "parcel-main.h"
-#include "zerror.h"
+#include "zexception.h"
 
 using namespace ZParcelTypes;
 using namespace ZParcelConvert;
@@ -118,7 +118,7 @@ int mainwrap(int argc, char **argv){
 int main(int argc, char **argv){
     try {
         return mainwrap(argc, argv);
-    } catch(ZError err){
+    } catch(ZException err){
         ELOG(err.what());
         return EXIT_FAILURE;
     }

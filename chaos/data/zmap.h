@@ -9,6 +9,7 @@
 #include "zallocator.h"
 #include "zhashable.h"
 #include "zhash.h"
+//#include "zexception.h"
 
 namespace LibChaos {
 
@@ -35,6 +36,7 @@ public:
     }
 
     void add(K &key, T &value){
+        // Resize if over load factor
         if(((float)_size / (float)_realsize) >= _factor){
             resize(_realsize << 1);
         }
@@ -43,33 +45,59 @@ public:
         zu64 ipos = hash % _realsize;
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = (ipos + i) % _realsize;
-            if(_data[pos].key == nullptr || _data[pos].deleted){
+            if(_data[pos].key == nullptr){
+                // Element is unset or deleted
+                _data->hash = hash;
+                _data[pos].key = _kalloc->alloc(1);
+                _kalloc->construct(_data[pos].key, 1, key);
+                _data[pos].value = _talloc->alloc(1);
+                _talloc->construct(_data[pos].value, 1, value);
+                ++_size;
+                return;
+            } else if(_data[pos].hash == hash){
+                // Compare the actual key - may be non-trivial
+                if(*_data[pos].key == key){
+                    // Reassign value in existing element
+                    _talloc->destroy(_data[pos].value, 1);
+                    _talloc->construct(_data[pos].value, 1, value);
+                }
+            }
+        }
+        //throw ZException();
+    }
 
-                break;
+    T &get(const K &key){
+        zu64 hash = ZHash<K>(key).hash();
+        zu64 ipos = hash % _realsize;
+        for(zu64 i = 0; i < _realsize; ++i){
+            zu64 pos = (ipos + i) % _realsize;
+            if(_data[pos].hash == hash){
+                // Compare the actual key - may be non-trivial
+                if(*_data[pos].key == key){
+                    return *_data[pos].value;
+                }
+            } else if(_data[pos].key == nullptr && _data[pos].value == nullptr){
+
+            }
+            if(_data[pos].key == nullptr){
+                // Element is unset or deleted
+                _data->hash = hash;
+                _data[pos].key = _kalloc->alloc(1);
+                _kalloc->construct(_data[pos].key, 1, key);
+                _data[pos].value = _talloc->alloc(1);
+                _talloc->construct(_data[pos].value, 1, value);
+                ++_size;
+                return;
             }
         }
 
-        MapData *ptr = _data + pos;
-        while(_data[pos].key != nullptr && !_data[pos].deleted){
-            ++ptr;
-        }
-        _talloc->construct(ptr->value, 1, value);
-
-        MapData set;
-        set.key = _kalloc->alloc(1);
-        _kalloc->construct(set.key, 1, key);
-        set.value = _talloc->alloc(1);
-        _talloc->construct(set.value, 1, value);
-
-        ++_size;
     }
+    inline T &operator[](const K &key){ return get(key); }
 
-//    T &get(K key_){
-
-//    }
-//    T &operator[](K key_){
-
-//    }
+    const T &get(const K &key) const {
+        zu64 hash = ZHash<K>(key).hash();
+    }
+    inline const T &operator[](const K &key) const { return get(key); }
 
 //    ZMap<K, T> &push(K key_, T value){
 //        _data.push({ key_, value });
@@ -92,7 +120,7 @@ public:
             zu64 newsize = 1;
             while(newsize < size)
                 size <<= 1; // Get next power of 2
-            T *data = _alloc->alloc(newsize);
+            MapData *data = _alloc->alloc(newsize);
             _alloc->rawcopy(_data, data, _size); // Copy data to new buffer
             _alloc->dealloc(_data); // Delete old buffer without calling destructors
             _data = data;
@@ -123,10 +151,12 @@ public:
     }
 
 protected:
+    // If key is null, the entry is empty
+    // If key is null AND the value is not null, the value was deleted, and value is not a valid pointer
     struct MapData {
+        zu64 hash;
         K *key;
         T *value;
-        bool deleted;
     };
 
     ZAllocator<MapData> *_alloc;

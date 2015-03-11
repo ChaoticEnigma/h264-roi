@@ -4,7 +4,7 @@
 #include "zimage.h"
 #include "zbinary.h"
 #include "zpath.h"
-#include "zerror.h"
+#include "zexception.h"
 
 namespace LibChaos {
 
@@ -43,7 +43,7 @@ public:
 
 private:
     ZImage image;
-    ZError error;
+    ZException error;
 };
 
 }

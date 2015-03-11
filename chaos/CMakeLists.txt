@@ -9,7 +9,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     ztypes.h
 
     base/zclock.h
-    base/zerror.h
+    base/zexception.h
     base/zlog.h
     base/zlogworker.h
     base/zpath.h

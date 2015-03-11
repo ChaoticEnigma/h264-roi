@@ -1,5 +1,5 @@
 #include "zcondition.h"
-#include "zerror.h"
+#include "zexception.h"
 
 #ifdef ZMUTEX_WINTHREADS
     #include <windows.h>

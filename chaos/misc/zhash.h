@@ -19,7 +19,7 @@ public:
     ZHash(T &data) : ZHashBase(0){}
 };
 
-// zu
+// z unsigned types
 template <> class ZHash<zu8> : public ZHashBase {
 public:
     ZHash(zu8 data) : ZHashBase(data){}
@@ -37,7 +37,7 @@ public:
     ZHash(zu64 data) : ZHashBase(data){}
 };
 
-// zs
+// z signed types
 template <> class ZHash<zs8> : public ZHashBase {
 public:
     ZHash(zs8 data) : ZHashBase((zu64)data){}

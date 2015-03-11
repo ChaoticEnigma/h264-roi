@@ -1,5 +1,5 @@
 #include "test.h"
-#include "zerror.h"
+#include "zexception.h"
 
 int runTests(ZAssoc<ZString, test_func> tests);
 
@@ -95,7 +95,7 @@ int runTests(ZAssoc<ZString, test_func> tests){
             result = tests[i]();
         } catch(int err){
             result = err;
-        } catch(ZError err){
+        } catch(ZException err){
             ZString errstr = "!! Error: " + err.what();
             errorstrings.push(errstr);
             ELOG(errstr);

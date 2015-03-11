@@ -3,7 +3,7 @@
 
 #include "zimage.h"
 #include "zpath.h"
-#include "zerror.h"
+#include "zexception.h"
 
 namespace LibChaos {
 
@@ -32,9 +32,9 @@ public:
     bool read(ZPath path);
     bool write(ZPath path);
 
-    ZError getError(){
-        ZError err = error;
-        error = ZError();
+    ZException getError(){
+        ZException err = error;
+        error = ZException();
         return err;
     }
 
@@ -48,7 +48,7 @@ private:
 
 private:
     ZImage image;
-    ZError error;
+    ZException error;
 
     const zu8 bmp_channels = 3;
 };

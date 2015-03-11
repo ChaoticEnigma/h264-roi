@@ -1,6 +1,6 @@
 #include "zsocket.h"
 #include "zlog.h"
-#include "zerror.h"
+#include "zexception.h"
 
 #if PLATFORM == WINDOWS
     #include <winsock2.h>
@@ -33,7 +33,7 @@ ZSocket::~ZSocket(){
 bool ZSocket::getSocket(zsocktype &fd, ZAddress addr){
     fd = ::socket(addr.family(), addr.type(), addr.protocol());
     if(fd <= 0){
-        error = ZError("ZSocket: failed to create socket " + ZError::getSystemError());
+        error = ZException("ZSocket: failed to create socket " + ZException::getSystemError());
         fd = 0;
         return false;
     }
@@ -46,7 +46,7 @@ bool ZSocket::open(ZAddress addr){
     ++socket_count;
 
     if(isOpen()){
-        error = ZError("ZSocket: socket already open");
+        error = ZException("ZSocket: socket already open");
         return false;
     }
     bool ok = false;
@@ -63,7 +63,7 @@ bool ZSocket::open(ZAddress addr){
         sockaddr_storage addrstorage;
         addrs[i].populate(&addrstorage);
         if(::bind(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
-            error = ZError("ZSocket: bind error " + ZError::getSystemError());
+            error = ZException("ZSocket: bind error " + ZException::getSystemError());
             close();
             continue;
         }
@@ -73,7 +73,7 @@ bool ZSocket::open(ZAddress addr){
         LOG("Bound socket " << _socket);
     }
     if(!ok){
-        error = ZError("ZSocket: could not create and bind socket on any address");
+        error = ZException("ZSocket: could not create and bind socket on any address");
         return false;
     }
     return true;
@@ -101,7 +101,7 @@ bool ZSocket::isOpen() const {
 
 bool ZSocket::send(ZAddress dest, const ZBinary &data){
     if(!isOpen()){
-        error = ZError("ZConnection: socket is not open");
+        error = ZException("ZConnection: socket is not open");
         return false;
     }
     if(data.size() > ZSOCKET_UDP_MAX)
@@ -121,7 +121,7 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
 #endif
 
     if(sent < 0)
-        error = ZError("ZSocket: sendto error " + ZError::getSystemError());
+        error = ZException("ZSocket: sendto error " + ZException::getSystemError());
     return (zu64)sent == data.size();
 }
 
@@ -150,7 +150,7 @@ zu64 ZSocket::receive(ZAddress &sender, ZBinary &str){
 
 bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
     if(isOpen()){
-        error = ZError("ZSocket: socket already open");
+        error = ZException("ZSocket: socket already open");
         return false;
     }
     bool ok = false;
@@ -164,7 +164,7 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
         sockaddr_storage addrstorage;
         addrs[i].populate(&addrstorage);
         if(::connect(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
-            error = ZError("ZSocket: connect error " + ZError::getSystemError());
+            error = ZException("ZSocket: connect error " + ZException::getSystemError());
             close();
             continue;
         }
@@ -172,7 +172,7 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
         ok = true;
     }
     if(!ok){
-        error = ZError("ZSocket: could not create socket and connect to any address");
+        error = ZException("ZSocket: could not create socket and connect to any address");
         return false;
     }
     connfd = _socket;
@@ -182,7 +182,7 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
 
 bool ZSocket::listen(){
     if(::listen(_socket, 20) != 0){
-        error = ZError("ZSocket: listen error " + ZError::getSystemError());
+        error = ZException("ZSocket: listen error " + ZException::getSystemError());
         return false;
     }
     return true;
@@ -193,7 +193,7 @@ bool ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
     socklen_t sin_size = sizeof(client_sin);
     zsocktype client = ::accept(_socket, (struct sockaddr *)&client_sin, &sin_size);
     if(client <= 0){
-        error = ZError("ZSocket: failed to accept socket: " + ZError::getSystemError());
+        error = ZException("ZSocket: failed to accept socket: " + ZException::getSystemError());
         return false;
     }
 
@@ -207,7 +207,7 @@ bool ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
 
 zu64 ZSocket::read(ZBinary &data){
     if(!isOpen()){
-        error = ZError("ZConnection: socket is not open");
+        error = ZException("ZConnection: socket is not open");
         return 0;
     }
 
@@ -224,7 +224,7 @@ zu64 ZSocket::read(ZBinary &data){
 #endif
 
     if(bytes <= -1){
-        error = ZError("ZSocket: read error: " + ZError::getSystemError());
+        error = ZException("ZSocket: read error: " + ZException::getSystemError());
         return 0;
     }
 
@@ -233,11 +233,11 @@ zu64 ZSocket::read(ZBinary &data){
 
 bool ZSocket::write(const ZBinary &data){
     if(!isOpen()){
-        error = ZError("ZConnection: socket is not open");
+        error = ZException("ZConnection: socket is not open");
         return false;
     }
     if(data.size() <= 0){
-        error = ZError("ZConnection: empty write data");
+        error = ZException("ZConnection: empty write data");
         return false;
     }
 
@@ -250,7 +250,7 @@ bool ZSocket::write(const ZBinary &data){
 #endif
 
     if(bytes <= 0){
-        error = ZError("ZSocket: write error: " + ZError::getSystemError());
+        error = ZException("ZSocket: write error: " + ZException::getSystemError());
         return false;
     }
     return true;
@@ -287,7 +287,7 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
         optptr = &tv;
         optptrsize = sizeof(timeval);
 #elif PLATFORM == WINDOWS
-        throw ZError("FIX ME ON WINDOWS");
+        throw ZException("FIX ME ON WINDOWS");
 #endif
         break;
     }
@@ -301,7 +301,7 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
 #elif PLATFORM == WINDOWS
     if(optptr != nullptr && setsockopt(_socket, SOL_SOCKET, sockoption, (char *)optptr, optptrsize) != 0){
 #endif
-        error = ZError("ZSocket: setsockopt error: " + ZError::getSystemError());
+        error = ZException("ZSocket: setsockopt error: " + ZException::getSystemError());
         return false;
     }
     return true;
@@ -327,7 +327,7 @@ bool ZSocket::setBlocking(bool set){
 
     DWORD opt = set ? 0 : 1;
     if(ioctlsocket(_socket, FIONBIO, &opt) != 0){
-        error = ZError("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
+        error = ZException("ZSocket: failed to set non-blocking socket error: " + ZException::getSystemError());
         return false;
     }
 
