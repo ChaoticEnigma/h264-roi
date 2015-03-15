@@ -90,7 +90,7 @@
 #define UNIX        0x21
 #define LINUX       0x22
 #define WINDOWS     0x23
-#define MACOS       0x24
+#define MACOSX       0x24
 
 // Detected
 #if defined(__linux__)
@@ -98,7 +98,7 @@
 #elif defined(_WIN32)
     #define PLATFORM_DETECTED WINDOWS
 #elif defined(__APPLE__)
-    #define PLATFORM_DETECTED MACOS
+    #define PLATFORM_DETECTED MACOSX
 #else
     #warning Unknown Platform!
 #endif
@@ -108,6 +108,8 @@
     #define PLATFORM_SPECIFIED LINUX
 #elif defined(_LIBCHAOS_PLATFORM_WINDOWS)
     #define PLATFORM_SPECIFIED WINDOWS
+#elif defined(_LIBCHAOS_PLATFORM_MACOSX)
+    #define PLATFORM_SPECIFIED MACOSX
 #else
     #warning Unsupported Platform!
 #endif
@@ -135,7 +137,7 @@
     #error Multiple platforms declared. Please declare only one platform at a time.
 #endif
 
-#if PLATFORM == MACOS
+#if PLATFORM == MACOSX
     #error LibChaos does not support MacOS!
 #endif
 
