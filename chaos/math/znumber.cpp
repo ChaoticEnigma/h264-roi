@@ -73,7 +73,7 @@ ZNumber ZNumber::operator-() const {
 
 ZNumber &ZNumber::operator+=(const ZNumber &other){
     if(other.isNegative()){
-        throw ZError("wait");
+        throw ZException("wait");
         return *this;
     }
     if(other._size > _size){
@@ -104,14 +104,14 @@ ZNumber &ZNumber::operator*=(const ZNumber &other){
 
 ZNumber &ZNumber::operator/=(const ZNumber &other){
     if(other == 0){
-        throw ZError("Division by zero");
+        throw ZException("Division by zero");
     }
     return *this;
 }
 
 ZNumber &ZNumber::operator%=(const ZNumber &other){
     if(other == 0){
-        throw ZError("Modulus by zero");
+        throw ZException("Modulus by zero");
     }
     return *this;
 }

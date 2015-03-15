@@ -4,12 +4,16 @@
 #include "ztypes.h"
 #include "zarray.h"
 #include <string.h>
+#include "zposition.h"
 #include "zreader.h"
 #include "zwriter.h"
 
 namespace LibChaos {
 
-class ZBinary : public ZReader, public ZWriter {
+class ZBinary;
+typedef ZBinary ZBuffer;
+
+class ZBinary : public ZPosition, public ZReader, public ZWriter {
 public:
     typedef unsigned char zbinary_type;
 
@@ -22,20 +26,12 @@ public:
     };
 
 public:
-    class RAW {
-    public:
-        static void *fillRaw(void *dest, const void *src, zu64 src_size, zu64 dest_count){
-            for(zu64 i = 0; i < dest_count; ++i){
-                memcpy((unsigned char *)dest + i, src, src_size);
-            }
-            return dest;
-        }
-    };
-
-
-public:
     ZBinary() : _data(nullptr), _size(0), _rwpos(0){
 
+    }
+    ZBinary(zu64 size) : ZBinary(){
+        _size = size;
+        _data = new zbinary_type[_size];
     }
     ZBinary(const void *ptr, zu64 size) : ZBinary(){
         if(ptr && size){
@@ -59,7 +55,7 @@ public:
         }
     }
     ZBinary(const ZBinary &other) : ZBinary(other._data, other._size){
-
+        // _rwpos is not copied
     }
 
     ~ZBinary(){

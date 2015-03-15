@@ -92,7 +92,9 @@ public:
     ZLog &operator<<(zlog_flag);
     ZLog &log(ZString logtext);
 
-    inline ZLog &operator<<(ZString text){ return log(text); }
+    ZLog &operator<<(ZLogInfo info);
+
+    inline ZLog &operator<<(ZString text){ return log(text); } // Base overload
     inline ZLog &operator<<(ZPath text){ return log(text.str()); }
     ZLog &operator<<(ZBinary text);
 
@@ -112,7 +114,7 @@ public:
 
     inline ZLog &operator<<(const char *text){ return log(text); }
 
-    ZLog &operator<<(ZLogInfo info);
+    inline ZLog &operator,(ZString text){ return log(" ").log(text); } // Base overload
 
     ZString pullBuffer();
 

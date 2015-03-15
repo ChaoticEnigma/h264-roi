@@ -4,19 +4,30 @@
 #include "ztypes.h"
 #include "zstring.h"
 
+#define ZUID_NIL LibChaos::ZUID(LibChaos::ZUID::nil)
+
 namespace LibChaos {
 
+// Generates IETF RFC 4122 UUIDs
 class ZUID {
 public:
-    ZUID();
+    enum uuidtype {
+        nil = 0,
+        time,
+        random,
+    };
 
-    ZString str();
+public:
+    ZUID(uuidtype type = time);
+    ZUID(ZString str);
+
+    bool operator==(const ZUID &uid);
+
+    const zoctet *getID() const { return _id_octets; }
+    ZString str() const;
 
 private:
-    struct ID {
-        zu64 first;
-        zu64 second;
-    } _id;
+    zoctet _id_octets[16];
 };
 
 }

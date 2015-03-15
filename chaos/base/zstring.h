@@ -12,7 +12,6 @@
 #include "ziterator.h"
 
 #include <cstring>
-
 //#include <bits/stringfwd.h>
 #include <string>
 #include <iosfwd>
@@ -99,9 +98,9 @@ public:
     ZString(zsll num) : ZString(ItoS((zs64)num, 10)){}
 
     // To integer
-    bool isInteger() const;
+    bool isInteger(zu8 base = 10) const;
     int tint() const;
-    zu64 tozu64() const;
+    zu64 tozu64(zu8 fromBase = 10) const;
 
     // To floating point
     bool isFloat() const;

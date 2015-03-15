@@ -18,7 +18,6 @@ HEADERS += \
     $$PWD/chaos/abstract/ziterator.h \
     $$PWD/chaos/abstract/ypushpopaccess.h \
     \
-    $$PWD/chaos/base/zerror.h \
     $$PWD/chaos/base/zclock.h \
     $$PWD/chaos/base/zlog.h \
     $$PWD/chaos/base/zlogworker.h \
@@ -90,7 +89,14 @@ HEADERS += \
     $$PWD/ui/progress.h \
     $$PWD/ui/align.h \
     \
-    $$PWD/bbb/zbbb.h
+    $$PWD/bbb/zbbb.h \
+    $$PWD/chaos/misc/zencrypt.h \
+    $$PWD/chaos/misc/zrandom.h \
+    $$PWD/chaos/misc/zhash.h \
+    $$PWD/chaos/abstract/zhashable.h \
+    $$PWD/chaos/abstract/zbase.h \
+    $$PWD/chaos/base/zerror_min.h \
+    $$PWD/chaos/base/zexception.h
 
 SOURCES += \
     $$PWD/chaos/base/zerror.cpp \
@@ -175,7 +181,10 @@ SOURCES += \
     $$PWD/util/audiobooksorter.cpp \
     $$PWD/util/imagedownloader.cpp \
     $$PWD/util/duplicatefinder.cpp \
-    $$PWD/util/imagelibrarymanager.cpp
+    $$PWD/util/imagelibrarymanager.cpp \
+    $$PWD/chaos/misc/zencrypt.cpp \
+    $$PWD/test/misc_test.cpp \
+    $$PWD/chaos/misc/zrandom.cpp
 
 OTHER_FILES += \
     $$PWD/CMakeLists.txt \
@@ -193,6 +202,9 @@ OTHER_FILES += \
     $$PWD/LibChaos_Todo_Ideas.txt \
     $$PWD/Projects.txt
 
+DISTFILES += \
+    $$PWD/README.txt
+
 INCLUDEPATH += \
     $$PWD \
     $$PWD/bbb \
@@ -202,8 +214,10 @@ INCLUDEPATH += \
     $$PWD/chaos/data \
     $$PWD/chaos/file \
     $$PWD/chaos/lib \
+    $$PWD/chaos/lib/cryptopp562 \
     $$PWD/chaos/lib/nowide_standalone \
     $$PWD/chaos/math \
+    $$PWD/chaos/misc \
     $$PWD/chaos/net \
     $$PWD/chaos/thread \
     $$PWD/extern \
@@ -232,3 +246,5 @@ unix {
 debug:DEFINES += _LIBCHAOS_BUILD_DEBUG
 release:DEFINES += _LIBCHAOS_BUILD_RELEASE
 else:DEFINES += _LIBCHAOS_BUILD_NORMAL
+
+include(zparcel/ZParcel.pri)

@@ -25,6 +25,8 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
     autobuffer_test.cpp
     json_test.cpp
 
+    misc_test.cpp
+
     socket_test.cpp
     socket2_test.cpp
 

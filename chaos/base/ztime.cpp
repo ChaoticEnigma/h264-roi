@@ -11,12 +11,14 @@ namespace LibChaos {
 ZTime::ZTime(){
     SYSTEMTIME systime;
     GetLocalTime(&systime);
-    FILETIME time;
-    SystemTimeToFileTime(&systime, &time);
+    FILETIME filetime;
+    SystemTimeToFileTime(&systime, &filetime);
 
     // Smash FILETIME into _time
     // It works, I promise*
-    memcpy(&_time, &time, 8);
+    timet time;
+    memcpy(&time, &filetime, 8);
+    _time = time;
 }
 
 ZTime::ZTime(const ZTime &other) : _time(other._time){
@@ -32,7 +34,7 @@ int ZTime::getSecs() const {
     return 0;
 }
 
-ZString ZTime::getTime() const {
+ZString ZTime::timeStr() const {
     SYSTEMTIME systime;
     FILETIME time;
     memcpy(&time, &_time, 8);
@@ -40,7 +42,7 @@ ZString ZTime::getTime() const {
     return ZString::ItoS(systime.wHour, 10, 2) + ":" + ZString::ItoS(systime.wMinute, 10, 2) + ":" + ZString::ItoS(systime.wSecond, 10, 2);
 }
 
-ZString ZTime::getDate() const {
+ZString ZTime::dateStr() const {
     SYSTEMTIME systime;
     FILETIME time;
     memcpy(&time, &_time, 8);
@@ -67,7 +69,7 @@ int ZTime::getSecs() const {
     return 0;
 }
 
-ZString ZTime::getTime() const {
+ZString ZTime::timeStr() const {
     struct tm *time;
     time = localtime(&_time);
     char buffer[20];
@@ -76,7 +78,7 @@ ZString ZTime::getTime() const {
     return out;
 }
 
-ZString ZTime::getDate() const {
+ZString ZTime::dateStr() const {
     struct tm *time;
     time = localtime(&_time);
     char buffer[20];

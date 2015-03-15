@@ -9,6 +9,7 @@ int sandbox();
 int array_block();
 int assoc_block();
 int stack_block();
+int map_block();
 int list_block();
 int queue_block();
 
@@ -25,6 +26,8 @@ int thread_block();
 int mutex_block();
 
 int number_block();
+
+int uid_block();
 
 int file_block();
 int png_block();

@@ -6,7 +6,7 @@
 //#include "zbitmap.h"
 #include "zstring.h"
 #include "zpath.h"
-#include "zerror.h"
+#include "zexception.h"
 #include "zbinary.h"
 
 #ifndef DISABLE_LIBPNG
@@ -85,8 +85,8 @@ public:
         return text[key];
     }
 
-    ZError getError(){
-        ZError err = error;
+    ZException getError(){
+        ZException err = error;
         error.clear();
         return err;
     }
@@ -161,7 +161,7 @@ private:
 private:
     ZImage image;
     AsArZ text;
-    ZError error;
+    ZException error;
 };
 
 }

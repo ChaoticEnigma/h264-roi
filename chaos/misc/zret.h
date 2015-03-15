@@ -12,7 +12,7 @@ public:
     ZRet(T val) : T(val), code(true){}
     ZRet(bool stat) : code(stat){}
 
-    ZRet(ZError err) : error(err){}
+    ZRet(ZException err) : error(err){}
 
     operator bool(){
         return code;
@@ -23,7 +23,7 @@ public:
 private:
 //    T value;
     bool code;
-    ZError error;
+    ZException error;
 };
 
 }

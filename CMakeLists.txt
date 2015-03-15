@@ -30,10 +30,13 @@ ENDIF()
 SET(LibChaos_BUILD ${LIBCHAOS_BUILD} PARENT_SCOPE)
 
 # Options
-OPTION(LIBCHAOS_EXTERN FALSE "Build LibChaos with External Libraries")
-OPTION(LIBCHAOS_TEST FALSE "Build LibChaos Test suite")
-OPTION(LIBCHAOS_UI FALSE "Build LibChaos UI library")
-OPTION(LIBCHAOS_BBB FALSE "Build LibChaos Beaglebone Black library")
+OPTION(LIBCHAOS_ZPARCEL TRUE "Build ZParcel tool")
+
+OPTION(LIBCHAOS_EXTERN  FALSE "Build LibChaos with External Libraries")
+OPTION(LIBCHAOS_UI      FALSE "Build LibChaos UI library")
+OPTION(LIBCHAOS_TEST    FALSE "Build LibChaos Test suite")
+OPTION(LIBCHAOS_UTIL    FALSE "Build LibChaos Utilities")
+OPTION(LIBCHAOS_BBB     FALSE "Build LibChaos Beaglebone Black library")
 
 # Export Constants
 SET(LibChaos_CONFIGURE_CMAKE "${CMAKE_CURRENT_SOURCE_DIR}/configure_build.cmake" PARENT_SCOPE)
@@ -41,6 +44,9 @@ SET(LibChaos_CONFIGURE_CMAKE "${CMAKE_CURRENT_SOURCE_DIR}/configure_build.cmake"
 # LibChaos
 ADD_SUBDIRECTORY(chaos)
 SET(LibChaos_BUILD_STRING "LibChaos - '${LibChaosCore_BUILD_STRING}'")
+
+# ZParcel
+ADD_SUBDIRECTORY(zparcel)
 
 # LibChaos Extern
 IF(LIBCHAOS_EXTERN)
@@ -50,6 +56,13 @@ IF(LIBCHAOS_EXTERN)
 ENDIF()
 
 SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
+
+# LibChaos UI
+IF(LIBCHAOS_UI)
+    ADD_SUBDIRECTORY(ui)
+    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosUI_BUILD_STRING}'")
+    SET(LibChaosUI_INCLUDE ${LibChaosUI_INCLUDE} PARENT_SCOPE)
+ENDIF()
 
 # LibChaos Test
 IF(LIBCHAOS_TEST)
@@ -61,13 +74,6 @@ ENDIF()
 IF(LIBCHAOS_UTIL)
     ADD_SUBDIRECTORY(util)
     SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosUtil_BUILD_STRING}'")
-ENDIF()
-
-# LibChaos UI
-IF(LIBCHAOS_UI)
-    ADD_SUBDIRECTORY(ui)
-    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosUI_BUILD_STRING}'")
-    SET(LibChaosUI_INCLUDE ${LibChaosUI_INCLUDE} PARENT_SCOPE)
 ENDIF()
 
 # LibChaos BBB (Beaglebone Black)

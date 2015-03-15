@@ -33,8 +33,8 @@ public:
 
     int getSecs() const;
 
-    ZString getTime() const;
-    ZString getDate() const;
+    ZString timeStr() const;
+    ZString dateStr() const;
 
 private:
     timet _time;

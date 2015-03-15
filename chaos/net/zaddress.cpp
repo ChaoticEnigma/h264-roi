@@ -1,6 +1,6 @@
 #include "zaddress.h"
 #include "zlog.h"
-#include "zerror.h"
+#include "zexception.h"
 
 #if PLATFORM == WINDOWS
     #include <winsock2.h>
@@ -271,7 +271,7 @@ bool ZAddress::parseIP(int af, ZString str){
             memcpy(_v4_addr, &(addr4.sin_addr), sizeof(addr4.sin_addr));
         } else {
             // Internal error
-            ELOG("ZAddress: parseIPv4 error " << ZError::getSystemError());
+            ELOG("ZAddress: parseIPv4 error " << ZException::getSystemError());
             return false;
         }
         return true;
@@ -287,7 +287,7 @@ bool ZAddress::parseIP(int af, ZString str){
             memcpy(_v6_addr, &(addr6.sin6_addr), sizeof(addr6.sin6_addr));
         } else {
             // Internal error
-            ELOG("ZAddress: parseIPv6 error " << ZError::getSystemError());
+            ELOG("ZAddress: parseIPv6 error " << ZException::getSystemError());
             return false;
         }
         return true;

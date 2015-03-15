@@ -115,17 +115,17 @@ bool ZBMP::read(ZPath path){
     try {
         ZBinary buffer;
         if(ZFile::readBinary(path, buffer) < 54){
-            throw ZError("File too small", BMPError::badfile, false);
+            throw ZException("File too small", BMPError::badfile, false);
         }
 
         BitmapFileHeader fileh;
         readFileHeader(buffer, &fileh);
 
         if(fileh.bfType != 0x4d42){
-            throw ZError("Not a BMP file", BMPError::notabmp, false);
+            throw ZException("Not a BMP file", BMPError::notabmp, false);
         }
         if(fileh.bfSize != buffer.size()){
-            throw ZError("Incorrect file size in file header", BMPError::incorrectsize, false);
+            throw ZException("Incorrect file size in file header", BMPError::incorrectsize, false);
         }
 
         BitmapInfoHeader infoh;
@@ -133,13 +133,13 @@ bool ZBMP::read(ZPath path){
         readInfoHeader(buffer, &infoh);
 
         if(infoh.biSize != 40){
-            throw ZError("Unsupported info header length", BMPError::badinfoheader, false);
+            throw ZException("Unsupported info header length", BMPError::badinfoheader, false);
         }
         if(infoh.biCompression != BI_RGB){
-            throw ZError(ZString("Unsupported compression: ") << infoh.biCompression, BMPError::badcompression, false);
+            throw ZException(ZString("Unsupported compression: ") << infoh.biCompression, BMPError::badcompression, false);
         }
         if(infoh.biBitCount != 24){
-            throw ZError(ZString("Unsupported pixel bit count: ") << infoh.biBitCount, BMPError::badbitcount, false);
+            throw ZException(ZString("Unsupported pixel bit count: ") << infoh.biBitCount, BMPError::badbitcount, false);
         }
 
         zu64 width = infoh.biWidth;
@@ -151,7 +151,7 @@ bool ZBMP::read(ZPath path){
 
         image.takeData(pixels);
 
-    } catch(ZError e){
+    } catch(ZException e){
         error = e;
         //ELOG("BMP Read error " << e.code() << ": " << e.what());
         return false;
@@ -163,14 +163,14 @@ bool ZBMP::read(ZPath path){
 bool ZBMP::write(ZPath path){
 
     if(!image.isRGB24()){
-        error = ZError(ZString("BMP Write: Invalid channels / depth ") + image.channels() + " " + image.depth());
+        error = ZException(ZString("BMP Write: Invalid channels / depth ") + image.channels() + " " + image.depth());
         return false;
     }
 
     zu64 outsize;
     unsigned char *dataout = convertRGBtoBMPData(image.buffer(), image.width(), image.height(), outsize);
     if(!dataout){
-        error = ZError("BMP Write: error in RGB conversion");
+        error = ZException("BMP Write: error in RGB conversion");
         return false;
     }
 
@@ -203,7 +203,7 @@ bool ZBMP::write(ZPath path){
     delete[] dataout;
 
     if(!ZFile::writeBinary(path, out)){
-        error = ZError("BMP Write: bad write file");
+        error = ZException("BMP Write: bad write file");
         return false;
     }
 

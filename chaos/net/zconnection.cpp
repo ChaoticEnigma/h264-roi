@@ -1,6 +1,6 @@
 #include "zconnection.h"
 #include "zlog.h"
-#include "zerror.h"
+#include "zexception.h"
 
 #if PLATFORM == WINDOWS
     #include <winsock2.h>

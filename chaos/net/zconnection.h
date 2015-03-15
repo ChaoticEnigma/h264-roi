@@ -33,7 +33,7 @@ public:
         return ZSocket::getSocket();
     }
 
-    ZError getError() const {
+    ZException getError() const {
         return ZSocket::getError();
     }
 

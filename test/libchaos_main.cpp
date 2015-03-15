@@ -1,5 +1,5 @@
 #include "test.h"
-#include "zerror.h"
+#include "zexception.h"
 
 int runTests(ZAssoc<ZString, test_func> tests);
 
@@ -21,6 +21,7 @@ int main(int argc, char **argv){
         { "array", array_block },
         { "assoc", assoc_block },
         { "stack", stack_block },
+        { "map", map_block },
         { "list", list_block },
         { "queue", queue_block },
 
@@ -31,6 +32,7 @@ int main(int argc, char **argv){
         { "mutex", mutex_block },
 
         { "number", number_block },
+        { "uid", uid_block },
 
         { "file", file_block },
         { "autobuffer", autobuffer_block },
@@ -93,7 +95,7 @@ int runTests(ZAssoc<ZString, test_func> tests){
             result = tests[i]();
         } catch(int err){
             result = err;
-        } catch(ZError err){
+        } catch(ZException err){
             ZString errstr = "!! Error: " + err.what();
             errorstrings.push(errstr);
             ELOG(errstr);

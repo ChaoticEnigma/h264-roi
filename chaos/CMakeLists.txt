@@ -9,7 +9,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     ztypes.h
 
     base/zclock.h
-    base/zerror.h
+    base/zexception.h
     base/zlog.h
     base/zlogworker.h
     base/zpath.h
@@ -43,6 +43,8 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
 
     misc/zautobuffer.h
     misc/zautobufferunit.h
+    misc/zencrypt.h
+    misc/zrandom.h
     misc/zmisc.h
     misc/zret.h
     misc/zuid.h
@@ -89,8 +91,10 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     #math/znumber-reference.cpp
 
     misc/zautobuffer.cpp
+    misc/zencrypt.cpp
     misc/zmisc.cpp
-    #misc/zuid.cpp
+    misc/zrandom.cpp
+    misc/zuid.cpp
 
     thread/zcondition.cpp
     thread/zmutex.cpp
@@ -113,6 +117,9 @@ SET(LibChaos_INCLUDE
     ${LibChaos_SOURCE_DIR}/base
     ${LibChaos_SOURCE_DIR}/data
     ${LibChaos_SOURCE_DIR}/file
+    ${LibChaos_SOURCE_DIR}/lib
+    ${LibChaos_SOURCE_DIR}/lib/cryptopp562
+    ${LibChaos_SOURCE_DIR}/lib/nowide_standalone
     ${LibChaos_SOURCE_DIR}/net
     ${LibChaos_SOURCE_DIR}/math
     ${LibChaos_SOURCE_DIR}/misc
@@ -123,17 +130,19 @@ SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
 
 # Include Directories
 INCLUDE_DIRECTORIES(
-    ${LibChaos_SOURCE_DIR}
-    abstract
-    base
-    data
-    file
-    lib
-    lib/nowide_standalone
-    net
-    math
-    misc
-    thread
+    ${LibChaos_INCLUDE}
+    #${LibChaos_SOURCE_DIR}
+    #abstract
+    #base
+    #data
+    #file
+    #lib
+    #lib/cryptopp562
+    #lib/nowide_standalone
+    #net
+    #math
+    #misc
+    #thread
 )
 
 #source_hash(${LibChaos_SOURCE_DIR})
@@ -166,8 +175,8 @@ IF(LIBCHAOS_UNIX)
 ELSEIF(LIBCHAOS_WINDOWS)
     IF(COMPILER_MINGW)
         TARGET_LINK_LIBRARIES(chaos pthread)
-        TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi version)
+        TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi iphlpapi version)
     ELSEIF(COMPILER_MSVC)
-        TARGET_LINK_LIBRARIES(chaos Ws2_32)
+        TARGET_LINK_LIBRARIES(chaos Ws2_32 iphlpapi)
     ENDIF()
 ENDIF()

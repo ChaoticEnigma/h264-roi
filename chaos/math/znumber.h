@@ -5,7 +5,7 @@
 #include <cstring>
 #include "zstring.h"
 #include <bitset>
-#include "zerror.h"
+#include "zexception.h"
 
 // Use reference implementation
 //#define ZNUMBER_REFERENCE

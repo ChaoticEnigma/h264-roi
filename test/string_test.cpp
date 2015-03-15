@@ -294,14 +294,25 @@ int string_block(){
     if(num2 != 546567867864512)
         throw __LINE__;
 
-    ZString numstr3 = "45.223";
-    float num3 = numstr3.toFloat();
+    ZString numstr3 = "FF";
+    zu64 num3 = numstr3.tozu64(16);
     LOG(numstr3 << " " << num3);
-    std::cout << num3 << std::endl;
+    if(num3 != 0xFF)
+        throw __LINE__;
 
-    ZString numstr4 = "-455";
-    float num4 = numstr4.toFloat();
+    ZString numstr4 = "ad562f";
+    zu64 num4 = numstr4.tozu64(16);
     LOG(numstr4 << " " << num4);
+    if(num4 != 0xAD562F)
+        throw __LINE__;
+
+    ZString floatstr3 = "45.223";
+    float float3 = floatstr3.toFloat(); // TODO Fix ZString float conversion
+    LOG(floatstr3 << " " << float3);
+
+    ZString floatstr4 = "-455";
+    float float4 = floatstr4.toFloat();
+    LOG(floatstr4 << " " << float4);
 
 
     return 0;

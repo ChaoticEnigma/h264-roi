@@ -9,9 +9,10 @@
 #include "zstring.h"
 #include "zpath.h"
 #include "zbinary.h"
+#include "zposition.h"
 #include "zreader.h"
 #include "zwriter.h"
-#include "zerror.h"
+#include "zexception.h"
 
 #if PLATFORM != WINDOWS
     #include <fstream>
@@ -22,7 +23,7 @@
 
 namespace LibChaos {
 
-class ZFile : public ZReader, public ZWriter {
+class ZFile : public ZPosition, public ZReader, public ZWriter {
 public:
     enum zfile_mode {
         moderead        = 0x001,    // Set to allow reading
@@ -53,7 +54,7 @@ public:
     ZFile(ZPath path, int mode = moderead);
 
     ZFile(const ZFile &){
-        throw ZError("Someone tried to copy a ZFile");
+        throw ZException("Someone tried to copy a ZFile");
     }
 
     ~ZFile();
@@ -85,12 +86,16 @@ public:
     zu64 fileSize() const;
     static zu64 fileSize(ZPath path);
 
+#if PLATFORM == WINDOWS
+    bool isOpen() const { return (_handle != NULL); }
+#else
     bool isOpen() const { return (_file != NULL); }
-    int &bits(){ return _bits; }
+#endif
+    int &bits(){ return _options; }
     ZPath path() const { return _path; }
 
 #if PLATFORM == WINDOWS
-    HANDLE handle(){ return _file; }
+    HANDLE handle(){ return _handle; }
 #else
     FILE *fp(){ return _file; }
 #endif
@@ -127,10 +132,10 @@ public:
     static zu64 fileHash(ZPath path);
 
 private:
-    int _bits;
+    int _options;
     ZPath _path;
 #if PLATFORM == WINDOWS
-    HANDLE _file;
+    HANDLE _handle;
 #else
     FILE *_file;
 #endif

@@ -1,19 +1,19 @@
 #include "test.h"
-#include "zerror.h"
+#include "zexception.h"
 
 static int userwait = 0;
 
-void intHandle(ZError::zerror_signal sig){
-    if(sig == ZError::interrupt)
+void intHandle(ZException::zerror_signal sig){
+    if(sig == ZException::interrupt)
         userwait = 1;
-    else if(sig == ZError::terminate)
+    else if(sig == ZException::terminate)
         userwait = 2;
 }
 
 int error_block(){
-    ZError::registerSigSegv();
-    ZError::registerInterruptHandler(intHandle);
-    ZError::registerSignalHandler(ZError::terminate, intHandle);
+    ZException::registerSigSegv();
+    ZException::registerInterruptHandler(intHandle);
+    ZException::registerSignalHandler(ZException::terminate, intHandle);
 
     LOG("Waiting for Interrupt or Terminate...");
     while(!userwait){
