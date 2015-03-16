@@ -6,3 +6,6 @@
 *.pro.user.*
 
 *.0000000
+
+# Apple
+.DS_Store
