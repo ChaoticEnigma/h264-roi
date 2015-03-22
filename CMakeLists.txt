@@ -1,6 +1,8 @@
 ## Main LibChaos CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 
+PROJECT(LibChaos)
+
 INCLUDE(cmake/configure_build.cmake)
 #INCLUDE(cmake/source_hash.cmake)
 

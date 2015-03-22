@@ -1,8 +1,8 @@
-/*****************************************
-**               LibChaos               **
-**               zmap.h                 **
-**       (c) 2013 Zennix Studios        **
-*****************************************/
+/*******************************************************************************
+**                                  LibChaos                                  **
+**                                   zmap.h                                   **
+**                          (c) 2015 Zennix Studios                           **
+*******************************************************************************/
 #ifndef ZMAP_H
 #define ZMAP_H
 
@@ -46,6 +46,7 @@ public:
         zu64 ipos = hash % _realsize;
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = (ipos + i) % _realsize;
+            // Look for somewhere to put the value
             if(_data[pos].key == nullptr){
                 // Element is unset or deleted
                 _data->hash = hash;
@@ -58,11 +59,39 @@ public:
             } else if(_data[pos].hash == hash){
                 // Compare the actual key - may be non-trivial
                 if(*_data[pos].key == key){
-                    // Reassign value in existing element
+                    // Reassign key and value in existing element
                     _kalloc->destroy(_data[pos].key, 1);
                     _kalloc->construct(_data[pos].key, 1, key);
                     _talloc->destroy(_data[pos].value, 1);
                     _talloc->construct(_data[pos].value, 1, value);
+                }
+            }
+        }
+        //throw ZException();
+    }
+    inline void push(const K &key, const T &value){ add(key, value); }
+
+    void remove(const K &key){
+        zu64 hash = ZHash<K>(key).hash();
+        zu64 ipos = hash % _realsize;
+        for(zu64 i = 0; i < _realsize; ++i){
+            zu64 pos = (ipos + i) % _realsize;
+            // Look for the key
+            if(_data[pos].key == nullptr){
+                if(_data[pos].value == nullptr ){
+                    // End of chain, stop searching
+                    break;
+                }
+            } else {
+                if(_data[pos].hash == hash){
+                    // Compare the actual key - may be non-trivial
+                    if(*_data[pos].key == key){
+                        // Found it+
+                        _kalloc->destroy(_data[pos].key, 1);
+                        _data[pos].key = nullptr;
+                        _talloc->destroy(_data[pos].value, 1);
+                        _data[pos].value = (T*)1; // Not null
+                    }
                 }
             }
         }
@@ -74,32 +103,49 @@ public:
         zu64 ipos = hash % _realsize;
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = (ipos + i) % _realsize;
-            if(_data[pos].hash == hash){
-                // Compare the actual key - may be non-trivial
-                if(*_data[pos].key == key){
-                    return *_data[pos].value;
-                }
-            } else if(_data[pos].key == nullptr){
-                if(_data[pos].value == nullptr ){
-                    // Element is unset or deleted
-                    _data->hash = hash;
-                    _data[pos].key = _kalloc->alloc(1);
-                    _kalloc->construct(_data[pos].key, 1, key);
-                    _data[pos].value = _talloc->alloc(1);
-                    _talloc->construct(_data[pos].value, 1, value);
-                    ++_size;
-                    return;
-                }
-            }
+            // Look for the key
             if(_data[pos].key == nullptr){
-
+                if(_data[pos].value == nullptr ){
+                    // End of chain, stop searching
+                    break;
+                }
+            } else {
+                if(_data[pos].hash == hash){
+                    // Compare the actual key - may be non-trivial
+                    if(*_data[pos].key == key){
+                        // Found it
+                        return *_data[pos].value;
+                    }
+                }
             }
         }
+        //throw ZException();
     }
     inline T &operator[](const K &key){ return get(key); }
 
     const T &get(const K &key) const {
         zu64 hash = ZHash<K>(key).hash();
+        zu64 ipos = hash % _realsize;
+        for(zu64 i = 0; i < _realsize; ++i){
+            zu64 pos = (ipos + i) % _realsize;
+            // Look for the key
+            if(_data[pos].hash == hash){
+                if(_data[pos].key == nullptr){
+                    if(_data[pos].value == nullptr ){
+                        // End of chain, stop searching
+                        break;
+                    } else {
+                        // Deleted entry, keep searching
+                        continue;
+                    }
+                } else {
+                    // Compare the actual key - may be non-trivial
+                    if(*_data[pos].key == key){
+                        return *_data[pos].value;
+                    }
+                }
+            }
+        }
     }
     inline const T &operator[](const K &key) const { return get(key); }
 

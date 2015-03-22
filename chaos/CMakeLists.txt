@@ -1,7 +1,7 @@
 ## LibChaos CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 
-PROJECT(LibChaos)
+PROJECT(LibChaos_Core)
 
 OPTION(IBERTY_DEMANGLE "Use libiberty to demangle symbols" OFF)
 
@@ -9,6 +9,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     ztypes.h
 
     base/zclock.h
+    base/zerror_min.h
     base/zexception.h
     base/zlog.h
     base/zlogworker.h
@@ -16,14 +17,19 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     base/zstring.h
     base/ztime.h
 
+    data/zallocator.h
     data/zarray.h
-    data/zarray2.h
     data/zassoc.h
-    data/zassoc2.h
     data/zbinary.h
     data/zdata.h
-    data/zmap.h
+    data/zdefaultstorage.h
+    data/zfilestorage.h
     data/zjson.h
+    data/zlist.h
+    data/zmap.h
+    data/zpointer.h
+    data/zqueue.h
+    data/zstack.h
     data/zxml.h
 
     file/database.h
@@ -33,30 +39,36 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     file/zimage.h
     file/zppm.h
 
-    net/zaddress.h
-    net/zconnection.h
-    net/zsocket.h
-    net/zdatagramsocket.h
-    net/zstreamsocket.h
+    lib/sqlite3.h
+    #lib/demangle.h
 
+    math/zexpression.h
+    math/zformula.h
     math/znumber.h
 
     misc/zautobuffer.h
     misc/zautobufferunit.h
     misc/zencrypt.h
-    misc/zrandom.h
+    misc/zhash.h
     misc/zmisc.h
+    misc/zrandom.h
     misc/zret.h
     misc/zuid.h
 
-    lib/sqlite3.h
-    #lib/demangle.h
+    net/zaddress.h
+    net/zconnection.h
+    net/zdatagramsocket.h
+    net/zsocket.h
+    net/zstreamsocket.h
 
+    thread/zcondition.h
+    thread/zlock.h
     thread/zmutex.h
     thread/zthread.h
 )
 
 SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
+    ${LibChaos_HEADERS}
 
     base/zclock.cpp
     base/zerror.cpp
@@ -81,12 +93,8 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     lib/xxhash.c
     #lib/nowide_standalone/src/iostream.cpp
 
-    net/zaddress.cpp
-    net/zconnection.cpp
-    net/zsocket.cpp
-    net/zdatagramsocket.cpp
-    net/zstreamsocket.cpp
-
+    #math/zexpression.cpp
+    #math/zformula.cpp
     math/znumber.cpp
     #math/znumber-reference.cpp
 
@@ -96,7 +104,14 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
     misc/zrandom.cpp
     misc/zuid.cpp
 
+    net/zaddress.cpp
+    net/zconnection.cpp
+    net/zdatagramsocket.cpp
+    net/zsocket.cpp
+    net/zstreamsocket.cpp
+
     thread/zcondition.cpp
+    #thread/zlock.cpp
     thread/zmutex.cpp
     thread/zthread.cpp
 )
@@ -112,18 +127,30 @@ ENDIF()
 
 # Export Include Path
 SET(LibChaos_INCLUDE
-    ${LibChaos_SOURCE_DIR}
-    ${LibChaos_SOURCE_DIR}/abstract
-    ${LibChaos_SOURCE_DIR}/base
-    ${LibChaos_SOURCE_DIR}/data
-    ${LibChaos_SOURCE_DIR}/file
-    ${LibChaos_SOURCE_DIR}/lib
-    ${LibChaos_SOURCE_DIR}/lib/cryptopp562
-    ${LibChaos_SOURCE_DIR}/lib/nowide_standalone
-    ${LibChaos_SOURCE_DIR}/net
-    ${LibChaos_SOURCE_DIR}/math
-    ${LibChaos_SOURCE_DIR}/misc
-    ${LibChaos_SOURCE_DIR}/thread
+    ${LibChaos_Core_SOURCE_DIR}
+    abstract
+    base
+    data
+    file
+    lib
+    lib/cryptopp562
+    lib/nowide_standalone
+    net
+    math
+    misc
+    thread
+
+    #${LibChaos_SOURCE_DIR}/abstract
+    #${LibChaos_SOURCE_DIR}/base
+    #${LibChaos_SOURCE_DIR}/data
+    #${LibChaos_SOURCE_DIR}/file
+    #${LibChaos_SOURCE_DIR}/lib
+    #${LibChaos_SOURCE_DIR}/lib/cryptopp562
+    #${LibChaos_SOURCE_DIR}/lib/nowide_standalone
+    #${LibChaos_SOURCE_DIR}/net
+    #${LibChaos_SOURCE_DIR}/math
+    #${LibChaos_SOURCE_DIR}/misc
+    #${LibChaos_SOURCE_DIR}/thread
 )
 
 SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
