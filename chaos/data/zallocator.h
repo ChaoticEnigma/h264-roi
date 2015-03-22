@@ -70,7 +70,7 @@ public:
     }
 
     void move(T *src, T *dest, zu64 count){
-        // TODO ZAlocator move
+        // TODO: ZAlocator move
         for(zu64 i = 0; i < count; ++i){
 //            new (dest++) T(*src++);
             new (&(dest[i])) T(src[i]);

@@ -307,7 +307,7 @@ int string_block(){
         throw __LINE__;
 
     ZString floatstr3 = "45.223";
-    float float3 = floatstr3.toFloat(); // TODO Fix ZString float conversion
+    float float3 = floatstr3.toFloat(); // TODO: Fix ZString float conversion
     LOG(floatstr3 << " " << float3);
 
     ZString floatstr4 = "-455";

@@ -261,7 +261,7 @@ ZBinary toFileFormat(fieldtype type, ZString str){
             return toFile64Bits(str.tozu64());
             break;
         case signedintfield:
-            return toFile64Bits(str.tozu64()); // TODO
+            return toFile64Bits(str.tozu64()); // TODO: make this signed
             break;
         case zuidfield:
             return ZBinary(ZUID(str).getID(), 16);

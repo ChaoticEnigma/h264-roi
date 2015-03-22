@@ -16,7 +16,9 @@ protected:
 
 template <typename T> class ZHash : public ZHashBase {
 public:
-    ZHash(const T &data) : ZHashBase(0){}
+    ZHash(const T &data) : ZHashBase(0){
+        //FIXME: Generic hash algorithm
+    }
 };
 
 // z unsigned types
