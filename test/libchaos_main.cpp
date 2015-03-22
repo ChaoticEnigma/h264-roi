@@ -4,86 +4,91 @@
 int runTests(ZAssoc<ZString, test_func> tests);
 
 int main(int argc, char **argv){
-    ZLog::formatStdout(ZLogSource::normal, "%clock% %thread% - %log%");
-    ZLog::formatStderr(ZLogSource::error, "%clock% %thread% %function% (%file%:%line%) - %log%");
-    ZPath lgf = ZPath("logs") + ZLog::genLogFileName("testchaos_");
-    ZLog::addLogFile(lgf, ZLogSource::normal, "%time% %thread% - %log%");
-    ZLog::addLogFile(lgf, ZLogSource::debug, "%time% %thread% %function% (%file%:%line%) - %log%");
-    ZLog::addLogFile(lgf, ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
+    try {
+        ZLog::formatStdout(ZLogSource::normal, "%clock% %thread% - %log%");
+        ZLog::formatStderr(ZLogSource::error, "%clock% %thread% %function% (%file%:%line%) - %log%");
+        ZPath lgf = ZPath("logs") + ZLog::genLogFileName("testchaos_");
+        ZLog::addLogFile(lgf, ZLogSource::normal, "%time% %thread% - %log%");
+        ZLog::addLogFile(lgf, ZLogSource::debug, "%time% %thread% %function% (%file%:%line%) - %log%");
+        ZLog::addLogFile(lgf, ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
 
-    ZAssoc<ZString, test_func> defaulttests = {
-        { "pointer", pointer_block },
-        { "allocator", allocator_block },
-        { "storage", storage_block },
+        ZAssoc<ZString, test_func> defaulttests = {
+            { "pointer", pointer_block },
+            { "allocator", allocator_block },
+            { "storage", storage_block },
 
-        { "binary", binary_block },
+            { "binary", binary_block },
 
-        { "array", array_block },
-        { "assoc", assoc_block },
-        { "stack", stack_block },
-        { "map", map_block },
-        { "list", list_block },
-        { "queue", queue_block },
+            { "array", array_block },
+            { "assoc", assoc_block },
+            { "stack", stack_block },
+            { "map", map_block },
+            { "list", list_block },
+            { "queue", queue_block },
 
-        { "string", string_block },
-        { "path", path_block },
+            { "string", string_block },
+            { "path", path_block },
 
-        { "thread", thread_block },
-        { "mutex", mutex_block },
+            { "thread", thread_block },
+            { "mutex", mutex_block },
 
-        { "number", number_block },
-        { "uid", uid_block },
+            { "number", number_block },
+            { "uid", uid_block },
 
-        { "file", file_block },
-        { "autobuffer", autobuffer_block },
-        { "json", json_block },
-    };
+            { "file", file_block },
+            { "autobuffer", autobuffer_block },
+            { "json", json_block },
+        };
 
-    ZAssoc<ZString, test_func> tests = defaulttests;
-    tests.concat({
-        { "udp", udp_test },
-        { "udpserver", udpserver_test },
-        { "tcp", tcp_test },
-        { "tcpserver", tcpserver_test },
-        { "tcpserver2", tcpserver_test2 },
-        { "tcpserver3", tcpserver_test3 },
+        ZAssoc<ZString, test_func> tests = defaulttests;
+        tests.concat({
+            { "udp", udp_test },
+            { "udpserver", udpserver_test },
+            { "tcp", tcp_test },
+            { "tcpserver", tcpserver_test },
+            { "tcpserver2", tcpserver_test2 },
+            { "tcpserver3", tcpserver_test3 },
 
-#ifdef TEST_ZPNG
-        { "png", png_block },
-#endif
+    #ifdef TEST_ZPNG
+            { "png", png_block },
+    #endif
 
-        { "sandbox", sandbox },
+            { "sandbox", sandbox },
 
-        { "error", error_block },
-    });
+            { "error", error_block },
+        });
 
-    ZAssoc<ZString, test_func> runtests;
-    ZString runstr;
-    if(argc > 1){
-        if(ZString(argv[1]) == "all"){
-            runtests = defaulttests;
-            runstr = "All";
-        } else {
-            for(int i = 1; i < argc; ++i){
-                ZString key = argv[i];
-                 if(tests.exists(key)){
-                    runtests.push(key, tests[key]);
-                    runstr << key << ",";
-                } else {
-                    LOG("No Test " << key << ", Ignoring");
+        ZAssoc<ZString, test_func> runtests;
+        ZString runstr;
+        if(argc > 1){
+            if(ZString(argv[1]) == "all"){
+                runtests = defaulttests;
+                runstr = "All";
+            } else {
+                for(int i = 1; i < argc; ++i){
+                    ZString key = argv[i];
+                     if(tests.exists(key)){
+                        runtests.push(key, tests[key]);
+                        runstr << key << ",";
+                    } else {
+                        LOG("No Test " << key << ", Ignoring");
+                    }
                 }
             }
+            runstr.strip(',');
+        } else {
+            runtests = defaulttests;
+            runstr = "All";
         }
-        runstr.strip(',');
-    } else {
-        runtests = defaulttests;
-        runstr = "All";
-    }
 
-    LOG("*** Starting Tests \"" << runstr << "\"");
-    int ret = runTests(runtests);
-    LOG("*** Finished Tests \"" << runstr << "\"");
-    return ret;
+        LOG("*** Starting Tests \"" << runstr << "\"");
+        int ret = runTests(runtests);
+        LOG("*** Finished Tests \"" << runstr << "\"");
+        return ret;
+    } catch(ZException e){
+        printf("Catastrophic failure: %d\n%s\n", e.code(), e.traceStr().cc());
+    }
+    return -1;
 }
 
 int runTests(ZAssoc<ZString, test_func> tests){

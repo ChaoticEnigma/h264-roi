@@ -127,7 +127,7 @@ public:
                 }
             }
         }
-        throw ZException();
+        throw ZException("Key does not exist", __LINE__);
     }
     inline T &operator[](const K &key){ return get(key); }
 
@@ -154,7 +154,7 @@ public:
                 }
             }
         }
-        throw ZException();
+        throw ZException("Key does not exist", __LINE__);
     }
     inline const T &operator[](const K &key) const { return get(key); }
 
