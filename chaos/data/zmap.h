@@ -9,7 +9,7 @@
 #include "zallocator.h"
 #include "zhashable.h"
 #include "zhash.h"
-//#include "zexception.h"
+#include "zexception.h"
 
 namespace LibChaos {
 
@@ -21,6 +21,14 @@ public:
     struct MapSet {
         K key;
         T value;
+    };
+
+    // If key is null, the entry is empty
+    // If key is null AND the value is not null, the value was deleted, and value is not a valid pointer
+    struct MapData {
+        zu64 hash;
+        K *key;
+        T *value;
     };
 
     ZMap(ZAllocator<K> *kalloc = new ZAllocator<K>(), ZAllocator<T> *talloc = new ZAllocator<T>()) : _alloc(new ZAllocator<MapData>()), _kalloc(kalloc), _talloc(talloc), _data(nullptr), _size(0), _realsize(0), _factor(0.5){
@@ -119,7 +127,7 @@ public:
                 }
             }
         }
-        //throw ZException();
+        throw ZException();
     }
     inline T &operator[](const K &key){ return get(key); }
 
@@ -146,8 +154,13 @@ public:
                 }
             }
         }
+        throw ZException();
     }
     inline const T &operator[](const K &key) const { return get(key); }
+
+    MapData &position(zu64 i){
+        return _data[i];
+    }
 
 //    ZMap<K, T> &push(K key_, T value){
 //        _data.push({ key_, value });
@@ -193,22 +206,14 @@ public:
         return false;
     }
 
-    zu64 size() const {
-        return _size;
-    }
+    zu64 size() const { return _size; }
+    zu64 realSize() const { return _realsize; }
+
     bool isEmpty() const {
         return (_data == nullptr) || _size == 0;
     }
 
 protected:
-    // If key is null, the entry is empty
-    // If key is null AND the value is not null, the value was deleted, and value is not a valid pointer
-    struct MapData {
-        zu64 hash;
-        K *key;
-        T *value;
-    };
-
     ZAllocator<MapData> *_alloc;
     ZAllocator<K> *_kalloc;
     ZAllocator<T> *_talloc;

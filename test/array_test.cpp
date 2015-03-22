@@ -79,7 +79,7 @@ int map_block(){
     map1.add("test4", 4);
 
     for(zu64 i = 0; i < map1.size(); ++i){
-        LOG(map1.position(i).key << " " << map1.position(i).val);
+        LOG(*map1.position(i).key << " " << *map1.position(i).value);
     }
     return 0;
 }

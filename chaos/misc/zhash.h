@@ -16,7 +16,7 @@ protected:
 
 template <typename T> class ZHash : public ZHashBase {
 public:
-    ZHash(T &data) : ZHashBase(0){}
+    ZHash(const T &data) : ZHashBase(0){}
 };
 
 // z unsigned types

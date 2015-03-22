@@ -1,6 +1,7 @@
 #include "zsocket.h"
 #include "zlog.h"
 #include "zexception.h"
+#include "zerror.h"
 
 #if PLATFORM == WINDOWS
     #include <winsock2.h>
@@ -33,7 +34,7 @@ ZSocket::~ZSocket(){
 bool ZSocket::getSocket(zsocktype &fd, ZAddress addr){
     fd = ::socket(addr.family(), addr.type(), addr.protocol());
     if(fd <= 0){
-        error = ZException("ZSocket: failed to create socket " + ZException::getSystemError());
+        error = ZException("ZSocket: failed to create socket " + ZError::getSystemError());
         fd = 0;
         return false;
     }
@@ -63,7 +64,7 @@ bool ZSocket::open(ZAddress addr){
         sockaddr_storage addrstorage;
         addrs[i].populate(&addrstorage);
         if(::bind(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
-            error = ZException("ZSocket: bind error " + ZException::getSystemError());
+            error = ZException("ZSocket: bind error " + ZError::getSystemError());
             close();
             continue;
         }
@@ -121,7 +122,7 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
 #endif
 
     if(sent < 0)
-        error = ZException("ZSocket: sendto error " + ZException::getSystemError());
+        error = ZException("ZSocket: sendto error " + ZError::getSystemError());
     return (zu64)sent == data.size();
 }
 
@@ -164,7 +165,7 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
         sockaddr_storage addrstorage;
         addrs[i].populate(&addrstorage);
         if(::connect(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
-            error = ZException("ZSocket: connect error " + ZException::getSystemError());
+            error = ZException("ZSocket: connect error " + ZError::getSystemError());
             close();
             continue;
         }
@@ -182,7 +183,7 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
 
 bool ZSocket::listen(){
     if(::listen(_socket, 20) != 0){
-        error = ZException("ZSocket: listen error " + ZException::getSystemError());
+        error = ZException("ZSocket: listen error " + ZError::getSystemError());
         return false;
     }
     return true;
@@ -193,7 +194,7 @@ bool ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
     socklen_t sin_size = sizeof(client_sin);
     zsocktype client = ::accept(_socket, (struct sockaddr *)&client_sin, &sin_size);
     if(client <= 0){
-        error = ZException("ZSocket: failed to accept socket: " + ZException::getSystemError());
+        error = ZException("ZSocket: failed to accept socket: " + ZError::getSystemError());
         return false;
     }
 
@@ -224,7 +225,7 @@ zu64 ZSocket::read(ZBinary &data){
 #endif
 
     if(bytes <= -1){
-        error = ZException("ZSocket: read error: " + ZException::getSystemError());
+        error = ZException("ZSocket: read error: " + ZError::getSystemError());
         return 0;
     }
 
@@ -250,7 +251,7 @@ bool ZSocket::write(const ZBinary &data){
 #endif
 
     if(bytes <= 0){
-        error = ZException("ZSocket: write error: " + ZException::getSystemError());
+        error = ZException("ZSocket: write error: " + ZError::getSystemError());
         return false;
     }
     return true;
@@ -301,7 +302,7 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
 #elif PLATFORM == WINDOWS
     if(optptr != nullptr && setsockopt(_socket, SOL_SOCKET, sockoption, (char *)optptr, optptrsize) != 0){
 #endif
-        error = ZException("ZSocket: setsockopt error: " + ZException::getSystemError());
+        error = ZException("ZSocket: setsockopt error: " + ZError::getSystemError());
         return false;
     }
     return true;
@@ -327,7 +328,7 @@ bool ZSocket::setBlocking(bool set){
 
     DWORD opt = set ? 0 : 1;
     if(ioctlsocket(_socket, FIONBIO, &opt) != 0){
-        error = ZException("ZSocket: failed to set non-blocking socket error: " + ZException::getSystemError());
+        error = ZException("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
         return false;
     }
 

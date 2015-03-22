@@ -1,4 +1,4 @@
-#include "zexception.h"
+#include "zerror.h"
 #include "zlog.h"
 #include "zmap.h"
 
@@ -35,30 +35,13 @@
 //#include <assert.h>
 
 namespace LibChaos {
+namespace ZError {
 
 // Map of signals to signal handling functions
-ZMap<int, ZException::sigset> sigmap;
+ZMap<int, ZError::sigset> sigmap;
 
 
-ZException::ZException(ZString str, int code, bool trace) : desc(str), err(code){
-    if(trace)
-        stacktrace = getStackTrace(2);
-}
-
-ZString ZException::traceStr() const {
-    ZString str = "**************************************\n";
-    for(zu64 i = 0; i < stacktrace.size(); ++i){
-        str += stacktrace[i] + "\n";
-    }
-    str += "**************************************";
-    return str;
-}
-
-void ZException::logStackTrace() const {
-    ELOG(ZLog::raw << trace() << ZLog::newln);
-}
-
-void ZException::assert(bool condition){
+void assert(bool condition){
     //assert(condition);
 }
 
@@ -636,7 +619,7 @@ void appendCallTrace( std::string & errorMessage ){
 
 #endif // FUCK_WINDOWS
 
-ArZ ZException::getStackTrace(unsigned trim){
+ArZ getStackTrace(unsigned trim){
     ArZ trace;
 
 #ifndef FUCK_WINDOWS
@@ -666,7 +649,7 @@ ArZ ZException::getStackTrace(unsigned trim){
 
 #endif // PLATFORM
 
-void ZException::registerSigSegv(){
+void registerSigSegv(){
 #if PLATFORM == LINUX
     signal(SIGSEGV, fatalSignalHandler);
 #endif
@@ -699,7 +682,7 @@ BOOL WINAPI ConsoleHandler(DWORD dwType){
 
 #endif // PLATFORM
 
-bool ZException::registerSignalHandler(zerror_signal sigtype, signalHandler handler){
+bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
 
 #if PLATFORM == LINUX
@@ -767,12 +750,12 @@ bool ZException::registerSignalHandler(zerror_signal sigtype, signalHandler hand
     return true;
 }
 
-bool ZException::registerInterruptHandler(signalHandler handler){
+bool registerInterruptHandler(signalHandler handler){
     return registerSignalHandler(interrupt, handler);
 }
 
 #if PLATFORM == WINDOWS
-unsigned long ZException::getSystemErrorCode(){
+unsigned long getSystemErrorCode(){
     return GetLastError();
 }
 #else
@@ -781,7 +764,7 @@ int ZError::getSystemErrorCode(){
 }
 #endif
 
-int ZException::getSocketErrorCode(){
+int getSocketErrorCode(){
 #if PLATFORM == WINDOWS
     return WSAGetLastError();
 #else
@@ -789,7 +772,7 @@ int ZException::getSocketErrorCode(){
 #endif
 }
 
-ZString ZException::getSystemError(){
+ZString getSystemError(){
 #if  PLATFORM == WINDOWS
     DWORD err = GetLastError();
 //    wchar_t *str = nullptr;
@@ -804,4 +787,5 @@ ZString ZException::getSystemError(){
 #endif
 }
 
+}
 }

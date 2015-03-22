@@ -9,7 +9,7 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     ztypes.h
 
     base/zclock.h
-    base/zerror_min.h
+    base/zerror.h
     base/zexception.h
     base/zlog.h
     base/zlogworker.h
@@ -72,6 +72,7 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
 
     base/zclock.cpp
     base/zerror.cpp
+    base/zexception.cpp
     base/zlog.cpp
     base/zlogworker.cpp
     base/zpath.cpp
@@ -128,29 +129,17 @@ ENDIF()
 # Export Include Path
 SET(LibChaos_INCLUDE
     ${LibChaos_Core_SOURCE_DIR}
-    abstract
-    base
-    data
-    file
-    lib
-    lib/cryptopp562
-    lib/nowide_standalone
-    net
-    math
-    misc
-    thread
-
-    #${LibChaos_SOURCE_DIR}/abstract
-    #${LibChaos_SOURCE_DIR}/base
-    #${LibChaos_SOURCE_DIR}/data
-    #${LibChaos_SOURCE_DIR}/file
-    #${LibChaos_SOURCE_DIR}/lib
-    #${LibChaos_SOURCE_DIR}/lib/cryptopp562
-    #${LibChaos_SOURCE_DIR}/lib/nowide_standalone
-    #${LibChaos_SOURCE_DIR}/net
-    #${LibChaos_SOURCE_DIR}/math
-    #${LibChaos_SOURCE_DIR}/misc
-    #${LibChaos_SOURCE_DIR}/thread
+    ${LibChaos_Core_SOURCE_DIR}/abstract
+    ${LibChaos_Core_SOURCE_DIR}/base
+    ${LibChaos_Core_SOURCE_DIR}/data
+    ${LibChaos_Core_SOURCE_DIR}/file
+    ${LibChaos_Core_SOURCE_DIR}/lib
+    ${LibChaos_Core_SOURCE_DIR}/lib/cryptopp562
+    ${LibChaos_Core_SOURCE_DIR}/lib/nowide_standalone
+    ${LibChaos_Core_SOURCE_DIR}/net
+    ${LibChaos_Core_SOURCE_DIR}/math
+    ${LibChaos_Core_SOURCE_DIR}/misc
+    ${LibChaos_Core_SOURCE_DIR}/thread
 )
 
 SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)

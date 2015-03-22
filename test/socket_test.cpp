@@ -4,18 +4,18 @@
 #include <signal.h>
 #include <stdio.h>
 
-#include "zexception.h"
+#include "zerror.h"
 
 static bool run = true;
 
-void stopHandler(ZException::zerror_signal sig){
+void stopHandler(ZError::zerror_signal sig){
     run = false;
 }
 
 int udp_test(){
     LOG("=== UDP Socket Test...");
-    ZException::registerInterruptHandler(stopHandler);
-    ZException::registerSignalHandler(ZException::terminate, stopHandler);
+    ZError::registerInterruptHandler(stopHandler);
+    ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZDatagramSocket sock;
     ZAddress bound(8998);
@@ -60,8 +60,8 @@ int udp_test(){
 
 int udpserver_test(){
     LOG("=== UDP Socket Server Test...");
-    ZException::registerInterruptHandler(stopHandler);
-    ZException::registerSignalHandler(ZException::terminate, stopHandler);
+    ZError::registerInterruptHandler(stopHandler);
+    ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZDatagramSocket sock;
     ZAddress bind(8080);
@@ -96,7 +96,7 @@ int udpserver_test(){
 //                LOG("failed to send to " << addr.str());
 //            }
         } else {
-            LOG("error receiving message: " << ZException::getSystemError());
+            LOG("error receiving message: " << ZError::getSystemError());
             continue;
         }
     }

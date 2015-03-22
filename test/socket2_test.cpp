@@ -1,18 +1,18 @@
 #include "test.h"
 #include "zstreamsocket.h"
-#include "zexception.h"
+#include "zerror.h"
 #include "zfile.h"
 
 static bool run = true;
 
-void stopHandler2(ZException::zerror_signal sig){
+void stopHandler2(ZError::zerror_signal sig){
     run = false;
 }
 
 int tcp_test(){
     LOG("=== TCP Socket Test...");
-    ZException::registerInterruptHandler(stopHandler2);
-    ZException::registerSignalHandler(ZException::terminate, stopHandler2);
+    ZError::registerInterruptHandler(stopHandler2);
+    ZError::registerSignalHandler(ZError::terminate, stopHandler2);
 
     ZStreamSocket sock;
 
@@ -43,8 +43,8 @@ int tcp_test(){
 
 int tcpserver_test(){
     LOG("=== TCP Socket Server Test...");
-    ZException::registerInterruptHandler(stopHandler2);
-    ZException::registerSignalHandler(ZException::terminate, stopHandler2);
+    ZError::registerInterruptHandler(stopHandler2);
+    ZError::registerSignalHandler(ZError::terminate, stopHandler2);
 
     ZStreamSocket sock;
     ZAddress bind(8080);
