@@ -60,44 +60,17 @@ template <> class ZHash<char> : public ZHashBase {
 public:
     ZHash(char data) : ZHashBase((zu64)data){}
 };
-//template <> class ZHash<short> : public ZHashBase {
-//public:
-//    ZHash(short data) : ZHashBase((zu64)data){}
-//};
-//template <> class ZHash<int> : public ZHashBase {
-//public:
-//    ZHash(int data) : ZHashBase((zu64)data){}
-//};
 template <> class ZHash<long> : public ZHashBase {
 public:
     ZHash(long data) : ZHashBase((zu64)data){}
 };
-//template <> class ZHash<long long> : public ZHashBase {
-//public:
-//    ZHash(long long data) : ZHashBase((zu64)data){}
-//};
 
 // unsigned
-//template <> class ZHash<unsigned char> : public ZHashBase {
-//public:
-//    ZHash(unsigned char data) : ZHashBase((zu64)data){}
-//};
-//template <> class ZHash<unsigned short> : public ZHashBase {
-//public:
-//    ZHash(unsigned short data) : ZHashBase((zu64)data){}
-//};
-//template <> class ZHash<unsigned int> : public ZHashBase {
-//public:
-//    ZHash(unsigned int data) : ZHashBase((zu64)data){}
-//};
 template <> class ZHash<unsigned long> : public ZHashBase {
 public:
     ZHash(unsigned long data) : ZHashBase((zu64)data){}
 };
-//template <> class ZHash<unsigned long long> : public ZHashBase {
-//public:
-//    ZHash(unsigned long long data) : ZHashBase((zu64)data){}
-//};
+
 
 }
 

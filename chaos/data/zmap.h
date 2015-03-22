@@ -13,6 +13,7 @@
 
 namespace LibChaos {
 
+// For the purposes of this class, keys that evaluate equal must have the same hashes, and vice-versa
 template <class K, class T> class ZMap {
 public:
     enum { none = ZU64_MAX };
@@ -35,7 +36,7 @@ public:
 
     }
 
-    void add(K &key, T &value){
+    void add(const K &key, const T &value){
         // Resize if over load factor
         if(((float)_size / (float)_realsize) >= _factor){
             resize(_realsize << 1);
@@ -58,6 +59,8 @@ public:
                 // Compare the actual key - may be non-trivial
                 if(*_data[pos].key == key){
                     // Reassign value in existing element
+                    _kalloc->destroy(_data[pos].key, 1);
+                    _kalloc->construct(_data[pos].key, 1, key);
                     _talloc->destroy(_data[pos].value, 1);
                     _talloc->construct(_data[pos].value, 1, value);
                 }
@@ -76,21 +79,22 @@ public:
                 if(*_data[pos].key == key){
                     return *_data[pos].value;
                 }
-            } else if(_data[pos].key == nullptr && _data[pos].value == nullptr){
-
+            } else if(_data[pos].key == nullptr){
+                if(_data[pos].value == nullptr ){
+                    // Element is unset or deleted
+                    _data->hash = hash;
+                    _data[pos].key = _kalloc->alloc(1);
+                    _kalloc->construct(_data[pos].key, 1, key);
+                    _data[pos].value = _talloc->alloc(1);
+                    _talloc->construct(_data[pos].value, 1, value);
+                    ++_size;
+                    return;
+                }
             }
             if(_data[pos].key == nullptr){
-                // Element is unset or deleted
-                _data->hash = hash;
-                _data[pos].key = _kalloc->alloc(1);
-                _kalloc->construct(_data[pos].key, 1, key);
-                _data[pos].value = _talloc->alloc(1);
-                _talloc->construct(_data[pos].value, 1, value);
-                ++_size;
-                return;
+
             }
         }
-
     }
     inline T &operator[](const K &key){ return get(key); }
 
