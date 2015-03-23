@@ -31,7 +31,8 @@ public:
         T *value;
     };
 
-    ZMap(ZAllocator<K> *kalloc = new ZAllocator<K>(), ZAllocator<T> *talloc = new ZAllocator<T>()) : _alloc(new ZAllocator<MapData>()), _kalloc(kalloc), _talloc(talloc), _data(nullptr), _size(0), _realsize(0), _factor(0.5){
+    ZMap(ZAllocator<K> *kalloc = new ZAllocator<K>(), ZAllocator<T> *talloc = new ZAllocator<T>())
+      : _alloc(new ZAllocator<MapData>()), _kalloc(kalloc), _talloc(talloc), _data(nullptr), _size(0), _realsize(0), _factor(0.5){
         resize(16);
     }
     ZMap(std::initializer_list<MapSet> list) : ZMap(){

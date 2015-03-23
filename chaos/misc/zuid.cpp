@@ -47,6 +47,8 @@ ZUID::ZUID(uuidtype type){
         // We need UTC since October 15, 1582, 00:00:000000000
         // Add 17 days in Oct + Nov + Dec + 18 years + 5 leap days, to seconds, to 100 nanosecond interval
         utctime = mstime + (zu64)(17+30+31+(365*18)+5) * (zu64)(60*60*24) * (zu64)(1000*1000*10);
+#else
+
 #endif
 
         zu32 utchi = (utctime >> 32);

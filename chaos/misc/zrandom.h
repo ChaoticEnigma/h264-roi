@@ -6,6 +6,8 @@
 
 #if PLATFORM == WINDOWS
     #include <windows.h>
+#else
+    #include "zfile.h"
 #endif
 
 namespace LibChaos {
@@ -13,12 +15,16 @@ namespace LibChaos {
 class ZRandom {
 public:
     ZRandom();
+    ~ZRandom();
 
+    zu64 genzu(zu64 min = 0, zu64 max = ZU64_MAX);
     ZBinary generate(zu64 size);
 
 private:
 #if PLATFORM == WINDOWS
     HCRYPTPROV _cryptprov;
+#else
+    FILE *_devrandom;
 #endif
 };
 

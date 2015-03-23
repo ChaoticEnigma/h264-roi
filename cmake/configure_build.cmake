@@ -22,7 +22,7 @@ FUNCTION(configure_build NAME BUILD)
     ENDIF()
 
     # Set variables for platform type
-    IF(APPLE AND {CMAKE_SYSTEM_NAME} MATCHES "Darwin") # Mac OS X
+    IF(APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin") # Mac OS X
 
         ADD_DEFINITIONS(-D_LIBCHAOS_PLATFORM_OSX)
 

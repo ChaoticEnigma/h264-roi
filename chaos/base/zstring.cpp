@@ -8,6 +8,10 @@
 // Variable arguments lists
 #include <cstdarg>
 
+#if PLATFORM == MACOSX
+    #include <math.h>
+#endif
+
 namespace LibChaos {
 
 ZString::ZString() : _size(0), _realsize(0), _data(nullptr){

@@ -4,18 +4,7 @@
 
 #define FUCK_WINDOWS 1
 
-#if PLATFORM == LINUX
-    #include <execinfo.h>
-    #include <signal.h>
-    #include <cstring>
-    #include <stdio.h>
-    #include <cstdlib>
-    #include <errno.h>
-    #define HAVE_DECL_BASENAME 1
-    #ifdef IBERTY_DEMANGLE
-        #include "demangle.h"
-    #endif
-#elif PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS
     #include <stdlib.h>
     #include <windows.h>
 
@@ -30,6 +19,19 @@
         #include "StackWalker.h"
         #include <list>
     #endif // FUCK_WINDOWS
+#elif PLATFORM == MACOSX
+    #include <sys/errno.h>
+#else
+    #include <execinfo.h>
+    #include <signal.h>
+    #include <cstring>
+    #include <stdio.h>
+    #include <cstdlib>
+    #include <errno.h>
+    #define HAVE_DECL_BASENAME 1
+    #ifdef IBERTY_DEMANGLE
+        #include "demangle.h"
+    #endif
 #endif // PLATFORM
 
 //#include <assert.h>

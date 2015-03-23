@@ -27,10 +27,13 @@
 #define GCC         0x11
 #define MINGW       0x12
 #define MSVC        0x13
+#define CLANG       0x14
 
 // Detected
 #if defined(__MINGW32__)
     #define COMPILER_DETECTED MINGW
+#elif defined(__clang__)
+    #define COMPILER_DETECTED CLANG
 #elif defined(__GNUC__)
     #define COMPILER_DETECTED GCC
 #elif defined(_MSC_VER)
@@ -40,36 +43,40 @@
 #endif
 
 // Specified
-#if defined(_LIBCHAOS_COMPILER_GCC)
-    #define COMPILER_SPECIFIED GCC
-#elif defined(_LIBCHAOS_COMPILER_MINGW)
-    #define COMPILER_SPECIFIED MINGW
-#elif defined(_LIBCHAOS_COMPILER_MSVC)
-    #define COMPILER_SPECIFIED MSVC
-#else
-    #warning Unspecified Compiler!
-#endif
+//#if defined(_LIBCHAOS_COMPILER_GCC)
+//    #define COMPILER_SPECIFIED GCC
+//#elif defined(_LIBCHAOS_COMPILER_MINGW)
+//    #define COMPILER_SPECIFIED MINGW
+//#elif defined(_LIBCHAOS_COMPILER_CLANG)
+//    #define COMPILER_SPECIFIED CLANG
+//#elif defined(_LIBCHAOS_COMPILER_MSVC)
+//    #define COMPILER_SPECIFIED MSVC
+//#else
+//    #warning Unspecified Compiler!
+//#endif
 
 // Warn if detected and specified compilers different
-#if COMPILER_DETECTED != COMPILER_SPECIFIED
-    #warning Different detected and specified compilers!
-#endif
+//#if COMPILER_DETECTED != COMPILER_SPECIFIED
+//    #warning Different detected and specified compilers!
+//#endif
 
 // Set compiler
-#ifdef COMPILER_SPECIFIED
-    #define COMPILER COMPILER_SPECIFIED
-#else
-    #ifdef COMPILER_DETECTED
-        #define COMPILER COMPILER_DETECTED
-    #else
-        #error No detected or specified compiler!
-    #endif
-#endif
+//#ifdef COMPILER_SPECIFIED
+//    #define COMPILER COMPILER_SPECIFIED
+//#else
+//    #ifdef COMPILER_DETECTED
+//        #define COMPILER COMPILER_DETECTED
+//    #else
+//        #error No detected or specified compiler!
+//    #endif
+//#endif
+
+#define COMPILER COMPILER_DETECTED
 
 //#undef COMPILER_SPECIFIED
 //#undef COMPILER_DETECTED
 
-#if COMPILER == GCC || COMPILER == MINGW
+#if COMPILER == GCC || COMPILER == MINGW || COMPILER == CLANG
     // Require C++11 or greater
     #if __cplusplus < 201103L
         #error LibChaos requires a C++11 compiler!
@@ -90,7 +97,7 @@
 #define UNIX        0x21
 #define LINUX       0x22
 #define WINDOWS     0x23
-#define MACOSX       0x24
+#define MACOSX      0x24
 
 // Detected
 #if defined(__linux__)
@@ -104,42 +111,40 @@
 #endif
 
 // Specified
-#if defined(_LIBCHAOS_PLATFORM_LINUX)
-    #define PLATFORM_SPECIFIED LINUX
-#elif defined(_LIBCHAOS_PLATFORM_WINDOWS)
-    #define PLATFORM_SPECIFIED WINDOWS
-#elif defined(_LIBCHAOS_PLATFORM_MACOSX)
-    #define PLATFORM_SPECIFIED MACOSX
-#else
-    #warning Unsupported Platform!
-#endif
+//#if defined(_LIBCHAOS_PLATFORM_LINUX)
+//    #define PLATFORM_SPECIFIED LINUX
+//#elif defined(_LIBCHAOS_PLATFORM_WINDOWS)
+//    #define PLATFORM_SPECIFIED WINDOWS
+//#elif defined(_LIBCHAOS_PLATFORM_MACOSX)
+//    #define PLATFORM_SPECIFIED MACOSX
+//#else
+//    #warning Unsupported Platform!
+//#endif
 
 // Warn if detected and specified platforms different
-#if PLATFORM_DETECTED != PLATFORM_SPECIFIED
-    #warning Different detected and specified platforms!
-#endif
+//#if PLATFORM_DETECTED != PLATFORM_SPECIFIED
+//    #warning Different detected and specified platforms!
+//#endif
 
-#ifdef PLATFORM_SPECIFIED
-    #define PLATFORM PLATFORM_SPECIFIED
-#else
-    #ifdef PLATFORM_DETECTED
-        #define PLATFORM PLATFORM_DETECTED
-    #else
-        #error No detected or specified platform!
-    #endif
-#endif
+//#ifdef PLATFORM_SPECIFIED
+//    #define PLATFORM PLATFORM_SPECIFIED
+//#else
+//    #ifdef PLATFORM_DETECTED
+//        #define PLATFORM PLATFORM_DETECTED
+//    #else
+//        #error No detected or specified platform!
+//    #endif
+//#endif
+
+#define PLATFORM PLATFORM_DETECTED
 
 //#undef PLATFORM_SPECIFIED
 //#undef PLATFORM_DETECTED
 
-// Only one platform specified
-#if defined(_LIBCHAOS_PLATFORM_LINUX) && defined(_LIBCHAOS_PLATFORM_WINDOWS)
-    #error Multiple platforms declared. Please declare only one platform at a time.
-#endif
-
-#if PLATFORM == MACOSX
-    #error LibChaos does not support MacOS!
-#endif
+// Only one platform may be specified
+//#if !(defined(_LIBCHAOS_PLATFORM_LINUX) ^ defined(_LIBCHAOS_PLATFORM_WINDOWS) ^ defined(_LIBCHAOS_PLATFORM_MACOSX))
+//    #error Multiple platforms declared. Please declare only one platform at a time.
+//#endif
 
 //
 // Build
@@ -171,7 +176,11 @@
 
 // Macros
 #define FOREACH(A) for(zu64 i = 0; i < A; ++i)
-#define FOREACHIN(A, B, C) zu64 iloopvar##A##C##__LINE__ = 0; for(B C = A.size() ? A[iloopvar##A##C##__LINE__] : B(); iloopvar##A##C##__LINE__ < A.size(); ++iloopvar##A##C##__LINE__, C = A[iloopvar##A##C##__LINE__])
+#define FOREACHIN(A, B, C) zu64 iloopvar##A##C##__LINE__ = 0; \
+    for(B C = A.size() ? A[iloopvar##A##C##__LINE__] : B(); \
+        iloopvar##A##C##__LINE__ < A.size(); \
+        ++iloopvar##A##C##__LINE__, C = A[iloopvar##A##C##__LINE__]\
+    )
 #define MIN(A, B) ((A < B) ? A : B)
 #define MAX(A, B) ((A > B) ? A : B)
 #define ABS(A) (A < 0 ? -A : A)
@@ -243,7 +252,7 @@ typedef uint64_t zu64;
 typedef zu8 zbyte;
 typedef zbyte zoctet; // I blame the IETF
 
-#define ZU8_MAX   ((zu8)0xFF)
+#define ZU8_MAX  ((zu8) 0xFF)
 #define ZU16_MAX ((zu16)0xFFFFF)
 #define ZU32_MAX ((zu32)0xFFFFFFFF)
 #define ZU64_MAX ((zu64)0xFFFFFFFFFFFFFFFF)

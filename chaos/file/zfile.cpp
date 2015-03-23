@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if COMPILER == GCC || COMPILER == MINGW
+#if COMPILER == GCC || COMPILER == MINGW || COMPILER == CLANG
     #include <dirent.h>
     #include <unistd.h>
 #endif
@@ -22,11 +22,15 @@
     #define V 2
 #endif
 
-#define ZFILE_COPY_BUFFER_SIZE 32768
+#define ZFILE_COPY_BUFFER_SIZE 32 * 1024
 
 namespace LibChaos {
 
+#if PLATFORM == WINDOWS
 ZFile::ZFile() : _options(0 | readbit), _handle(NULL){}
+#else
+ZFile::ZFile() : _options(0 | readbit), _file(NULL){}
+#endif
 
 ZFile::ZFile(ZPath name, int mode) : ZFile(){
     open(name, mode);
@@ -90,14 +94,14 @@ bool ZFile::open(ZPath path){
 #else
     // Set flags
     ZString modech;
-    if(_bits & readwritebits){ // read / write
-        if(_bits & createbit)
+    if(_options & readwritebits){ // read / write
+        if(_options & createbit)
             modech += "w+";
         else
             modech += "r+";
-    } else if(_bits & readbit){ // read
+    } else if(_options & readbit){ // read
         modech += "r";
-    } else if(_bits & writebit){ // write
+    } else if(_options & writebit){ // write
         modech += "w";
     }
     modech += "b"; // binary
@@ -141,10 +145,11 @@ bool ZFile::close(){
         return true;
 #if PLATFORM == WINDOWS
     bool ret = CloseHandle(_handle) != 0;
+    _handle = NULL;
 #else
     bool ret = (fclose(_file) == 0);
+    _file = NULL;
 #endif
-    _handle = NULL;
     return ret;
 }
 
@@ -269,7 +274,7 @@ bool ZFile::resizeFile(zu64 size){
     return true;
 #else
     int fd = fileno(_file);
-    if(ftruncate64(fd, (long long)size) != 0)
+    if(ftruncate(fd, (long long)size) != 0)
         return false;
     return true;
 #endif
