@@ -10,8 +10,6 @@
 #include "zbinary.h"
 #include "zpath.h"
 
-#include "zmap.h"
-
 #include "zthread.h"
 #include "zmutex.h"
 #include "zcondition.h"

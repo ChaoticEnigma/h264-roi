@@ -15,16 +15,16 @@ namespace LibChaos {
 class ZJSON : public AsArZ {
 public:
     ZJSON();
-    ZJSON(ZString);
-    ZJSON(AsArZ);
+    ZJSON(ZString str);
+    ZJSON(AsArZ assoc);
 
-    ZJSON &operator=(ZString);
+    ZJSON &operator=(ZString str);
 
-    static bool validJSON(ZString);
+    static bool validJSON(ZString str);
     bool isValid();
 
-    static ZJSON fromJSON(ZString);
-    ZJSON &decode(ZString);
+    static ZJSON fromJSON(ZString str);
+    ZJSON &decode(ZString str);
 
     ZString encode();
 

@@ -44,9 +44,6 @@ INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
 )
 
-configure_build("Test" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
-SET(LibChaosTest_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
-
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
 
 # Set preprocessor defines

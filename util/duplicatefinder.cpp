@@ -25,7 +25,7 @@ int main(int argc, char **argv){
     ZArray<ZPath> files = ZFile::listFiles(search);
     LOG("Testing " << files.size() << " files");
 
-    ZMap<zu64, ZArray<ZPath>> hashtable;
+    ZAssoc<zu64, ZArray<ZPath>> hashtable;
     for(zu64 i = 0; i < files.size(); ++i){
         ZPath path = files[i];
         ZBinary bin;
@@ -38,8 +38,8 @@ int main(int argc, char **argv){
             LOG(i);
         }
     }
-    for(zu64 i = 0; i < hashtable.dat().size(); ++i){
-        zu64 key = hashtable.dat()[i].key;
+    for(zu64 i = 0; i < hashtable.size(); ++i){
+        zu64 key = hashtable.key(i);
         if(hashtable[key].size() > 1){
             ZString list;
             for(zu64 j = 0; j < hashtable[key].size(); ++j){

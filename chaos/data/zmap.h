@@ -45,7 +45,7 @@ public:
 
     }
 
-    void add(const K &key, const T &value){
+    T &add(const K &key, const T &value){
         // Resize if over load factor
         if(((float)_size / (float)_realsize) >= _factor){
             resize(_realsize << 1);
@@ -64,7 +64,7 @@ public:
                 _data[pos].value = _talloc->alloc(1);
                 _talloc->construct(_data[pos].value, 1, value);
                 ++_size;
-                return;
+                return *_data[pos].value;
             } else if(_data[pos].hash == hash){
                 // Compare the actual key - may be non-trivial
                 if(*_data[pos].key == key){
@@ -73,10 +73,11 @@ public:
                     _kalloc->construct(_data[pos].key, 1, key);
                     _talloc->destroy(_data[pos].value, 1);
                     _talloc->construct(_data[pos].value, 1, value);
+                    return *_data[pos].value;
                 }
             }
         }
-        //throw ZException();
+        throw ZException(ZString("Unable to add element to map ") + hash);
     }
     inline void push(const K &key, const T &value){ add(key, value); }
 
@@ -95,23 +96,23 @@ public:
                 if(_data[pos].hash == hash){
                     // Compare the actual key - may be non-trivial
                     if(*_data[pos].key == key){
-                        // Found it+
+                        // Found it, delete it
                         _kalloc->destroy(_data[pos].key, 1);
                         _data[pos].key = nullptr;
                         _talloc->destroy(_data[pos].value, 1);
                         _data[pos].value = (T*)1; // Not null
+                        --_size;
                     }
                 }
             }
         }
-        //throw ZException();
     }
 
     T &get(const K &key){
         zu64 hash = ZHash<K>(key).hash();
-        zu64 ipos = hash % _realsize;
+        zu64 start = hash % _realsize;
         for(zu64 i = 0; i < _realsize; ++i){
-            zu64 pos = (ipos + i) % _realsize;
+            zu64 pos = (start + i) % _realsize;
             // Look for the key
             if(_data[pos].key == nullptr){
                 if(_data[pos].value == nullptr ){
@@ -128,7 +129,8 @@ public:
                 }
             }
         }
-        throw ZException("Key does not exist", __LINE__);
+        // Create a new, default constructed object
+        return add(key, T());
     }
     inline T &operator[](const K &key){ return get(key); }
 

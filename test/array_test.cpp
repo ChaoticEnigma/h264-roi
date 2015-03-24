@@ -1,6 +1,7 @@
 #include "test.h"
 #include "zarray.h"
 #include "zstack.h"
+#include "zmap.h"
 
 int array_block(){
     ZArray<int> tst;

@@ -10,9 +10,6 @@ INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
 )
 
-configure_build("Utils" ${LIBCHAOS_BUILD} ${LIBCHAOS_PLATFORM})
-SET(LibChaosUtils_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
-
 ### =================== BUILD =================== ###
 
 ADD_DEFINITIONS(-DBUILDING)
@@ -30,8 +27,8 @@ ADD_EXECUTABLE(imagedownloader imagedownloader.cpp)
 TARGET_LINK_LIBRARIES(imagedownloader chaos)
 
 # Duplicate Finder
-ADD_EXECUTABLE(duplicatefinder duplicatefinder.cpp)
-TARGET_LINK_LIBRARIES(duplicatefinder chaos)
+#ADD_EXECUTABLE(duplicatefinder duplicatefinder.cpp)
+#TARGET_LINK_LIBRARIES(duplicatefinder chaos)
 
 # Image Library Manager
 ADD_EXECUTABLE(imagelibrarymanger imagelibrarymanager.cpp)

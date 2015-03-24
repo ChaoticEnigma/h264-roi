@@ -4,15 +4,15 @@
 
 namespace LibChaos {
 
-ZException::ZException(ZString str, int code, bool trace) : description(str), err(code){
+ZException::ZException(ZString desc, int code, bool trace) : _description(desc), _error(code){
     if(trace)
-        stacktrace = ZError::getStackTrace(2);
+        _stacktrace = ZError::getStackTrace(2);
 }
 
 ZString ZException::traceStr() const {
     ZString str = "**************************************\n";
-    for(zu64 i = 0; i < stacktrace.size(); ++i){
-        str += stacktrace[i] + "\n";
+    for(zu64 i = 0; i < _stacktrace.size(); ++i){
+        str += _stacktrace[i] + "\n";
     }
     str += "**************************************";
     return str;

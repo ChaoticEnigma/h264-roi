@@ -2,6 +2,7 @@
 #include "zfile.h"
 #include "zbinary.h"
 #include "zlist.h"
+#include "zjson.h"
 using namespace LibChaos;
 
 // Download multiple images from internet
@@ -69,13 +70,61 @@ int main(int argc, char **argv){
 
         } else if(command == "pixivb"){ // Download all bookmarks from a pixiv user id
             if(argc != 4){
-                LOG("pixiv Usage: pixiv <user_id> <firefox_session>");
+                LOG("pixiv Usage: pixivb <user_id> <firefox_session>");
                 return -1;
             }
             LOG("Downloading Bookmarks for pixiv User " << argv[2] << " with session " << argv[3]);
             // 27691
             pixivBookmarksDownload(argv[2], argv[3]);
             LOG("Done Downloading");
+
+        } else if(command == "jsonlist"){
+            if(argc != 3){
+                LOG("jsonlist Usage: jsonlist <file>");
+                return -1;
+            }
+            LOG("Downloading URLs in JSON file " << argv[2]);
+            ZString all = ZFile::readString(argv[2]);
+            ArZ list = all.explodeList(2, '\n', '\r');
+            LOG("Images: " << list.size());
+            for(zu64 i = 0; i < list.size(); ++i){
+                if(!list[i].isEmpty()){
+                    ZJSON json(list[i]);
+                    ZString url = json["url"];
+                    if(!url.isEmpty()){
+                        ZString rating = (json["score"].isEmpty() ? "0" : json["score"]);
+                        ZString artists = json["artists"];
+                        artists.strip('[').strip(']');
+                        ArZ ls = artists.strExplode(", ");
+                        ZString artist;
+                        if(ls.size())
+                            artist = " " + ZString::strip(ls[0], '"');
+                        artist = ZString::getUntil(artist, "_%28artist%29");
+                        ZString filename = (ZPath(rating) + (json["id"] + artist + ZPath(url).getExtension())).str();
+                        ZFile::createDirsTo(filename);
+                        if(!ZFile::exists(filename)){
+                            ZString command = "wget --no-check-certificate --no-cookies -O \"" + filename + "\" " + url;
+                            if(system((command + " 1> NUL 2> NUL").cc()) != 0){
+                                LOG("Failed " << i << "/" << list.size() << ": " << command);
+                            } else {
+                                LOG("Downloaded " << i << "/" << list.size() << ": " << filename);
+                            }
+                        } else {
+                            LOG("Skip Download " << i << "/" << list.size() << ": " << filename);
+                        }
+                        continue;
+                    } else {
+                        LOG("Skip URL " << i << "/" << list.size() << ": " << list[i]);
+                    }
+                } else {
+                    LOG("Skip Item " << i << "/" << list.size());
+                }
+            }
+            LOG("Done");
+
+        } else {
+            LOG("Unknown Command");
+            return 1;
         }
     }
     return 0;

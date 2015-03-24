@@ -86,7 +86,7 @@ int main(int argc, char **argv){
         LOG("*** Finished Tests \"" << runstr << "\"");
         return ret;
     } catch(ZException e){
-        printf("Catastrophic failure: %d\n%s\n", e.code(), e.traceStr().cc());
+        printf("Catastrophic Failure: %s - %d\n%s\n", e.what().cc(), e.code(), e.traceStr().cc());
     }
     return -1;
 }

@@ -1,6 +1,7 @@
 #include "zlogworker.h"
 #include "zfile.h"
 #include "zqueue.h"
+//#include "zmap.h"
 
 #include <iostream>
 #include <fstream>
@@ -18,23 +19,29 @@ ZQueue<ZLogWorker::LogJob*> jobs;
 //ZMutex writemutex;
 
 ZMutex formatmutex;
-ZMap<ZLogWorker::zlog_source, ZString> stdoutlog;
-ZMap<ZLogWorker::zlog_source, ZString> stderrlog;
-ZAssoc< ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
+//ZMap<ZLogWorker::zlog_source, ZString> stdoutlog;
+//ZMap<ZLogWorker::zlog_source, ZString> stderrlog;
+//ZMap<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
+ZAssoc<ZLogWorker::zlog_source, ZString> stdoutlog;
+ZAssoc<ZLogWorker::zlog_source, ZString> stderrlog;
+ZAssoc<ZPath, ZAssoc<ZLogWorker::zlog_source, ZString> > logfiles;
+
 
 ZMutex threadidmutex;
-ZMap<ztid, zu16> threadids;
+//ZMap<ztid, zu32> threadids;
+ZAssoc<ztid, zu32> threadids;
+
 
 bool ZLogWorker::lastcomp;
 
 ZLogWorker::ZLogWorker(){
-    //work = work(zlogWorker);
+//    work = work(zlogWorker);
 
     // Output buffering can be default, since it is flushed each line anyway
-    //setbuf(stdout, NULL);
+//    setbuf(stdout, NULL);
 
-    //    formatStdout(ZLogSource::normal, TIMETHREAD); // These cause a memory leak...?
-    //    formatStderr(ZLogSource::error, DETAILLOG);
+//    formatStdout(ZLogSource::normal, TIMETHREAD); // These cause a memory leak...?
+//    formatStderr(ZLogSource::error, DETAILLOG);
 }
 
 ZLogWorker::~ZLogWorker(){
@@ -47,7 +54,7 @@ void ZLogWorker::run(){
 }
 
 void ZLogWorker::waitEnd(){ // Must NEVER be called by log worker thread
-    // BUG: Sometimes hangs
+    // BUG: Sometimes hangs?
     work.stop();
     jobcondition.signal();
     work.join();

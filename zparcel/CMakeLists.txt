@@ -23,9 +23,6 @@ INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
 )
 
-configure_build("ZParcel" ${LIBCHAOS_BUILD})
-MESSAGE(STATUS ${BUILD_STRING})
-
 ### =================== BUILD =================== ###
 
 ADD_DEFINITIONS(-DBUILDING)

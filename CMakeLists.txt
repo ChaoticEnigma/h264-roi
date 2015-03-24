@@ -32,7 +32,7 @@ ENDIF()
 SET(LibChaos_BUILD ${LIBCHAOS_BUILD} PARENT_SCOPE)
 
 # Options
-OPTION(LIBCHAOS_ZPARCEL TRUE "Build ZParcel tool")
+OPTION(LIBCHAOS_ZPARCEL TRUE  "Build ZParcel tool")
 
 OPTION(LIBCHAOS_EXTERN  FALSE "Build LibChaos with External Libraries")
 OPTION(LIBCHAOS_UI      FALSE "Build LibChaos UI library")
@@ -41,11 +41,14 @@ OPTION(LIBCHAOS_UTIL    FALSE "Build LibChaos Utilities")
 OPTION(LIBCHAOS_BBB     FALSE "Build LibChaos Beaglebone Black library")
 
 # Export Constants
-SET(LibChaos_CONFIGURE_CMAKE "${CMAKE_CURRENT_SOURCE_DIR}/configure_build.cmake" PARENT_SCOPE)
+#SET(LibChaos_CONFIGURE_CMAKE "${CMAKE_CURRENT_SOURCE_DIR}/configure_build.cmake" PARENT_SCOPE)
+
+# Configure Build Options
+configure_build("LibChaos" ${LIBCHAOS_BUILD})
 
 # LibChaos
 ADD_SUBDIRECTORY(chaos)
-SET(LibChaos_BUILD_STRING "LibChaos - '${LibChaosCore_BUILD_STRING}'")
+SET(LibChaos_BUILD_LIST "Core")
 
 # ZParcel
 ADD_SUBDIRECTORY(zparcel)
@@ -53,7 +56,7 @@ ADD_SUBDIRECTORY(zparcel)
 # LibChaos Extern
 IF(LIBCHAOS_EXTERN)
     ADD_SUBDIRECTORY(extern)
-    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosExtern_BUILD_STRING}'")
+    SET(LibChaos_BUILD_LIST "${LibChaos_BUILD_LIST}, Extern")
     SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} ${LibChaosExtern_INCLUDE})
 ENDIF()
 
@@ -62,27 +65,27 @@ SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
 # LibChaos UI
 IF(LIBCHAOS_UI)
     ADD_SUBDIRECTORY(ui)
-    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosUI_BUILD_STRING}'")
+    SET(LibChaos_BUILD_LIST "${LibChaos_BUILD_LIST}, UI")
     SET(LibChaosUI_INCLUDE ${LibChaosUI_INCLUDE} PARENT_SCOPE)
 ENDIF()
 
 # LibChaos Test
 IF(LIBCHAOS_TEST)
     ADD_SUBDIRECTORY(test)
-    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosTest_BUILD_STRING}'")
+    SET(LibChaos_BUILD_LIST "${LibChaos_BUILD_LIST}, Test")
 ENDIF()
 
 # LibChaos Utils
 IF(LIBCHAOS_UTIL)
     ADD_SUBDIRECTORY(util)
-    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosUtil_BUILD_STRING}'")
+    SET(LibChaos_BUILD_LIST "${LibChaos_BUILD_LIST}, Util")
 ENDIF()
 
 # LibChaos BBB (Beaglebone Black)
 IF(LIBCHAOS_BBB)
     ADD_SUBDIRECTORY(bbb)
-    SET(LibChaos_BUILD_STRING "${LibChaos_BUILD_STRING} - '${LibChaosBBB_BUILD_STRING}'")
+    SET(LibChaos_BUILD_LIST "${LibChaos_BUILD_LIST}, BBB")
     SET(LibChaosBBB_INCLUDE ${LibChaosBBB_INCLUDE} PARENT_SCOPE)
 ENDIF()
 
-MESSAGE(STATUS ${LibChaos_BUILD_STRING})
+MESSAGE(STATUS "${CONFIGURE_BUILD_STRING} = ${LibChaos_BUILD_LIST}")
