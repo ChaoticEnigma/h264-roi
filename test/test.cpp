@@ -34,6 +34,7 @@ int main(int argc, char **argv){
 
             { "number", number_block },
             { "uid", uid_block },
+            { "hash", hash_block },
 
             { "file", file_block },
             { "autobuffer", autobuffer_block },

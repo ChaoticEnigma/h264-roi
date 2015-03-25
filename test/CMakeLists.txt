@@ -3,8 +3,14 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 
 PROJECT(LibChaos_Test)
 
-SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES =================== ###
-    libchaos_main.cpp
+SET(LibChaos_Test_HEADERS ### =================== TEST_SOURCES =================== ###
+    test.h
+)
+
+SET(LibChaos_Test_SOURCES ### =================== TEST_SOURCES =================== ###
+    ${LibChaos_Test_HEADERS}
+
+    test.cpp
 
     pointer_test.cpp
     allocator_test.cpp
@@ -35,7 +41,7 @@ SET(LibChaosTest_SOURCES ### =================== TEST_SOURCES ==================
 )
 
 IF(ENABLE_ZPNG)
-    SET(LibChaosTest_SOURCES ${LibChaosTest_SOURCES} png_test.cpp)
+    SET(LibChaos_Test_SOURCES ${LibChaos_Test_SOURCES} png_test.cpp)
 ENDIF()
 
 ### =================== CONFIG =================== ###
@@ -55,7 +61,7 @@ ENDIF()
 
 ADD_DEFINITIONS(-DBUILDING)
 
-ADD_EXECUTABLE(testchaos ${LibChaosTest_SOURCES})
+ADD_EXECUTABLE(testchaos ${LibChaos_Test_SOURCES})
 TARGET_LINK_LIBRARIES(testchaos chaos)
 IF(ENABLE_ZPNG)
     TARGET_LINK_LIBRARIES(testchaos chaosextern)

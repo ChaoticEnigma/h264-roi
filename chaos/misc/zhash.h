@@ -10,6 +10,7 @@ class ZHashBase {
 public:
     ZHashBase(zu64 hashval) : _hash(hashval){}
     zu64 hash() const { return _hash; }
+    zu64 operator()() const { return hash(); }
 protected:
     zu64 _hash;
 };

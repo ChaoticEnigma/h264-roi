@@ -1,6 +1,7 @@
 #include "test.h"
 #include "zuid.h"
 #include "zlist.h"
+#include "zhash.h"
 
 int uid_block(){
     ZUID uid1;
@@ -31,6 +32,17 @@ int uid_block(){
         LOG(uidlist[i].str());
     }
 
+    return 0;
+}
+
+int hash_block(){
+    int data1 = -34563;
+    zu64 hash1 = ZHash<int>(data1).hash();
+    LOG(data1 << " " << hash1);
+
+    ZString data2 = "hashdata";
+    zu64 hash2 = ZHash<ZString>(data2).hash();
+    LOG(data2 << " " << hash2);
 
     return 0;
 }
