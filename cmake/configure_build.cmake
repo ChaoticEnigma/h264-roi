@@ -1,24 +1,23 @@
 
-FUNCTION(configure_build NAME BUILD)
+FUNCTION(configure_build BUILD)
 
-    SET(BUILD_STRING "${NAME}:")
-
-    # Set variables for build type
-    IF(BUILD MATCHES 1) # Debug
-        ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_DEBUG)
-        SET(CXXGNU "${CXXGNU} -g")
-        SET(CXXVC "${CXXVC} /Zi /MDd")
-        SET(BUILD_STRING "${BUILD_STRING} Debug")
-        SET(DEBUG TRUE)
-    ELSEIF(BUILD MATCHES 2) # Release
-        ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_RELEASE)
-        SET(CXXGNU "${CXXGNU} -O3")
-        SET(CXXVC "${CXXVC} /GL /MD")
-        SET(BUILD_STRING "${BUILD_STRING} Release")
-        SET(RELEASE TRUE)
-    ELSE() # Normal
-        ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_NORMAL)
-        SET(BUILD_STRING "${BUILD_STRING} Normal")
+    # Detect Compiler
+    MESSAGE(STATUS "Detected ${CMAKE_CXX_COMPILER_ID}")
+    IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        # GCC
+        SET(BUILD_STRING "GCC")
+    ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        # Clang
+        SET(BUILD_STRING "Clang")
+    ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+        # Visual Studio C++
+        SET(BUILD_STRING "MSVC")
+    ELSE()
+        IF(LIBCHAOS_UNKNOWN_TOOLCHAIN)
+            MESSAGE(STATUS "Attempting Unknown Compiler")
+        ELSE()
+            MESSAGE(ERROR "Unknown Compiler, use LIBCHAOS_UNKNOWN_TOOLCHAIN to force compilation")
+        ENDIF()
     ENDIF()
 
     # Set variables for platform type
@@ -63,6 +62,24 @@ FUNCTION(configure_build NAME BUILD)
 
     ELSE() # Unknown
         MESSAGE(ERROR "Unknown Platform")
+    ENDIF()
+
+    # Set variables for build type
+    IF(BUILD MATCHES 1) # Debug
+        ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_DEBUG)
+        SET(CXXGNU "${CXXGNU} -g")
+        SET(CXXVC "${CXXVC} /Zi /MDd")
+        SET(BUILD_STRING "${BUILD_STRING} Debug")
+        SET(DEBUG TRUE)
+    ELSEIF(BUILD MATCHES 2) # Release
+        ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_RELEASE)
+        SET(CXXGNU "${CXXGNU} -O3")
+        SET(CXXVC "${CXXVC} /GL /MD")
+        SET(BUILD_STRING "${BUILD_STRING} Release")
+        SET(RELEASE TRUE)
+    ELSE() # Normal
+        ADD_DEFINITIONS(-D_LIBCHAOS_BUILD_NORMAL)
+        SET(BUILD_STRING "${BUILD_STRING} Normal")
     ENDIF()
 
     SET(BUILD_STRING "${BUILD_STRING}" PARENT_SCOPE)
