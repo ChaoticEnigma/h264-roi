@@ -5,7 +5,7 @@ PROJECT(LibChaos_Core)
 
 OPTION(IBERTY_DEMANGLE "Use libiberty to demangle symbols" OFF)
 
-SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
+SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ###
     ztypes.h
 
     base/zclock.h
@@ -67,8 +67,8 @@ SET(LibChaos_HEADERS ### =================== HEADERS =================== ###
     thread/zthread.h
 )
 
-SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
-    ${LibChaos_HEADERS}
+SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ###
+    ${LibChaos_Core_HEADERS}
 
     base/zclock.cpp
     base/zerror.cpp
@@ -118,8 +118,8 @@ SET(LibChaos_SOURCES ### =================== SOURCES =================== ###
 )
 
 IF(LIBCHAOS_WINDOWS)
-    SET(LibChaos_SOURCES
-        ${LibChaos_SOURCES}
+    SET(LibChaos_Core_SOURCES
+        ${LibChaos_Core_SOURCES}
         #lib/StackWalker.cpp
     )
 ENDIF()
@@ -127,38 +127,26 @@ ENDIF()
 ### =================== CONFIG =================== ###
 
 # Export Include Path
-SET(LibChaos_INCLUDE
+SET(LibChaos_Core_INCLUDE
     ${LibChaos_Core_SOURCE_DIR}
     ${LibChaos_Core_SOURCE_DIR}/abstract
     ${LibChaos_Core_SOURCE_DIR}/base
     ${LibChaos_Core_SOURCE_DIR}/data
     ${LibChaos_Core_SOURCE_DIR}/file
     ${LibChaos_Core_SOURCE_DIR}/lib
-    ${LibChaos_Core_SOURCE_DIR}/lib/cryptopp562
-    ${LibChaos_Core_SOURCE_DIR}/lib/nowide_standalone
     ${LibChaos_Core_SOURCE_DIR}/net
     ${LibChaos_Core_SOURCE_DIR}/math
     ${LibChaos_Core_SOURCE_DIR}/misc
     ${LibChaos_Core_SOURCE_DIR}/thread
 )
 
-SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
+SET(LibChaos_Core_INCLUDE ${LibChaos_Core_INCLUDE} PARENT_SCOPE)
 
 # Include Directories
 INCLUDE_DIRECTORIES(
-    ${LibChaos_INCLUDE}
-    #${LibChaos_SOURCE_DIR}
-    #abstract
-    #base
-    #data
-    #file
-    #lib
-    #lib/cryptopp562
-    #lib/nowide_standalone
-    #net
-    #math
-    #misc
-    #thread
+    ${LibChaos_Core_INCLUDE}
+    ${LibChaos_Core_SOURCE_DIR}/lib/cryptopp563
+    ${LibChaos_Core_SOURCE_DIR}/lib/nowide_standalone
 )
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
@@ -172,7 +160,7 @@ ENDIF()
 
 ADD_DEFINITIONS(-DBUILDING)
 
-ADD_LIBRARY(chaos STATIC ${LibChaos_SOURCES})
+ADD_LIBRARY(chaos STATIC ${LibChaos_Core_SOURCES})
 IF(LIBCHAOS_UNIX)
     TARGET_LINK_LIBRARIES(chaos pthread)
     IF(IBERTY_DEMANGLE)
