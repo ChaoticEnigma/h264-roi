@@ -11,6 +11,8 @@ SET(ZParcel_HEADERS ### =================== HEADERS =================== ###
     parcel-main.h
 )
 SET(ZParcel_SOURCES ### =================== SOURCES =================== ###
+    ${ZParcel_HEADERS}
+
     #zparcel.cpp
     zparcel4-parser.cpp
 

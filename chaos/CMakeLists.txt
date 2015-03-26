@@ -8,6 +8,19 @@ OPTION(IBERTY_DEMANGLE "Use libiberty to demangle symbols" OFF)
 SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ###
     ztypes.h
 
+    abstract/yindexedaccess.h
+    abstract/yiterable.h
+    abstract/ypushpopaccess.h
+    abstract/zaccessor.h
+    abstract/zbase.h
+    abstract/zhashable.h
+    abstract/ziterator.h
+    abstract/zposition.h
+    abstract/zreader.h
+    abstract/zserializer.h
+    abstract/zstorage.h
+    abstract/zwriter.h
+
     base/zclock.h
     base/zerror.h
     base/zexception.h
@@ -145,8 +158,6 @@ SET(LibChaos_Core_INCLUDE ${LibChaos_Core_INCLUDE} PARENT_SCOPE)
 # Include Directories
 INCLUDE_DIRECTORIES(
     ${LibChaos_Core_INCLUDE}
-    ${LibChaos_Core_SOURCE_DIR}/lib/cryptopp563
-    ${LibChaos_Core_SOURCE_DIR}/lib/nowide_standalone
 )
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)

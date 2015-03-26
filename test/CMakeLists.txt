@@ -3,11 +3,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
 PROJECT(LibChaos_Test)
 
-SET(LibChaos_Test_HEADERS ### =================== TEST_SOURCES =================== ###
+SET(LibChaos_Test_HEADERS ### =================== SOURCES =================== ###
     test.h
 )
 
-SET(LibChaos_Test_SOURCES ### =================== TEST_SOURCES =================== ###
+SET(LibChaos_Test_SOURCES ### =================== SOURCES =================== ###
     ${LibChaos_Test_HEADERS}
 
     test.cpp

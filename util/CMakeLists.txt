@@ -5,11 +5,11 @@ PROJECT(LibChaos_Utils)
 
 ### =================== CONFIG =================== ###
 
-OPTION(LIBCHAOS_EXTERN_EXTENSION_FIXER          FALSE "Build LibChaos Extension Fixer")
-OPTION(LIBCHAOS_EXTERN_AUDIOBOOK_SORTER         FALSE "Build LibChaos Audiobook Sorter")
-OPTION(LIBCHAOS_EXTERN_IMAGE_DOWNLOADER         TRUE  "Build LibChaos Image Downloader")
-OPTION(LIBCHAOS_EXTERN_DUPLICATE_FINDER         FALSE "Build LibChaos Duplicate Finder")
-OPTION(LIBCHAOS_EXTERN_IMAGE_LIBRARY_MANAGER    TRUE  "Build LibChaos Image Library Manager")
+OPTION(LIBCHAOS_EXTERN_EXTENSION_FIXER          "Build LibChaos Extension Fixer"        OFF )
+OPTION(LIBCHAOS_EXTERN_AUDIOBOOK_SORTER         "Build LibChaos Audiobook Sorter"       OFF )
+OPTION(LIBCHAOS_EXTERN_IMAGE_DOWNLOADER         "Build LibChaos Image Downloader"       ON  )
+OPTION(LIBCHAOS_EXTERN_DUPLICATE_FINDER         "Build LibChaos Duplicate Finder"       OFF )
+OPTION(LIBCHAOS_EXTERN_IMAGE_LIBRARY_MANAGER    "Build LibChaos Image Library Manager"  ON  )
 
 INCLUDE_DIRECTORIES(
     ${LibChaos_Utils_SOURCE_DIR}

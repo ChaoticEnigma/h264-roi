@@ -1,11 +1,11 @@
 #include "zencrypt.h"
 
-#include "hex.h"
-#include "osrng.h"
-#include "cryptlib.h"
-#include "filters.h"
-#include "aes.h"
-#include "gcm.h"
+#include "cryptopp562/hex.h"
+#include "cryptopp562/osrng.h"
+#include "cryptopp562/cryptlib.h"
+#include "cryptopp562/filters.h"
+#include "cryptopp562/aes.h"
+#include "cryptopp562/gcm.h"
 
 using namespace CryptoPP;
 
