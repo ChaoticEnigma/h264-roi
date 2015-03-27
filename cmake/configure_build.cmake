@@ -1,22 +1,31 @@
 
 FUNCTION(configure_build BUILD)
 
-    # Detect Compiler
-    MESSAGE(STATUS "Detected ${CMAKE_CXX_COMPILER_ID}")
-    IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-        # GCC
-        SET(BUILD_STRING "GCC")
-    ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # Clang
-        SET(BUILD_STRING "Clang")
-    ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-        # Visual Studio C++
-        SET(BUILD_STRING "MSVC")
+    MESSAGE(STATUS "Detected ${CMAKE_SYSTEM_NAME}-${CMAKE_CXX_COMPILER_ID}")
+
+    IF(CMAKE_SYSTEM_NAME MATCHES "Windows") ## Windows
+        IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU") # MinGW
+            SET(BUILD_STRING "GCC")
+        ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "MSVC") # MS Visual C++
+            SET(BUILD_STRING "MSVC")
+        ENDIF()
+    ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Darwin") ## Mac OS X
+        IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU") # GCC
+            SET(BUILD_STRING "GCC")
+        ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # Clang
+            SET(BUILD_STRING "Clang")
+        ENDIF()
+    ELSEIF(CMAKE_SYSTEM_NAME MATCHES "FreeBSD") ## FreeBSD
+        IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU") # GCC
+            SET(BUILD_STRING "GCC") # GCC
+        ENDIF()
+    ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Linux")
+
     ELSE()
         IF(LIBCHAOS_UNKNOWN_TOOLCHAIN)
-            MESSAGE(STATUS "Attempting Unknown Compiler")
+            MESSAGE(STATUS "Attempting Unknown Toolchain")
         ELSE()
-            MESSAGE(ERROR "Unknown Compiler, use LIBCHAOS_UNKNOWN_TOOLCHAIN to force compilation")
+            MESSAGE(ERROR "Unknown Toolchain, set LIBCHAOS_UNKNOWN_TOOLCHAIN to force compilation")
         ENDIF()
     ENDIF()
 
