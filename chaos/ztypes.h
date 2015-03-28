@@ -18,7 +18,7 @@
 
 // Warn if greater than C++11
 #if __cplusplus > 201103L
-    #warning LibChaos is not tested with C++ spec newer than C++11
+    #warning LibChaos is not tested with C++ specs after than C++11
 #endif
 
 //
@@ -29,58 +29,22 @@
 #define MSVC        0x13
 #define CLANG       0x14
 
-// Detected
+// Detection
 #if defined(__MINGW32__)
-    #define COMPILER_DETECTED MINGW
+    #define COMPILER MINGW
 #elif defined(__clang__)
-    #define COMPILER_DETECTED CLANG
+    #define COMPILER CLANG
 #elif defined(__GNUC__)
-    #define COMPILER_DETECTED GCC
+    #define COMPILER GCC
 #elif defined(_MSC_VER)
-    #define COMPILER_DETECTED MSVC
+    #define COMPILER MSVC
 #else
     #warning Unknown Compiler!
 #endif
 
-// Specified
-//#if defined(_LIBCHAOS_COMPILER_GCC)
-//    #define COMPILER_SPECIFIED GCC
-//#elif defined(_LIBCHAOS_COMPILER_MINGW)
-//    #define COMPILER_SPECIFIED MINGW
-//#elif defined(_LIBCHAOS_COMPILER_CLANG)
-//    #define COMPILER_SPECIFIED CLANG
-//#elif defined(_LIBCHAOS_COMPILER_MSVC)
-//    #define COMPILER_SPECIFIED MSVC
-//#else
-//    #warning Unspecified Compiler!
-//#endif
-
 // Warn if detected and specified compilers different
-//#if COMPILER_DETECTED != COMPILER_SPECIFIED
-//    #warning Different detected and specified compilers!
-//#endif
-
-// Set compiler
-//#ifdef COMPILER_SPECIFIED
-//    #define COMPILER COMPILER_SPECIFIED
-//#else
-//    #ifdef COMPILER_DETECTED
-//        #define COMPILER COMPILER_DETECTED
-//    #else
-//        #error No detected or specified compiler!
-//    #endif
-//#endif
-
-#define COMPILER COMPILER_DETECTED
-
-//#undef COMPILER_SPECIFIED
-//#undef COMPILER_DETECTED
-
-#if COMPILER == GCC || COMPILER == MINGW || COMPILER == CLANG
-    // Require C++11 or greater
-    #if __cplusplus < 201103L
-        #error LibChaos requires a C++11 compiler!
-    #endif
+#if COMPILER != _LIBCHAOS_COMPILER
+    #warning Different detected and specified compilers!
 #endif
 
 // Disable some MSVC warnings
@@ -94,57 +58,32 @@
 //
 // Platform
 //
-#define UNIX        0x21
-#define LINUX       0x22
+#define LINUX       0x21
+#define FREEBSD     0x22
 #define WINDOWS     0x23
 #define MACOSX      0x24
 
-// Detected
+// Platforms are Tested as such:
+// Windows and Mac OS X are tested first, and treated as exceptions
+// POSIX platforms (Linux, FreeBSD) are the default (preferred) case
+
+// Detection
 #if defined(__linux__)
-    #define PLATFORM_DETECTED LINUX
+    #define PLATFORM LINUX
+#elif defined(__FreeBSD__)
+    #define PLATFORM FREEBSD
 #elif defined(_WIN32)
-    #define PLATFORM_DETECTED WINDOWS
+    #define PLATFORM WINDOWS
 #elif defined(__APPLE__)
-    #define PLATFORM_DETECTED MACOSX
+    #define PLATFORM MACOSX
 #else
     #warning Unknown Platform!
 #endif
 
-// Specified
-//#if defined(_LIBCHAOS_PLATFORM_LINUX)
-//    #define PLATFORM_SPECIFIED LINUX
-//#elif defined(_LIBCHAOS_PLATFORM_WINDOWS)
-//    #define PLATFORM_SPECIFIED WINDOWS
-//#elif defined(_LIBCHAOS_PLATFORM_MACOSX)
-//    #define PLATFORM_SPECIFIED MACOSX
-//#else
-//    #warning Unsupported Platform!
-//#endif
-
 // Warn if detected and specified platforms different
-//#if PLATFORM_DETECTED != PLATFORM_SPECIFIED
-//    #warning Different detected and specified platforms!
-//#endif
-
-//#ifdef PLATFORM_SPECIFIED
-//    #define PLATFORM PLATFORM_SPECIFIED
-//#else
-//    #ifdef PLATFORM_DETECTED
-//        #define PLATFORM PLATFORM_DETECTED
-//    #else
-//        #error No detected or specified platform!
-//    #endif
-//#endif
-
-#define PLATFORM PLATFORM_DETECTED
-
-//#undef PLATFORM_SPECIFIED
-//#undef PLATFORM_DETECTED
-
-// Only one platform may be specified
-//#if !(defined(_LIBCHAOS_PLATFORM_LINUX) ^ defined(_LIBCHAOS_PLATFORM_WINDOWS) ^ defined(_LIBCHAOS_PLATFORM_MACOSX))
-//    #error Multiple platforms declared. Please declare only one platform at a time.
-//#endif
+#if PLATFORM != _LIBCHAOS_PLATFORM
+    #warning Different detected and specified platforms!
+#endif
 
 //
 // Build
