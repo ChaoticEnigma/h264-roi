@@ -5,6 +5,10 @@ PROJECT(LibChaos_Core)
 
 OPTION(IBERTY_DEMANGLE "Use libiberty to demangle symbols" OFF)
 
+IF(LIBCHAOS_PLATFORM_LINUX AND LIBCHAOS_COMPILER_GCC AND LIBCHAOS_BUILD_DEBUG)
+    SET(IBERTY_DEMANGLE ON)
+ENDIF()
+
 SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ###
     ztypes.h
 
@@ -130,7 +134,7 @@ SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ##
     thread/zthread.cpp
 )
 
-IF(LIBCHAOS_WINDOWS)
+IF(LIBCHAOS_PLATFORM_WINDOWS)
     SET(LibChaos_Core_SOURCES
         ${LibChaos_Core_SOURCES}
         #lib/StackWalker.cpp
@@ -172,22 +176,22 @@ ENDIF()
 ADD_DEFINITIONS(-DBUILDING)
 
 ADD_LIBRARY(chaos STATIC ${LibChaos_Core_SOURCES})
-IF(LIBCHAOS_UNIX)
+IF(LIBCHAOS_PLATFORM_WINDOWS)
+    IF(LIBCHAOS_COMPILER_MSVC)
+        TARGET_LINK_LIBRARIES(chaos Ws2_32 iphlpapi)
+    ELSE()
+        TARGET_LINK_LIBRARIES(chaos pthread)
+        TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi iphlpapi version)
+    ENDIF()
+ELSE()
     TARGET_LINK_LIBRARIES(chaos pthread)
     IF(IBERTY_DEMANGLE)
         TARGET_LINK_LIBRARIES(chaos iberty)
     ENDIF()
 
-    IF(FREEBSD)
+    IF(LIBCHAOS_PLATFORM_FREEBSD)
         TARGET_LINK_LIBRARIES(chaos execinfo)
     ELSE()
         TARGET_LINK_LIBRARIES(chaos dl)
-    ENDIF()
-ELSEIF(LIBCHAOS_WINDOWS)
-    IF(COMPILER_MINGW)
-        TARGET_LINK_LIBRARIES(chaos pthread)
-        TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi iphlpapi version)
-    ELSEIF(COMPILER_MSVC)
-        TARGET_LINK_LIBRARIES(chaos Ws2_32 iphlpapi)
     ENDIF()
 ENDIF()
