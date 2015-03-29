@@ -86,10 +86,10 @@ bool ZSocket::open(ZAddress addr){
 void ZSocket::close(){
     if(isOpen()){
         LOG("Closing socket " << _socket);
-#if PLATFORM == LINUX
-        ::close(_socket);
-#elif PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS
         ::closesocket(_socket);
+#else
+        ::close(_socket);
 #endif
         _socket = 0;
     }
@@ -272,12 +272,12 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
     switch(option){
     case SocketOptions::reuseaddr: {
         sockoption = SO_REUSEADDR;
-#if PLATFORM == LINUX
-        optptr = &yes;
-        optptrsize = sizeof(int);
-#elif PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS
         optptr = (char *)!!(value);
         optptrsize = sizeof(BOOL);
+#else
+        optptr = &yes;
+        optptrsize = sizeof(int);
 #endif
         break;
     }
@@ -287,11 +287,11 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
         timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = value;
-#if PLATFORM == LINUX
+#if PLATFORM == WINDOWS
+        throw ZException("FIX ME ON WINDOWS");
+#else
         optptr = &tv;
         optptrsize = sizeof(timeval);
-#elif PLATFORM == WINDOWS
-        throw ZException("FIX ME ON WINDOWS");
 #endif
         break;
     }
@@ -314,7 +314,15 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
 bool ZSocket::setBlocking(bool set){
     if(!isOpen())
         return false;
-#if PLATFORM == LINUX
+#if PLATFORM == WINDOWS
+
+    DWORD opt = set ? 0 : 1;
+    if(ioctlsocket(_socket, FIONBIO, &opt) != 0){
+        error = ZException("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
+        return false;
+    }
+
+#else
 
     int flags = fcntl(_socket, F_GETFL, 0);
     if(flags < 0){
@@ -324,14 +332,6 @@ bool ZSocket::setBlocking(bool set){
     flags = set ? (flags &~ O_NONBLOCK) : (flags | O_NONBLOCK);
     if(fcntl(_socket, F_SETFL, flags) != 0){
         error = ZError("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
-        return false;
-    }
-
-#elif PLATFORM == WINDOWS
-
-    DWORD opt = set ? 0 : 1;
-    if(ioctlsocket(_socket, FIONBIO, &opt) != 0){
-        error = ZException("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
         return false;
     }
 
