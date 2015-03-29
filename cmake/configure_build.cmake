@@ -89,7 +89,9 @@ FUNCTION(configure_build)
 
     # Platform Settings
     IF(${LIBCHAOS_PLATFORM} STREQUAL ${PLATFORM_LINUX} OR ${LIBCHAOS_PLATFORM} STREQUAL ${PLATFORM_MACOSX})
-        SET(CXXGNU "${CXXGNU} -rdynamic")
+        IF(NOT ${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_CLANG})
+            SET(CXXGNU "${CXXGNU} -rdynamic")
+        ENDIF()
     ENDIF()
 
     # Compiler Settings
@@ -117,18 +119,25 @@ FUNCTION(configure_build)
 
     SET(CONFIGURE_BUILD_STRING ${BUILD_STRING} PARENT_SCOPE)
 
-    IF(${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_GCC} OR ${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_MINGW} OR ${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_CLANG})
+    IF(${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_GCC} OR
+       ${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_MINGW} OR
+       ${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_CLANG})
         SET(CXXGNU "${CXXGNU} -std=c++11")
 
         IF(DEBUG) # Enable gratuitous warnings on debug build
             SET(CXXGNU "${CXXGNU} -Wall -Wextra -Wpedantic")
             #SET(CXXGNU "${CXXGNU} -fms-extensions")
             #SET(CXXF "${CXXF} -Wbloody_everything") # Some day...
-            SET(CXXGNU "${CXXGNU} -Wcast-align -Wcast-qual -Wsign-conversion -Wsign-promo")
-            SET(CXXGNU "${CXXGNU} -Wformat=2 -Winit-self -Wlogical-op")
-            SET(CXXGNU "${CXXGNU} -Wmissing-include-dirs -Wnoexcept -Woverloaded-virtual")
-            SET(CXXGNU "${CXXGNU} -Wredundant-decls -Wstrict-null-sentinel -Wctor-dtor-privacy -Wdisabled-optimization")
-            SET(CXXGNU "${CXXGNU} -Wstrict-overflow=5 -Wswitch-default -Wundef")
+            SET(CXXGNU "${CXXGNU} -Wcast-align -Wcast-qual -Wsign-conversion -Wsign-promo") # Casting
+            SET(CXXGNU "${CXXGNU} -Wformat=2 -Wstrict-overflow=5 -Wswitch-default") # Formatting
+            SET(CXXGNU "${CXXGNU} -Winit-self  -Wredundant-decls -Wundef -Woverloaded-virtual") # Declarationss
+            SET(CXXGNU "${CXXGNU} -Wmissing-include-dirs -Wctor-dtor-privacy -Wdisabled-optimization")
+
+            IF(${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_CLANG})
+                # Clang options
+            ELSE()
+                SET(CXXGNU "${CXXGNU} -Wlogical-op -Wnoexcept -Wstrict-null-sentinel")
+            ENDIF()
 
             SET(CXXGNU "${CXXGNU} -Werror=return-type") # Should be errors
             #SET(CXXF "${CXXF} -Wshadow ") # Some warnings are too verbose to be useful

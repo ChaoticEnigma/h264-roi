@@ -179,6 +179,8 @@ ZBinary getMACAddress(){
         delete[] adapterInfo;
         return bin;
     }
+#elif PLATFORM == MACOSX
+
 #else
     struct ifreq ifr;
     struct ifconf ifc;

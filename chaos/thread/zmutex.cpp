@@ -28,7 +28,11 @@ ZMutex::~ZMutex(){
 void ZMutex::lock(){
     if(!iOwn()){
         pthread_mutex_lock(&_mutex);
+#if PLATFORM == MACOSX
+        owner_tid = pthread_threadid_np(pthread_self());
+#else
         owner_tid = pthread_self();
+#endif
     }
     // We own the mutex
 }

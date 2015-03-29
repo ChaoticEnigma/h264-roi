@@ -7,7 +7,10 @@
     #include <winsock2.h>
     #include <windows.h>
     typedef int socklen_t;
-#elif PLATFORM == LINUX
+#elif PLATFORM == MACOSX
+    #include <sys/uio.h>
+    #include <unistd.h>
+#else
     #include <sys/socket.h>
     #include <netinet/in.h>
     #include <fcntl.h>
@@ -136,10 +139,10 @@ zu64 ZSocket::receive(ZAddress &sender, ZBinary &str){
     //memset(buffer, 0, ZSOCKET_BUFFER);
     sockaddr_storage from;
     socklen_t fromLength = sizeof(from);
-#if PLATFORM == LINUX
-    long received = ::recvfrom(_socket, buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromLength);
-#elif PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS
     long received = ::recvfrom(_socket, (char *)buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromLength);
+#else
+    long received = ::recvfrom(_socket, buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromLength);
 #endif
     if(received <= 0)
         return 0;
@@ -297,10 +300,10 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
         return false;
     }
 
-#if PLATFORM == LINUX
-    if(optptr != nullptr && setsockopt(_socket, SOL_SOCKET, sockoption, optptr, optptrsize) != 0){
-#elif PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS
     if(optptr != nullptr && setsockopt(_socket, SOL_SOCKET, sockoption, (char *)optptr, optptrsize) != 0){
+#else
+    if(optptr != nullptr && setsockopt(_socket, SOL_SOCKET, sockoption, optptr, optptrsize) != 0){
 #endif
         error = ZException("ZSocket: setsockopt error: " + ZError::getSystemError());
         return false;

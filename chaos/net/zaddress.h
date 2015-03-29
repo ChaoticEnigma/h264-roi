@@ -8,7 +8,15 @@
     #include <winsock2.h>
     #define IPV4_MAX 16
     #define IPV6_MAX 46
-#elif PLATFORM == LINUX
+#elif PLATFORM == MACOSX
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <netdb.h>
+    #define IPV4_MAX INET_ADDRSTRLEN
+    #define IPV6_MAX INET6_ADDRSTRLEN
+#else
     #include <sys/socket.h>
     #include <netinet/in.h>
     #define IPV4_MAX INET_ADDRSTRLEN
