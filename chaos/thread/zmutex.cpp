@@ -29,7 +29,7 @@ void ZMutex::lock(){
     if(!iOwn()){
         pthread_mutex_lock(&_mutex);
 #if PLATFORM == MACOSX
-        owner_tid = pthread_threadid_np(pthread_self());
+        pthread_threadid_np(pthread_self(), &owner_tid);
 #else
         owner_tid = pthread_self();
 #endif
@@ -40,7 +40,11 @@ void ZMutex::lock(){
 bool ZMutex::trylock(){
     if(!iOwn()){
         if(pthread_mutex_trylock(&_mutex) == 0){
+#if PLATFORM == MACOSX
+            pthread_threadid_np(pthread_self(), &owner_tid);
+#else
             owner_tid = pthread_self();
+#endif
             return true; // We now own the mutex
         }
         return false; // Another thread owns the mutex

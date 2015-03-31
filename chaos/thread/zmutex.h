@@ -26,7 +26,7 @@
 
 namespace LibChaos {
 
-typedef unsigned long ztid;
+typedef zu64 ztid;
 
 // ZMutex Class
 // WARNING: Relatively untested

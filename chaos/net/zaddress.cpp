@@ -5,7 +5,7 @@
 #if PLATFORM == WINDOWS
     #include <winsock2.h>
     #include <ws2tcpip.h>
-#elif PLATFORM == LINUX
+#else
     #include <netdb.h>
     #include <arpa/inet.h>
     #include <string.h>

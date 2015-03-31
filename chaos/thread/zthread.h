@@ -18,7 +18,7 @@
 
 #include <atomic>
 
-#undef bool // WTF ?
+#undef bool // WTF? This is sometimes necessary?
 
 namespace LibChaos {
 

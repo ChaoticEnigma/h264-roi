@@ -7,15 +7,16 @@
     #include <winsock2.h>
     #include <windows.h>
     typedef int socklen_t;
-#elif PLATFORM == MACOSX
-    #include <sys/uio.h>
-    #include <unistd.h>
 #else
     #include <sys/socket.h>
     #include <netinet/in.h>
     #include <fcntl.h>
     #include <unistd.h>
     #include <string.h>
+    #if PLATFORM == MACOSX
+        #include <sys/uio.h>
+        #include <unistd.h>
+    #endif
 #endif
 
 namespace LibChaos {
@@ -326,12 +327,12 @@ bool ZSocket::setBlocking(bool set){
 
     int flags = fcntl(_socket, F_GETFL, 0);
     if(flags < 0){
-        error = ZError("ZSocket: failed to get socket flags error: " + ZError::getSystemError());
+        error = ZException("ZSocket: failed to get socket flags error: " + ZError::getSystemError());
         return false;
     }
     flags = set ? (flags &~ O_NONBLOCK) : (flags | O_NONBLOCK);
     if(fcntl(_socket, F_SETFL, flags) != 0){
-        error = ZError("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
+        error = ZException("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
         return false;
     }
 
