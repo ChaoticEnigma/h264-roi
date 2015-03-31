@@ -38,7 +38,7 @@ protected:
 
 template <typename T, typename = void> class ZHash;
 
-template <typename T> struct ZHash<T, typename std::enable_if<std::is_enum<T>::value>::type> : public ZHashBase {
+template <typename T> class ZHash<T, typename std::enable_if<std::is_enum<T>::value>::type> : public ZHashBase {
 public:
     ZHash(T data) : ZHashBase((zu64)data){}
 };
