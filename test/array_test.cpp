@@ -74,13 +74,14 @@ int stack_block(){
 
 int map_block(){
     ZMap<ZString, zu64> map1;
-    map1.add("test1", 1);
-    map1.add("test2", 2);
-    map1.add("test3", 3);
-    map1.add("test4", 4);
+    map1.add("test1", 11);
+    map1.add("test2", 22);
+    map1.add("test3", 33);
+    map1.add("test4", 44);
 
     for(zu64 i = 0; i < map1.size(); ++i){
-        LOG(*map1.position(i).key << " " << *map1.position(i).value);
+        if(map1.position(i).key != nullptr)
+            LOG(*map1.position(i).key << " " << *map1.position(i).value);
     }
     return 0;
 }

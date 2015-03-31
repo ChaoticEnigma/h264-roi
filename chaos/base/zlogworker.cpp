@@ -1,7 +1,7 @@
 #include "zlogworker.h"
 #include "zfile.h"
 #include "zqueue.h"
-//#include "zmap.h"
+#include "zmap.h"
 
 #include <iostream>
 #include <fstream>
@@ -28,8 +28,8 @@ ZAssoc<ZPath, ZAssoc<ZLogWorker::zlog_source, ZString> > logfiles;
 
 
 ZMutex threadidmutex;
-//ZMap<ztid, zu32> threadids;
-ZAssoc<ztid, zu32> threadids;
+ZMap<ztid, zu32> threadids;
+//ZAssoc<ztid, zu32> threadids;
 
 
 bool ZLogWorker::lastcomp;

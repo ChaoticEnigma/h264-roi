@@ -19,7 +19,8 @@ ZString::ZString() : _size(0), _realsize(0), _data(nullptr){
 }
 
 ZString::~ZString(){
-    _alloc.dealloc(_data);
+    if(_data != nullptr)
+        _alloc.dealloc(_data);
 }
 
 ZString::ZString(const ZString &other) : _size(0), _realsize(0), _data(nullptr){

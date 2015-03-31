@@ -41,8 +41,22 @@ public:
             add(item->key, item->value);
         }
     }
-    ~ZMap(){
 
+    ~ZMap(){
+        if(_data != nullptr){
+            for(zu64 i = 0; i < _realsize; ++i){
+                if(_data[i].key != nullptr){
+                    _kalloc->destroy(_data[i].key);
+                    _kalloc->dealloc(_data[i].key);
+                    _talloc->destroy(_data[i].value);
+                    _talloc->dealloc(_data[i].value);
+                }
+            }
+            _alloc->dealloc(_data);
+        }
+        delete _talloc;
+        delete _kalloc;
+        delete _alloc;
     }
 
     T &add(const K &key, const T &value){
@@ -52,13 +66,12 @@ public:
         }
 
         zu64 hash = ZHash<K>(key).hash();
-        zu64 ipos = hash % _realsize;
         for(zu64 i = 0; i < _realsize; ++i){
-            zu64 pos = (ipos + i) % _realsize;
+            zu64 pos = (hash + i) % _realsize;
             // Look for somewhere to put the value
             if(_data[pos].key == nullptr){
                 // Element is unset or deleted
-                _data->hash = hash;
+                _data[pos].hash = hash;
                 _data[pos].key = _kalloc->alloc(1);
                 _kalloc->construct(_data[pos].key, 1, key);
                 _data[pos].value = _talloc->alloc(1);
@@ -77,6 +90,7 @@ public:
                 }
             }
         }
+        // Should only ever fail if resize failed and the map is full
         throw ZException(ZString("Unable to add element to map ") + hash);
     }
     inline void push(const K &key, const T &value){ add(key, value); }
@@ -161,36 +175,75 @@ public:
     }
     inline const T &operator[](const K &key) const { return get(key); }
 
+    zu64 getPosition(const K &key){
+        return 0;
+    }
+
     MapData &position(zu64 i){
         return _data[i];
     }
 
-//    ZMap<K, T> &push(K key_, T value){
-//        _data.push({ key_, value });
-//        return *this;
-//    }
+    void updateHashEntry(MapData *entry){
+        for(zu64 i = 0; i < _realsize; ++i){
+            zu64 pos = (entry->hash + i) % _realsize;
+            if(_data[pos].key == nullptr){
+                _data[pos].hash = entry->hash;
+                _data[pos].key = entry->key;
+                _data[pos].value = entry->value;
+                return;
+            } else if(_data[pos].hash == entry->hash && *_data[pos].key == *entry->key){
+                _kalloc->destroy(_data[pos].key);
+                _data[pos].key = entry->key;
+                _talloc->destroy(_data[pos].value);
+                _data[pos].value = entry->value;
+            }
+        }
+    }
 
-//    ZMap<K, T> &combine(ZMap<K, T> in){
-//        for(zu64 i = 0; i < in.size(); ++i){
-//            push(in.position(i).key, in.position(i).val);
-//        }
-//        return *this;
-//    }
+    void addHashEntry(MapData *entry){
+        for(zu64 i = 0; i < _realsize; ++i){
+            zu64 pos = (entry->hash + i) % _realsize;
+            if(_data[pos].key == nullptr){
+                _data[pos].hash = entry->hash;
+                _data[pos].key = entry->key;
+                _data[pos].value = entry->value;
+                ++_size;
+                return;
+            }
+        }
+        throw ZException("Fatal Error in addHashEntry");
+    }
 
-    // Resize the real buffer (IMPORTANT: this is the only place memory is allocated)
-    // If new size is larger, adds uninitialized space for more elements (subsequent resizes may not have to reallocate)
-    // Never reallocates a smaller buffer! resize() assumes the new buffer is never smaller so it can destroy objects
+    // Resize the buffer (this is the only place buffer memory is allocated)
+    // Buffer is resized to the next power of two that will hold <size> elements
+    // The buffer is never made smaller
     void resize(zu64 size){
         if(size > _realsize){
-//            zu64 newsize = _realsize * 2; // Double old buffer
             zu64 newsize = 1;
             while(newsize < size)
-                size <<= 1; // Get next power of 2
-            MapData *data = _alloc->alloc(newsize);
-            _alloc->rawcopy(_data, data, _size); // Copy data to new buffer
-            _alloc->dealloc(_data); // Delete old buffer without calling destructors
-            _data = data;
+                newsize <<= 1; // Get next power of 2
+
+            MapData *olddata = _data;
+            zu64 oldsize = _realsize;
+
+            _data = _alloc->alloc(newsize);
             _realsize = newsize;
+            _size = 0;
+
+            // Clear new entries
+            for(zu64 i = 0; i < _realsize; ++i){
+                _data[i].key = nullptr;
+            }
+
+            // Re-map old entries
+            if(olddata != nullptr){
+                for(zu64 i = 0; i < oldsize; ++i){
+                    if(olddata[i].key != nullptr){
+                        addHashEntry(&olddata[i]);
+                    }
+                }
+            }
+            _alloc->dealloc(olddata);
         }
     }
 

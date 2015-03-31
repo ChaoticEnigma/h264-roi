@@ -2,6 +2,8 @@
 #include "zlog.h"
 #include "zmap.h"
 
+#include <functional>
+
 #define FUCK_WINDOWS 1
 
 #if PLATFORM == WINDOWS
@@ -40,7 +42,7 @@ namespace LibChaos {
 namespace ZError {
 
 // Map of signals to signal handling functions
-ZMap<int, ZError::sigset> sigmap;
+//ZMap<int, ZError::sigset> sigmap;
 
 
 void assert(bool condition){

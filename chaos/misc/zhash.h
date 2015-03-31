@@ -2,42 +2,63 @@
 #define ZHASH
 
 #include "ztypes.h"
+#include <type_traits>
 #include "xxhash.h"
 
 namespace LibChaos {
 
 class ZHashBase {
 public:
+    enum hashMethod {
+        value,
+        hashType1,
+    };
+public:
     ZHashBase(zu64 hashval) : _hash(hashval){}
-    zu64 hash() const { return _hash; }
-    zu64 operator()() const { return hash(); }
+    inline zu64 hash() const { return _hash; }
+    inline zu64 operator()() const { return hash(); }
+
+    zu64 hashData(const zbyte *data, zu64 size, hashMethod method){
+        switch(method){
+            case hashType1: {
+                zu64 hash = 5381;
+                for(zu64 i = 0; i < size; ++i){
+                    hash = ((hash << 5) + hash) + data[i]; /* hash * 33 + c */
+                }
+                return hash;
+            }
+            default:
+                throw;
+        }
+    }
+
 protected:
     zu64 _hash;
 };
 
-template <typename T> class ZHash : public ZHashBase {
+template <typename T, typename = void> class ZHash;
+
+template <typename T> struct ZHash<T, typename std::enable_if<std::is_enum<T>::value>::type> : public ZHashBase {
 public:
-    ZHash(const T &data) : ZHashBase(0){
-        //FIXME: Generic hash algorithm
-    }
+    ZHash(T data) : ZHashBase((zu64)data){}
 };
 
 // z unsigned types
 template <> class ZHash<zu8> : public ZHashBase {
 public:
-    ZHash(zu8 data) : ZHashBase(data){}
+    ZHash(zu8 data) : ZHashBase((zu64)data){}
 };
 template <> class ZHash<zu16> : public ZHashBase {
 public:
-    ZHash(zu16 data) : ZHashBase(data){}
+    ZHash(zu16 data) : ZHashBase((zu64)data){}
 };
 template <> class ZHash<zu32> : public ZHashBase {
 public:
-    ZHash(zu32 data) : ZHashBase(data){}
+    ZHash(zu32 data) : ZHashBase((zu64)data){}
 };
 template <> class ZHash<zu64> : public ZHashBase {
 public:
-    ZHash(zu64 data) : ZHashBase(data){}
+    ZHash(zu64 data) : ZHashBase((zu64)data){}
 };
 
 // z signed types
@@ -74,8 +95,6 @@ public:
     ZHash(unsigned long data) : ZHashBase((zu64)data){}
 };
 
-
 }
 
 #endif // ZHASH
-

@@ -22,7 +22,7 @@
 
 namespace LibChaos {
 
-typedef unsigned long ztid;
+typedef zu64 ztid;
 
 struct ZThreadArg {
     bool stop();

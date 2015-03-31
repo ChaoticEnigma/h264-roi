@@ -9,6 +9,7 @@
 #include "ztypes.h"
 #include "zallocator.h"
 #include "zassoc.h"
+#include "zhash.h"
 #include "ziterator.h"
 
 #include <cstring>
@@ -317,6 +318,11 @@ public:
 private:
     ZString *str;
     zu64 pos;
+};
+
+template <> class ZHash<ZString> : public ZHashBase {
+public:
+    ZHash(ZString str, hashMethod method = hashType1) : ZHashBase(hashData((const zbyte *)str.cc(), str.size(), method)){}
 };
 
 } // namespace LibChaos
