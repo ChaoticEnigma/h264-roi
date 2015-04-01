@@ -113,7 +113,7 @@ void *get_in_addr(struct sockaddr *sa){
     } else if(sa->sa_family == AF_INET6){
         return &(((struct sockaddr_in6*)sa)->sin6_addr);
     } else {
-        throw ZError("Invalid sa_family");
+        throw ZException("Invalid sa_family");
     }
 }
 

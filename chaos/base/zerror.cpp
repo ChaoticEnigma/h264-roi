@@ -23,6 +23,12 @@
     #endif // FUCK_WINDOWS
 #elif PLATFORM == MACOSX
     #include <sys/errno.h>
+    #include <execinfo.h>
+    #include <signal.h>
+    #include <cstring>
+    #include <stdio.h>
+    #include <cstdlib>
+    #include <errno.h>
 #else
     #include <execinfo.h>
     #include <signal.h>
@@ -42,145 +48,13 @@ namespace LibChaos {
 namespace ZError {
 
 // Map of signals to signal handling functions
-//ZMap<int, ZError::sigset> sigmap;
-
+ZMap<int, ZError::sigset> sigmap;
 
 void assert(bool condition){
     //assert(condition);
 }
 
-#if PLATFORM == LINUX
-
-struct backtrace_parts {
-    ZPath exec;
-    ZString func_symbol;
-    ZString func_name;
-    ZString func_addr;
-    ZString addr;
-};
-struct addr2line_parts {
-    ZString symbol;
-    ZString name;
-    ZPath file;
-    unsigned line;
-};
-
-addr2line_parts addr2line(ZPath program, const void *addr){
-    //char addr2line_cmd[512];
-    //sprintf(addr2line_cmd, "addr2line -f -p -e %.256s %p", program_name, addr);
-
-    ZString addrcmd = "addr2line -f -p -e " + program.str() + " " + ZString::ItoS((zu64)addr, 16);
-
-    char path[1024];
-    ZString str;
-
-    FILE *fp = popen(addrcmd.cc(), "r");
-    if(fp == NULL){
-        return { ZString(), ZString(), ZPath(), 0 };
-    }
-    while(fgets(path, sizeof(path)-1, fp) != NULL){
-        str += path;
-    }
-    pclose(fp);
-
-    addr2line_parts source;
-
-    str.removeWhitespace();
-    ArZ tok = str.split(' ');
-    if(tok.size() < 2){
-        return { "??", "??", "??", 0};
-    }
-    source.symbol = tok[0];
-#ifdef IBERTY_DEMANGLE
-    source.name = cplus_demangle(source.symbol.cc(), 0);
-#else
-    source.name = source.symbol;
-#endif
-    ArZ flp = tok[1].split(':');
-    source.file = (flp.size() > 0 && flp[0] != "??") ? ZPath(flp[0]) : "";
-    source.line = (flp.size() > 1 && flp[1] != "??") ? (unsigned)flp[1].tint() : 0;
-
-    return source;
-}
-
-ArZ ZError::getStackTrace(unsigned trim){
-    ArZ trace;
-    void *buffer[256];
-    int nptrs = backtrace(buffer, 256);
-    char **strings = backtrace_symbols(buffer, nptrs);
-    if(strings != NULL){
-        ArZ strs;
-        for(int i = (int)trim; i < nptrs; ++i){
-            strs.push(strings[i]);
-        }
-        //strs.popFrontCount(trim);
-        for(zu64 i = 0; i < strs.size(); ++i){
-            ZString tmp = strs[i];
-
-            backtrace_parts frame;
-
-            // Module
-            frame.exec = ZString::substr(tmp, 0, ZString::findFirst(tmp, "("));
-            tmp.substr(ZString::findFirst(tmp, "("));
-
-            // Function
-            ZString funcstr = ZString::substr(tmp, 0, ZString::findFirst(tmp, "["));
-            tmp.substr(ZString::findFirst(tmp, "["));
-            ArZ fpts = funcstr.strip(' ').strip('(').strip(')').split('+');
-            frame.func_symbol = fpts[0];
-#ifdef IBERTY_DEMANGLE
-            frame.func_name = cplus_demangle(frame.func_symbol.cc(), 0);
-#else
-            frame.func_name = frame.func_symbol;
-#endif
-            frame.func_addr = fpts[1];
-
-            // Address
-            frame.addr = tmp;
-            frame.addr.strip('[').strip(']');
-
-            addr2line_parts source = addr2line(frame.exec, buffer[i+trim]);
-
-            ZString frstr = i;
-            frstr << " - " << frame.exec.last() << " - (";
-
-            if(!frame.func_name.isEmpty()){
-                frstr << frame.func_name;
-            } else if(!source.name.isEmpty()){
-                frstr << source.name;
-            } else if(!frame.func_symbol.isEmpty()){
-                frstr << frame.func_symbol;
-            } else if(!source.symbol.isEmpty()){
-                frstr << source.symbol;
-            } else {
-                frstr << "??";
-            }
-
-            if(!frame.func_addr.isEmpty()){
-                frstr << " + " << frame.func_addr;
-            }
-
-            frstr << ") : [" << frame.addr << "]";
-
-            if(source.file.depth())
-                frstr << " @ " << source.file.last() << " : "  << source.line;
-            trace.push(frstr);
-        }
-        free(strings);
-    }
-    return trace;
-}
-
-void fatalSignalHandler(int sig){
-    ELOG("Fatal Error: signal " << sig);
-
-    ZError trace(ZString("Fatal Error: signal ") << sig);
-    trace.logStackTrace();
-
-    exit(sig);
-}
-
-#elif PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS
 
 #ifndef FUCK_WINDOWS
 struct module_data {
@@ -651,22 +525,164 @@ ArZ getStackTrace(unsigned trim){
     return trace;
 }
 
+#elif PLATFORM == MACOSX
+
+ArZ getStackTrace(unsigned trim){
+    ArZ trace;
+
+    void* callstack[128];
+    int i, frames = backtrace(callstack, 128);
+    char** strs = backtrace_symbols(callstack, frames);
+    for(i = 0; i < frames; ++i){
+        trace.push(strs[i]);
+        //printf("%s\n", strs[i]);
+    }
+    free(strs);
+
+    trace.popFrontCount(trim);
+    return trace;
+}
+
+#else // PLATFORM
+
+struct backtrace_parts {
+    ZPath exec;
+    ZString func_symbol;
+    ZString func_name;
+    ZString func_addr;
+    ZString addr;
+};
+struct addr2line_parts {
+    ZString symbol;
+    ZString name;
+    ZPath file;
+    unsigned line;
+};
+
+addr2line_parts addr2line(ZPath program, const void *addr){
+    //char addr2line_cmd[512];
+    //sprintf(addr2line_cmd, "addr2line -f -p -e %.256s %p", program_name, addr);
+
+    ZString addrcmd = "addr2line -f -p -e " + program.str() + " " + ZString::ItoS((zu64)addr, 16);
+
+    char path[1024];
+    ZString str;
+
+    FILE *fp = popen(addrcmd.cc(), "r");
+    if(fp == NULL){
+        return { ZString(), ZString(), ZPath(), 0 };
+    }
+    while(fgets(path, sizeof(path)-1, fp) != NULL){
+        str += path;
+    }
+    pclose(fp);
+
+    addr2line_parts source;
+
+    str.removeWhitespace();
+    ArZ tok = str.split(' ');
+    if(tok.size() < 2){
+        return { "??", "??", "??", 0};
+    }
+    source.symbol = tok[0];
+#ifdef IBERTY_DEMANGLE
+    source.name = cplus_demangle(source.symbol.cc(), 0);
+#else
+    source.name = source.symbol;
+#endif
+    ArZ flp = tok[1].split(':');
+    source.file = (flp.size() > 0 && flp[0] != "??") ? ZPath(flp[0]) : "";
+    source.line = (flp.size() > 1 && flp[1] != "??") ? (unsigned)flp[1].tint() : 0;
+
+    return source;
+}
+
+ArZ ZError::getStackTrace(unsigned trim){
+    ArZ trace;
+    void *buffer[256];
+    int nptrs = backtrace(buffer, 256);
+    char **strings = backtrace_symbols(buffer, nptrs);
+    if(strings != NULL){
+        ArZ strs;
+        for(int i = (int)trim; i < nptrs; ++i){
+            strs.push(strings[i]);
+        }
+        //strs.popFrontCount(trim);
+        for(zu64 i = 0; i < strs.size(); ++i){
+            ZString tmp = strs[i];
+
+            backtrace_parts frame;
+
+            // Module
+            frame.exec = ZString::substr(tmp, 0, ZString::findFirst(tmp, "("));
+            tmp.substr(ZString::findFirst(tmp, "("));
+
+            // Function
+            ZString funcstr = ZString::substr(tmp, 0, ZString::findFirst(tmp, "["));
+            tmp.substr(ZString::findFirst(tmp, "["));
+            ArZ fpts = funcstr.strip(' ').strip('(').strip(')').split('+');
+            frame.func_symbol = fpts[0];
+#ifdef IBERTY_DEMANGLE
+            frame.func_name = cplus_demangle(frame.func_symbol.cc(), 0);
+#else
+            frame.func_name = frame.func_symbol;
+#endif
+            frame.func_addr = fpts[1];
+
+            // Address
+            frame.addr = tmp;
+            frame.addr.strip('[').strip(']');
+
+            addr2line_parts source = addr2line(frame.exec, buffer[i+trim]);
+
+            ZString frstr = i;
+            frstr << " - " << frame.exec.last() << " - (";
+
+            if(!frame.func_name.isEmpty()){
+                frstr << frame.func_name;
+            } else if(!source.name.isEmpty()){
+                frstr << source.name;
+            } else if(!frame.func_symbol.isEmpty()){
+                frstr << frame.func_symbol;
+            } else if(!source.symbol.isEmpty()){
+                frstr << source.symbol;
+            } else {
+                frstr << "??";
+            }
+
+            if(!frame.func_addr.isEmpty()){
+                frstr << " + " << frame.func_addr;
+            }
+
+            frstr << ") : [" << frame.addr << "]";
+
+            if(source.file.depth())
+                frstr << " @ " << source.file.last() << " : "  << source.line;
+            trace.push(frstr);
+        }
+        free(strings);
+    }
+    return trace;
+}
+
 #endif // PLATFORM
 
+void fatalSignalHandler(int sig){
+    ELOG("Fatal Error: signal " << sig);
+
+    ZException trace(ZString("Fatal Error: signal ") << sig);
+    trace.logStackTrace();
+
+    exit(sig);
+}
+
 void registerSigSegv(){
-#if PLATFORM == LINUX
+#if PLATFORM != WINDOWS
     signal(SIGSEGV, fatalSignalHandler);
 #endif
 }
 
-#if PLATFORM == LINUX
-
-void ZError::sigHandle(int sig){
-    if(sigmap.exists(sig) && sigmap[sig].handler != NULL)
-        (sigmap[sig].handler)(sigmap[sig].sigtype);
-}
-
-#elif PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS
 
 BOOL WINAPI ConsoleHandler(DWORD dwType){
     LOG("Console Exit Handler " << dwType);
@@ -684,12 +700,24 @@ BOOL WINAPI ConsoleHandler(DWORD dwType){
     return TRUE;
 }
 
+#else
+
+void sigHandle(int sig){
+    if(sigmap.exists(sig) && sigmap[sig].handler != NULL)
+        (sigmap[sig].handler)(sigmap[sig].sigtype);
+}
+
 #endif // PLATFORM
 
 bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
+#if PLATFORM == WINDOWS
 
-#if PLATFORM == LINUX
+    if(!SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE)){
+        return false;
+    }
+
+#else
 
     int sig = 0;
     switch(sigtype){
@@ -730,7 +758,7 @@ bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
     ss.ss_flags = 0;
 
     if(sigaltstack(&ss, NULL) != 0){
-        throw ZError("sigaltstack");
+        throw ZException("sigaltstack");
     }
 
     struct sigaction action;
@@ -740,13 +768,7 @@ bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
     action.sa_flags = SA_SIGINFO | SA_ONSTACK;
     if(sigaction(sig, &action, 0) != 0){
-        throw ZError("sigaction");
-    }
-
-#elif PLATFORM == WINDOWS
-
-    if(!SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE)){
-        return false;
+        throw ZException("sigaction");
     }
 
 #endif // PLATFORM
@@ -763,7 +785,7 @@ unsigned long getSystemErrorCode(){
     return GetLastError();
 }
 #else
-int ZError::getSystemErrorCode(){
+int getSystemErrorCode(){
     return errno;
 }
 #endif

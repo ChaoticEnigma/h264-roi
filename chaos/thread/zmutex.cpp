@@ -73,7 +73,13 @@ void ZMutex::unlock(){
 }
 
 bool ZMutex::iOwn(){
+#if PLATFORM == MACOSX
+    ztid tid;
+    pthread_threadid_np(pthread_self(), &tid);
+    return (locker() == tid);
+#else
     return (locker() == pthread_self());
+#endif
 }
 
 #elif ZMUTEX_VERSION == 2

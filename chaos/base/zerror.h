@@ -13,42 +13,43 @@
 namespace LibChaos {
 namespace ZError {
 
-enum zerror_signal {
-    unknown = 0,
-    interrupt = 1,  // SIGINT
-    abort = 2,      // SIGABRT
-    quit = 3,       // SIGQUIT
-    illegal = 4,    // SIGILL
-    segv = 5,       // SIGSEGV
-    terminate = 6,  // SIGTERM
-    fpe = 7         // SIGFPE
-};
+    enum zerror_signal {
+        unknown = 0,
+        interrupt = 1,  // SIGINT
+        abort = 2,      // SIGABRT
+        quit = 3,       // SIGQUIT
+        illegal = 4,    // SIGILL
+        segv = 5,       // SIGSEGV
+        terminate = 6,  // SIGTERM
+        fpe = 7         // SIGFPE
+    };
 
-typedef void (*signalHandler)(zerror_signal);
+    typedef void (*signalHandler)(zerror_signal);
 
-struct sigset {
-    zerror_signal sigtype;
-    signalHandler handler;
-};
+    struct sigset {
+        zerror_signal sigtype;
+        signalHandler handler;
+    };
 
-void assert(bool condition);
+    void assert(bool condition);
 
-void registerSigSegv();
-bool registerInterruptHandler(signalHandler);
-bool registerSignalHandler(zerror_signal, signalHandler);
+    void registerSigSegv();
+    bool registerInterruptHandler(signalHandler);
+    bool registerSignalHandler(zerror_signal, signalHandler);
 
-#if PLATFORM == WINDOWS
-unsigned long getSystemErrorCode();
-#else
-int getSystemErrorCode();
-#endif
-int getSocketErrorCode();
-ZString getSystemError();
+    #if PLATFORM == WINDOWS
+    unsigned long getSystemErrorCode();
+    #else
+    int getSystemErrorCode();
+    #endif
 
-ArZ getStackTrace(unsigned trim = 1);
+    int getSocketErrorCode();
+    ZString getSystemError();
 
-// private
-void sigHandle(int sig);
+    ArZ getStackTrace(unsigned trim = 1);
+
+    // private
+    void sigHandle(int sig);
 
 }
 }

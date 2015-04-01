@@ -67,7 +67,6 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     misc/zautobufferunit.h
     misc/zencrypt.h
     misc/zhash.h
-    misc/zmisc.h
     misc/zrandom.h
     misc/zret.h
     misc/zuid.h
@@ -118,7 +117,7 @@ SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ##
 
     misc/zautobuffer.cpp
     misc/zencrypt.cpp
-    misc/zmisc.cpp
+    misc/zhash.cpp
     misc/zrandom.cpp
     misc/zuid.cpp
 

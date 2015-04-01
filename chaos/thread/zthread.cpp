@@ -3,6 +3,9 @@
 #if COMPILER == MSVC
     #include <windows.h>
 #else
+    #if PLATFORM == MACOSX
+        #include <sched.h>
+    #endif
     #include <signal.h>
     #include <unistd.h>
     #include <sys/types.h>
@@ -26,7 +29,8 @@ ZThread::ZThread(funcType func) : ZThread(){
 ZThread::ZThread(funcType func, void *argptr) : ZThread(){
     run(func, argptr);
 }
-ZThread::ZThread(const ZThread &other) : _thread(other._thread), _param(other._param), _stop((bool)other._stop), ret(other.ret), _alive(other._alive), copyable(other.copyable){
+ZThread::ZThread(const ZThread &other)
+  : _thread(other._thread), _param(other._param), _stop((bool)other._stop), ret(other.ret), _alive(other._alive), copyable(other.copyable){
 
 }
 
@@ -103,6 +107,8 @@ void ZThread::yield(){
 #else
     #if PLATFORM == WINDOWS
         std::this_thread::yield();
+    #elif PLATFORM == MACOSX
+        sched_yield();
     #else
         pthread_yield();
     #endif
