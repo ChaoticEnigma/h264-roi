@@ -79,9 +79,12 @@ int map_block(){
     map1.add("test3", 33);
     map1.add("test4", 44);
 
+    LOG(map1.size() << " " << map1.realSize());
     for(zu64 i = 0; i < map1.size(); ++i){
-        if(map1.position(i).key != nullptr)
-            LOG(*map1.position(i).key << " " << *map1.position(i).value);
+        if(map1.position(i).key == nullptr)
+            LOG("null");
+        else
+            LOG(map1.position(i). hash << " " << *map1.position(i).key << " " << *map1.position(i).value);
     }
     return 0;
 }

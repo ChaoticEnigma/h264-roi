@@ -320,9 +320,9 @@ private:
     zu64 pos;
 };
 
-template <> class ZHash<ZString> : public ZHashBase {
+template <ZHashBase::hashMethod M = ZHashBase::defaultHash> class ZHash<ZString, M> : public ZHashMethod<M> {
 public:
-    ZHash(ZString str, hashMethod method = hashType1) : ZHashBase(hashData((const zbyte *)str.cc(), str.size(), method)){}
+    ZHash(ZString str) : ZHashBase(hashData((const zbyte *)str.cc(), str.size(), M)){}
 };
 
 } // namespace LibChaos
