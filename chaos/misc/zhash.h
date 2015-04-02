@@ -75,52 +75,28 @@ public:
     ZHash(zu64 data) : ZHashBase(8, new zbyte[_size]){ zu64toBytes(data, _hash); }
     zu64 hashValue() const { return bytesToZu64(_hash); }
 };
-template <> class ZHash<zu8> : public ZHash<zu64> {
-public:
-    ZHash(zu8 data) : ZHash<zu64>((zu64)data){}
-};
-template <> class ZHash<zu16> : public ZHash<zu64> {
-public:
-    ZHash(zu16 data) : ZHash<zu64>((zu64)data){}
-};
-template <> class ZHash<zu32> : public ZHash<zu64> {
-public:
-    ZHash(zu32 data) : ZHash<zu64>((zu64)data){}
-};
 
-// z signed types
-template <> class ZHash<zs8> : public ZHash<zu64> {
-public:
-    ZHash(zs8 data) : ZHash<zu64>((zu64)data){}
-};
-template <> class ZHash<zs16> : public ZHash<zu64> {
-public:
-    ZHash(zs16 data) : ZHash<zu64>((zu64)data){}
-};
-template <> class ZHash<zs32> : public ZHash<zu64> {
-public:
-    ZHash(zs32 data) : ZHash<zu64>((zu64)data){}
-};
-template <> class ZHash<zs64> : public ZHash<zu64> {
-public:
-    ZHash(zs64 data) : ZHash<zu64>((zu64)data){}
-};
+#define ZHASH_TRIVIAL_TEMPLATE(ARG)                                     \
+    template <> class ZHash<ARG> : public ZHash<zu64> {                 \
+    public:                                                             \
+        ZHash(ARG data) : ZHash<zu64>(reinterpret_cast<zu64>(data)){}   \
+    };
 
-// signed
-template <> class ZHash<char> : public ZHash<zu64> {
-public:
-    ZHash(char data) : ZHash<zu64>((zu64)data){}
-};
-template <> class ZHash<long> : public ZHash<zu64> {
-public:
-    ZHash(long data) : ZHash<zu64>((zu64)data){}
-};
+ZHASH_TRIVIAL_TEMPLATE(bool)
+ZHASH_TRIVIAL_TEMPLATE(char)
+ZHASH_TRIVIAL_TEMPLATE(long)
+ZHASH_TRIVIAL_TEMPLATE(unsigned long)
 
-// unsigned
-template <> class ZHash<unsigned long> : public ZHash<zu64> {
-public:
-    ZHash(unsigned long data) : ZHash<zu64>((zu64)data){}
-};
+ZHASH_TRIVIAL_TEMPLATE(zu8)
+ZHASH_TRIVIAL_TEMPLATE(zs8)
+
+ZHASH_TRIVIAL_TEMPLATE(zu16)
+ZHASH_TRIVIAL_TEMPLATE(zs16)
+
+ZHASH_TRIVIAL_TEMPLATE(zu32)
+ZHASH_TRIVIAL_TEMPLATE(zs32)
+
+ZHASH_TRIVIAL_TEMPLATE(zs64)
 
 }
 
