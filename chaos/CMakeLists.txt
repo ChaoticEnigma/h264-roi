@@ -30,8 +30,8 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     base/zexception.h
     base/zlog.h
     base/zlogworker.h
-    base/zpath.h
-    base/zstring.h
+    #base/zpath.h
+    #base/zstring.h
     base/ztime.h
 
     data/zallocator.h
@@ -41,13 +41,13 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     data/zdata.h
     data/zdefaultstorage.h
     data/zfilestorage.h
-    data/zjson.h
+    #data/zjson.h
     data/zlist.h
     data/zmap.h
     data/zpointer.h
     data/zqueue.h
     data/zstack.h
-    data/zxml.h
+    #data/zxml.h
 
     file/database.h
     file/zbitmap.h
@@ -77,6 +77,11 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     net/zsocket.h
     net/zstreamsocket.h
 
+    string/zjson.h
+    string/zpath.h
+    string/zstring.h
+    string/zxml.h
+
     thread/zcondition.h
     thread/zlock.h
     thread/zmutex.h
@@ -91,14 +96,14 @@ SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ##
     base/zexception.cpp
     base/zlog.cpp
     base/zlogworker.cpp
-    base/zpath.cpp
-    base/zstring.cpp
-    base/zstring_encode.cpp
+    #base/zpath.cpp
+    #base/zstring.cpp
+    #base/zstring_encode.cpp
     base/ztime.cpp
 
     data/zbinary.cpp
-    data/zjson.cpp
-    data/zxml.cpp
+    #data/zjson.cpp
+    #data/zxml.cpp
 
     #file/database.cpp
     file/zbmp.cpp
@@ -127,6 +132,12 @@ SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ##
     net/zsocket.cpp
     net/zstreamsocket.cpp
 
+    string/zjson.cpp
+    string/zpath.cpp
+    string/zstring.cpp
+    string/zstring-encode.cpp
+    string/zxml.cpp
+
     thread/zcondition.cpp
     #thread/zlock.cpp
     thread/zmutex.cpp
@@ -153,6 +164,7 @@ SET(LibChaos_Core_INCLUDE
     ${LibChaos_Core_SOURCE_DIR}/net
     ${LibChaos_Core_SOURCE_DIR}/math
     ${LibChaos_Core_SOURCE_DIR}/misc
+    ${LibChaos_Core_SOURCE_DIR}/string
     ${LibChaos_Core_SOURCE_DIR}/thread
 )
 

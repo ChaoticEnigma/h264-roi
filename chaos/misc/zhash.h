@@ -76,17 +76,14 @@ public:
     zu64 hashValue() const { return bytesToZu64(_hash); }
 };
 
-#define ZHASH_TRIVIAL_TEMPLATE(ARG)                                     \
-    template <> class ZHash<ARG> : public ZHash<zu64> {                 \
-    public:                                                             \
-        ZHash(ARG data) : ZHash<zu64>(reinterpret_cast<zu64>(data)){}   \
-    };
+#define ZHASH_TRIVIAL_TEMPLATE(ARG)                                 \
+template <> class ZHash<ARG> : public ZHash<zu64> {                 \
+public:                                                             \
+    ZHash(ARG data) : ZHash<zu64>(reinterpret_cast<zu64>(data)){}   \
+};
 
 ZHASH_TRIVIAL_TEMPLATE(bool)
 ZHASH_TRIVIAL_TEMPLATE(char)
-ZHASH_TRIVIAL_TEMPLATE(long)
-ZHASH_TRIVIAL_TEMPLATE(unsigned long)
-
 ZHASH_TRIVIAL_TEMPLATE(zu8)
 ZHASH_TRIVIAL_TEMPLATE(zs8)
 
@@ -95,6 +92,9 @@ ZHASH_TRIVIAL_TEMPLATE(zs16)
 
 ZHASH_TRIVIAL_TEMPLATE(zu32)
 ZHASH_TRIVIAL_TEMPLATE(zs32)
+
+ZHASH_TRIVIAL_TEMPLATE(long)
+ZHASH_TRIVIAL_TEMPLATE(unsigned long)
 
 ZHASH_TRIVIAL_TEMPLATE(zs64)
 
