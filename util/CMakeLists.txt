@@ -34,7 +34,15 @@ ENDIF()
 
 # Image Downloader
 IF(LIBCHAOS_EXTERN_IMAGE_DOWNLOADER)
-    ADD_EXECUTABLE(imagedownloader imagedownloader.cpp)
+    ADD_EXECUTABLE(imagedownloader
+        imagedownloader/imagedownloader.cpp
+
+        # Other Files
+        imagedownloader/.htaccess
+        imagedownloader/save.js
+        imagedownloader/save.php
+        imagedownloader/save-bookmark.txt
+    )
     TARGET_LINK_LIBRARIES(imagedownloader chaos)
 ENDIF()
 
