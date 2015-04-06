@@ -78,13 +78,55 @@ int map_block(){
     map1.add("test2", 22);
     map1.add("test3", 33);
     map1.add("test4", 44);
+    map1.add("test5", 55);
+    map1.add("test6", 66);
+    map1.add("test7", 77);
+    map1.add("test8", 88);
+    map1.add("test9", 99);
+    map1.add("test:", 111);
+    map1.add("test;", 222);
+    map1.add("test<", 333);
+    map1.add("test=", 444);
+    map1.add("test>", 555);
+    map1.add("test?", 666);
+
+    LOG(map1.get("test4"));
+    LOG(map1.get("test3"));
+    LOG(map1.get("test2"));
+    LOG(map1.get("test1"));
+
+    map1.add("test3", 3333);
+
+    LOG(map1.get("test3"));
 
     LOG(map1.size() << " " << map1.realSize());
-    for(zu64 i = 0; i < map1.size(); ++i){
-        if(map1.position(i).key == nullptr)
-            LOG("null");
-        else
-            LOG(map1.position(i). hash << " " << *map1.position(i).key << " " << *map1.position(i).value);
+    for(zu64 i = 0; i < map1.realSize(); ++i){
+        if(map1.position(i).key != nullptr)
+            LOG(i << " " << *map1.position(i).key << " " << *map1.position(i).value << " " << map1.position(i).hash);
     }
+
+    map1["test21"] = 1001;
+    map1["test22"] = 2002;
+
+    LOG(map1.get("test21"));
+    LOG(map1.get("test22"));
+
+    map1.remove("test8");
+    map1.remove("test:");
+
+    LOG(map1.size() << " " << map1.realSize());
+    for(zu64 i = 0; i < map1.realSize(); ++i){
+        if(map1.position(i).key != nullptr)
+            LOG(i << " " << *map1.position(i).key << " " << *map1.position(i).value << " " << map1.position(i).hash);
+    }
+
+    map1["test8"] = 888;
+
+    LOG(map1.size() << " " << map1.realSize());
+    for(zu64 i = 0; i < map1.realSize(); ++i){
+        if(map1.position(i).key != nullptr)
+            LOG(i << " " << *map1.position(i).key << " " << *map1.position(i).value << " " << map1.position(i).hash);
+    }
+
     return 0;
 }

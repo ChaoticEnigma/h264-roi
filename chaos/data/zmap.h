@@ -97,9 +97,8 @@ public:
 
     void remove(const K &key){
         zu64 hash = ZHash<K>(key).hash();
-        zu64 ipos = hash % _realsize;
         for(zu64 i = 0; i < _realsize; ++i){
-            zu64 pos = (ipos + i) % _realsize;
+            zu64 pos = (hash + i) % _realsize;
             // Look for the key
             if(_data[pos].key == nullptr){
                 if(_data[pos].value == nullptr ){
@@ -124,9 +123,8 @@ public:
 
     T &get(const K &key){
         zu64 hash = ZHash<K>(key).hash();
-        zu64 start = hash % _realsize;
         for(zu64 i = 0; i < _realsize; ++i){
-            zu64 pos = (start + i) % _realsize;
+            zu64 pos = (hash + i) % _realsize;
             // Look for the key
             if(_data[pos].key == nullptr){
                 if(_data[pos].value == nullptr ){
@@ -242,8 +240,8 @@ public:
                         addHashEntry(&olddata[i]);
                     }
                 }
+                _alloc->dealloc(olddata);
             }
-            _alloc->dealloc(olddata);
         }
     }
 

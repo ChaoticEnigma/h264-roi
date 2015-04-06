@@ -249,6 +249,8 @@ public:
     inline zu64 size() const { return _size; }
     inline zu64 realSize() const { return _realsize; }
 
+    inline const zbyte *bytes(){ return reinterpret_cast<zbyte*>(_data); }
+
     // Number of *characters* (code points)
     zu64 length() const;
 
@@ -320,18 +322,8 @@ private:
     zu64 pos;
 };
 
-//template <ZHashBase::hashMethod M = ZHashBase::defaultHash> class ZHash<ZString, M> : public ZHashMethod<M> {
-//public:
-//    ZHash(ZString str) : ZHashBase(hashData((const zbyte *)str.cc(), str.size(), M)){}
-//};
-template <> class ZHash<ZString, ZHashBase::defaultHash> : public ZHashMethod<ZHashBase::defaultHash> {
-public:
-
-};
-template <ZHashBase::hashMethod M> class ZHash<ZString, M> {
-public:
-
-};
+// ZString specialization ZHash
+ZHASH_USER_SPECIALIAZATION(ZString, (ZString str), (str.bytes(), str.size()), {})
 
 } // namespace LibChaos
 

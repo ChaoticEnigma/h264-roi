@@ -41,8 +41,24 @@ int hash_block(){
     LOG(data1 << " " << hash1);
 
     ZString data2 = "hashdata";
+    ZString data3 = "hashdata1";
+    ZString data4 = "hashdata2";
+
     zu64 hash2 = ZHash<ZString>(data2).hash();
+    zu64 hash3 = ZHash<ZString>(data3).hash();
+    zu64 hash4 = ZHash<ZString>(data4).hash();
+
     LOG(data2 << " " << hash2);
+    LOG(data3 << " " << hash3);
+    LOG(data4 << " " << hash4);
+
+    zu64 hash5 = ZHash<ZString, ZHashBase::xxHash64>(data2).hash();
+    zu64 hash6 = ZHash<ZString, ZHashBase::xxHash64>(data3).hash();
+    zu64 hash7 = ZHash<ZString, ZHashBase::xxHash64>(data4).hash();
+
+    LOG(data2 << " " << hash5);
+    LOG(data3 << " " << hash6);
+    LOG(data4 << " " << hash7);
 
     return 0;
 }
