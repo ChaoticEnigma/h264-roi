@@ -191,6 +191,8 @@ typedef uint64_t zu64;
 typedef zu8 zbyte;
 typedef zbyte zoctet; // I blame the IETF
 
+typedef zu64 zsize;
+
 #define ZU8_MAX  ((zu8) 0xFF)
 #define ZU16_MAX ((zu16)0xFFFFF)
 #define ZU32_MAX ((zu32)0xFFFFFFFF)

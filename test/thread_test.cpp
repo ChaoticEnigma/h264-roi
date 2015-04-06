@@ -97,7 +97,7 @@ DWORD threadLoop(void *name){
     return 0;
 }
 
-HANDLE CreateChild(char *name){
+HANDLE CreateChild(const char *name){
     HANDLE hThread; DWORD dwId;
     hThread = CreateThread(NULL, 0, threadLoop, (LPVOID)name, 0, &dwId);
     assert(hThread != NULL);

@@ -249,7 +249,7 @@ public:
     inline zu64 size() const { return _size; }
     inline zu64 realSize() const { return _realsize; }
 
-    inline const zbyte *bytes(){ return reinterpret_cast<zbyte*>(_data); }
+    inline const zbyte *bytes() const { return reinterpret_cast<zbyte*>(_data); }
 
     // Number of *characters* (code points)
     zu64 length() const;
@@ -323,7 +323,7 @@ private:
 };
 
 // ZString specialization ZHash
-ZHASH_USER_SPECIALIAZATION(ZString, (ZString str), (str.bytes(), str.size()), {})
+ZHASH_USER_SPECIALIAZATION(ZString, (const ZString &str), (str.bytes(), str.size()), {})
 
 } // namespace LibChaos
 

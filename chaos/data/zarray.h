@@ -7,6 +7,7 @@
 #define ZARRAY_H
 
 #include "ztypes.h"
+#include "zhash.h"
 
 #if ZARRAY_VERSION == 2
 
@@ -253,6 +254,23 @@ private:
     zu64 _size;
     zu64 _realsize;
     T *_data;
+};
+
+//ZHASH_USER_SPECIALIAZATION(ZArray<T>, (ZArray<T> array), (), {})
+
+template <typename T, ZHashBase::hashMethod M> class ZHash<ZArray<T>, M> : public ZHashMethod<M> {
+public:
+    ZHash(const ZArray<T> &array) : ZHashMethod<M>(){
+        for(zu64 i = 0; i < array.size(); ++i){
+            ZHash<T, M>(array[i])
+        }
+    }
+};
+template <> class ZHash<TYPE, ZHashBase::defaultHash> : public ZHashMethod<ZHashBase::defaultHash> {
+public:
+    ZHash(const ZArray<T> &array) : ZHashMethod<ZHashBase::defaultHash>(){
+
+    }
 };
 
 }

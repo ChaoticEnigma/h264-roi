@@ -19,18 +19,12 @@ ZQueue<ZLogWorker::LogJob*> jobs;
 //ZMutex writemutex;
 
 ZMutex formatmutex;
-//ZMap<ZLogWorker::zlog_source, ZString> stdoutlog;
-//ZMap<ZLogWorker::zlog_source, ZString> stderrlog;
-//ZMap<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
-ZAssoc<ZLogWorker::zlog_source, ZString> stdoutlog;
-ZAssoc<ZLogWorker::zlog_source, ZString> stderrlog;
-ZAssoc<ZPath, ZAssoc<ZLogWorker::zlog_source, ZString> > logfiles;
-
+ZMap<ZLogWorker::zlog_source, ZString> stdoutlog;
+ZMap<ZLogWorker::zlog_source, ZString> stderrlog;
+ZMap<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
 
 ZMutex threadidmutex;
 ZMap<ztid, zu32> threadids;
-//ZAssoc<ztid, zu32> threadids;
-
 
 bool ZLogWorker::lastcomp;
 

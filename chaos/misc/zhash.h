@@ -45,8 +45,15 @@ public:
 public:
     virtual zu64 hash() const = 0;
 public:
-    static zu64 simpleHash64_hash(const zbyte *data, zu64 size);
+    static zu64 simpleHash64_hash(const zbyte *data, zu64 size, zu64 seed = 0);
+
     static zu64 xxHash64_hash(const zbyte *data, zu64 size);
+    static void *xxHash64_init();
+    static void xxHash64_feed(void *state, const zbyte *data, zu64 size);
+    static zu64 xxHash_done(void *state);
+protected:
+    virtual void feedHash(const zbyte *data, zu64 size) = 0;
+    virtual void doneHash(){}
 };
 
 // Base ZHashMethod template
@@ -55,8 +62,13 @@ template <ZHashBase::hashMethod> class ZHashMethod;
 // Simple Hash (64-bit)
 template <> class ZHashMethod<ZHashBase::simpleHash64> : public ZHash64Base {
 public:
+    ZHashMethod() : _hash(0){}
     ZHashMethod(const zbyte *data, zu64 size) : _hash(simpleHash64_hash(data, size)){}
     hashtype hash() const { return _hash; }
+protected:
+    void feedHash(const zbyte *data, zu64 size){
+        _hash = simpleHash64_hash(data, size, _hash);
+    }
 protected:
     hashtype _hash;
 };
@@ -64,10 +76,24 @@ protected:
 // XXH64 (64-bit)
 template <> class ZHashMethod<ZHashBase::xxHash64> : public ZHash64Base {
 public:
-    ZHashMethod(const zbyte *data, zu64 size) : _hash(xxHash64_hash(data, size)){}
+    ZHashMethod() : _hash(0), _state(nullptr){
+        _state = xxHash64_init();
+    }
+    ZHashMethod(const zbyte *data, zu64 size) : _hash(xxHash64_hash(data, size)), _state(nullptr){}
     hashtype hash() const { return _hash; }
 protected:
+    void feedHash(const zbyte *data, zu64 size){
+        if(_state != nullptr)
+            xxHash64_feed(_state, data, size);
+    }
+    void doneHash(){
+        if(_state != nullptr)
+            _hash = xxHash64_done(_state);
+        _state = nullptr;
+    }
+protected:
     hashtype _hash;
+    void *_state;
 };
 
 // Base ZHash template <data type T, hash method M, SFINAE placeholder>
