@@ -597,7 +597,7 @@ addr2line_parts addr2line(ZPath program, const void *addr){
     return source;
 }
 
-ArZ ZError::getStackTrace(unsigned trim){
+ArZ getStackTrace(unsigned trim){
     ArZ trace;
     void *buffer[256];
     int nptrs = backtrace(buffer, 256);

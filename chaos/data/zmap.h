@@ -111,8 +111,10 @@ public:
                     if(*_data[pos].key == key){
                         // Found it, delete it
                         _kalloc->destroy(_data[pos].key, 1);
-                        _data[pos].key = nullptr;
+                        _kalloc->dealloc(_data[pos].key);
                         _talloc->destroy(_data[pos].value, 1);
+                        _talloc->dealloc(_data[pos].value);
+                        _data[pos].key = nullptr;
                         _data[pos].value = (T*)1; // Not null
                         --_size;
                     }
@@ -231,6 +233,7 @@ public:
             // Clear new entries
             for(zu64 i = 0; i < _realsize; ++i){
                 _data[i].key = nullptr;
+                _data[i].value = nullptr;
             }
 
             // Re-map old entries
