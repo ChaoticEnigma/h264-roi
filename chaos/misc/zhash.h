@@ -50,7 +50,7 @@ public:
     static zu64 xxHash64_hash(const zbyte *data, zu64 size);
     static void *xxHash64_init();
     static void xxHash64_feed(void *state, const zbyte *data, zu64 size);
-    static zu64 xxHash_done(void *state);
+    static zu64 xxHash64_done(void *state);
 protected:
     virtual void feedHash(const zbyte *data, zu64 size) = 0;
     virtual void doneHash(){}

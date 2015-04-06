@@ -59,18 +59,19 @@ public:
         delete _alloc;
     }
 
+    // Add entry with <key> and <value> to map, or change value of existing entry with <key>
     T &add(const K &key, const T &value){
         // Resize if over load factor
         if(((float)_size / (float)_realsize) >= _factor){
             resize(_realsize << 1);
         }
 
-        zu64 hash = ZHash<K>(key).hash();
+        zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
-            zu64 pos = (hash + i) % _realsize;
-            // Look for somewhere to put the value
+            zu64 pos = _getPos(hash, i);
+            // Look for the key
             if(_data[pos].key == nullptr){
-                // Element is unset or deleted
+                // Entry is unset or deleted, insert new entry
                 _data[pos].hash = hash;
                 _data[pos].key = _kalloc->alloc(1);
                 _kalloc->construct(_data[pos].key, 1, key);
@@ -81,7 +82,7 @@ public:
             } else if(_data[pos].hash == hash){
                 // Compare the actual key - may be non-trivial
                 if(*_data[pos].key == key){
-                    // Reassign key and value in existing element
+                    // Reassign key and value in existing entry
                     _kalloc->destroy(_data[pos].key, 1);
                     _kalloc->construct(_data[pos].key, 1, key);
                     _talloc->destroy(_data[pos].value, 1);
@@ -93,40 +94,38 @@ public:
         // Should only ever fail if resize failed and the map is full
         throw ZException(ZString("Unable to add element to map ") + hash);
     }
-    inline void push(const K &key, const T &value){ add(key, value); }
+    inline T &push(const K &key, const T &value){ return add(key, value); }
 
+    // Remove entry with <key> from map, if it exists
     void remove(const K &key){
-        zu64 hash = ZHash<K>(key).hash();
+        zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
-            zu64 pos = (hash + i) % _realsize;
-            // Look for the key
+            zu64 pos = _getPos(hash, i);
             if(_data[pos].key == nullptr){
                 if(_data[pos].value == nullptr ){
                     // End of chain, stop searching
                     break;
                 }
-            } else {
-                if(_data[pos].hash == hash){
-                    // Compare the actual key - may be non-trivial
-                    if(*_data[pos].key == key){
-                        // Found it, delete it
-                        _kalloc->destroy(_data[pos].key, 1);
-                        _kalloc->dealloc(_data[pos].key);
-                        _talloc->destroy(_data[pos].value, 1);
-                        _talloc->dealloc(_data[pos].value);
-                        _data[pos].key = nullptr;
-                        _data[pos].value = (T*)1; // Not null
-                        --_size;
-                    }
+            } else if(_data[pos].hash == hash){
+                // Compare the actual key - may be non-trivial
+                if(*_data[pos].key == key){
+                    // Found it, delete it
+                    _kalloc->destroy(_data[pos].key, 1);
+                    _kalloc->dealloc(_data[pos].key);
+                    _talloc->destroy(_data[pos].value, 1);
+                    _talloc->dealloc(_data[pos].value);
+                    _data[pos].key = nullptr;
+                    _data[pos].value = (T*)1; // Not null
+                    --_size;
                 }
             }
         }
     }
 
     T &get(const K &key){
-        zu64 hash = ZHash<K>(key).hash();
+        zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
-            zu64 pos = (hash + i) % _realsize;
+            zu64 pos = _getPos(hash, i);
             // Look for the key
             if(_data[pos].key == nullptr){
                 if(_data[pos].value == nullptr ){
@@ -149,23 +148,20 @@ public:
     inline T &operator[](const K &key){ return get(key); }
 
     const T &get(const K &key) const {
-        zu64 hash = ZHash<K>(key).hash();
-        zu64 ipos = hash % _realsize;
+        zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
-            zu64 pos = (ipos + i) % _realsize;
+            zu64 pos = _getPos(hash, i);
             // Look for the key
-            if(_data[pos].hash == hash){
-                if(_data[pos].key == nullptr){
-                    if(_data[pos].value == nullptr ){
-                        // End of chain, stop searching
-                        break;
-                    } else {
-                        // Deleted entry, keep searching
-                        continue;
-                    }
-                } else {
+            if(_data[pos].key == nullptr){
+                if(_data[pos].value == nullptr ){
+                    // End of chain, stop searching
+                    break;
+                }
+            } else {
+                if(_data[pos].hash == hash){
                     // Compare the actual key - may be non-trivial
                     if(*_data[pos].key == key){
+                        // Found it
                         return *_data[pos].value;
                     }
                 }
@@ -177,41 +173,6 @@ public:
 
     zu64 getPosition(const K &key){
         return 0;
-    }
-
-    MapData &position(zu64 i){
-        return _data[i];
-    }
-
-    void updateHashEntry(MapData *entry){
-        for(zu64 i = 0; i < _realsize; ++i){
-            zu64 pos = (entry->hash + i) % _realsize;
-            if(_data[pos].key == nullptr){
-                _data[pos].hash = entry->hash;
-                _data[pos].key = entry->key;
-                _data[pos].value = entry->value;
-                return;
-            } else if(_data[pos].hash == entry->hash && *_data[pos].key == *entry->key){
-                _kalloc->destroy(_data[pos].key);
-                _data[pos].key = entry->key;
-                _talloc->destroy(_data[pos].value);
-                _data[pos].value = entry->value;
-            }
-        }
-    }
-
-    void addHashEntry(MapData *entry){
-        for(zu64 i = 0; i < _realsize; ++i){
-            zu64 pos = (entry->hash + i) % _realsize;
-            if(_data[pos].key == nullptr){
-                _data[pos].hash = entry->hash;
-                _data[pos].key = entry->key;
-                _data[pos].value = entry->value;
-                ++_size;
-                return;
-            }
-        }
-        throw ZException("Fatal Error in addHashEntry");
     }
 
     // Resize the buffer (this is the only place buffer memory is allocated)
@@ -240,7 +201,17 @@ public:
             if(olddata != nullptr){
                 for(zu64 i = 0; i < oldsize; ++i){
                     if(olddata[i].key != nullptr){
-                        addHashEntry(&olddata[i]);
+                        for(zu64 j = 0; j < _realsize; ++j){
+                            zu64 pos = _getPos(olddata[i].hash, j);
+                            if(_data[pos].key == nullptr){
+                                _data[pos].hash = olddata[i].hash;
+                                _data[pos].key = olddata[i].key;
+                                _data[pos].value = olddata[i].value;
+                                ++_size;
+                                break;
+                            }
+                        }
+                        throw ZException("Fatal Error in addHashEntry");
                     }
                 }
                 _alloc->dealloc(olddata);
@@ -252,10 +223,6 @@ public:
 
     }
 
-    zu64 indexOf(K test) const {
-        return none;
-    }
-
     bool exists(K test){
         return false;
     }
@@ -263,17 +230,34 @@ public:
         return false;
     }
 
-    zu64 size() const { return _size; }
-    zu64 realSize() const { return _realsize; }
-
     bool isEmpty() const {
         return (_data == nullptr) || _size == 0;
     }
 
-protected:
+    zu64 size() const { return _size; }
+    zu64 realSize() const { return _realsize; }
+
+    float factor() const { return _factor; }
+    void setFactor(float factor){ _factor = factor; }
+
+    // For debugging
+    MapData &position(zu64 i){
+        return _data[i];
+    }
+
+private:
+    static zu64 _getHash(const K &key){
+        return ZHash<K>(key).hash();
+    }
+    zu64 _getPos(zu64 hash, zu64 i) const {
+        return ((hash % _realsize) + i) % _realsize;
+    }
+
+private:
     ZAllocator<MapData> *_alloc;
     ZAllocator<K> *_kalloc;
     ZAllocator<T> *_talloc;
+
     MapData *_data;
     zu64 _size;
     zu64 _realsize;
