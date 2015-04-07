@@ -52,7 +52,7 @@ public:
     static void xxHash64_feed(void *state, const zbyte *data, zu64 size);
     static zu64 xxHash64_done(void *state);
 protected:
-    virtual void feedHash(const zbyte *data, zu64 size) = 0;
+    virtual void feedHash(const zbyte *data, zu64 size){}
     virtual void doneHash(){}
 };
 
@@ -120,16 +120,6 @@ public:                                             \
     ZHash(ARG data) : ZHash<zu64>((zu64)data){}     \
 };
 
-#define ZHASH_USER_SPECIALIAZATION(TYPE, ARGS, CONSTRUCT, IMPLEMENTATION) \
-template <ZHashBase::hashMethod M> class ZHash<TYPE, M> : public ZHashMethod<M> { \
-public: \
-    ZHash ARGS : ZHashMethod<M> CONSTRUCT IMPLEMENTATION \
-}; \
-template <> class ZHash<TYPE, ZHashBase::defaultHash> : public ZHashMethod<ZHashBase::defaultHash> { \
-public: \
-    ZHash ARGS : ZHashMethod<ZHashBase::defaultHash> CONSTRUCT IMPLEMENTATION \
-};
-
 // integer specializations
 ZHASH_TRIVIAL_TEMPLATE(bool)
 ZHASH_TRIVIAL_TEMPLATE(char)
@@ -142,10 +132,22 @@ ZHASH_TRIVIAL_TEMPLATE(zs16)
 ZHASH_TRIVIAL_TEMPLATE(zu32)
 ZHASH_TRIVIAL_TEMPLATE(zs32)
 
-//ZHASH_TRIVIAL_TEMPLATE(long)
-//ZHASH_TRIVIAL_TEMPLATE(unsigned long)
-
 ZHASH_TRIVIAL_TEMPLATE(zs64)
+
+#if COMPILER == MINGW
+  ZHASH_TRIVIAL_TEMPLATE(long)
+  ZHASH_TRIVIAL_TEMPLATE(unsigned long)
+#endif
+
+#define ZHASH_USER_SPECIALIAZATION(TYPE, ARGS, CONSTRUCT, IMPLEMENTATION) \
+template <ZHashBase::hashMethod M> class ZHash<TYPE, M> : public ZHashMethod<M> { \
+public: \
+    ZHash ARGS : ZHashMethod<M> CONSTRUCT IMPLEMENTATION \
+}; \
+template <> class ZHash<TYPE, ZHashBase::defaultHash> : public ZHashMethod<ZHashBase::defaultHash> { \
+public: \
+    ZHash ARGS : ZHashMethod<ZHashBase::defaultHash> CONSTRUCT IMPLEMENTATION \
+};
 
 }
 
