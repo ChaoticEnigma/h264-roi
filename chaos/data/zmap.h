@@ -10,24 +10,18 @@
 #include "zhashable.h"
 #include "zhash.h"
 #include "zexception.h"
+#include "zarray.h"
+
+#define ZMAP_INITIAL_CAPACITY 16
+
+// MapData flags:
+#define ENTRY_EMPTY     0x01 // empty entry
+#define ENTRY_DELETED   0x02 // previously deleted entry
 
 namespace LibChaos {
 
-template <typename K, typename = void> class XMapKeyImpl {
-
-};
-
-template <typename K> class XMapKeyImpl<K, typename std::enable_if<std::is_pod<K>::value>::type> {
-protected:
-    typedef K keytype;
-protected:
-    void setKey(keytype *key, keytype *src){
-
-    }
-};
-
 // For the purposes of this class, keys that evaluate equal must have the same hashes, and vice-versa
-template <typename K, typename T> class ZMap : private XMapImpl {
+template <typename K, typename T> class ZMap {
 public:
     enum { none = ZU64_MAX };
 public:
@@ -36,11 +30,6 @@ public:
         K key;
         T value;
     };
-    // If key is null, the entry is empty
-    // If key is null AND the value is not null, the value was deleted, and value is not a valid pointer
-    // MapData flags:
-    // 0x01 = empty entry
-    // 0x02 = previously deleted entry
     struct MapData {
         zbyte flags;
         zu64 hash;
@@ -48,9 +37,9 @@ public:
         T value;
     };
 public:
-    ZMap(ZAllocator<K> *kalloc = new ZAllocator<K>(), ZAllocator<T> *talloc = new ZAllocator<T>())
-      : _alloc(new ZAllocator<MapData>()), _kalloc(kalloc), _talloc(talloc), _data(nullptr), _size(0), _realsize(0), _factor(0.5){
-        resize(16);
+    ZMap(ZAllocator<MapData> *alloc = new ZAllocator<MapData>()) : _alloc(alloc), _kalloc(new ZAllocator<K>()), _talloc(new ZAllocator<T>()),
+                                                                   _data(nullptr), _size(0), _realsize(0), _factor(0.5){
+        resize(ZMAP_INITIAL_CAPACITY);
     }
     ZMap(std::initializer_list<MapSet> list) : ZMap(){
         resize(list.size());
@@ -62,10 +51,10 @@ public:
     ~ZMap(){
         if(_data != nullptr){
             for(zu64 i = 0; i < _realsize; ++i){
-                if(_data[i].key != nullptr){
-                    _kalloc->destroy(_data[i].key);
+                if(!(_data[i].flags & ENTRY_EMPTY)){
+                    _kalloc->destroy(&_data[i].key);
                     //_kalloc->dealloc(_data[i].key);
-                    _talloc->destroy(_data[i].value);
+                    _talloc->destroy(&_data[i].value);
                     //_talloc->dealloc(_data[i].value);
                 }
             }
@@ -87,24 +76,25 @@ public:
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
             // Look for the key
-            if(_data[pos].key == nullptr){
+            if(_data[pos].flags & ENTRY_EMPTY){
                 // Entry is unset or deleted, insert new entry
                 _data[pos].hash = hash;
                 //_data[pos].key = _kalloc->alloc(1);
-                _kalloc->construct(_data[pos].key, 1, key);
+                _kalloc->construct(&_data[pos].key, 1, key);
                 //_data[pos].value = _talloc->alloc(1);
-                _talloc->construct(_data[pos].value, 1, value);
+                _talloc->construct(&_data[pos].value, 1, value);
+                _data[pos].flags &= ~(ENTRY_EMPTY | ENTRY_DELETED); // Unset empty and deleted bits
                 ++_size;
-                return *_data[pos].value;
+                return _data[pos].value;
             } else if(_data[pos].hash == hash){
                 // Compare the actual key - may be non-trivial
-                if(*_data[pos].key == key){
+                if(_data[pos].key == key){
                     // Reassign key and value in existing entry
-                    _kalloc->destroy(_data[pos].key, 1);
-                    _kalloc->construct(_data[pos].key, 1, key);
-                    _talloc->destroy(_data[pos].value, 1);
-                    _talloc->construct(_data[pos].value, 1, value);
-                    return *_data[pos].value;
+                    _kalloc->destroy(&_data[pos].key, 1);
+                    _kalloc->construct(&_data[pos].key, 1, key);
+                    _talloc->destroy(&_data[pos].value, 1);
+                    _talloc->construct(&_data[pos].value, 1, value);
+                    return _data[pos].value;
                 }
             }
         }
@@ -118,21 +108,23 @@ public:
         zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
-            if(_data[pos].key == nullptr){
-                if(_data[pos].value == nullptr ){
+            if(_data[pos].flags & ENTRY_EMPTY){
+                if(_data[pos].flags & ENTRY_DELETED){
                     // End of chain, stop searching
                     break;
                 }
             } else if(_data[pos].hash == hash){
                 // Compare the actual key - may be non-trivial
-                if(*_data[pos].key == key){
+                if(_data[pos].key == key){
                     // Found it, delete it
-                    _kalloc->destroy(_data[pos].key, 1);
+                    _kalloc->destroy(&_data[pos].key, 1);
                     //_kalloc->dealloc(_data[pos].key);
-                    _talloc->destroy(_data[pos].value, 1);
+                    _talloc->destroy(&_data[pos].value, 1);
                     //_talloc->dealloc(_data[pos].value);
-                    _data[pos].key = nullptr;
-                    _data[pos].value = (T*)1; // Not null
+
+                    _data[pos].flags |= (ENTRY_EMPTY | ENTRY_DELETED);
+                    //_data[pos].key = nullptr;
+                    //_data[pos].value = (T*)1; // Not null
                     --_size;
                 }
             }
@@ -145,17 +137,17 @@ public:
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
             // Look for the key
-            if(_data[pos].key == nullptr){
-                if(_data[pos].value == nullptr ){
+            if(_data[pos].flags & ENTRY_EMPTY){
+                if(_data[pos].flags & ENTRY_DELETED){
                     // End of chain, stop searching
                     break;
                 }
             } else {
                 if(_data[pos].hash == hash){
                     // Compare the actual key - may be non-trivial
-                    if(*_data[pos].key == key){
+                    if(_data[pos].key == key){
                         // Found it
-                        return *_data[pos].value;
+                        return _data[pos].value;
                     }
                 }
             }
@@ -172,17 +164,17 @@ public:
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
             // Look for the key
-            if(_data[pos].key == nullptr){
-                if(_data[pos].value == nullptr ){
+            if(_data[pos].flags & ENTRY_EMPTY){
+                if(_data[pos].flags & ENTRY_DELETED){
                     // End of chain, stop searching
                     break;
                 }
             } else {
                 if(_data[pos].hash == hash){
                     // Compare the actual key - may be non-trivial
-                    if(*_data[pos].key == key){
+                    if(_data[pos].key == key){
                         // Found it
-                        return *_data[pos].value;
+                        return _data[pos].value;
                     }
                 }
             }
@@ -213,22 +205,24 @@ public:
 
             // Clear new entries
             for(zu64 i = 0; i < _realsize; ++i){
-                _data[i].key = nullptr;
-                _data[i].value = nullptr;
+                _data[i].flags = ENTRY_EMPTY;
+                //_data[i].key = nullptr;
+                //_data[i].value = nullptr;
             }
 
             // Re-map old entries
             if(olddata != nullptr){
                 for(zu64 i = 0; i < oldsize; ++i){
-                    if(olddata[i].key != nullptr){
+                    if(!(olddata[i].flags & ENTRY_EMPTY)){
                         for(zu64 j = 0; j < _realsize; ++j){
                             zu64 pos = _getPos(olddata[i].hash, j);
-                            if(_data[pos].key == nullptr){
+                            if(_data[pos].flags & ENTRY_EMPTY){
                                 _data[pos].hash = olddata[i].hash;
                                 //_data[pos].key = olddata[i].key;
                                 _kalloc->copy(&olddata[i].key, &_data[pos].key, 1);
                                 //_data[pos].value = olddata[i].value;
                                 _talloc->copy(&olddata[i].value, &_data[pos].value, 1);
+                                _data[pos].flags &= ~(ENTRY_EMPTY | ENTRY_DELETED);
                                 ++_size;
                                 break;
                             }
@@ -281,11 +275,15 @@ private:
     ZAllocator<T> *_talloc;
 
     MapData *_data;
+    ZArray<zu64> _order;
     zu64 _size;
     zu64 _realsize;
     float _factor;
 };
 
 }
+
+#undef ENTRY_EMPTY
+#undef ENTRTY_DELETED
 
 #endif // ZMAP_H

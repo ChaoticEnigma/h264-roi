@@ -14,6 +14,8 @@
 
 #include <initializer_list>
 
+#define ZARRAY_INITIAL_CAPACITY 16
+
 namespace LibChaos {
 
 // ZArray push/pop paradigm is FILO
@@ -24,30 +26,30 @@ public:
     };
 
 public:
-    ZArray() : _size(0), _realsize(0), _data(nullptr){
-        reserve(4); // Initial capacity
+    ZArray(ZAllocator<T> *alloc = new ZAllocator<T>()) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0){
+        reserve(ZARRAY_INITIAL_CAPACITY);
     }
     ZArray(const T *raw, zu64 size) : ZArray(){
         reserve(size);
         for(zu64 i = 0; i < size; ++i)
-            _alloc.construct(&_data[i], 1, raw[i]);
+            _alloc->construct(&_data[i], 1, raw[i]);
         _size = size;
     }
     ZArray(const T &first) : ZArray(){
-        _alloc.construct(_data, 1, first);
+        _alloc->construct(_data, 1, first);
         _size = 1;
     }
     ZArray(const ZArray<T> &other) : ZArray(){
         reserve(other._size);
         for(zu64 i = 0; i < other._size; ++i)
-            _alloc.construct(&_data[i], 1, other[i]);
+            _alloc->construct(&_data[i], 1, other[i]);
         _size = other._size;
     }
     ZArray(std::initializer_list<T> ls) : ZArray(){
         reserve(ls.size());
         zu64 i = 0;
         for(auto item = ls.begin(); item < ls.end(); ++item){
-            _alloc.construct(&_data[i], 1, *item);
+            _alloc->construct(&_data[i], 1, *item);
             ++i;
         }
         _size = ls.size();
@@ -58,24 +60,24 @@ public:
     }
 
     void clear(){
-        _alloc.destroy(_data, _size); // Destroy objects
-        _alloc.dealloc(_data); // Delete memory
+        _alloc->destroy(_data, _size); // Destroy objects
+        _alloc->dealloc(_data); // Delete memory
         _size = 0;
         _data = nullptr;
     }
 
     ZArray<T> &assign(const ZArray<T> &other){
-        _alloc.destroy(_data, _size); // Destroy contents
+        _alloc->destroy(_data, _size); // Destroy contents
         reserve(other.size()); // Make space
         for(zu64 i = 0; i < other.size(); ++i)
-            _alloc.construct(&_data[i], 1, other[i]); // Copy objects
+            _alloc->construct(&_data[i], 1, other[i]); // Copy objects
         _size = other.size();
         return *this;
     }
     inline ZArray<T> &operator=(const ZArray<T> &other){ return assign(other); }
 
     void swap(ZArray<T>& other){
-        ZAllocator<T> alloc = _alloc;
+        ZAllocator<T> *alloc = _alloc;
         zu64 size =_size;
         zu64 realsize = _realsize;
         T *data = _data;
@@ -113,9 +115,9 @@ public:
     ZArray<T> &resize(zu64 size, const T &value = T()){
         reserve(size);
         if(size > _size){
-            _alloc.construct(_data + _size, size - _size, value); // Construct new objects
+            _alloc->construct(_data + _size, size - _size, value); // Construct new objects
         } else if(size < _size){
-            _alloc.destroy(_data + size, _size - size); // Destroy extra objects
+            _alloc->destroy(_data + size, _size - size); // Destroy extra objects
         }
         _size = size;
         return *this;
@@ -127,9 +129,9 @@ public:
     void reserve(zu64 size){
         if(size > _realsize){
             zu64 newsize = MAX(_size * 2, size);
-            T *data = _alloc.alloc(newsize);
-            _alloc.rawcopy(_data, data, _size); // Copy data to new buffer
-            _alloc.dealloc(_data); // Delete old buffer without calling destructors
+            T *data = _alloc->alloc(newsize);
+            _alloc->rawcopy(_data, data, _size); // Copy data to new buffer
+            _alloc->dealloc(_data); // Delete old buffer without calling destructors
             _data = data;
             _realsize = newsize;
         }
@@ -147,15 +149,15 @@ public:
     // Insert <value> at <pos>, shifting subsequent elements
     ZArray<T> &insert(zu64 pos, const T &value){
         reserve(_size + 1);
-        _alloc.rawmove(_data + pos, _data + pos + 1, _size - pos);
-        _alloc.construct(_data + pos, 1, value);
+        _alloc->rawmove(_data + pos, _data + pos + 1, _size - pos);
+        _alloc->construct(_data + pos, 1, value);
         ++_size;
         return *this;
     }
 
     ZArray<T> &pushBack(const T &value){
         reserve(_size + 1);
-        _alloc.construct(_data + _size, 1, value);
+        _alloc->construct(_data + _size, 1, value);
         ++_size;
         return *this;
     }
@@ -165,8 +167,8 @@ public:
     inline void push(const T &value){ pushBack(value); }
 
     ZArray<T> &erase(zu64 index, zu64 count = 1){
-        _alloc.destroy(_data + index, count);
-        _alloc.rawmove(_data + index + count, _data + index, _size - index - count);
+        _alloc->destroy(_data + index, count);
+        _alloc->rawmove(_data + index + count, _data + index, _size - index - count);
         _size -= count;
         return *this;
     }
@@ -246,10 +248,10 @@ public:
     inline T *raw() const { return ptr(); }
 
 private:
-    ZAllocator<T> _alloc;
+    ZAllocator<T> *_alloc;
+    T *_data;
     zu64 _size;
     zu64 _realsize;
-    T *_data;
 };
 
 //ZHASH_USER_SPECIALIAZATION(ZArray<T>, (ZArray<T> array), (), {})
