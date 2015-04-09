@@ -341,6 +341,25 @@
         sendSave(record);
     };
 
+    var save_paheal = function($, record){
+        record.site = "paheal";
+
+        // ID
+        var id = location.pathname.substring(location.pathname.indexOf("view/") + 5);
+        record.id = id.substring(0, id.indexOf("#"));
+
+        // URL
+        record.url = $("img#main_image").attr("src");
+
+        // Tags
+        record.tags = $("section#Tagsleft a.tag_name").map(function(){
+            return $(this).html();
+        }).get();
+
+        console.log(record.site + " - Score: " + record.score + ", ID: " + record.id);
+        sendSave(record);
+    }
+
     checkReady(function($){
         var record = {};
 
@@ -369,6 +388,8 @@
             save_deviantart($, record);
         } else if(location.host === "www.furaffinity.net"){
             save_furaffinity($, record);
+        } else if(location.host === "rule34.paheal.net"){
+            save_paheal($, record);
         } else {
             console.error(location.host + " - Unsupported Site");
             record.site = "unknown";

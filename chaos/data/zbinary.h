@@ -22,10 +22,6 @@ class ZBinary : public ZPosition, public ZReader, public ZWriter {
 public:
     typedef unsigned char zbinary_type;
 
-    enum HashType {
-        hashType1 = 1
-    };
-
     enum {
         none = ZU64_MAX
     };
@@ -208,8 +204,6 @@ public:
     zu64 size() const {
         return _size;
     }
-
-    static zu64 hash(HashType type, const ZBinary &data);
 
     // ZReader interface
     zu64 read(zbyte *dest, zu64 length){

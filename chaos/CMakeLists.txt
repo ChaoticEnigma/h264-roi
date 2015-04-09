@@ -101,7 +101,6 @@ SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ##
     #base/zstring_encode.cpp
     base/ztime.cpp
 
-    data/zbinary.cpp
     #data/zjson.cpp
     #data/zxml.cpp
 
