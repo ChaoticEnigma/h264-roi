@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                              zdefaultstorage.h                             **
-**                          (c) 2015 Zennix Studios                           **
+**                          (c) 2015 Charlie Waters                           **
 *******************************************************************************/
 #ifndef ZDEFAULTSTORAGE_H
 #define ZDEFAULTSTORAGE_H

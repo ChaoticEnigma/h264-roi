@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                               zstreamsocket.h                              **
-**                          (c) 2015 Zennix Studios                           **
+**                          (c) 2015 Charlie Waters                           **
 *******************************************************************************/
 #ifndef ZSTREAMSOCKET_H
 #define ZSTREAMSOCKET_H

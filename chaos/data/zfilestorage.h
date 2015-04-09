@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
-**                               zfilestorage.h                                 **
-**                          (c) 2015 Zennix Studios                           **
+**                               zfilestorage.h                               **
+**                          (c) 2015 Charlie Waters                           **
 *******************************************************************************/
 #ifndef ZFILESTORAGE_H
 #define ZFILESTORAGE_H

@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                              zdatagramsocket.h                             **
-**                          (c) 2015 Zennix Studios                           **
+**                          (c) 2015 Charlie Waters                           **
 *******************************************************************************/
 #ifndef ZDATAGRAMSOCKET_H
 #define ZDATAGRAMSOCKET_H

@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                              ypushpopaccess.h                              **
-**                          (c) 2015 Zennix Studios                           **
+**                          (c) 2015 Charlie Waters                           **
 *******************************************************************************/
 #ifndef YLINEARACCESS_H
 #define YLINEARACCESS_H

@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                              zautobufferunit.h                             **
-**                          (c) 2015 Zennix Studios                           **
+**                          (c) 2015 Charlie Waters                           **
 *******************************************************************************/
 #ifndef ZAUTOBUFFERUNIT_H
 #define ZAUTOBUFFERUNIT_H
