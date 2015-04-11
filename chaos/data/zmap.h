@@ -37,7 +37,7 @@ public:
         zu64 hash;
         K key;
         T value;
-        MapData *next;  //
+        //MapData *next;
     };
 public:
     ZMap(ZAllocator<MapData> *alloc = new ZAllocator<MapData>()) : _alloc(alloc), _kalloc(new ZAllocator<K>()), _talloc(new ZAllocator<T>()),
@@ -60,6 +60,7 @@ public:
                 }
             }
             _alloc->dealloc(_data);
+            _data = nullptr;
         }
         delete _talloc;
         delete _kalloc;
@@ -205,11 +206,11 @@ public:
             // Clear new entries
             for(zu64 i = 0; i < _realsize; ++i){
                 _data[i].flags = 0; // Clean flags
-                _data[i].next = nullptr;
+                //_data[i].next = nullptr;
             }
 
             if(olddata != nullptr){
-                MapData *last = nullptr;
+                //MapData *last = nullptr;
                 // Re-map old entries
                 for(zu64 i = 0; i < oldsize; ++i){
                     // Map only non-empty entries
@@ -219,6 +220,7 @@ public:
                             // Find first empty entry
                             if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                                 _data[pos].hash = olddata[i].hash;
+                                // Copy without copy constructors
                                 _kalloc->copy(&olddata[i].key, &_data[pos].key, 1);
                                 _talloc->copy(&olddata[i].value, &_data[pos].value, 1);
                                 _data[pos].flags |= ZMAP_ENTRY_VALID;
@@ -226,10 +228,11 @@ public:
                                 break;
                             }
                         }
-                        throw ZException("Fatal Error in addHashEntry");
+                        //throw ZException("Fatal Error in addHashEntry");
                     }
                 }
                 _alloc->dealloc(olddata);
+                olddata = nullptr;
             }
         }
     }
@@ -269,13 +272,13 @@ private:
     }
 
 private:
-    ZAllocator<MapData> *_alloc;
-    ZAllocator<K> *_kalloc;
-    ZAllocator<T> *_talloc;
+    ZAllocator<MapData> *_alloc; // Memory allocator
+    ZAllocator<K> *_kalloc; // Used to construct and destroy keys
+    ZAllocator<T> *_talloc; // Used to construct and destroy values
 
     MapData *_data; // Actual data buffer
-    MapData *_head; // Pointer to first inserted element
-    MapData *_tail; // Pointer to last inserted element
+    //MapData *_head; // Pointer to first inserted element
+    //MapData *_tail; // Pointer to last inserted element
     zu64 _size;     // Number of entries
     zu64 _realsize; // Size of buffer
     float _factor;  // Max size / realsize ratio

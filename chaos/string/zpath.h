@@ -8,6 +8,7 @@
 
 #include "zarray.h"
 #include "zstring.h"
+#include "zhash.h"
 
 #if PLATFORM == WINDOWS
     #define ZPATH_DEFAULT_DELIM '\\'
@@ -92,6 +93,29 @@ private:
     bool _absolute;
     ZString _prefix;
     //ZString delim;
+};
+
+//ZHASH_USER_SPECIALIAZATION(ZPath, (const ZPath &path), (), {
+//    ZString str = path.str();
+//    feedHash(str.bytes(), str.size());
+//    doneHash();
+//})
+
+template <ZHashBase::hashMethod M> class ZHash<ZPath, M> : public ZHashMethod<M> {
+public:
+    ZHash(const ZPath &path) : ZHashMethod<M>(){
+        ZString str = path.str();
+        this->feedHash(str.bytes(), str.size());
+        this->doneHash();
+    }
+};
+template <> class ZHash<ZPath, ZHashBase::defaultHash> : public ZHashMethod<ZHashBase::defaultHash> {
+public:
+    ZHash(const ZPath &path) : ZHashMethod<ZHashBase::defaultHash>(){
+       ZString str = path.str();
+       this->feedHash(str.bytes(), str.size());
+       this->doneHash();
+    }
 };
 
 } // namespace LibChaos

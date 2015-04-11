@@ -29,7 +29,8 @@ ZMap<ZLogWorker::zlog_source, ZString> stderrlog;
 //ZMap<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
 //ZAssoc<ZLogWorker::zlog_source, ZString> stdoutlog;
 //ZAssoc<ZLogWorker::zlog_source, ZString> stderrlog;
-ZAssoc<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
+ZArray<ZPath> logfilelist;
+ZMap<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
 
 ZMutex threadidmutex;
 ZMap<ztid, zu32> threadids;
@@ -168,11 +169,11 @@ void ZLogWorker::doLog(LogJob *job){
     // Do any file logging
     if(!job->stdio){
 //        writemutex.lock();
-        for(zu64 i = 0; i < logfiles.size(); ++i){
+        for(zu64 i = 0; i < logfilelist.size(); ++i){
             formatmutex.lock();
-            ZPath filename = logfiles.key(i);
-            ZString filefmt = logfiles[i][job->source];
-            ZString filefmtall = logfiles[i][ZLogSource::all];
+            ZPath filename = logfilelist[i];
+            ZString filefmt = logfiles[filename][job->source];
+            ZString filefmtall = logfiles[filename][ZLogSource::all];
             formatmutex.unlock();
 
             if(!filefmt.isEmpty()){
@@ -228,6 +229,7 @@ void ZLogWorker::formatStderr(zlog_source type, ZString fmt){
 }
 void ZLogWorker::addLogFile(ZPath pth, zlog_source type, ZString fmt){
     formatmutex.lock();
+    logfilelist.push(pth);
     logfiles[pth][type] = fmt;
     formatmutex.unlock();
 }

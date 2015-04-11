@@ -28,7 +28,7 @@ ZString::~ZString(){
         _alloc.dealloc(_data);
 }
 
-ZString::ZString(const ZString &other) : _size(0), _realsize(0), _data(nullptr){
+ZString::ZString(const ZString &other) : ZString(){
     resize(other._size);
     if(other._size && other._data)
         _alloc.rawcopy(other._data, _data, other._size);
@@ -44,7 +44,7 @@ ZString::ZString(const ZString::chartype *str) : ZString(){
     }
 }
 
-ZString::ZString(const ZString::chartype *ptr, zu64 length) : _size(0), _realsize(0), _data(nullptr){
+ZString::ZString(const ZString::chartype *ptr, zu64 length) : ZString(){
     resize(length);
     if(length && ptr)
         _alloc.rawcopy(ptr, _data, length);
@@ -78,7 +78,7 @@ std::wstring ZString::wstr() const {
     return toUtf16();
 }
 
-ZString::ZString(ZString::chartype ch, zu64 len) : _size(0), _realsize(0), _data(nullptr){
+ZString::ZString(ZString::chartype ch, zu64 len) : ZString(){
     resize(len);
     if(len)
         for(zu64 i = 0; i < len; ++i)
