@@ -15,8 +15,10 @@
 #define ZMAP_INITIAL_CAPACITY 16
 
 // MapData flags:
-#define ENTRY_EMPTY     0x01 // empty entry
-#define ENTRY_DELETED   0x02 // previously deleted entry
+//#define ENTRY_EMPTY     0x00 // empty entry
+#define ZMAP_ENTRY_VALID     0x01 // valid data in entry
+#define ZMAP_ENTRY_DELETED   0x02 // previously deleted entry
+// If ENTRY_VALID is set, ENTRY_DELETED is ignored
 
 namespace LibChaos {
 
@@ -31,10 +33,11 @@ public:
         T value;
     };
     struct MapData {
-        zbyte flags;
+        zbyte flags;    // Some flags for unset and deleted
         zu64 hash;
         K key;
         T value;
+        MapData *next;  //
     };
 public:
     ZMap(ZAllocator<MapData> *alloc = new ZAllocator<MapData>()) : _alloc(alloc), _kalloc(new ZAllocator<K>()), _talloc(new ZAllocator<T>()),
@@ -51,11 +54,9 @@ public:
     ~ZMap(){
         if(_data != nullptr){
             for(zu64 i = 0; i < _realsize; ++i){
-                if(!(_data[i].flags & ENTRY_EMPTY)){
+                if(_data[i].flags & ZMAP_ENTRY_VALID){
                     _kalloc->destroy(&_data[i].key);
-                    //_kalloc->dealloc(_data[i].key);
                     _talloc->destroy(&_data[i].value);
-                    //_talloc->dealloc(_data[i].value);
                 }
             }
             _alloc->dealloc(_data);
@@ -76,14 +77,13 @@ public:
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
             // Look for the key
-            if(_data[pos].flags & ENTRY_EMPTY){
+            if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                 // Entry is unset or deleted, insert new entry
                 _data[pos].hash = hash;
-                //_data[pos].key = _kalloc->alloc(1);
                 _kalloc->construct(&_data[pos].key, 1, key);
-                //_data[pos].value = _talloc->alloc(1);
                 _talloc->construct(&_data[pos].value, 1, value);
-                _data[pos].flags &= ~(ENTRY_EMPTY | ENTRY_DELETED); // Unset empty and deleted bits
+                _data[pos].flags |= ZMAP_ENTRY_VALID; // Set valid bit
+                _data[pos].flags &= ~ZMAP_ENTRY_DELETED; // Unset deleted bit
                 ++_size;
                 return _data[pos].value;
             } else if(_data[pos].hash == hash){
@@ -108,24 +108,23 @@ public:
         zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
-            if(_data[pos].flags & ENTRY_EMPTY){
-                if(_data[pos].flags & ENTRY_DELETED){
-                    // End of chain, stop searching
-                    break;
+            if(_data[pos].flags & ZMAP_ENTRY_VALID){
+                // Valid data, compare hash
+                if(_data[pos].hash == hash){
+                    // Compare the actual key - may be non-trivial
+                    if(_data[pos].key == key){
+                        // Found it, delete it
+                        _kalloc->destroy(&_data[pos].key, 1);
+                        _talloc->destroy(&_data[pos].value, 1);
+                        _data[pos].flags &= ~ZMAP_ENTRY_VALID; // Unset valid bit
+                        _data[pos].flags |= ZMAP_ENTRY_DELETED; // Set deleted bit
+                        --_size;
+                    }
                 }
-            } else if(_data[pos].hash == hash){
-                // Compare the actual key - may be non-trivial
-                if(_data[pos].key == key){
-                    // Found it, delete it
-                    _kalloc->destroy(&_data[pos].key, 1);
-                    //_kalloc->dealloc(_data[pos].key);
-                    _talloc->destroy(&_data[pos].value, 1);
-                    //_talloc->dealloc(_data[pos].value);
-
-                    _data[pos].flags |= (ENTRY_EMPTY | ENTRY_DELETED);
-                    //_data[pos].key = nullptr;
-                    //_data[pos].value = (T*)1; // Not null
-                    --_size;
+           } else {
+                if(!(_data[pos].flags & ZMAP_ENTRY_DELETED)){
+                    // If this is not a deleted entry, it is the end of the chain
+                    break;
                 }
             }
         }
@@ -136,19 +135,19 @@ public:
         zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
-            // Look for the key
-            if(_data[pos].flags & ENTRY_EMPTY){
-                if(_data[pos].flags & ENTRY_DELETED){
-                    // End of chain, stop searching
-                    break;
-                }
-            } else {
+            if(_data[pos].flags & ZMAP_ENTRY_VALID){
+                // Look for the key
                 if(_data[pos].hash == hash){
                     // Compare the actual key - may be non-trivial
                     if(_data[pos].key == key){
                         // Found it
                         return _data[pos].value;
                     }
+                }
+            } else {
+                if(!(_data[pos].flags & ZMAP_ENTRY_DELETED)){
+                    // If this is not a deleted entry, it is the end of the chain
+                    break;
                 }
             }
         }
@@ -163,19 +162,19 @@ public:
         zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
-            // Look for the key
-            if(_data[pos].flags & ENTRY_EMPTY){
-                if(_data[pos].flags & ENTRY_DELETED){
-                    // End of chain, stop searching
-                    break;
-                }
-            } else {
+            if(_data[pos].flags & ZMAP_ENTRY_VALID){
+                // Look for the key
                 if(_data[pos].hash == hash){
                     // Compare the actual key - may be non-trivial
                     if(_data[pos].key == key){
                         // Found it
                         return _data[pos].value;
                     }
+                }
+            } else {
+                if(!(_data[pos].flags & ZMAP_ENTRY_DELETED)){
+                    // If this is not a deleted entry, it is the end of the chain
+                    break;
                 }
             }
         }
@@ -205,24 +204,24 @@ public:
 
             // Clear new entries
             for(zu64 i = 0; i < _realsize; ++i){
-                _data[i].flags = ENTRY_EMPTY;
-                //_data[i].key = nullptr;
-                //_data[i].value = nullptr;
+                _data[i].flags = 0; // Clean flags
+                _data[i].next = nullptr;
             }
 
-            // Re-map old entries
             if(olddata != nullptr){
+                MapData *last = nullptr;
+                // Re-map old entries
                 for(zu64 i = 0; i < oldsize; ++i){
-                    if(!(olddata[i].flags & ENTRY_EMPTY)){
+                    // Map only non-empty entries
+                    if(olddata[i].flags & ZMAP_ENTRY_VALID){
                         for(zu64 j = 0; j < _realsize; ++j){
                             zu64 pos = _getPos(olddata[i].hash, j);
-                            if(_data[pos].flags & ENTRY_EMPTY){
+                            // Find first empty entry
+                            if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                                 _data[pos].hash = olddata[i].hash;
-                                //_data[pos].key = olddata[i].key;
                                 _kalloc->copy(&olddata[i].key, &_data[pos].key, 1);
-                                //_data[pos].value = olddata[i].value;
                                 _talloc->copy(&olddata[i].value, &_data[pos].value, 1);
-                                _data[pos].flags &= ~(ENTRY_EMPTY | ENTRY_DELETED);
+                                _data[pos].flags |= ZMAP_ENTRY_VALID;
                                 ++_size;
                                 break;
                             }
@@ -274,16 +273,17 @@ private:
     ZAllocator<K> *_kalloc;
     ZAllocator<T> *_talloc;
 
-    MapData *_data;
-    ZArray<zu64> _order;
-    zu64 _size;
-    zu64 _realsize;
-    float _factor;
+    MapData *_data; // Actual data buffer
+    MapData *_head; // Pointer to first inserted element
+    MapData *_tail; // Pointer to last inserted element
+    zu64 _size;     // Number of entries
+    zu64 _realsize; // Size of buffer
+    float _factor;  // Max size / realsize ratio
 };
 
 }
 
-#undef ENTRY_EMPTY
-#undef ENTRTY_DELETED
+//#undef ZMAP_ENTRTY_VALID
+#undef ZMAP_ENTRTY_DELETED
 
 #endif // ZMAP_H

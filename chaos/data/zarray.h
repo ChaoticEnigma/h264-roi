@@ -57,6 +57,7 @@ public:
 
     ~ZArray(){
         clear();
+        delete _alloc;
     }
 
     void clear(){
@@ -197,7 +198,7 @@ public:
     ZArray<T> &append(const ZArray<T> &in){
         reserve(_size + in.size());
         for(zu64 i = 0; i < in.size(); ++i)
-            _alloc.construct(_data + _size + i, 1, in[i]);
+            _alloc->construct(_data + _size + i, 1, in[i]);
         _size += in.size();
         return *this;
     }

@@ -101,8 +101,8 @@ int map_block(){
 
     LOG(map1.size() << " " << map1.realSize());
     for(zu64 i = 0; i < map1.realSize(); ++i){
-        if(map1.position(i).key != nullptr)
-            LOG(i << " " << *map1.position(i).key << " " << *map1.position(i).value << " " << map1.position(i).hash);
+        if(map1.position(i).flags & ZMAP_ENTRY_VALID)
+            LOG(i << " " << map1.position(i).key << " " << map1.position(i).value << " " << map1.position(i).hash);
     }
 
     map1["test21"] = 1001;
@@ -116,16 +116,16 @@ int map_block(){
 
     LOG(map1.size() << " " << map1.realSize());
     for(zu64 i = 0; i < map1.realSize(); ++i){
-        if(map1.position(i).key != nullptr)
-            LOG(i << " " << *map1.position(i).key << " " << *map1.position(i).value << " " << map1.position(i).hash);
+        if(map1.position(i).flags & ZMAP_ENTRY_VALID)
+            LOG(i << " " << map1.position(i).key << " " << map1.position(i).value << " " << map1.position(i).hash);
     }
 
     map1["test8"] = 888;
 
     LOG(map1.size() << " " << map1.realSize());
     for(zu64 i = 0; i < map1.realSize(); ++i){
-        if(map1.position(i).key != nullptr)
-            LOG(i << " " << *map1.position(i).key << " " << *map1.position(i).value << " " << map1.position(i).hash);
+        if(map1.position(i).flags & ZMAP_ENTRY_VALID)
+            LOG(i << " " << map1.position(i).key << " " << map1.position(i).value << " " << map1.position(i).hash);
     }
 
     return 0;

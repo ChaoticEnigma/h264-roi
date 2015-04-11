@@ -25,11 +25,11 @@ void *ZHash64Base::xxHash64_init(){
     return (void *)XXH64_createState();
 }
 void ZHash64Base::xxHash64_feed(void *state, const zbyte *data, zu64 size){
-    XXH64_update(state, data, size);
+    XXH64_update((XXH64_state_t*)state, data, size);
 }
 zu64 ZHash64Base::xxHash64_done(void *state){
-    zu64 hash = XXH64_digest(state);
-    XXH64_freeState(state);
+    zu64 hash = XXH64_digest((const XXH64_state_t*)state);
+    XXH64_freeState((XXH64_state_t*)state);
     return hash;
 }
 

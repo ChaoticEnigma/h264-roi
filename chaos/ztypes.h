@@ -193,10 +193,10 @@ typedef zbyte zoctet; // I blame the IETF
 
 typedef zu64 zsize;
 
-#define ZU8_MAX  ((zu8) 0xFF)
-#define ZU16_MAX ((zu16)0xFFFFF)
-#define ZU32_MAX ((zu32)0xFFFFFFFF)
-#define ZU64_MAX ((zu64)0xFFFFFFFFFFFFFFFF)
+#define ZU8_MAX  ((zu8) 0xFFL)
+#define ZU16_MAX ((zu16)0xFFFFFL)
+#define ZU32_MAX ((zu32)0xFFFFFFFFL)
+#define ZU64_MAX ((zu64)0xFFFFFFFFFFFFFFFFL)
 
 // Check sizes
 static_assert(sizeof(zs8) == 1, "zs8 has incorrect size");

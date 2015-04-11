@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                               zlogworker.cpp                               **
-**                          (c) 2015 Charlie Waters                           **
+**                          (c) 2015 Zennix Studios                           **
 *******************************************************************************/
 #include "zlogworker.h"
 #include "zfile.h"
@@ -26,7 +26,10 @@ ZQueue<ZLogWorker::LogJob*> jobs;
 ZMutex formatmutex;
 ZMap<ZLogWorker::zlog_source, ZString> stdoutlog;
 ZMap<ZLogWorker::zlog_source, ZString> stderrlog;
-ZMap<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
+//ZMap<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
+//ZAssoc<ZLogWorker::zlog_source, ZString> stdoutlog;
+//ZAssoc<ZLogWorker::zlog_source, ZString> stderrlog;
+ZAssoc<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
 
 ZMutex threadidmutex;
 ZMap<ztid, zu32> threadids;

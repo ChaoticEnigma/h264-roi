@@ -23,8 +23,8 @@ public:
     };
 
     ZAssoc(){}
-    ZAssoc(ZArray<T> in){
-        for(unsigned i = 0; i < in.size(); ++i){
+    ZAssoc(const ZArray<T> &in){
+        for(zu64 i = 0; i < in.size(); ++i){
             push(in[i]);
         }
     }
