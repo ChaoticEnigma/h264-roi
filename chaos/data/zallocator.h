@@ -38,7 +38,8 @@ public:
         T *tmp = ptr;
         for(zu64 i = 0; i < count; ++i){
 //            new (tmp++) T(obj);
-            new (&(tmp[i])) T(obj);
+//            new (&(tmp[i])) T(obj);
+            new (tmp + i) T(obj);
         }
         return ptr;
     }
@@ -48,7 +49,8 @@ public:
     void destroy(T *ptr, zu64 count = 1){
         for(zu64 i = 0; i < count; ++i){
 //            (ptr++)->~T();
-            (&(ptr[i]))->~T();
+//            (&(ptr[i]))->~T();
+            (ptr + i)->~T();
         }
     }
 
