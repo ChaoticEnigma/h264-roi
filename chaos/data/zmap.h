@@ -44,6 +44,7 @@ public:
                                                                    _data(nullptr), _size(0), _realsize(0), _factor(0.5){
         resize(ZMAP_INITIAL_CAPACITY);
     }
+
     ZMap(std::initializer_list<MapSet> list) : ZMap(){
         resize(list.size());
         for(auto item = list.begin(); item < list.end(); ++item){
@@ -55,12 +56,12 @@ public:
         if(_data != nullptr){
             for(zu64 i = 0; i < _realsize; ++i){
                 if(_data[i].flags & ZMAP_ENTRY_VALID){
-                    _kalloc->destroy(&_data[i].key);
-                    _talloc->destroy(&_data[i].value);
+                    _kalloc->destroy(&(_data[i].key));
+                    _talloc->destroy(&(_data[i].value));
                 }
             }
             _alloc->dealloc(_data);
-            _data = nullptr;
+//            _data = nullptr;
         }
         delete _talloc;
         delete _kalloc;
@@ -81,8 +82,8 @@ public:
             if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                 // Entry is unset or deleted, insert new entry
                 _data[pos].hash = hash;
-                _kalloc->construct(&_data[pos].key, 1, key);
-                _talloc->construct(&_data[pos].value, 1, value);
+                _kalloc->construct(&(_data[pos].key), key);
+                _talloc->construct(&(_data[pos].value), value);
                 _data[pos].flags |= ZMAP_ENTRY_VALID; // Set valid bit
                 _data[pos].flags &= ~ZMAP_ENTRY_DELETED; // Unset deleted bit
                 ++_size;
@@ -91,10 +92,10 @@ public:
                 // Compare the actual key - may be non-trivial
                 if(_data[pos].key == key){
                     // Reassign key and value in existing entry
-                    _kalloc->destroy(&_data[pos].key, 1);
-                    _kalloc->construct(&_data[pos].key, 1, key);
-                    _talloc->destroy(&_data[pos].value, 1);
-                    _talloc->construct(&_data[pos].value, 1, value);
+                    _kalloc->destroy(&(_data[pos].key));
+                    _kalloc->construct(&(_data[pos].key), key);
+                    _talloc->destroy(&(_data[pos].value));
+                    _talloc->construct(&(_data[pos].value), value);
                     return _data[pos].value;
                 }
             }
@@ -115,8 +116,8 @@ public:
                     // Compare the actual key - may be non-trivial
                     if(_data[pos].key == key){
                         // Found it, delete it
-                        _kalloc->destroy(&_data[pos].key, 1);
-                        _talloc->destroy(&_data[pos].value, 1);
+                        _kalloc->destroy(&(_data[pos].key));
+                        _talloc->destroy(&(_data[pos].value));
                         _data[pos].flags &= ~ZMAP_ENTRY_VALID; // Unset valid bit
                         _data[pos].flags |= ZMAP_ENTRY_DELETED; // Set deleted bit
                         --_size;
@@ -192,16 +193,15 @@ public:
     // The buffer is never made smaller
     void resize(zu64 size){
         if(size > _realsize){
-            zu64 newsize = 1;
-            while(newsize < size)
-                newsize <<= 1; // Get next power of 2
+//            zu64 newsize = 1;
+//            while(newsize < size)
+//                newsize <<= 1; // Get next power of 2
 
             MapData *olddata = _data;
             zu64 oldsize = _realsize;
 
-            _data = _alloc->alloc(newsize);
-            _realsize = newsize;
-            _size = 0;
+            _realsize = size;
+            _data = _alloc->alloc(_realsize);
 
             // Clear new entries
             for(zu64 i = 0; i < _realsize; ++i){
@@ -221,10 +221,9 @@ public:
                             if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                                 _data[pos].hash = olddata[i].hash;
                                 // Copy without copy constructors
-                                _kalloc->copy(&olddata[i].key, &_data[pos].key, 1);
-                                _talloc->copy(&olddata[i].value, &_data[pos].value, 1);
+                                _kalloc->rawmove(&(olddata[i].key), &(_data[pos].key));
+                                _talloc->rawmove(&(olddata[i].value), &(_data[pos].value));
                                 _data[pos].flags |= ZMAP_ENTRY_VALID;
-                                ++_size;
                                 break;
                             }
                         }
@@ -232,7 +231,7 @@ public:
                     }
                 }
                 _alloc->dealloc(olddata);
-                olddata = nullptr;
+//                olddata = nullptr;
             }
         }
     }

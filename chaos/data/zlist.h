@@ -20,7 +20,14 @@ namespace LibChaos {
 // ZList push/pop paradigm is FIFO
 template <typename T> class ZList : public YIndexedAccess<T>, public YPushPopAccess<T> {
 public:
-    ZList() : _size(0), head(nullptr){}
+    struct Node {
+        Node *prev;
+        Node *next;
+        T data;
+    };
+
+public:
+    ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _talloc(new ZAllocator<T>()), _size(0), head(nullptr){}
 
     ZList(const T *data, zu64 size) : ZList(){
         for(zu64 i = 0; i < size; ++i)
@@ -33,14 +40,16 @@ public:
             Node *current = head;
             Node *next;
             do { // Delete all nodes
-                _alloc.destroy(current->data);
-                _alloc.dealloc(current->data);
+                _talloc->destroy(&(current->data));
+//                _talloc->dealloc(&(current->data));
                 next = current->next;
-                _nodealloc.destroy(current);
-                _nodealloc.dealloc(current);
+//                _alloc->destroy(current);
+                _alloc->dealloc(current);
                 current = next;
             } while(current != nullptr);
         }
+        delete _talloc;
+        delete _alloc;
     }
 
     void pushFront(const T &data){
@@ -85,10 +94,10 @@ public:
                 head = nullptr;
             }
             --_size;
-            _alloc.destroy(old->data);
-            _alloc.dealloc(old->data);
-            _nodealloc.destroy(old);
-            _nodealloc.dealloc(old);
+            _talloc->destroy(&(old->data));
+//            _talloc->dealloc(old->data);
+//            _alloc->destroy(old);
+            _alloc->dealloc(old);
         }
     }
     void popBack(){
@@ -101,25 +110,25 @@ public:
                 head = nullptr;
             }
             --_size;
-            _alloc.destroy(old->data);
-            _alloc.dealloc(old->data);
-            _nodealloc.destroy(old);
-            _nodealloc.dealloc(old);
+            _talloc->destroy(&(old->data));
+//            _talloc->dealloc(old->data);
+//            _alloc->destroy(old);
+            _alloc->dealloc(old);
         }
     }
     inline void pop(){ popFront(); }
 
     T &peekFront(){
-        return *head->data;
+        return head->data;
     }
     const T &peekFront() const {
-        return *head->data;
+        return head->data;
     }
     T &peekBack(){
-        return *head->prev->data;
+        return head->prev->data;
     }
     const T &peekBack() const {
-        return *head->prev->data;
+        return head->prev->data;
     }
 
     inline T &peek(){ return peekFront(); }
@@ -148,30 +157,25 @@ public:
         other.head = tmphead;
     }
 
-    inline T &operator[](zu64 index){ return *getNode(index)->data; }
-    inline const T &operator[](zu64 index) const { return *getNode(index)->data; }
+    inline T &operator[](zu64 index){ return getNode(index)->data; }
+    inline const T &operator[](zu64 index) const { return getNode(index)->data; }
 
-    inline T &front(){ return *head->data; }
-    inline const T &front() const { return *head->data; }
-    inline T &back(){ return *head->prev->data; }
-    inline const T &back() const { return *head->prev->data; }
+    inline T &front(){ return head->data; }
+    inline const T &front() const { return head->data; }
+    inline T &back(){ return head->prev->data; }
+    inline const T &back() const { return head->prev->data; }
 
     inline bool isEmpty() const { return (_size == 0); }
     inline zu64 size() const { return _size; }
 
 private:
-    struct Node {
-        Node *prev;
-        Node *next;
-        T *data;
-    };
-
-private:
     Node *newNode(const T &data){
-       Node *node = _nodealloc.alloc(1);
-       _nodealloc.construct(node);
-       node->data = _alloc.alloc(1);
-       _alloc.construct(node->data, 1, data);
+       Node *node = _alloc->alloc();
+//       _alloc->construct(node);
+//       node->data = _talloc->alloc();
+       node->prev = nullptr;
+       node->next = nullptr;
+       _talloc->construct(&(node->data), data);
        return node;
     }
 
@@ -184,8 +188,8 @@ private:
     }
 
 private:
-    ZAllocator<T> _alloc;
-    ZAllocator<Node> _nodealloc;
+    ZAllocator<Node> *_alloc;
+    ZAllocator<T> *_talloc;
     zu64 _size;
     Node *head;
 };

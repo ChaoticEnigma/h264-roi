@@ -32,24 +32,24 @@ public:
     ZArray(const T *raw, zu64 size) : ZArray(){
         reserve(size);
         for(zu64 i = 0; i < size; ++i)
-            _alloc->construct(&_data[i], 1, raw[i]);
+            _alloc->construct(&_data[i], raw[i]);
         _size = size;
     }
     ZArray(const T &first) : ZArray(){
-        _alloc->construct(_data, 1, first);
+        _alloc->construct(_data, first);
         _size = 1;
     }
     ZArray(const ZArray<T> &other) : ZArray(){
         reserve(other._size);
         for(zu64 i = 0; i < other._size; ++i)
-            _alloc->construct(&_data[i], 1, other[i]);
+            _alloc->construct(&_data[i], other[i]);
         _size = other._size;
     }
     ZArray(std::initializer_list<T> ls) : ZArray(){
         reserve(ls.size());
         zu64 i = 0;
         for(auto item = ls.begin(); item < ls.end(); ++item){
-            _alloc->construct(&_data[i], 1, *item);
+            _alloc->construct(&_data[i], *item);
             ++i;
         }
         _size = ls.size();
@@ -71,7 +71,7 @@ public:
         _alloc->destroy(_data, _size); // Destroy contents
         reserve(other.size()); // Make space
         for(zu64 i = 0; i < other.size(); ++i)
-            _alloc->construct(&_data[i], 1, other[i]); // Copy objects
+            _alloc->construct(&_data[i], other[i]); // Copy objects
         _size = other.size();
         return *this;
     }
@@ -116,7 +116,7 @@ public:
     ZArray<T> &resize(zu64 size, const T &value = T()){
         reserve(size);
         if(size > _size){
-            _alloc->construct(_data + _size, size - _size, value); // Construct new objects
+            _alloc->construct(_data + _size, value, size - _size); // Construct new objects
         } else if(size < _size){
             _alloc->destroy(_data + size, _size - size); // Destroy extra objects
         }
@@ -151,14 +151,14 @@ public:
     ZArray<T> &insert(zu64 pos, const T &value){
         reserve(_size + 1);
         _alloc->rawmove(_data + pos, _data + pos + 1, _size - pos);
-        _alloc->construct(_data + pos, 1, value);
+        _alloc->construct(_data + pos, value);
         ++_size;
         return *this;
     }
 
     ZArray<T> &pushBack(const T &value){
         reserve(_size + 1);
-        _alloc->construct(_data + _size, 1, value);
+        _alloc->construct(_data + _size, value);
         ++_size;
         return *this;
     }
@@ -198,7 +198,7 @@ public:
     ZArray<T> &append(const ZArray<T> &in){
         reserve(_size + in.size());
         for(zu64 i = 0; i < in.size(); ++i)
-            _alloc->construct(_data + _size + i, 1, in[i]);
+            _alloc->construct(_data + _size + i, in[i]);
         _size += in.size();
         return *this;
     }
