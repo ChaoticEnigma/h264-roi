@@ -56,6 +56,7 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     file/zimage.h
     file/zppm.h
 
+    lib/fnv-5.0.3/fnv.h
     lib/sqlite3.h
     #lib/demangle.h
 
@@ -110,6 +111,7 @@ SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ##
     file/zimage.cpp
     file/zppm.cpp
 
+    lib/fnv-5.0.3/hash_64a.c
     #lib/sqlite3.c
     lib/xxhash.c
     #lib/nowide_standalone/src/iostream.cpp
@@ -150,6 +152,19 @@ IF(LIBCHAOS_PLATFORM_WINDOWS)
     )
 ENDIF()
 
+# Visual Studio Project Filters
+SOURCE_GROUP(""         FILES ztypes.h)
+SOURCE_GROUP(abstract   REGULAR_EXPRESSION "abstract/.*")
+SOURCE_GROUP(base       REGULAR_EXPRESSION "base/.*")
+SOURCE_GROUP(data       REGULAR_EXPRESSION "data/.*")
+SOURCE_GROUP(file       REGULAR_EXPRESSION "file/.*")
+#SOURCE_GROUP(lib        REGULAR_EXPRESSION "lib/.*")
+SOURCE_GROUP(math       REGULAR_EXPRESSION "math/.*")
+SOURCE_GROUP(misc       REGULAR_EXPRESSION "misc/.*")
+SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
+SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
+SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
+
 ### =================== CONFIG =================== ###
 
 # Export Include Path
@@ -172,6 +187,7 @@ SET(LibChaos_Core_INCLUDE ${LibChaos_Core_INCLUDE} PARENT_SCOPE)
 # Include Directories
 INCLUDE_DIRECTORIES(
     ${LibChaos_Core_INCLUDE}
+    lib/fnv-5.0.3
 )
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)

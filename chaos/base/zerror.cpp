@@ -55,7 +55,7 @@ namespace ZError {
 // Map of signals to signal handling functions
 ZMap<int, ZError::sigset> sigmap;
 
-void assert(bool condition){
+void zassert(bool condition){
     //assert(condition);
 }
 

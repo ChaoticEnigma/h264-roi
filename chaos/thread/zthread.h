@@ -68,9 +68,9 @@ public:
 
 private:
 #ifdef ZTHREAD_WINTHREADS
-    static DWORD entry_win(LPVOID ptr);
+    static DWORD _stdcall entry_win(LPVOID ptr);
 #else
-    static void *entry(void *ptr);
+    static void *entry_posix(void *ptr);
 #endif
 
 private:
@@ -89,9 +89,9 @@ private:
 #endif
     zthreadparam _param;
     std::atomic<bool> _stop;
-    int ret;
+    int _return;
     bool _alive;
-    bool copyable;
+    bool _copyable;
 };
 
 typedef ZThread ZThreadA;

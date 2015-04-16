@@ -16,7 +16,8 @@ public:
     enum hashMethod {
         simpleHash64,
         xxHash64,
-        defaultHash = xxHash64,
+        fnvHash64,
+        defaultHash = fnvHash64,
     };
 public:
     virtual ~ZHashBase(){}
@@ -52,6 +53,8 @@ public:
 public:
     static zu64 simpleHash64_hash(const zbyte *data, zu64 size, zu64 seed = 0);
 
+    static zu64 fnvHash64_hash(const zbyte *data, zu64 size, zu64 seed = 0);
+
     static zu64 xxHash64_hash(const zbyte *data, zu64 size);
     static void *xxHash64_init();
     static void xxHash64_feed(void *state, const zbyte *data, zu64 size);
@@ -73,6 +76,20 @@ public:
 protected:
     void feedHash(const zbyte *data, zu64 size){
         _hash = simpleHash64_hash(data, size, _hash);
+    }
+protected:
+    hashtype _hash;
+};
+
+// FNV-1a Hash (64-bit)
+template <> class ZHashMethod<ZHashBase::fnvHash64> : public ZHash64Base {
+public:
+    ZHashMethod() : _hash(0){}
+    ZHashMethod(const zbyte *data, zu64 size) : _hash(fnvHash64_hash(data, size)){}
+    hashtype hash() const { return _hash; }
+protected:
+    void feedHash(const zbyte *data, zu64 size){
+        _hash = fnvHash64_hash(data, size, _hash);
     }
 protected:
     hashtype _hash;

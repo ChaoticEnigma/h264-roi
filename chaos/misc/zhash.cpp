@@ -5,8 +5,9 @@
 *******************************************************************************/
 #include "zhash.h"
 #include "zexception.h"
-#include "xxhash.h"
 #include <functional>
+#include "xxhash.h"
+#include "fnv.h"
 
 namespace LibChaos {
 
@@ -16,6 +17,12 @@ zu64 ZHash64Base::simpleHash64_hash(const zbyte *data, zu64 size, zu64 seed){
         hash = ((hash << 5) + hash) + data[i]; /* hash * 33 + c */
     }
     return hash;
+}
+
+zu64 ZHash64Base::fnvHash64_hash(const zbyte *data, zu64 size, zu64 seed){
+    zu64 hval = seed ? seed : FNV1A_64_INIT;
+    // FNV-1a is recommended where possible by the developers
+    return fnv_64a_buf(data, size, hval);
 }
 
 zu64 ZHash64Base::xxHash64_hash(const zbyte *data, zu64 size){

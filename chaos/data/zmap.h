@@ -11,6 +11,7 @@
 #include "zhash.h"
 #include "zexception.h"
 #include "zarray.h"
+#include "zpointer.h"
 
 #define ZMAP_INITIAL_CAPACITY 16
 
@@ -40,8 +41,8 @@ public:
         //MapData *next;
     };
 public:
-    ZMap(ZAllocator<MapData> *alloc = new ZAllocator<MapData>()) : _alloc(alloc), _kalloc(new ZAllocator<K>()), _talloc(new ZAllocator<T>()),
-                                                                   _data(nullptr), _size(0), _realsize(0), _factor(0.5){
+    ZMap(float loadfactor = 0.5, ZAllocator<MapData> *alloc = new ZAllocator<MapData>) : _alloc(alloc), _kalloc(new ZAllocator<K>), _talloc(new ZAllocator<T>),
+                                                                                         _data(nullptr), _size(0), _realsize(0), _factor(loadfactor){
         resize(ZMAP_INITIAL_CAPACITY);
     }
 
@@ -49,6 +50,18 @@ public:
         resize(list.size());
         for(auto item = list.begin(); item < list.end(); ++item){
             add(item->key, item->value);
+        }
+    }
+
+    ZMap(const ZMap &other) : _alloc(other._alloc), _kalloc(new ZAllocator<K>), _talloc(new ZAllocator<T>),
+                              _data(nullptr), _size(0), _realsize(0), _factor(other._factor){
+        if(other._data != nullptr && other._size > 0){
+            resize(other._size);
+            for(zu64 i = 0; i < other._size; ++i){
+                if(other._data[i].flags & ZMAP_ENTRY_VALID){
+                    add(other._data[i].key, other._data[i].value);
+                }
+            }
         }
     }
 
@@ -60,20 +73,17 @@ public:
                     _talloc->destroy(&(_data[i].value));
                 }
             }
-            _alloc->dealloc(_data);
+            (&_alloc)->dealloc(_data);
 //            _data = nullptr;
         }
-        delete _talloc;
         delete _kalloc;
-        delete _alloc;
+        delete _talloc;
     }
 
     // Add entry with <key> and <value> to map, or change value of existing entry with <key>
     T &add(const K &key, const T &value){
-        // Resize if over load factor
-        if(((float)_size / (float)_realsize) >= _factor){
-            resize(_realsize << 1);
-        }
+        // Ensure enough space
+        resize(_size + 1);
 
         zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
@@ -192,16 +202,17 @@ public:
     // Buffer is resized to the next power of two that will hold <size> elements
     // The buffer is never made smaller
     void resize(zu64 size){
-        if(size > _realsize){
-//            zu64 newsize = 1;
-//            while(newsize < size)
-//                newsize <<= 1; // Get next power of 2
+        if(size > _realsize || ((float)size / (float)_realsize) >= _factor){
+            zu64 newsize = 1;
+            // Get a new buffer size that can hold <size> entries, staying under the load factor
+            while(newsize < size || ((float)size / (float)newsize) >= _factor)
+                newsize <<= 1;
 
             MapData *olddata = _data;
             zu64 oldsize = _realsize;
 
-            _realsize = size;
-            _data = _alloc->alloc(_realsize);
+            _realsize = newsize;
+            _data = (&_alloc)->alloc(_realsize);
 
             // Clear new entries
             for(zu64 i = 0; i < _realsize; ++i){
@@ -230,7 +241,7 @@ public:
                         //throw ZException("Fatal Error in addHashEntry");
                     }
                 }
-                _alloc->dealloc(olddata);
+                (&_alloc)->dealloc(olddata);
 //                olddata = nullptr;
             }
         }
@@ -255,7 +266,11 @@ public:
     zu64 realSize() const { return _realsize; }
 
     float factor() const { return _factor; }
-    void setFactor(float factor){ _factor = factor; }
+    void setFactor(float factor){
+        if(factor > 1.0f)
+            throw ZException("Invalid ZMap load factor");
+        _factor = factor;
+    }
 
     // For debugging
     MapData &position(zu64 i){
@@ -271,7 +286,7 @@ private:
     }
 
 private:
-    ZAllocator<MapData> *_alloc; // Memory allocator
+    ZPointer<ZAllocator<MapData> > _alloc; // Memory allocator
     ZAllocator<K> *_kalloc; // Used to construct and destroy keys
     ZAllocator<T> *_talloc; // Used to construct and destroy values
 
@@ -280,7 +295,7 @@ private:
     //MapData *_tail; // Pointer to last inserted element
     zu64 _size;     // Number of entries
     zu64 _realsize; // Size of buffer
-    float _factor;  // Max size / realsize ratio
+    float _factor;  // Max load factor (size / realsize ratio)
 };
 
 }

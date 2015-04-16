@@ -25,7 +25,7 @@ bool ZThreadArg::stop(){
     return (bool)*_stop;
 }
 
-ZThread::ZThread() :  _thread(0), _stop(false), _alive(false), copyable(false){
+ZThread::ZThread() :  _thread(0), _stop(false), _alive(false), _copyable(false){
 
 }
 ZThread::ZThread(funcType func) : ZThread(){
@@ -34,15 +34,33 @@ ZThread::ZThread(funcType func) : ZThread(){
 ZThread::ZThread(funcType func, void *argptr) : ZThread(){
     run(func, argptr);
 }
-ZThread::ZThread(const ZThread &other)
-  : _thread(other._thread), _param(other._param), _stop((bool)other._stop), ret(other.ret), _alive(other._alive), copyable(other.copyable){
+ZThread::ZThread(const ZThread &other) : _thread(other._thread), _param(other._param), _stop((bool)other._stop),
+                                         _return(other._return), _alive(other._alive), _copyable(other._copyable){
 
 }
 
 ZThread::~ZThread(){
-    if(!copyable)
+    if (!_copyable){
         detach();
+    }
 }
+
+#ifdef ZTHREAD_WINTHREADS
+DWORD _stdcall ZThread::entry_win(LPVOID ptr){
+    ZThread *thr = (ZThread *)ptr;
+    thr->_param.funcptr(&thr->_param.zarg); // Run function
+    thr->_alive = false;
+    return 0;
+}
+#else
+void *ZThread::entry_posix(void *ptr){
+    ZThread *thr = (ZThread*)ptr;
+    void *ret = thr->_param.funcptr(&thr->_param.zarg);
+    //pthread_exit(ret);
+    thr->_alive = false;
+    return ret;
+}
+#endif
 
 bool ZThread::run(funcType func){
     return run(func, NULL);
@@ -57,9 +75,9 @@ bool ZThread::run(funcType func, void *argptr){
     if(_thread == NULL)
         return false;
 #else
-    ret = pthread_create(&_thread, NULL, entry, this);
+    _return = pthread_create(&_thread, NULL, entry_posix, this);
     //std::cout << "create " << ret << std::endl;
-    if(ret != 0)
+    if(_return != 0)
         return false;
 #endif
     return true;
@@ -73,7 +91,7 @@ void *ZThread::join(){
 #else
     void *retval = NULL;
     if(_alive)
-        ret = pthread_join(_thread, &retval);
+        _return = pthread_join(_thread, &retval);
     return retval;
 #endif
 }
@@ -86,7 +104,7 @@ void ZThread::kill(){
     }
 #else
     if(_alive){
-        ret = pthread_cancel(_thread);
+        _return = pthread_cancel(_thread);
         _alive = false;
     }
 #endif
@@ -102,7 +120,7 @@ void ZThread::detach(){
         CloseHandle(_thread);
 #else
     if(_alive)
-        ret = pthread_detach(_thread);
+        _return = pthread_detach(_thread);
 #endif
 }
 
@@ -150,7 +168,7 @@ void ZThread::usleep(zu64 microseconds){
 }
 
 void ZThread::setCopyable(){
-    copyable = true;
+    _copyable = true;
 }
 
 ztid ZThread::tid(){
@@ -167,22 +185,5 @@ ztid ZThread::thisTid(){
     return (ztid)pthread_self();
 #endif
 }
-
-#ifdef ZTHREAD_WINTHREADS
-DWORD ZThread::entry_win(LPVOID ptr){
-    ZThread *thr = (ZThread *)ptr;
-    thr->_param.funcptr(&thr->_param.zarg); // Run function
-    thr->_alive = false;
-    return 0;
-}
-#else
-void *ZThread::entry(void *ptr){
-    ZThread *thr = (ZThread*)ptr;
-    void *ret = thr->_param.funcptr(&thr->_param.zarg);
-    //pthread_exit(ret);
-    thr->_alive = false;
-    return ret;
-}
-#endif
 
 }

@@ -31,7 +31,7 @@ namespace ZError {
         signalHandler handler;
     };
 
-    void assert(bool condition);
+    void zassert(bool condition);
 
     void registerSigSegv();
     bool registerInterruptHandler(signalHandler);
