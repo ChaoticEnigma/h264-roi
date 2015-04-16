@@ -21,7 +21,7 @@ namespace LibChaos {
 // When a Pointer is destroyed, the reference count is decremented
 // If a Pointer is the last reference to the object, the object is deleted when the Pointer is destroyed or re-assigned
 
-// NEEDS EXTENSIVE TESTING
+// TEST: ZPointer NEEDS EXTENSIVE TESTING
 
 template <typename T> class ZPointer {
 public:
@@ -40,11 +40,12 @@ public:
 
     // Copy other pointer and count
     // Increment count
-    ZPointer(ZPointer &other) : _data(other._data){
+    // NOTE: other ZPointer object is not modified, but data struct is
+    ZPointer(const ZPointer &other) : _data(other._data){
         increment();
     }
 
-    ZPointer &operator=(ZPointer &other){
+    ZPointer &operator=(const ZPointer &other){
         release();
         _data = other._data;
         increment();
@@ -80,14 +81,18 @@ public:
     T *ptr() const {
         return _data->ptr;
     }
+    inline T *operator&(){ return ptr(); }
 
     // Get reference
     T &get(){
         return *_data->ptr;
     }
-    const T&get() const {
+    inline T &operator*(){ return get(); }
+
+    const T &get() const {
         return *_data->ptr;
     }
+    inline const T &operator*() const { return get(); }
 
 private:
     struct PointerData {

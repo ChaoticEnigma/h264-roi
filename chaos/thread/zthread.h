@@ -89,9 +89,9 @@ private:
 #endif
     zthreadparam _param;
     std::atomic<bool> _stop;
-    int ret;
+    int _return;
     bool _alive;
-    bool copyable;
+    bool _copyable;
 };
 
 typedef ZThread ZThreadA;
