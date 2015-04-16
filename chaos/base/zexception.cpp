@@ -9,6 +9,7 @@
 
 namespace LibChaos {
 
+// Constructor should not be able to throw an exception
 ZException::ZException(ZString desc, int code, bool trace) : _description(desc), _error(code){
     if(trace)
         _stacktrace = ZError::getStackTrace(2);
