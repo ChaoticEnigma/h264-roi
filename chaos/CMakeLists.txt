@@ -56,6 +56,7 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     file/zimage.h
     file/zppm.h
 
+    lib/fnv-5.0.3/fnv.h
     lib/sqlite3.h
     #lib/demangle.h
 
@@ -110,6 +111,7 @@ SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ##
     file/zimage.cpp
     file/zppm.cpp
 
+    lib/fnv-5.0.3/hash_64a.c
     #lib/sqlite3.c
     lib/xxhash.c
     #lib/nowide_standalone/src/iostream.cpp
@@ -185,6 +187,7 @@ SET(LibChaos_Core_INCLUDE ${LibChaos_Core_INCLUDE} PARENT_SCOPE)
 # Include Directories
 INCLUDE_DIRECTORIES(
     ${LibChaos_Core_INCLUDE}
+    lib/fnv-5.0.3
 )
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
