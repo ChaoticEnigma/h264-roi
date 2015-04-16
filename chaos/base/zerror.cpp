@@ -534,16 +534,15 @@ ArZ getStackTrace(unsigned trim){
 
 ArZ getStackTrace(unsigned trim){
     ArZ trace;
-
-    void* callstack[128];
-    int i, frames = backtrace(callstack, 128);
-    char** strs = backtrace_symbols(callstack, frames);
-    for(i = 0; i < frames; ++i){
-        trace.push(strs[i]);
+    const int maxframes = 128;
+    void *callstack[maxframes]; // Maximum 128 stack frames
+    int frames = backtrace(callstack, maxframes); // Get call stack
+    char **stackstrs = backtrace_symbols(callstack, frames); // Get call stack symbol names
+    for(int i = 0; i < frames; ++i){
+        trace.push(stackstrs[i]);
         //printf("%s\n", strs[i]);
     }
-    free(strs);
-
+    free(stackstrs);
     trace.popFrontCount(trim);
     return trace;
 }
