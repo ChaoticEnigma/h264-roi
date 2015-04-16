@@ -9,6 +9,12 @@
 #include "ztypes.h"
 #include <type_traits>
 
+// Simple Hash initial base
+#define SIMPLEHASH_INIT ((zu64)5381)
+
+// FNV-1(a) initial base is the the FNV-0 hash of "chongo <Landon Curt Noll> /\../\" (32 bytes)
+#define FNV1A_64_INIT ((zu64)0xcbf29ce484222325ULL)
+
 namespace LibChaos {
 
 class ZHashBase {
@@ -51,9 +57,9 @@ public:
 public:
     virtual zu64 hash() const = 0;
 public:
-    static zu64 simpleHash64_hash(const zbyte *data, zu64 size, zu64 seed = 0);
+    static zu64 simpleHash64_hash(const zbyte *data, zu64 size, zu64 seed = SIMPLEHASH_INIT);
 
-    static zu64 fnvHash64_hash(const zbyte *data, zu64 size, zu64 seed = 0);
+    static zu64 fnvHash64_hash(const zbyte *data, zu64 size, zu64 hval = FNV1A_64_INIT);
 
     static zu64 xxHash64_hash(const zbyte *data, zu64 size);
     static void *xxHash64_init();
