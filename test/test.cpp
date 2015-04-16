@@ -5,6 +5,7 @@ int runTests(ZAssoc<ZString, test_func> tests);
 
 int main(int argc, char **argv){
     try {
+        ZLog::init(); // BUG: threaded zlog sometimes crashes
         ZLog::formatStdout(ZLogSource::normal, "%clock% %thread% - %log%");
         ZLog::formatStderr(ZLogSource::error, "%clock% %thread% %function% (%file%:%line%) - %log%");
         ZPath lgf = ZPath("logs") + ZLog::genLogFileName("testchaos_");
