@@ -542,7 +542,7 @@ ArZ getStackTrace(unsigned trim){
         trace.push(stackstrs[i]);
         //printf("%s\n", strs[i]);
     }
-    free(strs);
+    free(stackstrs);
     trace.popFrontCount(trim);
     return trace;
 }
