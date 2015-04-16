@@ -150,6 +150,19 @@ IF(LIBCHAOS_PLATFORM_WINDOWS)
     )
 ENDIF()
 
+# Visual Studio Project Filters
+SOURCE_GROUP(""         FILES ztypes.h)
+SOURCE_GROUP(abstract   REGULAR_EXPRESSION "abstract/.*")
+SOURCE_GROUP(base       REGULAR_EXPRESSION "base/.*")
+SOURCE_GROUP(data       REGULAR_EXPRESSION "data/.*")
+SOURCE_GROUP(file       REGULAR_EXPRESSION "file/.*")
+#SOURCE_GROUP(lib        REGULAR_EXPRESSION "lib/.*")
+SOURCE_GROUP(math       REGULAR_EXPRESSION "math/.*")
+SOURCE_GROUP(misc       REGULAR_EXPRESSION "misc/.*")
+SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
+SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
+SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
+
 ### =================== CONFIG =================== ###
 
 # Export Include Path

@@ -68,9 +68,9 @@ public:
 
 private:
 #ifdef ZTHREAD_WINTHREADS
-    static DWORD entry_win(LPVOID ptr);
+    static DWORD _stdcall entry_win(LPVOID ptr);
 #else
-    static void *entry(void *ptr);
+    static void *entry_posix(void *ptr);
 #endif
 
 private:
