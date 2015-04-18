@@ -149,6 +149,14 @@ void ZLog::init(){
     }
 }
 
+void ZLog::deInit(){
+    if(_init){
+        _init = false;
+        worker->stop();
+        delete worker;
+    }
+}
+
 void ZLog::formatStdout(zlog_source type, ZString fmt){
     ZLogWorker::formatStdout(type, fmt);
 }
@@ -157,10 +165,6 @@ void ZLog::formatStderr(zlog_source type, ZString fmt){
 }
 void ZLog::addLogFile(ZPath pth, zlog_source type, ZString fmt){
     ZLogWorker::addLogFile(pth, type, fmt);
-}
-
-void ZLog::waitEnd(){
-    worker->waitEnd();
 }
 
 }

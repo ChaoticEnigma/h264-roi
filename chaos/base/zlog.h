@@ -122,12 +122,12 @@ public:
     static ZString genLogFileName(ZString prefix);
 
     static void init();
+    static void deInit();
 
     static void formatStdout(zlog_source type, ZString fmt);
     static void formatStderr(zlog_source type, ZString fmt);
     static void addLogFile(ZPath, zlog_source type, ZString fmt);
 
-    static void waitEnd();
 private:
     void flushLog(bool final);
 
@@ -135,9 +135,6 @@ private:
     static ZLogWorker *worker;
 
     LogJob *job;
-
-    ZString buffer;
-
     bool stdiolog;
     bool newline;
     bool rawlog;

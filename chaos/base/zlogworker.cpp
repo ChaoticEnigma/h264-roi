@@ -26,9 +26,6 @@ ZQueue<ZLogWorker::LogJob*> jobs;
 ZMutex formatmutex;
 ZMap<ZLogWorker::zlog_source, ZString> stdoutlog;
 ZMap<ZLogWorker::zlog_source, ZString> stderrlog;
-//ZMap<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
-//ZAssoc<ZLogWorker::zlog_source, ZString> stdoutlog;
-//ZAssoc<ZLogWorker::zlog_source, ZString> stderrlog;
 ZArray<ZPath> logfilelist;
 ZMap<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
 
@@ -48,18 +45,19 @@ ZLogWorker::ZLogWorker(){
 }
 
 ZLogWorker::~ZLogWorker(){
-    if(work.tid())
-        waitEnd();
+    if(work.tid()){
+        stop();
+    }
 }
 
 void ZLogWorker::run(){
     work.run(zlogWorker);
 }
 
-void ZLogWorker::waitEnd(){ // Must NEVER be called by log worker thread
+void ZLogWorker::stop(){ // Must NEVER be called by log worker thread
     // BUG: Sometimes hangs?
     work.stop();
-    jobcondition.signal();
+    jobcondition.signal(); // Wake up thread
     work.join();
 }
 

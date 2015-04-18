@@ -2,32 +2,12 @@
 #define ZPARCEL4PARSER
 
 #include "zparcel-parser.h"
+#include "zparceltypes.h"
+#include "zparcelconvert.h"
 
 namespace LibChaos {
 
 namespace ZParcelTypes {
-
-typedef zu32 pageid;
-enum pagetype {
-    freepage,
-    fieldpage,
-    freelistpage,
-    indexpage,
-    recordpage,
-    blobpage,
-    historypage,
-    headpage,
-};
-
-typedef zu16 fieldid;
-enum fieldtype {
-    nullfield,
-    unsignedintfield,
-    signedintfield,
-    zuidfield,
-    stringfield,
-    filefield,
-};
 
 struct Field {
     fieldid id;
@@ -39,6 +19,7 @@ typedef ZArray<Field> FieldList;
 }
 
 class ZParcel4Parser : public ZParcelParser {
+    using namespace ZParcelTypes;
 public:
     ZParcel4Parser(ZFile *file);
 
@@ -51,26 +32,27 @@ public:
     void setPageSize(zu8 power);
     void setMaxPages(zu32 pages);
 
-    ZParcelTypes::fieldid addField(ZString name, ZParcelTypes::fieldtype type);
-    ZParcelTypes::fieldid getFieldId(ZString name);
-    ZParcelTypes::fieldtype getFieldType(ZParcelTypes::fieldid id);
+    fieldid addField(ZString name, fieldtype type);
+    fieldid getFieldId(ZString name);
+    fieldtype getFieldType(fieldid id);
 
-    bool addRecord(ZParcelTypes::FieldList fields);
+    bool addRecord(FieldList fields);
 
-    static ZParcelTypes::fieldtype fieldFileIdToFieldType(zu16 type);
-    static ZString getFieldTypeName(ZParcelTypes::fieldtype type);
+    static fieldtype fieldFileIdToFieldType(zu16 type);
+    static fieldtype typeNameToFieldType(ZString type);
+    static ZString getFieldTypeName(fieldtype type);
 
 private:
-    bool readPage(ZParcelTypes::pageid page, ZBinary &data);
+    bool readPage(pageid page, ZBinary &data);
     bool loadHeadPage();
 
-    ZParcelTypes::pageid insertPage(ZParcelTypes::pagetype type);
+    pageid insertPage(pagetype type);
     bool writeHeadPage();
 
     bool zeroPad();
 
-    bool freePage(ZParcelTypes::pageid page);
-    bool addToFreelist(ZParcelTypes::pageid page);
+    bool freePage(pageid page);
+    bool addToFreelist(pageid page);
 
 private:
     ZFile *_file;
@@ -80,13 +62,14 @@ private:
 
     zu8 _pagepower;
     zu32 _maxpages;
-    ZParcelTypes::pageid _freelistpage;
-    ZParcelTypes::pageid _fieldpage;
-    ZParcelTypes::pageid _indexpage;
-    ZParcelTypes::pageid _recordpage;
+    pageid _freelistpage;
+    pageid _fieldpage;
+    pageid _indexpage;
+    pageid _recordpage;
 };
 
 class ParcelPage : public ZWriter, public ZReader, public ZPosition {
+    using namespace ZParcelTypes;
 public:
     ParcelPage(ZFile *file, zu32 page, zu32 pagesize);
 
@@ -99,34 +82,22 @@ public:
 
 protected:
     ZFile *_file;
-    ZParcelTypes::pageid _page;
+    pageid _page;
     zu32 _pagesize;
     zu64 _rwpos;
 };
 
 class FieldPage : public ParcelPage {
+    using namespace ZParcelTypes;
 public:
     FieldPage(ZFile *file, zu32 page, zu32 pagesize);
 
 
 
-    ZParcelTypes::pagetype _pagetype;
-    ZParcelTypes::pageid _prevpage;
-    ZParcelTypes::pageid _nextpage;
+    pagetype _pagetype;
+    pageid _prevpage;
+    pageid _nextpage;
 };
-
-namespace ZParcelConvert {
-    ZBinary toFileFormat(ZParcelTypes::fieldtype type, ZString str);
-
-    ZBinary toFile8Bits(zu8 num);
-    ZBinary toFile16Bits(zu16 num);
-    ZBinary toFile32Bits(zu32 num);
-    ZBinary toFile64Bits(zu64 num);
-    zu8 fromFile8Bits(ZBinary num);
-    zu16 fromFile16Bits(ZBinary num);
-    zu32 fromFile32Bits(ZBinary num);
-    zu64 fromFile64Bits(ZBinary num);
-}
 
 }
 

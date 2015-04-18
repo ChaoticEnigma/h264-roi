@@ -59,8 +59,10 @@ public:
 
     ZLogWorker();
     ~ZLogWorker();
+
     void run();
-    void waitEnd();
+    void stop();
+
     void queue(LogJob *job);
     static void doLog(LogJob *job);
 

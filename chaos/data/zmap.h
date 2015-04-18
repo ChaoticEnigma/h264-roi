@@ -41,8 +41,9 @@ public:
         //MapData *next;
     };
 public:
-    ZMap(float loadfactor = 0.5, ZAllocator<MapData> *alloc = new ZAllocator<MapData>) : _alloc(alloc), _kalloc(new ZAllocator<K>), _talloc(new ZAllocator<T>),
-                                                                                         _data(nullptr), _size(0), _realsize(0), _factor(loadfactor){
+    ZMap(float loadfactor = 0.5, ZAllocator<MapData> *alloc = new ZAllocator<MapData>) :
+        _alloc(alloc), _kalloc(new ZAllocator<K>), _talloc(new ZAllocator<T>),
+        _data(nullptr), _size(0), _realsize(0), _factor(loadfactor){
         resize(ZMAP_INITIAL_CAPACITY);
     }
 

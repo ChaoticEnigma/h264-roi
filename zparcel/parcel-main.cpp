@@ -2,7 +2,7 @@
 #include "zexception.h"
 
 using namespace ZParcelTypes;
-using namespace ZParcelConvert;
+//using namespace ZParcelConvert;
 
 int mainwrap(int argc, char **argv){
     ZLog::formatStdout(ZLogSource::normal, "%log%");
@@ -29,7 +29,7 @@ int mainwrap(int argc, char **argv){
     LOG("Parcelor Command: \"" << cmdstr << "\"");
 
     if(args.size() > 0 && args[0] == "create"){
-        if(!(args.size() > 1)){
+        if(args.size() != 2){
             LOG("Usgae: create <file>");
             return EXIT_FAILURE;
         }
@@ -39,48 +39,75 @@ int mainwrap(int argc, char **argv){
 
         parcel->setPageSize(11);
         parcel->setMaxPages(64 * 1024 * 2);
-        parcel->create();
+
+        bool ok = parcel->create();
+        if(ok)
+            LOG("OK");
+        else
+            LOG("ERROR");
 
         delete parcel;
+
+    } else if(args.size() > 0 && args[0] == "addfield"){
+        if(args.size() != 4){
+            LOG("Usage: addfield <file> <name> <type>");
+            return EXIT_FAILURE;
+        }
+        LOG("Adding New Field to ZParcel");
+        ZFile file(args[1], ZFile::modereadwrite);
+        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
+        parcel->open();
+
+        fieldtype type = ZParcel4Parser::fieldFileIdToFieldType(args[3].tint());
+        fieldid id = parcel->addField(args[2], type);
+        if(id){
+            LOG("Created field " << id << " - " << args[2] << " : " << type);
+            LOG("OK");
+        } else {
+            ELOG("Error creating field \"" << args[2] << ", " << args[3]);
+            LOG("ERROR");
+        }
+
+        delete parcel;
+
     } else if(args.size() > 0 && args[0] == "add"){
-        if(!(args.size() > 2)){
-            LOG("Usgae: add <file> <field:value> [field:value] ..");
+        if(args.size() < 3){
+            LOG("Usgae: add <file> <field=value> [field=value] ..");
             return EXIT_FAILURE;
         }
         LOG("Adding Record to ZParcel " << args[1]);
         ZFile file(args[1], ZFile::modereadwrite);
         ZParcel4Parser *parcel = new ZParcel4Parser(&file);
-
         parcel->open();
+
         FieldList fieldlist;
         for(zu64 i = 2; i < args.size(); ++i){
             ArZ pair = args[i].split("=");
-            ArZ fieldpair = pair[0].split(":");
-            ZString fieldname = fieldpair[0];
-            zu16 newfieldtype = (fieldpair.size() == 2 ? (zu16)fieldpair[1].tozu64() : 0);
-            fieldtype ftype = ZParcel4Parser::fieldFileIdToFieldType(newfieldtype);
+            if(pair.size() != 2)
+                ELOG("Format error in \"" << args[i] << '"');
+            ZString fieldname = pair[0];
+            ZString fieldvalue = pair[1];
             //LOG(fieldname << "(" << ZParcel4Parser::getFieldTypeName(ftype) << ") : " << pair[1]);
             fieldid fid = parcel->getFieldId(fieldname);
-            if(fid == 0){
-                if(ftype == nullfield){
-                    ELOG("Invalid field type");
-                } else {
-                    LOG("New field: " << fieldname << "(" << ZParcel4Parser::getFieldTypeName(ftype) << ")");
-                    fid = parcel->addField(fieldname, ftype);
-                }
+            if(fid){
+                fieldlist.push({ fid, ZParcelConvert::toFileFormat(parcel->getFieldType(fid), fieldvalue) });
             } else {
-                if(ftype != parcel->getFieldType(fid))
-                    ELOG("Different field type specifid: " << ZParcel4Parser::getFieldTypeName(ftype) << ", " << ZParcel4Parser::getFieldTypeName(parcel->getFieldType(fid)));
+                ELOG("Bad field \"" << fieldname << '"');
             }
-            if(fid != 0 && ftype != nullfield)
-                fieldlist.push({ fid, toFileFormat(ftype, pair[1]) });
         }
 
         for(zu64 i = 0; i < fieldlist.size(); ++i){
             LOG(fieldlist[i].id << " : " << fieldlist[i].data.size() << " bytes");
         }
 
+        bool ok = parcel->addRecord(fieldlist);
+        if(ok)
+            LOG("OK");
+        else
+            ELOG("ERROR");
+
         delete parcel;
+
     } else if(args.size() > 0 && args[0] == "modify"){
         if(!(args.size() > 2)){
             LOG("Usgae: modify <file> <command>");
@@ -89,11 +116,12 @@ int mainwrap(int argc, char **argv){
         LOG("Modifying ZParcel Options" << args[1]);
         ZFile file(args[1], ZFile::modereadwrite);
         ZParcel4Parser *parcel = new ZParcel4Parser(&file);
-
         parcel->open();
+
         LOG(args[2]);
 
         delete parcel;
+
     } else if(args.size() > 0 && args[0] == "list"){
         if(!(args.size() > 1)){
             LOG("Usgae: list <file>");
@@ -102,12 +130,13 @@ int mainwrap(int argc, char **argv){
         LOG("Listing Records in ZParcel " << args[1]);
         ZFile file(args[1], ZFile::modereadwrite);
         ZParcel4Parser *parcel = new ZParcel4Parser(&file);
-
         parcel->open();
+
         LOG("Page Size: " << parcel->getPageSize());
         LOG("Max Pages: " << parcel->getMaxPages());
 
         delete parcel;
+
     } else {
         LOG("Unknown Command");
     }
