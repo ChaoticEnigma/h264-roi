@@ -268,7 +268,7 @@ bool ZFile::remove(ZPath file){
 bool ZFile::resizeFile(zu64 size){
 #if PLATFORM == WINDOWS
     LARGE_INTEGER dist;
-    dist.QuadPart = size;
+    dist.QuadPart = (LONGLONG)size;
     LARGE_INTEGER pos;
     if(SetFilePointerEx(_handle, dist, &pos, FILE_BEGIN) == 0)
         return false;

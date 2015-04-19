@@ -19,7 +19,6 @@ typedef ZArray<Field> FieldList;
 }
 
 class ZParcel4Parser : public ZParcelParser {
-    using namespace ZParcelTypes;
 public:
     ZParcel4Parser(ZFile *file);
 
@@ -32,27 +31,27 @@ public:
     void setPageSize(zu8 power);
     void setMaxPages(zu32 pages);
 
-    fieldid addField(ZString name, fieldtype type);
-    fieldid getFieldId(ZString name);
-    fieldtype getFieldType(fieldid id);
+    ZParcelTypes::fieldid addField(ZString name, ZParcelTypes::fieldtype type);
+    ZParcelTypes::fieldid getFieldId(ZString name);
+    ZParcelTypes::fieldtype getFieldType(ZParcelTypes::fieldid id);
 
-    bool addRecord(FieldList fields);
+    bool addRecord(ZParcelTypes::FieldList fields);
 
-    static fieldtype fieldFileIdToFieldType(zu16 type);
-    static fieldtype typeNameToFieldType(ZString type);
-    static ZString getFieldTypeName(fieldtype type);
+    static ZParcelTypes::fieldtype fieldFileIdToFieldType(zu16 type);
+    static ZParcelTypes::fieldtype typeNameToFieldType(ZString type);
+    static ZString getFieldTypeName(ZParcelTypes::fieldtype type);
 
 private:
-    bool readPage(pageid page, ZBinary &data);
+    bool readPage(ZParcelTypes::pageid page, ZBinary &data);
     bool loadHeadPage();
 
-    pageid insertPage(pagetype type);
+    ZParcelTypes::pageid insertPage(ZParcelTypes::pagetype type);
     bool writeHeadPage();
 
     bool zeroPad();
 
-    bool freePage(pageid page);
-    bool addToFreelist(pageid page);
+    bool freePage(ZParcelTypes::pageid page);
+    bool addToFreelist(ZParcelTypes::pageid page);
 
 private:
     ZFile *_file;
@@ -62,14 +61,13 @@ private:
 
     zu8 _pagepower;
     zu32 _maxpages;
-    pageid _freelistpage;
-    pageid _fieldpage;
-    pageid _indexpage;
-    pageid _recordpage;
+    ZParcelTypes::pageid _freelistpage;
+    ZParcelTypes::pageid _fieldpage;
+    ZParcelTypes::pageid _indexpage;
+    ZParcelTypes::pageid _recordpage;
 };
 
 class ParcelPage : public ZWriter, public ZReader, public ZPosition {
-    using namespace ZParcelTypes;
 public:
     ParcelPage(ZFile *file, zu32 page, zu32 pagesize);
 
@@ -82,21 +80,20 @@ public:
 
 protected:
     ZFile *_file;
-    pageid _page;
+    ZParcelTypes::pageid _page;
     zu32 _pagesize;
     zu64 _rwpos;
 };
 
 class FieldPage : public ParcelPage {
-    using namespace ZParcelTypes;
 public:
     FieldPage(ZFile *file, zu32 page, zu32 pagesize);
 
 
 
-    pagetype _pagetype;
-    pageid _prevpage;
-    pageid _nextpage;
+    ZParcelTypes::pagetype _pagetype;
+    ZParcelTypes::pageid _prevpage;
+    ZParcelTypes::pageid _nextpage;
 };
 
 }

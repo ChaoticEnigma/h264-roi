@@ -18,7 +18,7 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     abstract/zaccessor.h
     abstract/zbase.h
     abstract/zhashable.h
-    abstract/ziterator.h
+    abstract/ziteratoraccessor.h
     abstract/zposition.h
     abstract/zreader.h
     abstract/zserializer.h
@@ -28,6 +28,7 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     base/zclock.h
     base/zerror.h
     base/zexception.h
+    base/ziterator.h
     base/zlog.h
     base/zlogworker.h
     #base/zpath.h

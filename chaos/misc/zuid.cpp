@@ -127,7 +127,7 @@ ZUID::ZUID(uuidtype type){
 ZUID::ZUID(ZString str){
     str.replace("-", "");
     if(str.size() == 32 && str.isInteger(16)){
-        for(zu8 i = 0; i < 16; ++i)
+        for(zu64 i = 0; i < 16; ++i)
             _id_octets[i] = (zu8)ZString::substr(str, i*2, 2).tozu64(16);
     } else {
         for(zu8 i = 0; i < 16; ++i)
