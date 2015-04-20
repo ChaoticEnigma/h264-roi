@@ -269,15 +269,15 @@ int string_block(){
 
     ZString iterstr1 = "abcdefghijklmnopqrstuvwxyz";
     ZString iterstr2;
-    for(ZStringIterator i = iterstr1.begin(); !i.atEnd(); ++i){
-        iterstr2 += *i;
-    }
+    //for(ZStringIterator i = iterstr1.begin(); !i.atEnd(); ++i){
+    //    iterstr2 += *i;
+    //}
     LOG(iterstr1);
     LOG(iterstr2);
     ZString iterstr3;
-    for(ZStringIterator i = iterstr1.end(); !i.atFront(); --i){
-        iterstr3 += *i;
-    }
+    //for(ZStringIterator i = iterstr1.end(); !i.atFront(); --i){
+    //    iterstr3 += *i;
+    //}
     LOG(iterstr3);
 
     LOG("-- Number Conversion:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////

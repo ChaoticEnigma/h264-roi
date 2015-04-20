@@ -220,14 +220,6 @@ float ZString::toFloat() const {
     return out;
 }
 
-ZStringIterator ZString::begin(){
-    return ZStringIterator(this, 0);
-}
-
-ZStringIterator ZString::end(){
-    return ZStringIterator(this, size()-1);
-}
-
 ZString::ZString(double num, unsigned places) : ZString(){
     std::stringstream stream;
     stream << num;

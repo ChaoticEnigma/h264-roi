@@ -235,8 +235,8 @@ public:
         return none;
     }
 
-    ZIterator<T> iterator() const {
-
+    ZIterator<T> iterator(){
+        return ZIterator<T>(new ZArrayAccessor(this));
     }
 
     inline T &front(){ return _data[0]; }
@@ -255,7 +255,29 @@ public:
     inline T *raw() const { return ptr(); }
 
 private:
-    class ZArrayAccessor
+    class ZArrayAccessor : public ZAccessor<T> {
+    public:
+        ZArrayAccessor(ZArray<T> *array) : _array(array), _pos(0){}
+
+        bool atEnd() const {
+            return _pos >= _size;
+        }
+
+        void forward(){
+            ++_pos;
+        }
+        void back(){
+            --_pos;
+        }
+
+        T &current(){
+            return _array->operator[](_pos);
+        }
+
+    private:
+        ZArray<T> *_array;
+        zu64 _pos;
+    };
 
 private:
     ZAllocator<T> *_alloc;

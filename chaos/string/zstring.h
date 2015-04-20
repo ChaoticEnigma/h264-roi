@@ -10,7 +10,7 @@
 #include "zallocator.h"
 #include "zassoc.h"
 #include "zhash.h"
-#include "ziterator.h"
+#include "ziterable.h"
 
 #include <cstring>
 //#include <bits/stringfwd.h>
@@ -25,18 +25,19 @@
 namespace LibChaos {
 
 class ZString;
-class ZStringIterator;
+typedef ZIterator<ZString> ZStringIterator;
 
 typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
+typedef char zstringchartype;
+
 // Represents UTF-8 string
 // Wide characters are narrowed and encoded in UTF-8
 // Internal array is always null terminated
-class ZString {
+class ZString : public ZIterable<zstringchartype> {
 public:
-    typedef char chartype;
-
+    typedef zstringchartype chartype;
     enum {
         none = ZU64_MAX
     };
@@ -106,10 +107,6 @@ public:
     // To floating point
     bool isFloat() const;
     float toFloat() const;
-
-    // Iterators
-    ZStringIterator begin();
-    ZStringIterator end();
 
     // Construct from double with <places> decimal points, 0 means all
     ZString(double flt, unsigned places = 0);
@@ -254,6 +251,11 @@ public:
     // Number of *characters* (code points)
     zu64 length() const;
 
+    // ZString Iterator
+    ZIterator<chartype> iterator(){
+        return ZIterator<chartype>(new ZStringAccessor(this));
+    }
+
     // On empty string, will return null terminator
     inline chartype &first(){ return _data[0]; }
     inline const chartype &first() const { return _data[0]; }
@@ -270,6 +272,38 @@ private:
     std::wstring toUtf16() const;
 
     static bool isUtf8(ZString str);
+
+private:
+    class ZStringAccessor : public ZAccessor<chartype> {
+    public:
+        ZStringAccessor(ZString *str, zu64 pos = 0) : _str(str), _pos(pos){}
+
+        bool atEnd() const {
+            return _pos >= _str->size();
+        }
+
+        bool atFront() const {
+            return _pos <= 0;
+        }
+
+        void forward(){
+            if(!atEnd())
+                ++_pos;
+        }
+
+        void back(){
+            if(!atFront())
+                --_pos;
+        }
+
+        ZString::chartype &current(){
+            return _str->operator[](_pos);
+        }
+
+    private:
+        ZString *_str;
+        zu64 _pos;
+    };
 
 private:
     ZAllocator<chartype> _alloc;
@@ -290,37 +324,6 @@ inline bool operator==(const ZString &lhs, const ZString &rhs){
 inline bool operator!=(const ZString &lhs, const ZString &rhs){
     return !operator==(lhs, rhs);
 }
-
-class ZStringIterator : public ZIterator<ZString::chartype> {
-public:
-    ZStringIterator(ZString *str, zu64 pos = 0) : str(str), pos(pos){}
-
-    bool atEnd() const {
-        return pos >= str->size();
-    }
-    void advance(){
-        if(!atEnd())
-            ++pos;
-    }
-    void operator++(){ advance(); }
-
-    bool atFront() const {
-        return pos <= 0;
-    }
-    void devance(){
-        if(!atFront())
-            --pos;
-    }
-    void operator--(){ devance(); }
-
-    ZString::chartype &operator*(){
-        return str->operator[](pos);
-    }
-
-private:
-    ZString *str;
-    zu64 pos;
-};
 
 // ZString specialization ZHash
 ZHASH_USER_SPECIALIAZATION(ZString, (const ZString &str), (str.bytes(), str.size()), {})

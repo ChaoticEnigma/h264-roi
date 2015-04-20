@@ -12,13 +12,13 @@ namespace LibChaos {
 
 template <typename T> class ZAccessor {
 public:
-    virtual ~ZIteratorAccessor(){}
+    virtual ~ZAccessor(){}
 
     virtual bool atEnd() const = 0;
     virtual void forward() = 0;
     virtual void back() = 0;
 
-    virtual T &operator*() = 0;
+    virtual T &current() = 0;
 };
 
 }

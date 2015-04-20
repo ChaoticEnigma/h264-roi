@@ -7,9 +7,10 @@ PROJECT(LibChaos_Utils)
 
 OPTION(LIBCHAOS_EXTERN_EXTENSION_FIXER          "Build LibChaos Extension Fixer"        OFF )
 OPTION(LIBCHAOS_EXTERN_AUDIOBOOK_SORTER         "Build LibChaos Audiobook Sorter"       OFF )
-OPTION(LIBCHAOS_EXTERN_IMAGE_DOWNLOADER         "Build LibChaos Image Downloader"       ON  )
 OPTION(LIBCHAOS_EXTERN_DUPLICATE_FINDER         "Build LibChaos Duplicate Finder"       OFF )
+OPTION(LIBCHAOS_EXTERN_IMAGE_DOWNLOADER         "Build LibChaos Image Downloader"       ON  )
 OPTION(LIBCHAOS_EXTERN_IMAGE_LIBRARY_MANAGER    "Build LibChaos Image Library Manager"  ON  )
+OPTION(LIBCHAOS_EXTERN_IMAGE_REVERSE_SEARCH     "Build LibChaos Image Reverse Search"   OFF )
 
 INCLUDE_DIRECTORIES(
     ${LibChaos_Utils_SOURCE_DIR}
@@ -32,6 +33,12 @@ IF(LIBCHAOS_EXTERN_AUDIOBOOK_SORTER)
     TARGET_LINK_LIBRARIES(audiobooksorter chaos)
 ENDIF()
 
+# Duplicate Finder
+IF(LIBCHAOS_EXTERN_DUPLICATE_FINDER)
+    ADD_EXECUTABLE(duplicatefinder duplicatefinder.cpp)
+    TARGET_LINK_LIBRARIES(duplicatefinder chaos)
+ENDIF()
+
 # Image Downloader
 IF(LIBCHAOS_EXTERN_IMAGE_DOWNLOADER)
     ADD_EXECUTABLE(imagedownloader
@@ -46,14 +53,17 @@ IF(LIBCHAOS_EXTERN_IMAGE_DOWNLOADER)
     TARGET_LINK_LIBRARIES(imagedownloader chaos)
 ENDIF()
 
-# Duplicate Finder
-IF(LIBCHAOS_EXTERN_DUPLICATE_FINDER)
-    ADD_EXECUTABLE(duplicatefinder duplicatefinder.cpp)
-    TARGET_LINK_LIBRARIES(duplicatefinder chaos)
-ENDIF()
-
 # Image Library Manager
 IF(LIBCHAOS_EXTERN_IMAGE_LIBRARY_MANAGER)
     ADD_EXECUTABLE(imagelibrarymanger imagelibrarymanager.cpp)
     TARGET_LINK_LIBRARIES(imagelibrarymanger chaos)
+ENDIF()
+
+# Image Reverse Search
+IF(LIBCHAOS_EXTERN_IMAGE_REVERSE_SEARCH)
+    ADD_EXECUTABLE(imagereversesearch imagereversesearch.cpp)
+    #TARGET_LINK_LIBRARIES(imagereversesearch chaos ssl ssh2 ssh2dll crypto z rtmp curl curldll)
+    ADD_DEFINITIONS(-DCURL_STATICLIB)
+    TARGET_LINK_LIBRARIES(imagereversesearch chaos crypto curl)
+    #SET_TARGET_PROPERTIES(imagereversesearch PROPERTIES LINK_FLAGS -Wl,-static)
 ENDIF()

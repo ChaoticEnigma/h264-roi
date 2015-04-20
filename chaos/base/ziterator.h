@@ -12,17 +12,18 @@
 namespace LibChaos {
 
 template <typename T> class ZIterator {
-private:
-    ZIterator(ZAccessor *iterator) : _iterator(iterator){
+public:
+    ZIterator(ZAccessor<T> *iterator) : _iterator(iterator){
 
     }
 
-public:
     ~ZIterator(){
         delete _iterator;
     }
 
-    bool atEnd() const = 0;
+    bool atEnd() const {
+        return _iterator->atEnd();
+    }
 
     void advance(){
         _iterator->forward();
@@ -35,11 +36,11 @@ public:
     inline void operator--(){ recede(); }
 
     virtual T &operator*(){
-
+        return _iterator->current();
     }
 
 private:
-    ZAccessor *_iterator;
+    ZAccessor<T> *_iterator;
 };
 
 }

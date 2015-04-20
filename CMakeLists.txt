@@ -33,6 +33,12 @@ SET(PLATFORM_FREEBSD    ${PLATFORM_FREEBSD}     PARENT_SCOPE)
 SET(PLATFORM_WINDOWS    ${PLATFORM_WINDOWS}     PARENT_SCOPE)
 SET(PLATFORM_MACOSX     ${PLATFORM_MACOSX}      PARENT_SCOPE)
 
+#ADD_EXECUTABLE(libchaos_dummy EXCLUDE_FROM_ALL
+#    README.txt
+#    Projects.txt
+#    LibChaos_Todo_Ideas.txt
+#)
+
 ## Libraries
 
 # LibChaos

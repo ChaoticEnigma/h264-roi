@@ -309,8 +309,8 @@ zu64 ZFile::fileSize(ZPath path){
 }
 
 zu64 ZFile::readBinary(ZPath file, ZBinary &out){
-    if(isFile(file))
-        throw ZException("ZFile: file is directory");
+    if(isDir(file))
+        throw ZException("ZFile: file is directory: " + file.str());
 
     FILE *fp = fopen(file.str().cc(), "rb");
     if(fp == NULL)

@@ -15,7 +15,7 @@ template <typename T> class ZIterable {
 public:
     virtual ~ZIterable(){}
 
-    ZIterator<T> iterator() const;
+    ZIterator<T> iterator();
 };
 
 }
