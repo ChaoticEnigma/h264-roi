@@ -13,12 +13,11 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     ztypes.h
 
     abstract/yindexedaccess.h
-    abstract/yiterable.h
     abstract/ypushpopaccess.h
     abstract/zaccessor.h
     abstract/zbase.h
     abstract/zhashable.h
-    abstract/ziteratoraccessor.h
+    abstract/ziterable.h
     abstract/zposition.h
     abstract/zreader.h
     abstract/zserializer.h

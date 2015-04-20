@@ -7,17 +7,39 @@
 #define ZITERATOR_H
 
 #include "ztypes.h"
+#include "zaccessor.h"
 
 namespace LibChaos {
 
 template <typename T> class ZIterator {
+private:
+    ZIterator(ZAccessor *iterator) : _iterator(iterator){
+
+    }
+
 public:
-    virtual ~ZIterator(){}
+    ~ZIterator(){
+        delete _iterator;
+    }
 
-    virtual bool atEnd() const = 0;
-    virtual void advance() = 0;
+    bool atEnd() const = 0;
 
-    virtual T &operator*() = 0;
+    void advance(){
+        _iterator->forward();
+    }
+    inline void operator++(){ advance(); }
+
+    void recede(){
+        _iterator->back();
+    }
+    inline void operator--(){ recede(); }
+
+    virtual T &operator*(){
+
+    }
+
+private:
+    ZAccessor *_iterator;
 };
 
 }

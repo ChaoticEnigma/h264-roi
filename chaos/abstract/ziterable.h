@@ -7,10 +7,16 @@
 #define ITERABLE_H
 
 #include "ztypes.h"
+#include "ziterator.h"
 
 namespace LibChaos {
 
+template <typename T> class ZIterable {
+public:
+    virtual ~ZIterable(){}
 
+    ZIterator<T> iterator() const;
+};
 
 }
 

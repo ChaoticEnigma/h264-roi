@@ -10,10 +10,15 @@
 
 namespace LibChaos {
 
-class ZAccessor {
+template <typename T> class ZAccessor {
+public:
+    virtual ~ZIteratorAccessor(){}
 
+    virtual bool atEnd() const = 0;
+    virtual void forward() = 0;
+    virtual void back() = 0;
 
-
+    virtual T &operator*() = 0;
 };
 
 }
