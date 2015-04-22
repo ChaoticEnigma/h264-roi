@@ -2,6 +2,7 @@
 #define ZPARCELTYPES_H
 
 #include "ztypes.h"
+#include "zbinary.h"
 
 namespace LibChaos {
 namespace ZParcelTypes {
@@ -27,7 +28,15 @@ enum fieldtype {
     stringfield,
     filefield,
     binaryfield,
+    floatfield,
 };
+
+struct Field {
+    fieldid id;
+    ZBinary data;
+};
+
+typedef ZArray<Field> FieldList;
 
 }
 }

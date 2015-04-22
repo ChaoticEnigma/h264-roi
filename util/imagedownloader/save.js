@@ -33,9 +33,16 @@
 
         var json = JSON.stringify(outrecord);
 
+        var saveurl;
+        if(typeof surl !== 'undefined'){
+            saveurl = surl;
+        } else {
+            saveurl = "https://localhost/save.php";
+        }
+        
         var request = new XMLHttpRequest();
         if(request){
-            request.open('POST', 'https://localhost/save.php', true);
+            request.open('POST', saveurl, true);
             request.onreadystatechange = function(){
                 if(request.readyState === 4) {
                     if(request.status === 0 || request.status === 200){
@@ -210,6 +217,9 @@
         record.artistid = artisturl.substring(artisturl.indexOf("id=") + 3);
         record.artist = $('div.profile-unit a.user-link h1.user').html();
 
+        // Title
+        record.title = $('div#wrapper h1.title').html();
+        
         // Custom search tags
         var findtags = ["R-18"];
 
@@ -370,7 +380,7 @@
         // 3: Average
         // 4: Good
         // 5: Excellent
-        if(score){
+        if(typeof score !== 'undefined'){
             record.score = String(score);
         } else {
             record.score = String(0);

@@ -95,6 +95,14 @@ public:
         memcpy(dest, src, size);
     }
 
+    static inline T *addressOf(T &ref){
+        //return reinterpret_cast<T*>(&const_cast<char&>(reinterpret_cast<const volatile char&>(ref)));
+        return (T*)&(char &)ref;
+    }
+    static inline const T *addressOf(const T &ref){
+        return (const T*)&(const char &)ref;
+    }
+
 public:
     class RAW {
     public:

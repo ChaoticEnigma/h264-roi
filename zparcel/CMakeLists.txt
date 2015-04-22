@@ -4,23 +4,19 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 PROJECT(ZParcel)
 
 SET(ZParcel_HEADERS ### =================== HEADERS =================== ###
-
+    main.h
     zparcel.h
     zparceltypes.h
     zparcelconvert.h
-    zparcel-parser.h
-    zparcel4-parser.h
+    zparcel4parser.h
 
-    parcel-main.h
 )
 SET(ZParcel_SOURCES ### =================== SOURCES =================== ###
     ${ZParcel_HEADERS}
-
+    main.cpp
     #zparcel.cpp
     zparcelconvert.cpp
-    zparcel4-parser.cpp
-
-    parcel-main.cpp
+    zparcel4parser.cpp
 )
 
 ### =================== CONFIG =================== ###

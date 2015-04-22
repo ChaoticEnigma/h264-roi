@@ -70,8 +70,8 @@ public:
         if(_data != nullptr){
             for(zu64 i = 0; i < _realsize; ++i){
                 if(_data[i].flags & ZMAP_ENTRY_VALID){
-                    _kalloc->destroy(&(_data[i].key));
-                    _talloc->destroy(&(_data[i].value));
+                    _kalloc->destroy(_kalloc->addressOf(_data[i].key));
+                    _talloc->destroy(_talloc->addressOf(_data[i].value));
                 }
             }
             (&_alloc)->dealloc(_data);
@@ -93,8 +93,8 @@ public:
             if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                 // Entry is unset or deleted, insert new entry
                 _data[pos].hash = hash;
-                _kalloc->construct(&(_data[pos].key), key);
-                _talloc->construct(&(_data[pos].value), value);
+                _kalloc->construct(_kalloc->addressOf(_data[pos].key), key);
+                _talloc->construct(_talloc->addressOf(_data[pos].value), value);
                 _data[pos].flags |= ZMAP_ENTRY_VALID; // Set valid bit
                 _data[pos].flags &= ~ZMAP_ENTRY_DELETED; // Unset deleted bit
                 ++_size;
@@ -103,16 +103,16 @@ public:
                 // Compare the actual key - may be non-trivial
                 if(_data[pos].key == key){
                     // Reassign key and value in existing entry
-                    _kalloc->destroy(&(_data[pos].key));
-                    _kalloc->construct(&(_data[pos].key), key);
-                    _talloc->destroy(&(_data[pos].value));
-                    _talloc->construct(&(_data[pos].value), value);
+                    _kalloc->destroy(_kalloc->addressOf(_data[pos].key));
+                    _kalloc->construct(_kalloc->addressOf(_data[pos].key), key);
+                    _talloc->destroy(_talloc->addressOf(_data[pos].value));
+                    _talloc->construct(_talloc->addressOf(_data[pos].value), value);
                     return _data[pos].value;
                 }
             }
         }
         // Should only ever fail if resize failed and the map is full
-        throw ZException(ZString("Unable to add element to map ") + hash);
+        throw ZException(ZString("ZMap: Unable to add element to map ") + hash);
     }
     inline T &push(const K &key, const T &value){ return add(key, value); }
 
@@ -127,8 +127,8 @@ public:
                     // Compare the actual key - may be non-trivial
                     if(_data[pos].key == key){
                         // Found it, delete it
-                        _kalloc->destroy(&(_data[pos].key));
-                        _talloc->destroy(&(_data[pos].value));
+                        _kalloc->destroy(_kalloc->addressOf(_data[pos].key));
+                        _talloc->destroy(_talloc->addressOf(_data[pos].value));
                         _data[pos].flags &= ~ZMAP_ENTRY_VALID; // Unset valid bit
                         _data[pos].flags |= ZMAP_ENTRY_DELETED; // Set deleted bit
                         --_size;
@@ -191,7 +191,7 @@ public:
                 }
             }
         }
-        throw ZException("Key does not exist", __LINE__);
+        throw ZException("ZMap: Key does not exist", __LINE__);
     }
     inline const T &operator[](const K &key) const { return get(key); }
 
@@ -233,8 +233,8 @@ public:
                             if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                                 _data[pos].hash = olddata[i].hash;
                                 // Copy without copy constructors
-                                _kalloc->rawmove(&(olddata[i].key), &(_data[pos].key));
-                                _talloc->rawmove(&(olddata[i].value), &(_data[pos].value));
+                                _kalloc->rawmove(_kalloc->addressOf(olddata[i].key), _kalloc->addressOf(_data[pos].key));
+                                _talloc->rawmove(_talloc->addressOf(olddata[i].value), _talloc->addressOf(_data[pos].value));
                                 _data[pos].flags |= ZMAP_ENTRY_VALID;
                                 break;
                             }

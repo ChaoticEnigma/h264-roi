@@ -8,7 +8,7 @@
 #include "zjson.h"
 #include "zfile.h"
 
-#include "zparcel4-parser.h"
+#include "zparcel4parser.h"
 
 namespace LibChaos {
 
@@ -83,7 +83,7 @@ private:
     ZPath _path;
     ZFile _file;
     parceltype _version;
-    ZParcelParser *_parser;
+    ZParcel4Parser *_parser;
 };
 
 } // namespace LibChaos

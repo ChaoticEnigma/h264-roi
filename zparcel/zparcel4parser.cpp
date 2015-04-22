@@ -1,4 +1,4 @@
-#include "zparcel4-parser.h"
+#include "zparcel4parser.h"
 #include "zlog.h"
 #include "zuid.h"
 #include "zmap.h"
@@ -18,21 +18,21 @@
 #define HISTORYPAGE     6
 #define HEADPAGE        80
 
+#define NULLFIELD           0
+#define UNSIGNEDINTFIELD    1
+#define SIGNEDINTFIELD      2
+#define ZUIDFIELD           3
+#define STRINGFIELD         4
+#define FILEFIELD           5
+#define BINARYFIELD         6
+#define FLOATFIELD          7
+
 namespace LibChaos {
 
 using namespace ZParcelTypes;
 using namespace ZParcelConvert;
 
-static const ZMap<zu16, fieldtype> fieldtypes = {
-    { 0, nullfield },
-    { 1, unsignedintfield },
-    { 2, signedintfield },
-    { 3, zuidfield },
-    { 4, stringfield },
-    { 5, filefield },
-};
-
-static const ZMap<ZString, fieldtype> fieldtable = {
+static const ZMap<ZString, fieldtype> fieldnametable = {
     { "null",   nullfield },
     { "uint",   unsignedintfield },
     { "sint",   signedintfield },
@@ -45,15 +45,35 @@ static const ZMap<ZString, fieldtype> fieldtable = {
     { "file",   filefield },
     { "binary", binaryfield },
     { "blob",   binaryfield },
+    { "float",  floatfield },
+    { "double", floatfield },
 };
 
-static const ZMap<fieldtype, ZString> fieldnames = {
-    { nullfield,        "null" },
-    { unsignedintfield, "unsigned int" },
-    { signedintfield,   "signed int" },
-    { zuidfield,        "zuid" },
-    { stringfield,      "string" },
-    { filefield,        "file" },
+struct FieldType {
+    zu16 id;
+    const char *name;
+};
+
+static const ZMap<fieldtype, FieldType> fieldmap = {
+    { nullfield,        { NULLFIELD,        "null" } },
+    { unsignedintfield, { UNSIGNEDINTFIELD, "unsigned int" } },
+    { signedintfield,   { SIGNEDINTFIELD,   "signed int" } },
+    { zuidfield,        { ZUIDFIELD,        "zuid" } },
+    { stringfield,      { STRINGFIELD,      "string" } },
+    { filefield,        { FILEFIELD,        "file" } },
+    { binaryfield,      { BINARYFIELD,      "binary" } },
+    { floatfield,       { FLOATFIELD,       "float"} }
+};
+
+static const ZMap<zu16, fieldtype> fieldtypes = {
+    { NULLFIELD,        nullfield },
+    { UNSIGNEDINTFIELD, unsignedintfield },
+    { SIGNEDINTFIELD,   signedintfield },
+    { ZUIDFIELD,        zuidfield },
+    { STRINGFIELD,      stringfield },
+    { FILEFIELD,        filefield },
+    { BINARYFIELD,      binaryfield },
+    { FLOATFIELD,       floatfield },
 };
 
 ZParcel4Parser::ZParcel4Parser(ZFile *file) : _file(file), _init(false){
@@ -131,11 +151,18 @@ bool ZParcel4Parser::addRecord(FieldList fields){
     return false;
 }
 
-fieldtype ZParcel4Parser::fieldFileIdToFieldType(zu16 type){
-    return fieldtypes[type];
+fieldtype ZParcel4Parser::fieldTypeNameToFieldType(ZString name){
+    return fieldnametable[name];
 }
 ZString ZParcel4Parser::getFieldTypeName(fieldtype type){
-    return fieldnames[type];
+    return fieldmap[type].name;
+}
+
+zu16 ZParcel4Parser::getFieldFileId(fieldtype type){
+    return fieldmap[type].id;
+}
+fieldtype ZParcel4Parser::fieldFileIdToFieldType(zu16 type){
+    return fieldtypes[type];
 }
 
 bool ZParcel4Parser::readPage(pageid page, ZBinary &data){
@@ -269,20 +296,20 @@ bool ZParcel4Parser::addToFreelist(pageid page){
 // ParcelPage
 // /////////////////////////////////////////
 
-ParcelPage::ParcelPage(ZFile *file, zu32 page, zu32 pagesize) : _file(file), _page(page), _pagesize(pagesize), _rwpos(0){
+ZParcel4Parser::ParcelPage::ParcelPage(ZFile *file, zu32 page, zu32 pagesize) : _file(file), _page(page), _pagesize(pagesize), _rwpos(0){
 
 }
 
-zu64 ParcelPage::read(zbyte *dest, zu64 size){
+zu64 ZParcel4Parser::ParcelPage::read(zbyte *dest, zu64 size){
     _file->setPos(_page * _pagesize + _rwpos);
     return _file->read(dest, size);
 }
 
-zu64 ParcelPage::write(const zbyte *src, zu64 size){
+zu64 ZParcel4Parser::ParcelPage::write(const zbyte *src, zu64 size){
     return _file->write(src, size);
 }
 
-bool ParcelPage::atEnd() const{
+bool ZParcel4Parser::ParcelPage::atEnd() const{
     return _file->atEnd();
 }
 
@@ -290,7 +317,7 @@ bool ParcelPage::atEnd() const{
 // FieldPage
 // /////////////////////////////////////////
 
-FieldPage::FieldPage(ZFile *file, zu32 page, zu32 pagesize) : ParcelPage(file, page, pagesize){
+ZParcel4Parser::FieldPage::FieldPage(ZFile *file, zu32 page, zu32 pagesize) : ParcelPage(file, page, pagesize){
     ZBinary buff;
     buff.resize(1);
     read(buff.raw(), 1);

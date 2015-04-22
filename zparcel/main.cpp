@@ -1,4 +1,4 @@
-#include "parcel-main.h"
+#include "main.h"
 #include "zexception.h"
 
 using namespace ZParcelTypes;
@@ -26,7 +26,7 @@ int mainwrap(int argc, char **argv){
     args.popFront();
     cmdstr.substr(0, cmdstr.size() - 1);
 
-    LOG("Parcelor Command: \"" << cmdstr << "\"");
+    LOG("ZParcel Command: \"" << cmdstr << "\"");
 
     if(args.size() > 0 && args[0] == "create"){
         if(args.size() != 2){
@@ -48,31 +48,59 @@ int mainwrap(int argc, char **argv){
 
         delete parcel;
 
-    } else if(args.size() > 0 && args[0] == "addfield"){
-        if(args.size() != 4){
-            LOG("Usage: addfield <file> <name> <type>");
+    } else if(args.size() > 0 && args[0] == "modify"){
+        if(args.size() < 3){
+            LOG("Usgae: modify <file> <command>");
             return EXIT_FAILURE;
         }
-        LOG("Adding New Field to ZParcel");
+        LOG("Modifying Options of ZParcel " << args[1]);
         ZFile file(args[1], ZFile::modereadwrite);
         ZParcel4Parser *parcel = new ZParcel4Parser(&file);
         parcel->open();
 
-        fieldtype type = ZParcel4Parser::fieldFileIdToFieldType(args[3].tint());
-        fieldid id = parcel->addField(args[2], type);
-        if(id){
-            LOG("Created field " << id << " - " << args[2] << " : " << type);
-            LOG("OK");
+        if(args[2] == "addfield"){
+            if(args.size() != 5){
+                LOG("Usage: modify <file> addfield <name> <type>");
+                return EXIT_FAILURE;
+            }
+            ZString name = args[3];
+            LOG("Adding New Field to ZParcel " << args[1]);
+            fieldtype type = ZParcel4Parser::fieldTypeNameToFieldType(name);
+            ZString typenm = ZParcel4Parser::getFieldTypeName(type);
+            fieldid id = parcel->addField(name, type);
+            if(id){
+                LOG("Created field " << id << " - " << name << " : " << typenm);
+                LOG("OK");
+            } else {
+                ELOG("Error creating field \"" << name << " : " << args[3]);
+                LOG("ERROR");
+            }
         } else {
-            ELOG("Error creating field \"" << args[2] << ", " << args[3]);
-            LOG("ERROR");
+            LOG("Usage: modify <file> <command>");
+            LOG("Commands:");
+            LOG("    addfield <name> <type>");
         }
 
         delete parcel;
 
+    } else if(args.size() > 0 && args[0] == "list"){
+        if(args.size() != 2){
+            LOG("Usgae: list <file>");
+            return EXIT_FAILURE;
+        }
+        LOG("Listing Records in ZParcel " << args[1]);
+        ZFile file(args[1], ZFile::modereadwrite);
+        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
+        parcel->open();
+
+        LOG("Page Size: " << parcel->getPageSize());
+        LOG("Max Pages: " << parcel->getMaxPages());
+
+        delete parcel;
+
     } else if(args.size() > 0 && args[0] == "add"){
-        if(args.size() < 3){
-            LOG("Usgae: add <file> <field=value> [field=value] ..");
+        if(args.size() < 2){
+            LOG("Usgae: add <file> [field=value] ...");
             return EXIT_FAILURE;
         }
         LOG("Adding Record to ZParcel " << args[1]);
@@ -108,37 +136,25 @@ int mainwrap(int argc, char **argv){
 
         delete parcel;
 
-    } else if(args.size() > 0 && args[0] == "modify"){
-        if(!(args.size() > 2)){
-            LOG("Usgae: modify <file> <command>");
+    } else if(args.size() > 0 && args[0] == "edit"){
+        if(args.size() < 4){
+            LOG("Usgae: edit <file> <record> <field=value> [field=value] ..");
             return EXIT_FAILURE;
         }
-        LOG("Modifying ZParcel Options" << args[1]);
+        LOG("Editing Record in ZParcel " << args[1]);
         ZFile file(args[1], ZFile::modereadwrite);
         ZParcel4Parser *parcel = new ZParcel4Parser(&file);
         parcel->open();
-
-        LOG(args[2]);
-
-        delete parcel;
-
-    } else if(args.size() > 0 && args[0] == "list"){
-        if(!(args.size() > 1)){
-            LOG("Usgae: list <file>");
-            return EXIT_FAILURE;
-        }
-        LOG("Listing Records in ZParcel " << args[1]);
-        ZFile file(args[1], ZFile::modereadwrite);
-        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
-        parcel->open();
-
-        LOG("Page Size: " << parcel->getPageSize());
-        LOG("Max Pages: " << parcel->getMaxPages());
 
         delete parcel;
 
     } else {
-        LOG("Unknown Command");
+        LOG("Commands:");
+        LOG("    create <file>");
+        LOG("    modify <file> <command>");
+        LOG("    list <file>");
+        LOG("    add <file> [field=value] ...");
+        LOG("    edit <file> <record> [field=value] ...");
     }
 
     return EXIT_SUCCESS;

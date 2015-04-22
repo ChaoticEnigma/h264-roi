@@ -7,6 +7,7 @@
 #define ZLOG_H
 
 #include "zlogworker.h"
+#include "zexception.h"
 #include <atomic>
 
 #define ZLOG_DEBUG_DEPTH 100
@@ -95,7 +96,9 @@ public:
     ZLog &operator<<(ZLogInfo info);
 
     inline ZLog &operator<<(ZString text){ return log(text); } // Base overload
+    inline ZLog &operator<<(const char *text){ return log(text); }
     inline ZLog &operator<<(ZPath text){ return log(text.str()); }
+    inline ZLog &operator<<(ZException e){ return log(ZString(e.code()) + ": " + e.what()); }
     ZLog &operator<<(ZBinary text);
 
     inline ZLog &operator<<(char text){ return log(ZString(text)); }
@@ -108,11 +111,8 @@ public:
     inline ZLog &operator<<(zsl num){ return log(ZString(num)); }
     inline ZLog &operator<<(zull num){ return log(ZString(num)); }
     inline ZLog &operator<<(zsll num){ return log(ZString(num)); }
-
-    inline ZLog &operator<<(bool tf){ return log(tf ? "true" : "false"); }
     inline ZLog &operator<<(double num){ return log(ZString(num)); }
-
-    inline ZLog &operator<<(const char *text){ return log(text); }
+    inline ZLog &operator<<(bool tf){ return log(tf ? "true" : "false"); }
 
     inline ZLog &operator,(ZString text){ return log(" ").log(text); } // Base overload
 
