@@ -20,11 +20,9 @@
 
 namespace LibChaos {
 
-/*! \class ZArray
- *  ZArray array class
- */
-
-// ZArray push/pop paradigm is FILO
+/// Automatically-resizing array container.
+/// ZArray push/pop paradigm is FILO
+///
 template <typename T> class ZArray : public YIndexedAccess<T>, public YPushPopAccess<T>, public ZIterable<T> {
 public:
     enum {
@@ -32,7 +30,7 @@ public:
     };
 
 public:
-    ZArray(ZAllocator<T> *alloc = new ZAllocator<T>()) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0){
+    ZArray(ZAllocator<T> *alloc = new ZAllocator<T>) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0){
         reserve(ZARRAY_INITIAL_CAPACITY);
     }
     ZArray(const T *raw, zu64 size) : ZArray(){
