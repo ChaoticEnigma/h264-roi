@@ -1,0 +1,26 @@
+# Doxyfile 1.8.9.1
+
+#---------------------------------------------------------------------------
+# LibChaos Doxyfile
+#---------------------------------------------------------------------------
+
+DOXYFILE_ENCODING = UTF-8
+PROJECT_NAME = "LibChaos"
+#PROJECT_NUMBER =
+PROJECT_BRIEF = "LibChaos Library"
+#PROJECT_LOGO =
+
+INPUT = "@DOXYGEN_INPUT@"
+RECURSIVE = YES
+EXCLUDE = "@DOXYGEN_INPUT@/chaos/lib/"
+#OUTPUT_DIRECTORY = "@DOXYGEN_OUTPUT@"
+
+EXTRACT_ALL = YES
+EXTRACT_PRIVATE = YES
+
+GENERATE_LATEX = NO
+ALLOW_UNICODE_NAMES = NO
+OUTPUT_LANGUAGE = English
+
+
+GENERATE_TREEVIEW = YES

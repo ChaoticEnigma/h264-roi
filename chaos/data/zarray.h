@@ -20,6 +20,10 @@
 
 namespace LibChaos {
 
+/*! \class ZArray
+ *  ZArray array class
+ */
+
 // ZArray push/pop paradigm is FILO
 template <typename T> class ZArray : public YIndexedAccess<T>, public YPushPopAccess<T>, public ZIterable<T> {
 public:

@@ -6,6 +6,19 @@
 #ifndef ZTYPES_H
 #define ZTYPES_H
 
+/*! \file ztypes.h
+ *  ztypes header file
+ */
+
+/*! \mainpage LibChaos Home
+ *
+ *  \section intro_sec Introduction
+ *  Introduction goes here.
+ *
+ *  \section build_sec Building LibChaos
+ *  Using CMake.
+ */
+
 // General LibChaos Notes
 // Z-prefixed classes are classes that should be used in user code
 // Y-prefixed classes enforce interfaces on inheriting classes
