@@ -116,8 +116,8 @@ SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ##
     lib/xxhash.c
     #lib/nowide_standalone/src/iostream.cpp
 
-    #math/zexpression.cpp
-    #math/zformula.cpp
+    math/zexpression.cpp
+    math/zformula.cpp
     math/znumber.cpp
     #math/znumber-reference.cpp
 

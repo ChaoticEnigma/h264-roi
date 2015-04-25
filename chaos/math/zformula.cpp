@@ -1,5 +1,9 @@
 #include "zformula.h"
 
-ZFormula::ZFormula()
-{
+namespace LibChaos {
+
+ZFormula::ZFormula(){
+
+}
+
 }

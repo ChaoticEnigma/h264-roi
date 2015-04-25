@@ -1,5 +1,9 @@
 #include "zexpression.h"
 
-ZExpression::ZExpression()
-{
+namespace LibChaos {
+
+ZExpression::ZExpression(){
+
+}
+
 }

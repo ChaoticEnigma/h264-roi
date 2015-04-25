@@ -6,10 +6,15 @@
 #ifndef ZFORMULA_H
 #define ZFORMULA_H
 
-class ZFormula
-{
+#include "ztypes.h"
+
+namespace LibChaos {
+
+class ZFormula {
 public:
     ZFormula();
 };
+
+}
 
 #endif // ZFORMULA_H

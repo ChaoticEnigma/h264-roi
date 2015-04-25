@@ -6,10 +6,15 @@
 #ifndef ZEXPRESSION_H
 #define ZEXPRESSION_H
 
-class ZExpression
-{
+#include "ztypes.h"
+
+namespace LibChaos {
+
+class ZExpression {
 public:
     ZExpression();
 };
+
+}
 
 #endif // ZEXPRESSION_H

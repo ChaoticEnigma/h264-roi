@@ -71,12 +71,14 @@ public:
 
     // Create new parcel (will overwrite existing parcel)
     bool create(ZPath path);
+
     // Open existing parcel
     bool open(ZPath file);
-    // Test parcel signature
-    static bool testParcel(ZPath file);
+
     // Close file handles
     void close();
+
+
 
 private:
     // Parcel file
