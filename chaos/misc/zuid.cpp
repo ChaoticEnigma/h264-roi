@@ -38,7 +38,7 @@ ZUID::ZUID(uuidtype type){
         }
 
     } else if(type == time){
-        // Time-Clock-MAC UUID
+        // Time-Clock-MAC Version 1 UUID
         zuidlock.lock();
         zu64 utctime;
 
@@ -108,7 +108,7 @@ ZUID::ZUID(uuidtype type){
         zuidlock.unlock();
 
     } else if(type == random){
-        // Randomly generated UUID
+        // Randomly generated Version 4 UUID
         ZRandom randgen;
         ZBinary random = randgen.generate(16);
         random.read(_id_octets, 16);

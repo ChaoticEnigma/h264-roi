@@ -7,7 +7,7 @@ SET(ZParcel_HEADERS ### =================== HEADERS =================== ###
     main.h
     zparcel.h
     zparceltypes.h
-    zparcelconvert.h
+    #zparcelconvert.h
     zparcel4parser.h
 
 )
@@ -15,7 +15,7 @@ SET(ZParcel_SOURCES ### =================== SOURCES =================== ###
     ${ZParcel_HEADERS}
     main.cpp
     zparcel.cpp
-    zparcelconvert.cpp
+    #zparcelconvert.cpp
     zparcel4parser.cpp
 )
 

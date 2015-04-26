@@ -1,15 +1,24 @@
 #ifndef ZPARCEL4PARSER
 #define ZPARCEL4PARSER
 
-#include "zparceltypes.h"
-#include "zparcelconvert.h"
-#include "zmap.h"
 #include "zfile.h"
+#include "zmap.h"
+#include "zlist.h"
+#include "zuid.h"
+
+#define ZPARCEL_4_NULL          0
+#define ZPARCEL_4_UNSIGNEDINT   1
+#define ZPARCEL_4_SIGNEDINT     2
+#define ZPARCEL_4_ZUID          3
+#define ZPARCEL_4_STRING        4
+#define ZPARCEL_4_FILE          5
+#define ZPARCEL_4_BINARY        6
+#define ZPARCEL_4_FLOAT         7
 
 namespace LibChaos {
 
 class ZParcel4Parser {
-private:
+public:
     typedef zu32 pageid;
     enum pagetype {
         freepage,
@@ -23,6 +32,13 @@ private:
     };
 
     typedef zu16 fieldid;
+    typedef zu8 fieldtype;
+
+    struct Field {
+        fieldid id;
+        ZBinary data;
+    };
+    typedef ZList<Field> FieldList;
 
 public:
     ZParcel4Parser(ZFile *file);
@@ -41,6 +57,14 @@ public:
     fieldtype getFieldType(fieldid id);
 
     bool addRecord(FieldList fields);
+
+    void addUintRecord(fieldid field, zu64 num);
+    void addSintRecord(fieldid field, zs64 num);
+    void addZUIDRecord(fieldid field, ZUID uid);
+    void addFloatRecord(fieldid field, double flt);
+    void addStringRecord(fieldid field, ZString str);
+    void addBinaryRecord(fieldid field, ZBinary bin);
+    void addFileRecord(fieldid field, ZPath file);
 
     static fieldtype fieldTypeNameToFieldType(ZString name);
     static ZString getFieldTypeName(fieldtype type);

@@ -8,45 +8,32 @@
 #define DEFAULT_PAGE_SIZE 10 // 2 ^ 10 = 1024
 #define DEFAULT_MAX_PAGES (64 * 1024)
 
-#define ZPARCEL_4_FREEPAGE        0
-#define ZPARCEL_4_FIELDPAGE       1
-#define ZPARCEL_4_FREELISTPAGE    2
-#define ZPARCEL_4_INDEXPAGE       3
-#define ZPARCEL_4_RECORDPAGE      4
-#define ZPARCEL_4_BLOBPAGE        5
-#define ZPARCEL_4_HISTORYPAGE     6
-#define ZPARCEL_4_HEADPAGE        80
-
-#define NULLFIELD           0
-#define UNSIGNEDINTFIELD    1
-#define SIGNEDINTFIELD      2
-#define ZUIDFIELD           3
-#define STRINGFIELD         4
-#define FILEFIELD           5
-#define BINARYFIELD         6
-#define FLOATFIELD          7
+#define FREEPAGE        0
+#define FIELDPAGE       1
+#define FREELISTPAGE    2
+#define INDEXPAGE       3
+#define RECORDPAGE      4
+#define BLOBPAGE        5
+#define HISTORYPAGE     6
+#define HEADPAGE        80
 
 namespace LibChaos {
-
-using namespace ZParcelTypes;
-using namespace ZParcelConvert;
-
 
 struct FieldType {
     zu16 id;
     const char *name;
 };
 
-static const ZMap<zu16, fieldtype> fieldtypes = {
-    { NULLFIELD,        nullfield },
-    { UNSIGNEDINTFIELD, unsignedintfield },
-    { SIGNEDINTFIELD,   signedintfield },
-    { ZUIDFIELD,        zuidfield },
-    { STRINGFIELD,      stringfield },
-    { FILEFIELD,        filefield },
-    { BINARYFIELD,      binaryfield },
-    { FLOATFIELD,       floatfield },
-};
+//static const ZMap<zu16, fieldtype> fieldtypes = {
+//    { ZPARCEL_4_NULL,        nullfield },
+//    { ZPARCEL_4_UNSIGNEDINT, unsignedintfield },
+//    { ZPARCEL_4_SIGNEDINT,   signedintfield },
+//    { ZPARCEL_4_ZUID,        zuidfield },
+//    { ZPARCEL_4_STRING,      stringfield },
+//    { ZPARCEL_4_FILE,        filefield },
+//    { ZPARCEL_4_BINARY,      binaryfield },
+//    { ZPARCEL_4_FLOAT,       floatfield },
+//};
 
 ZParcel4Parser::ZParcel4Parser(ZFile *file) : _file(file), _init(false){
     // Default options
@@ -99,7 +86,7 @@ void ZParcel4Parser::setMaxPages(zu32 pages){
         writeHeadPage();
 }
 
-fieldid ZParcel4Parser::addField(ZString name, fieldtype type){
+ZParcel4Parser::fieldid ZParcel4Parser::addField(ZString name, fieldtype type){
     fieldid id = getFieldId(name);
     if(id != FIELD_NULL && type == getFieldType(id))
         return id;
@@ -108,12 +95,12 @@ fieldid ZParcel4Parser::addField(ZString name, fieldtype type){
     return 0;
 }
 
-fieldid ZParcel4Parser::getFieldId(ZString name){
+ZParcel4Parser::fieldid ZParcel4Parser::getFieldId(ZString name){
 
     return 0;
 }
 
-fieldtype ZParcel4Parser::getFieldType(fieldid id){
+ZParcel4Parser::fieldtype ZParcel4Parser::getFieldType(fieldid id){
 
     return nullfield;
 }
@@ -123,7 +110,36 @@ bool ZParcel4Parser::addRecord(FieldList fields){
     return false;
 }
 
-fieldtype ZParcel4Parser::fieldTypeNameToFieldType(ZString name){
+void ZParcel4Parser::addUintRecord(fieldid field, zu64 num){
+    ZBinary bin = toFile64Bits(num);
+}
+
+void ZParcel4Parser::addSintRecord(fieldid field, zs64 num){
+    ZBinary bin = toFile64Bits((zu64)num);
+}
+
+void ZParcel4Parser::addZUIDRecord(fieldid field, ZUID uid){
+    ZBinary bin = ZBinary(uid.raw(), 16);
+}
+
+void ZParcel4Parser::addFloatRecord(fieldid field, double flt){
+
+}
+
+void ZParcel4Parser::addStringRecord(fieldid field, ZString str){
+    ZBinary bin = ZBinary((const zbyte *)str.cc(), str.size());
+}
+
+void ZParcel4Parser::addBinaryRecord(fieldid field, ZBinary bin){
+
+}
+
+void ZParcel4Parser::addFileRecord(fieldid field, ZPath file){
+    ZString str = file.str();
+    ZBinary bin = ZBinary((const zbyte *)str.cc(), str.size());
+}
+
+ZParcel4Parser::fieldtype ZParcel4Parser::fieldTypeNameToFieldType(ZString name){
     return fieldnametable[name];
 }
 ZString ZParcel4Parser::getFieldTypeName(fieldtype type){
@@ -133,7 +149,7 @@ ZString ZParcel4Parser::getFieldTypeName(fieldtype type){
 zu16 ZParcel4Parser::getFieldFileId(fieldtype type){
     return fieldmap[type].id;
 }
-fieldtype ZParcel4Parser::fieldFileIdToFieldType(zu16 type){
+ZParcel4Parser::fieldtype ZParcel4Parser::fieldFileIdToFieldType(zu16 type){
     return fieldtypes[type];
 }
 
@@ -184,7 +200,7 @@ bool ZParcel4Parser::loadHeadPage(){
     return true;
 }
 
-pageid ZParcel4Parser::insertPage(pagetype type){
+ZParcel4Parser::pageid ZParcel4Parser::insertPage(pagetype type){
     switch(type){
         case headpage:
             if(writeHeadPage())

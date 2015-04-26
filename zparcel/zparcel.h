@@ -32,18 +32,17 @@ public:
 
     typedef zu16 fieldid;
 
-    struct FieldData {
-        zu64 uint;
-        zs64 sint;
-        double flt;
-        ZUID uid;
-        ZString str;
-        ZBinary data;
-        ZPath file;
-    };
-
-    struct Field : public FieldData {
+    struct Field {
         fieldid id;
+        union {
+            zu64 uint;
+            zs64 sint;
+            double flt;
+            ZUID uid;
+            ZString str;
+            ZBinary data;
+            ZPath file;
+        };
     };
 
 public:
@@ -64,17 +63,35 @@ public:
 
     void addField(ZString name, fieldtype type);
 
-    void addRecord(fieldtype type, );
+    //! Add records to the parcel
+    //! \exception ZException Invalid field type
+    void addRecords(ZList<Field> fields);
+
+    void addUintRecord(fieldid field, zu64 num);
+    void addSintRecord(fieldid field, zs64 num);
+    void addZUIDRecord(fieldid field, ZUID uid);
+    void addFloatRecord(fieldid field, double flt);
+    void addStringRecord(fieldid field, ZString str);
+    void addBinaryRecord(fieldid field, ZBinary bin);
+    void addFileRecord(fieldid field, ZPath file);
 
     static fieldtype fieldType(ZString name);
     static ZString fieldName(fieldtype type);
 
+    static ZBinary toFile8Bits(zu8 num);
+    static ZBinary toFile16Bits(zu16 num);
+    static ZBinary toFile32Bits(zu32 num);
+    static ZBinary toFile64Bits(zu64 num);
+
+    static zu8 fromFile8Bits(ZBinary num);
+    static zu16 fromFile16Bits(ZBinary num);
+    static zu32 fromFile32Bits(ZBinary num);
+    static zu64 fromFile64Bits(ZBinary num);
+
 private:
-    // Parcel file
-    ZPath _path;
     ZFile _file;
-    parceltype _version;
     ZParcel4Parser *_parser;
+    parceltype _version;
 };
 
 } // namespace LibChaos

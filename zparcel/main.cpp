@@ -1,9 +1,6 @@
 #include "main.h"
 #include "zexception.h"
 
-using namespace ZParcelTypes;
-//using namespace ZParcelConvert;
-
 int mainwrap(int argc, char **argv){
     ZLog::formatStdout(ZLogSource::normal, "%log%");
     ZLog::formatStdout(ZLogSource::debug, "%time% (%file%:%line%) - %log%");
@@ -65,9 +62,9 @@ int mainwrap(int argc, char **argv){
             }
             ZString name = args[3];
             LOG("Adding New Field to ZParcel " << args[1]);
-            fieldtype type = ZParcel4Parser::fieldTypeNameToFieldType(name);
+            ZParcel4Parser::fieldtype type = ZParcel4Parser::fieldTypeNameToFieldType(name);
             ZString typenm = ZParcel4Parser::getFieldTypeName(type);
-            fieldid id = parcel->addField(name, type);
+            ZParcel4Parser::fieldid id = parcel->addField(name, type);
             if(id){
                 LOG("Created field " << id << " - " << name << " : " << typenm);
                 LOG("OK");
@@ -116,9 +113,9 @@ int mainwrap(int argc, char **argv){
             ZString fieldname = pair[0];
             ZString fieldvalue = pair[1];
             //LOG(fieldname << "(" << ZParcel4Parser::getFieldTypeName(ftype) << ") : " << pair[1]);
-            fieldid fid = parcel->getFieldId(fieldname);
+            ZParcel4Parser::fieldid fid = parcel->getFieldId(fieldname);
             if(fid){
-                fieldlist.push({ fid, ZParcelConvert::toFileFormat(parcel->getFieldType(fid), fieldvalue) });
+                // add field and data to list
             } else {
                 ELOG("Bad field \"" << fieldname << '"');
             }
