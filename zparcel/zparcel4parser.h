@@ -10,11 +10,19 @@ namespace LibChaos {
 
 class ZParcel4Parser {
 private:
-    typedef ZParcelTypes::fieldid fieldid;
-    typedef ZParcelTypes::fieldtype fieldtype;
-    typedef ZParcelTypes::FieldList FieldList;
-    typedef ZParcelTypes::pageid pageid;
-    typedef ZParcelTypes::pagetype pagetype;
+    typedef zu32 pageid;
+    enum pagetype {
+        freepage,
+        fieldpage,
+        freelistpage,
+        indexpage,
+        recordpage,
+        blobpage,
+        historypage,
+        headpage,
+    };
+
+    typedef zu16 fieldid;
 
 public:
     ZParcel4Parser(ZFile *file);

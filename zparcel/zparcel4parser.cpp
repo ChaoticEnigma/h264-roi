@@ -7,16 +7,15 @@
 #define SIG_SIZE 8
 #define DEFAULT_PAGE_SIZE 10 // 2 ^ 10 = 1024
 #define DEFAULT_MAX_PAGES (64 * 1024)
-#define FIELD_NULL 0
 
-#define FREEPAGE        0
-#define FIELDPAGE       1
-#define FREELISTPAGE    2
-#define INDEXPAGE       3
-#define RECORDPAGE      4
-#define BLOBPAGE        5
-#define HISTORYPAGE     6
-#define HEADPAGE        80
+#define ZPARCEL_4_FREEPAGE        0
+#define ZPARCEL_4_FIELDPAGE       1
+#define ZPARCEL_4_FREELISTPAGE    2
+#define ZPARCEL_4_INDEXPAGE       3
+#define ZPARCEL_4_RECORDPAGE      4
+#define ZPARCEL_4_BLOBPAGE        5
+#define ZPARCEL_4_HISTORYPAGE     6
+#define ZPARCEL_4_HEADPAGE        80
 
 #define NULLFIELD           0
 #define UNSIGNEDINTFIELD    1
@@ -32,37 +31,10 @@ namespace LibChaos {
 using namespace ZParcelTypes;
 using namespace ZParcelConvert;
 
-static const ZMap<ZString, fieldtype> fieldnametable = {
-    { "null",   nullfield },
-    { "uint",   unsignedintfield },
-    { "sint",   signedintfield },
-    { "int",    signedintfield },
-    { "zuid",   zuidfield },
-    { "uuid",   zuidfield },
-    { "guid",   zuidfield },
-    { "string", stringfield },
-    { "strg",   stringfield },
-    { "file",   filefield },
-    { "binary", binaryfield },
-    { "blob",   binaryfield },
-    { "float",  floatfield },
-    { "double", floatfield },
-};
 
 struct FieldType {
     zu16 id;
     const char *name;
-};
-
-static const ZMap<fieldtype, FieldType> fieldmap = {
-    { nullfield,        { NULLFIELD,        "null" } },
-    { unsignedintfield, { UNSIGNEDINTFIELD, "unsigned int" } },
-    { signedintfield,   { SIGNEDINTFIELD,   "signed int" } },
-    { zuidfield,        { ZUIDFIELD,        "zuid" } },
-    { stringfield,      { STRINGFIELD,      "string" } },
-    { filefield,        { FILEFIELD,        "file" } },
-    { binaryfield,      { BINARYFIELD,      "binary" } },
-    { floatfield,       { FLOATFIELD,       "float"} }
 };
 
 static const ZMap<zu16, fieldtype> fieldtypes = {
