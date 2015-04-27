@@ -62,20 +62,23 @@ public:
     //! Close file handles
     void close();
 
+    //! Add new data field to parcel
     void addField(ZString name, fieldtype type);
 
     //! Add records to the parcel
     //! \exception ZException Invalid field type
     void addRecords(ZList<Field> fields);
 
-    void addBoolRecord(fieldid field, bool tf);
-    void addUintRecord(fieldid field, zu64 num);
-    void addSintRecord(fieldid field, zs64 num);
-    void addZUIDRecord(fieldid field, ZUID uid);
-    void addFloatRecord(fieldid field, double flt);
-    void addStringRecord(fieldid field, ZString str);
-    void addBinaryRecord(fieldid field, ZBinary bin);
-    void addFileRecord(fieldid field, ZPath file);
+    void addBoolRecord(ZString field, bool tf);
+    void addUintRecord(ZString field, zu64 num);
+    void addSintRecord(ZString field, zs64 num);
+    void addZUIDRecord(ZString field, ZUID uid);
+    void addFloatRecord(ZString field, double flt);
+    void addStringRecord(ZString field, ZString str);
+    void addBinaryRecord(ZString field, ZBinary bin);
+    void addFileRecord(ZString field, ZPath file);
+
+    fieldid getFieldId(ZString name);
 
     static fieldtype fieldType(ZString name);
     static ZString fieldName(fieldtype type);

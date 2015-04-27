@@ -71,37 +71,40 @@ void ZParcel::addRecords(ZList<ZParcel::Field> fields){
 
 }
 
-void ZParcel::addBoolRecord(fieldid field, bool tf){
-    _parser->addBoolRecord(field, tf);
+void ZParcel::addBoolRecord(ZString field, bool tf){
+    _parser->addBoolRecord(getFieldId(field), tf);
 }
 
-void ZParcel::addUintRecord(fieldid field, zu64 num){
-    _parser->addUintRecord(field, num);
+void ZParcel::addUintRecord(ZString field, zu64 num){
+    _parser->addUintRecord(getFieldId(field), num);
 }
 
-void ZParcel::addSintRecord(fieldid field, zs64 num){
-    _parser->addSintRecord(field, num);
+void ZParcel::addSintRecord(ZString field, zs64 num){
+    _parser->addSintRecord(getFieldId(field), num);
 }
 
-void ZParcel::addZUIDRecord(fieldid field, ZUID uid){
-    _parser->addZUIDRecord(field, uid);
+void ZParcel::addZUIDRecord(ZString field, ZUID uid){
+    _parser->addZUIDRecord(getFieldId(field), uid);
 }
 
-void ZParcel::addFloatRecord(fieldid field, double flt){
-    _parser->addFloatRecord(field, flt);
+void ZParcel::addFloatRecord(ZString field, double flt){
+    _parser->addFloatRecord(getFieldId(field), flt);
 }
 
-void ZParcel::addStringRecord(fieldid field, ZString str){
-    _parser->addStringRecord(field, str);
+void ZParcel::addStringRecord(ZString field, ZString str){
+    _parser->addStringRecord(getFieldId(field), str);
 }
 
-void ZParcel::addBinaryRecord(fieldid field, ZBinary bin){
-    _parser->addBinaryRecord(field, bin);
+void ZParcel::addBinaryRecord(ZString field, ZBinary bin){
+    _parser->addBinaryRecord(getFieldId(field), bin);
 }
 
-void ZParcel::addFileRecord(fieldid field, ZPath file){
-    ZString str = file.str();
-    ZBinary bin = ZBinary((const zbyte *)str.cc(), str.size());
+void ZParcel::addFileRecord(ZString field, ZPath file){
+    _parser->addFileRecord(getFieldId(field), file);
+}
+
+ZParcel::fieldid ZParcel::getFieldId(ZString name){
+    return 0;
 }
 
 ZParcel::fieldtype ZParcel::fieldType(ZString name){
