@@ -18,6 +18,8 @@
 
 namespace LibChaos {
 
+class ZParcel4Page;
+
 class ZParcel4Parser {
 public:
     typedef zu32 pageid;
@@ -81,32 +83,6 @@ private:
     bool addToFreelist(pageid page);
 
 private:
-    class ParcelPage : public ZWriter, public ZReader, public ZPosition {
-    public:
-        ParcelPage(ZFile *file, zu32 page, zu32 pagesize);
-
-        zu64 read(zbyte *dest, zu64 size);
-        zu64 write(const zbyte *src, zu64 size);
-
-        zu64 setPos(zu64 pos){ _rwpos = pos; return _rwpos; }
-        zu64 getPos() const { return _rwpos; }
-        bool atEnd() const;
-
-    protected:
-        ZFile *_file;
-        pageid _page;
-        zu32 _pagesize;
-        zu64 _rwpos;
-    };
-
-    class FieldPage : public ParcelPage {
-    public:
-        FieldPage(ZFile *file, zu32 page, zu32 pagesize);
-
-        pagetype _pagetype;
-        pageid _prevpage;
-        pageid _nextpage;
-    };
 
 private:
     ZFile *_file;
@@ -121,7 +97,7 @@ private:
     pageid _indexpage;
     pageid _recordpage;
 
-    ZMap<pageid, ZPointer<ParcelPage> > _pagecache;
+    ZMap<pageid, ZPointer<ZParcel4Page *> > _pagecache;
 };
 
 }
@@ -132,39 +108,39 @@ private:
   The page size is the smallest I/O operation that may be performed at a time
 
   Head Page - defines parcel options
-  48 bits: parcel signature
-   8 bits: parcel category (1)
-   8 bits: parcel version (4)
-   8 bits: page size power (minimum 5 (32), default 10 (1K), maximum 32 (4G))
+  54 bits: parcel signature (ZPARCEL)
+   4 bits: parcel category (1)
+   4 bits: parcel version (4)
+   8 bits: page size power (minimum 5 (32B), default 10 (1K), maximum 32 (4G))
   32 bits: maximum number of pages (default 64K)
-  32 bits: freelist page number (0 if none)
-  32 bits: field page number
-  32 bits: index page number
-  32 bits: record page number
+  32 bits: next head page backup
+  32 bits: first freelist page number
+  32 bits: first fieldlist page number
   .. zero padding ..
 
 
   Field Page - defines the usable fields in this file
-   8 bits: page type
+   8 bits: page type (FIELDPAGE)
   32 bits: previous page number
-  16 bits: number of fields
-  16 bits: field id
-   8 bits: field type
-   8 bits: field name length (n)
-   n bits: field name
-  .. more fields ..
   32 bits: next page number
+  16 bits: number of fields on this page
+  4+n bytes:
+    16 bits: field id
+     8 bits: field type
+     8 bits: field name length (n)
+    8n bits: field name
+  .. more fields ..
 
 
   Freelist Page - list of pages that are unused and not at the end of the file
    8 bits: page type
-  32 bits: previous page number (0 if none)
+  32 bits: previous page number
+  32 bits: next page number
   32 bits: free page number
   .. more free pages ..
-  32 bits: next page number (0 if none)
 
   Free Page
-   8 bits: page type
+   8 bits: page type (FREEPAGE)
   .. zeroes ...
 
 

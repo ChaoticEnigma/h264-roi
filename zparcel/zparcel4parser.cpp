@@ -1,23 +1,17 @@
 #include "zparcel4parser.h"
+#include "zparcel4page.h"
+
 #include "zlog.h"
 #include "zuid.h"
 #include "zmap.h"
 
-#define VERSION_4_SIG { 'P',143,'R',128,144,'L', 1 , 4 }
+#define VERSION_4_SIG { 90,80,143,82,128,144,76, 4 } // 0x5A508F5280904C14 // ZPARCEL 1 4
 #define SIG_SIZE 8
-#define DEFAULT_PAGE_SIZE 10 // 2 ^ 10 = 1024
-#define DEFAULT_MAX_PAGES (64 * 1024)
+
+#define DEFAULT_PAGE_SIZE 10 // 2 ^ 10 = 1024 bytes
+#define DEFAULT_MAX_PAGES (64 * 1024) // 65536 pages
 
 #define NULLFIELD ZPARCEL_4_NULL
-
-#define FREEPAGE        0
-#define FIELDPAGE       1
-#define FREELISTPAGE    2
-#define INDEXPAGE       3
-#define RECORDPAGE      4
-#define BLOBPAGE        5
-#define HISTORYPAGE     6
-#define HEADPAGE        80
 
 namespace LibChaos {
 
@@ -286,48 +280,6 @@ bool ZParcel4Parser::addToFreelist(pageid page){
         _freelistpage = insertPage(freelistpage);
 
     return false;
-}
-
-// /////////////////////////////////////////
-// ParcelPage
-// /////////////////////////////////////////
-
-ZParcel4Parser::ParcelPage::ParcelPage(ZFile *file, zu32 page, zu32 pagesize) : _file(file), _page(page), _pagesize(pagesize), _rwpos(0){
-
-}
-
-zu64 ZParcel4Parser::ParcelPage::read(zbyte *dest, zu64 size){
-    _file->setPos(_page * _pagesize + _rwpos);
-    return _file->read(dest, size);
-}
-
-zu64 ZParcel4Parser::ParcelPage::write(const zbyte *src, zu64 size){
-    return _file->write(src, size);
-}
-
-bool ZParcel4Parser::ParcelPage::atEnd() const{
-    return _file->atEnd();
-}
-
-// /////////////////////////////////////////
-// FieldPage
-// /////////////////////////////////////////
-
-ZParcel4Parser::FieldPage::FieldPage(ZFile *file, zu32 page, zu32 pagesize) : ParcelPage(file, page, pagesize){
-    ZBinary buff;
-    buff.resize(1);
-    read(buff.raw(), 1);
-    if(buff.tozu8() != FIELDPAGE){
-        ELOG("FieldPage created on wrong page type");
-        return;
-    }
-    buff.resize(4);
-    read(buff.raw(), 4);
-    _prevpage = buff.tozu32();
-    setPos(_pagesize - 4);
-    read(buff.raw(), 4);
-    _nextpage = buff.tozu32();
-
 }
 
 }
