@@ -52,6 +52,9 @@ namespace ZError {
     void sigHandle(int sig);
 
 }
+
+using ZError::zassert;
+
 }
 
 #endif // ZERROR

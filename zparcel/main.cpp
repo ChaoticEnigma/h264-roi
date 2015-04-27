@@ -62,11 +62,20 @@ int mainwrap(int argc, char **argv){
             }
             ZString name = args[3];
             LOG("Adding New Field to ZParcel " << args[1]);
-            ZParcel4Parser::fieldtype type = ZParcel4Parser::fieldTypeNameToFieldType(name);
-            ZString typenm = ZParcel4Parser::getFieldTypeName(type);
+            ZMap<ZString, ZParcel4Parser::fieldtype> ftype = {
+                { "bool",   ZPARCEL_4_BOOL },
+                { "uint",   ZPARCEL_4_UINT },
+                { "sint",   ZPARCEL_4_SINT },
+                { "float",  ZPARCEL_4_FLOAT },
+                { "zuid",   ZPARCEL_4_ZUID },
+                { "string", ZPARCEL_4_STRING },
+                { "blob",   ZPARCEL_4_BINARY },
+                { "file",   ZPARCEL_4_FILE },
+            };
+            ZParcel4Parser::fieldtype type = ftype[name];
             ZParcel4Parser::fieldid id = parcel->addField(name, type);
             if(id){
-                LOG("Created field " << id << " - " << name << " : " << typenm);
+                LOG("Created field " << id << " - " << name << " : " << type);
                 LOG("OK");
             } else {
                 ELOG("Error creating field \"" << name << " : " << args[3]);
@@ -105,7 +114,7 @@ int mainwrap(int argc, char **argv){
         ZParcel4Parser *parcel = new ZParcel4Parser(&file);
         parcel->open();
 
-        FieldList fieldlist;
+        ZParcel4Parser::FieldList fieldlist;
         for(zu64 i = 2; i < args.size(); ++i){
             ArZ pair = args[i].split("=");
             if(pair.size() != 2)
@@ -115,7 +124,35 @@ int mainwrap(int argc, char **argv){
             //LOG(fieldname << "(" << ZParcel4Parser::getFieldTypeName(ftype) << ") : " << pair[1]);
             ZParcel4Parser::fieldid fid = parcel->getFieldId(fieldname);
             if(fid){
-                // add field and data to list
+                ZParcel4Parser::fieldtype type = parcel->getFieldType(fid);
+                switch(type){
+                    case ZPARCEL_4_BOOL:
+                        parcel->addBoolRecord(fid, (fieldvalue == "true" ? true : false));
+                        break;
+                    case ZPARCEL_4_UINT:
+                        parcel->addUintRecord(fid, fieldvalue.tozu64());
+                        break;
+                    case ZPARCEL_4_SINT:
+                        parcel->addSintRecord(fid, (zs64)fieldvalue.tozu64());
+                        break;
+                    case ZPARCEL_4_FLOAT:
+                        parcel->addFloatRecord(fid, fieldvalue.toFloat());
+                        break;
+                    case ZPARCEL_4_ZUID:
+                        parcel->addZUIDRecord(fid, ZUID(fieldvalue));
+                        break;
+                    case ZPARCEL_4_STRING:
+                        parcel->addStringRecord(fid, fieldvalue);
+                        break;
+                    case ZPARCEL_4_BINARY:
+
+                        break;
+                    case ZPARCEL_4_FILE:
+                        parcel->addFileRecord(fid, ZPath(fieldvalue));
+                        break;
+                    default:
+                        ELOG("Unsupported type");
+                }
             } else {
                 ELOG("Bad field \"" << fieldname << '"');
             }

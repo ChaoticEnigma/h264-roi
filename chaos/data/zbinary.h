@@ -12,6 +12,7 @@
 #include "zposition.h"
 #include "zreader.h"
 #include "zwriter.h"
+#include "zerror.h"
 
 namespace LibChaos {
 
@@ -20,62 +21,58 @@ typedef ZBinary ZBuffer;
 
 class ZBinary : public ZPosition, public ZReader, public ZWriter {
 public:
-    typedef unsigned char zbinary_type;
+    typedef zbyte zbinary_type;
 
     enum {
         none = ZU64_MAX
     };
 
 public:
-    ZBinary() : _data(nullptr), _size(0), _rwpos(0){
+    ZBinary(ZAllocator<zbyte> *alloc = new ZAllocator<zbyte>) : _alloc(alloc), _data(nullptr), _size(0), _rwpos(0){
 
     }
     ZBinary(zu64 size) : ZBinary(){
-        _size = size;
-        _data = new zbinary_type[_size];
+        resize(size);
     }
-    ZBinary(const void *ptr, zu64 size) : ZBinary(){
+    ZBinary(const void *ptr, zu64 size) : ZBinary(size){
         if(ptr && size){
+            _alloc->rawcopy((const zbyte *)ptr, _data, size);
             _size = size;
-            _data = new zbinary_type[_size];
-            memcpy(_data, ptr, _size);
         }
     }
-    ZBinary(ZArray<zbinary_type> arr) : ZBinary(){
+    ZBinary(ZArray<zbinary_type> arr) : ZBinary(arr.size()){
         if(arr.size()){
+            _alloc->rawcopy(arr.raw(), _data, arr.size());
             _size = arr.size();
-            _data = new zbinary_type[_size];
-            memcpy(_data, arr.ptr(), _size);
         }
     }
-    ZBinary(std::initializer_list<zbinary_type> list) : ZBinary(){
-        resize(list.size());
+    ZBinary(std::initializer_list<zbinary_type> list) : ZBinary(list.size()){
         zu64 i = 0;
         for(auto it = list.begin(); it < list.end(); ++it, ++i){
             _data[i] = *it;
         }
     }
+    ZBinary(ZString str) : ZBinary((const zbyte *)str.cc(), str.size()){}
+
     ZBinary(const ZBinary &other) : ZBinary(other._data, other._size){
         // _rwpos is not copied
     }
 
     ~ZBinary(){
-        delete[] _data;
-        _data = nullptr;
+        clear();
+        delete _alloc;
     }
     void clear(){
         _size = 0;
-        delete[] _data;
+        _realsize = 0;
+        _alloc->dealloc(_data);
         _data = nullptr;
     }
 
     ZBinary &operator=(const ZBinary &other){
-        clear();
-        if(other._data && other._size){
-            _size = other._size;
-            _data = new zbinary_type[_size];
-            memcpy(_data, other._data, _size);
-        }
+        reserve(other._size);
+        _size = other._size;
+        _alloc->rawcopy(other._data, _data, other._size);
         return *this;
     }
 
@@ -95,38 +92,48 @@ public:
         return _data[inx];
     }
 
-    ZBinary &resize(zu64 size){
-        zbinary_type *tmp = new zbinary_type[size];
-        if(_data && tmp && _size && size)
-            memcpy(tmp, _data, MIN(_size, size));
-        _size = size;
-        delete[] _data;
-        _data = tmp;
-        return *this;
+    void reserve(zu64 size){
+        if(size > _realsize){
+            zu64 newsize = 1;
+            while(newsize < size) newsize <<= 1;
+            zbinary_type *tmp = _alloc->alloc(newsize);
+            _alloc->rawcopy(_data, tmp, _size);
+            _alloc->dealloc(_data);
+            _realsize = newsize;
+            _data = tmp;
+        }
+    }
+
+    void resize(zu64 size){
+        if(size < _size || size < _realsize){
+            _size = size;
+        } else {
+            reserve(size);
+            _size = size;
+        }
     }
 
     ZBinary &fill(zbinary_type dat, zu64 size){
-        clear();
+        reserve(size);
         _size = size;
-        _data = new zbinary_type[_size];
         memset(_data, dat, _size);
         return *this;
     }
 
     ZBinary &concat(const ZBinary &other){
-        zu64 old = _size;
-        resize(_size + other._size);
-        memcpy(_data + old, other._data, other._size);
+        reserve(_size + other._size);
+        _alloc->rawcopy(other._data, _data + _size, other._size);
+        _size = _size + other._size;
         return *this;
     }
 
     void reverse(){
-        zbinary_type *buff = new zbinary_type[_size];
-        for(zu64 i = 0, j = _size; i <_size; ++i, --j){
-            buff[j] = _data[i];
+        zbinary_type *buffer = _alloc->alloc(_realsize);
+        for(zu64 i = 0; i < _size; ++i){
+            buffer[i] = _data[_size - i - 1];
         }
-        delete[] _data;
-        _data = buff;
+        _alloc->dealloc(buffer);
+        _data = buffer;
     }
 
     zu64 findFirst(const ZBinary &find) const {
@@ -158,6 +165,52 @@ public:
         if(start + len >= _size)
             len = _size - start;
         return ZBinary(_data + start, len);
+    }
+
+    void fromzu8(zu8 num){
+        resize(1);
+        _data[0] = num;
+    }
+    void fromzu16(zu16 num){
+        resize(2);
+        _data[0] = (zu8)((num >> 8) & 0xFF);
+        _data[1] = (zu8)((num)      & 0xFF);
+    }
+    void fromzu32(zu32 num){
+        resize(4);
+        _data[0] = (zu8)((num >> 24) & 0xFF);
+        _data[1] = (zu8)((num >> 16) & 0xFF);
+        _data[2] = (zu8)((num >> 8)  & 0xFF);
+        _data[3] = (zu8)((num)       & 0xFF);
+    }
+    void fromzu64(zu64 num){
+        resize(8);
+        _data[0] = (zu8)((num >> 56) & 0xFF);
+        _data[1] = (zu8)((num >> 48) & 0xFF);
+        _data[2] = (zu8)((num >> 40) & 0xFF);
+        _data[3] = (zu8)((num >> 32) & 0xFF);
+        _data[4] = (zu8)((num >> 24) & 0xFF);
+        _data[5] = (zu8)((num >> 16) & 0xFF);
+        _data[6] = (zu8)((num >> 8)  & 0xFF);
+        _data[7] = (zu8)((num)       & 0xFF);
+    }
+
+    zu8 tozu8() const {
+        zassert(_size == 1);
+        return _data[0];
+    }
+    zu16 tozu16() const {
+        zassert(_size == 2);
+        return (zu16)(_data[0] << 8) + (zu16)_data[1];
+    }
+    zu32 tozu32() const {
+        zassert(_size == 4);
+        return (zu32)(_data[0] << 24) + (zu32)(_data[1] << 16) + (zu32)(_data[2] << 8) + (zu32)_data[3];
+    }
+    zu64 tozu64() const {
+        zassert(_size == 8);
+        return ((zu64)_data[0] << 56) + ((zu64)_data[1] << 48) + ((zu64)_data[2] << 40) + ((zu64)_data[3] << 32) +
+               ((zu64)_data[4] << 24) + ((zu64)_data[5] << 16) + ((zu64)_data[6] << 8) + (zu64)_data[7];
     }
 
     ZBinary &nullTerm(){
@@ -200,9 +253,11 @@ public:
     const zbinary_type *raw() const {
         return _data;
     }
-
     zu64 size() const {
         return _size;
+    }
+    zu64 realSize() const {
+        return _realsize;
     }
 
     // ZReader interface
@@ -238,8 +293,10 @@ public:
     }
 
 private:
+    ZAllocator<zbinary_type> *_alloc;
     zbinary_type *_data;
     zu64 _size;
+    zu64 _realsize;
     zu64 _rwpos;
 };
 

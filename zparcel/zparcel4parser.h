@@ -6,14 +6,15 @@
 #include "zlist.h"
 #include "zuid.h"
 
-#define ZPARCEL_4_NULL          0
-#define ZPARCEL_4_UNSIGNEDINT   1
-#define ZPARCEL_4_SIGNEDINT     2
-#define ZPARCEL_4_ZUID          3
-#define ZPARCEL_4_STRING        4
-#define ZPARCEL_4_FILE          5
-#define ZPARCEL_4_BINARY        6
-#define ZPARCEL_4_FLOAT         7
+#define ZPARCEL_4_NULL      0
+#define ZPARCEL_4_UINT      1
+#define ZPARCEL_4_SINT      2
+#define ZPARCEL_4_ZUID      3
+#define ZPARCEL_4_STRING    4
+#define ZPARCEL_4_FILE      5
+#define ZPARCEL_4_BINARY    6
+#define ZPARCEL_4_FLOAT     7
+#define ZPARCEL_4_BOOL      8
 
 namespace LibChaos {
 
@@ -58,6 +59,7 @@ public:
 
     bool addRecord(FieldList fields);
 
+    void addBoolRecord(fieldid field, bool tf);
     void addUintRecord(fieldid field, zu64 num);
     void addSintRecord(fieldid field, zs64 num);
     void addZUIDRecord(fieldid field, ZUID uid);
@@ -65,9 +67,6 @@ public:
     void addStringRecord(fieldid field, ZString str);
     void addBinaryRecord(fieldid field, ZBinary bin);
     void addFileRecord(fieldid field, ZPath file);
-
-    static fieldtype fieldTypeNameToFieldType(ZString name);
-    static ZString getFieldTypeName(fieldtype type);
 
 private:
     bool readPage(pageid page, ZBinary &data);
@@ -80,9 +79,6 @@ private:
 
     bool freePage(pageid page);
     bool addToFreelist(pageid page);
-
-    static zu16 getFieldFileId(fieldtype type);
-    static fieldtype fieldFileIdToFieldType(zu16 type);
 
 private:
     class ParcelPage : public ZWriter, public ZReader, public ZPosition {

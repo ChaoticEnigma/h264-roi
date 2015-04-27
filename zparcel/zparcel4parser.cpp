@@ -8,6 +8,8 @@
 #define DEFAULT_PAGE_SIZE 10 // 2 ^ 10 = 1024
 #define DEFAULT_MAX_PAGES (64 * 1024)
 
+#define NULLFIELD ZPARCEL_4_NULL
+
 #define FREEPAGE        0
 #define FIELDPAGE       1
 #define FREELISTPAGE    2
@@ -88,7 +90,7 @@ void ZParcel4Parser::setMaxPages(zu32 pages){
 
 ZParcel4Parser::fieldid ZParcel4Parser::addField(ZString name, fieldtype type){
     fieldid id = getFieldId(name);
-    if(id != FIELD_NULL && type == getFieldType(id))
+    if(id != NULLFIELD && type == getFieldType(id))
         return id;
 
 
@@ -102,7 +104,7 @@ ZParcel4Parser::fieldid ZParcel4Parser::getFieldId(ZString name){
 
 ZParcel4Parser::fieldtype ZParcel4Parser::getFieldType(fieldid id){
 
-    return nullfield;
+    return NULLFIELD;
 }
 
 bool ZParcel4Parser::addRecord(FieldList fields){
@@ -110,16 +112,27 @@ bool ZParcel4Parser::addRecord(FieldList fields){
     return false;
 }
 
+void ZParcel4Parser::addBoolRecord(ZParcel4Parser::fieldid field, bool tf){
+    ZBinary bin;
+    bin.fromzu8((zu8)tf);
+
+}
+
 void ZParcel4Parser::addUintRecord(fieldid field, zu64 num){
-    ZBinary bin = toFile64Bits(num);
+    ZBinary bin;
+    bin.fromzu64(num);
+
 }
 
 void ZParcel4Parser::addSintRecord(fieldid field, zs64 num){
-    ZBinary bin = toFile64Bits((zu64)num);
+    ZBinary bin;
+    bin.fromzu64((zu64)num);
+
 }
 
 void ZParcel4Parser::addZUIDRecord(fieldid field, ZUID uid){
     ZBinary bin = ZBinary(uid.raw(), 16);
+
 }
 
 void ZParcel4Parser::addFloatRecord(fieldid field, double flt){
@@ -128,6 +141,7 @@ void ZParcel4Parser::addFloatRecord(fieldid field, double flt){
 
 void ZParcel4Parser::addStringRecord(fieldid field, ZString str){
     ZBinary bin = ZBinary((const zbyte *)str.cc(), str.size());
+
 }
 
 void ZParcel4Parser::addBinaryRecord(fieldid field, ZBinary bin){
@@ -137,20 +151,7 @@ void ZParcel4Parser::addBinaryRecord(fieldid field, ZBinary bin){
 void ZParcel4Parser::addFileRecord(fieldid field, ZPath file){
     ZString str = file.str();
     ZBinary bin = ZBinary((const zbyte *)str.cc(), str.size());
-}
 
-ZParcel4Parser::fieldtype ZParcel4Parser::fieldTypeNameToFieldType(ZString name){
-    return fieldnametable[name];
-}
-ZString ZParcel4Parser::getFieldTypeName(fieldtype type){
-    return fieldmap[type].name;
-}
-
-zu16 ZParcel4Parser::getFieldFileId(fieldtype type){
-    return fieldmap[type].id;
-}
-ZParcel4Parser::fieldtype ZParcel4Parser::fieldFileIdToFieldType(zu16 type){
-    return fieldtypes[type];
 }
 
 bool ZParcel4Parser::readPage(pageid page, ZBinary &data){
@@ -169,33 +170,33 @@ bool ZParcel4Parser::loadHeadPage(){
     ZBinary nums;
     if(_file->read(nums, 1) != 1)
         return false;
-    _pagepower = ZParcelConvert::fromFile8Bits(nums);
+    _pagepower = nums.tozu8();
     setPageSize(_pagepower);
 
     nums.clear();
     if(_file->read(nums, 4) != 4)
         return false;
-    _maxpages = fromFile32Bits(nums);
+    _maxpages = nums.tozu32();
 
     nums.clear();
     if(_file->read(nums, 4) != 4)
         return false;
-    _freelistpage = fromFile32Bits(nums);
+    _freelistpage = nums.tozu32();
 
     nums.clear();
     if(_file->read(nums, 4) != 4)
         return false;
-    _fieldpage = fromFile32Bits(nums);
+    _fieldpage = nums.tozu32();
 
     nums.clear();
     if(_file->read(nums, 4) != 4)
         return false;
-    _indexpage = fromFile32Bits(nums);
+    _indexpage = nums.tozu32();
 
     nums.clear();
     if(_file->read(nums, 4) != 4)
         return false;
-    _recordpage = fromFile32Bits(nums);
+    _recordpage = nums.tozu32();
 
     return true;
 }
@@ -233,19 +234,26 @@ ZParcel4Parser::pageid ZParcel4Parser::insertPage(pagetype type){
 bool ZParcel4Parser::writeHeadPage(){
     _file->setPos(0);
     ZBinary sig = VERSION_4_SIG;
+    ZBinary tmp;
     if(_file->write(sig) != SIG_SIZE)
         return false;
-    if(_file->write(toFile8Bits(_pagepower)) != sizeof(zu8))
+    tmp.fromzu8(_pagepower);
+    if(_file->write(tmp) != sizeof(zu8))
         return false;
-    if(_file->write(toFile32Bits(_maxpages)) != sizeof(zu32))
+    tmp.fromzu32(_maxpages);
+    if(_file->write(tmp) != sizeof(zu32))
         return false;
-    if(_file->write(toFile32Bits(_freelistpage)) != sizeof(zu32))
+    tmp.fromzu32(_freelistpage);
+    if(_file->write(tmp) != sizeof(zu32))
         return false;
-    if(_file->write(toFile32Bits(_fieldpage)) != sizeof(zu32))
+    tmp.fromzu32(_fieldpage);
+    if(_file->write(tmp) != sizeof(zu32))
         return false;
-    if(_file->write(toFile32Bits(_indexpage)) != sizeof(zu32))
+    tmp.fromzu32(_indexpage);
+    if(_file->write(tmp) != sizeof(zu32))
         return false;
-    if(_file->write(toFile32Bits(_recordpage)) != sizeof(zu32))
+    tmp.fromzu32(_recordpage);
+    if(_file->write(tmp) != sizeof(zu32))
         return false;
 
     return true;
@@ -309,16 +317,16 @@ ZParcel4Parser::FieldPage::FieldPage(ZFile *file, zu32 page, zu32 pagesize) : Pa
     ZBinary buff;
     buff.resize(1);
     read(buff.raw(), 1);
-    if(fromFile8Bits(buff) != FIELDPAGE){
+    if(buff.tozu8() != FIELDPAGE){
         ELOG("FieldPage created on wrong page type");
         return;
     }
     buff.resize(4);
     read(buff.raw(), 4);
-    _prevpage = fromFile32Bits(buff);
+    _prevpage = buff.tozu32();
     setPos(_pagesize - 4);
     read(buff.raw(), 4);
-    _nextpage = fromFile32Bits(buff);
+    _nextpage = buff.tozu32();
 
 }
 

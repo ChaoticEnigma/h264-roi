@@ -21,12 +21,13 @@ public:
 
     enum fieldtype {
         nullfield,
-        unsignedintfield,
-        signedintfield,
+        boolfield,
+        uintfield,
+        sintfield,
         floatfield,
         zuidfield,
         stringfield,
-        binaryfield,
+        blobfield,
         filefield,
     };
 
@@ -67,6 +68,7 @@ public:
     //! \exception ZException Invalid field type
     void addRecords(ZList<Field> fields);
 
+    void addBoolRecord(fieldid field, bool tf);
     void addUintRecord(fieldid field, zu64 num);
     void addSintRecord(fieldid field, zs64 num);
     void addZUIDRecord(fieldid field, ZUID uid);
@@ -77,16 +79,6 @@ public:
 
     static fieldtype fieldType(ZString name);
     static ZString fieldName(fieldtype type);
-
-    static ZBinary toFile8Bits(zu8 num);
-    static ZBinary toFile16Bits(zu16 num);
-    static ZBinary toFile32Bits(zu32 num);
-    static ZBinary toFile64Bits(zu64 num);
-
-    static zu8 fromFile8Bits(ZBinary num);
-    static zu16 fromFile16Bits(ZBinary num);
-    static zu32 fromFile32Bits(ZBinary num);
-    static zu64 fromFile64Bits(ZBinary num);
 
 private:
     ZFile _file;
