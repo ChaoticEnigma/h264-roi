@@ -21,6 +21,9 @@ namespace LibChaos {
 class ZParcel4Page;
 
 class ZParcel4Parser {
+    friend class ZParcel4Page;
+    friend class HeadPage;
+    friend class FieldPage;
 public:
     typedef zu32 pageid;
     enum pagetype {
@@ -47,7 +50,7 @@ public:
     ZParcel4Parser(ZFile *file);
 
     bool create();
-    bool open();
+    void open();
 
     zu32 getPageSize() const { return _pagesize; }
     zu32 getMaxPages() const { return _maxpages; }
@@ -71,7 +74,7 @@ public:
     void addFileRecord(fieldid field, ZPath file);
 
 private:
-    bool readPage(pageid page, ZBinary &data);
+    void readPage(pageid page, ZBinary &data);
     bool loadHeadPage();
 
     pageid insertPage(pagetype type);
@@ -83,19 +86,13 @@ private:
     bool addToFreelist(pageid page);
 
 private:
-
-private:
     ZFile *_file;
     bool _init;
     zu32 _pagesize;
+    zu32 _maxpages;
     zu32 _pagecount;
 
-    zu8 _pagepower;
-    zu32 _maxpages;
-    pageid _freelistpage;
-    pageid _fieldpage;
-    pageid _indexpage;
-    pageid _recordpage;
+    ZParcel4Page *_head;
 
     ZMap<pageid, ZPointer<ZParcel4Page *> > _pagecache;
 };
@@ -111,7 +108,7 @@ private:
   54 bits: parcel signature (ZPARCEL)
    4 bits: parcel category (1)
    4 bits: parcel version (4)
-   8 bits: page size power (minimum 5 (32B), default 10 (1K), maximum 32 (4G))
+   8 bits: page size power (minimum 5 (32B), default 10 (1KB), maximum 32 (4GB))
   32 bits: maximum number of pages (default 64K)
   32 bits: next head page backup
   32 bits: first freelist page number
@@ -133,7 +130,7 @@ private:
 
 
   Freelist Page - list of pages that are unused and not at the end of the file
-   8 bits: page type
+   8 bits: page type (FREELISTPAGE)
   32 bits: previous page number
   32 bits: next page number
   32 bits: free page number

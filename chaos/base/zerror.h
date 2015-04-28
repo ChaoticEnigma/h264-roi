@@ -21,7 +21,7 @@ namespace ZError {
         illegal = 4,    // SIGILL
         segv = 5,       // SIGSEGV
         terminate = 6,  // SIGTERM
-        fpe = 7         // SIGFPE
+        fpe = 7,        // SIGFPE
     };
 
     typedef void (*signalHandler)(zerror_signal);
@@ -32,6 +32,7 @@ namespace ZError {
     };
 
     void zassert(bool condition);
+    void zassert(bool condition, ZString message);
 
     void registerSigSegv();
     bool registerInterruptHandler(signalHandler);
@@ -53,7 +54,8 @@ namespace ZError {
 
 }
 
-using ZError::zassert;
+inline void zassert(bool condition){ return ZError::zassert(condition); }
+inline void zassert(bool condition, ZString message){ return ZError::zassert(condition, message); }
 
 }
 

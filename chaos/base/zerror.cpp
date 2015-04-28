@@ -56,7 +56,11 @@ namespace ZError {
 ZMap<int, ZError::sigset> sigmap;
 
 void zassert(bool condition){
-    //assert(condition);
+    zassert(condition, "ZError zassert failed");
+}
+void zassert(bool condition, ZString message){
+    if(!condition)
+        throw ZException(message);
 }
 
 #if PLATFORM == WINDOWS

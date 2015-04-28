@@ -169,48 +169,36 @@ public:
 
     void fromzu8(zu8 num){
         resize(1);
-        _data[0] = num;
+        enczu8(_data, num);
     }
     void fromzu16(zu16 num){
         resize(2);
-        _data[0] = (zu8)((num >> 8) & 0xFF);
-        _data[1] = (zu8)((num)      & 0xFF);
+        enczu16(_data, num);
     }
     void fromzu32(zu32 num){
         resize(4);
-        _data[0] = (zu8)((num >> 24) & 0xFF);
-        _data[1] = (zu8)((num >> 16) & 0xFF);
-        _data[2] = (zu8)((num >> 8)  & 0xFF);
-        _data[3] = (zu8)((num)       & 0xFF);
+        enczu32(_data, num);
     }
     void fromzu64(zu64 num){
         resize(8);
-        _data[0] = (zu8)((num >> 56) & 0xFF);
-        _data[1] = (zu8)((num >> 48) & 0xFF);
-        _data[2] = (zu8)((num >> 40) & 0xFF);
-        _data[3] = (zu8)((num >> 32) & 0xFF);
-        _data[4] = (zu8)((num >> 24) & 0xFF);
-        _data[5] = (zu8)((num >> 16) & 0xFF);
-        _data[6] = (zu8)((num >> 8)  & 0xFF);
-        _data[7] = (zu8)((num)       & 0xFF);
+        enczu64(_data, num);
     }
 
     zu8 tozu8() const {
         zassert(_size == 1);
-        return _data[0];
+        return deczu8(_data);
     }
     zu16 tozu16() const {
         zassert(_size == 2);
-        return (zu16)(_data[0] << 8) + (zu16)_data[1];
+        return deczu16(_data);
     }
     zu32 tozu32() const {
         zassert(_size == 4);
-        return (zu32)(_data[0] << 24) + (zu32)(_data[1] << 16) + (zu32)(_data[2] << 8) + (zu32)_data[3];
+        return deczu32(_data);
     }
     zu64 tozu64() const {
         zassert(_size == 8);
-        return ((zu64)_data[0] << 56) + ((zu64)_data[1] << 48) + ((zu64)_data[2] << 40) + ((zu64)_data[3] << 32) +
-               ((zu64)_data[4] << 24) + ((zu64)_data[5] << 16) + ((zu64)_data[6] << 8) + (zu64)_data[7];
+        return deczu64(_data);
     }
 
     ZBinary &nullTerm(){
@@ -291,6 +279,63 @@ public:
         _rwpos += size;
         return size;
     }
+
+    zu8 readzu8(){
+        zassert((_size - _rwpos) >= 1);
+        zu8 num = deczu8(_data + _rwpos);
+        _rwpos += 1;
+        return num;
+    }
+    zu16 readzu16(){
+        zassert((_size - _rwpos) >= 2);
+        zu16 num = deczu16(_data + _rwpos);
+        _rwpos += 2;
+        return num;
+    }
+    zu32 readzu32(){
+        zassert((_size - _rwpos) >= 4);
+        zu32 num = deczu32(_data + _rwpos);
+        _rwpos += 4;
+        return num;
+    }
+    zu64 readzu64(){
+        zassert((_size - _rwpos) >= 8);
+        zu64 num = deczu64(_data + _rwpos);
+        _rwpos += 8;
+        return num;
+    }
+
+    void writezu8(zu8 num){
+        resize(_size + 1);
+        enczu8(_data + _rwpos, num);
+        _rwpos += 1;
+    }
+    void writezu16(zu16 num){
+        resize(_size + 2);
+        enczu16(_data + _rwpos, num);
+        _rwpos += 2;
+    }
+    void writezu32(zu32 num){
+        resize(_size + 4);
+        enczu32(_data + _rwpos, num);
+        _rwpos += 4;
+    }
+    void writezu64(zu64 num){
+        resize(_size + 8);
+        enczu64(_data + _rwpos, num);
+        _rwpos += 8;
+    }
+
+    // Encode integer
+    static void enczu8(zbyte *bin, zu8 num);
+    static void enczu16(zbyte *bin, zu16 num);
+    static void enczu32(zbyte *bin, zu32 num);
+    static void enczu64(zbyte *bin, zu64 num);
+    // Decode integer
+    static zu8 deczu8(const zbyte *bin);
+    static zu16 deczu16(const zbyte *bin);
+    static zu32 deczu32(const zbyte *bin);
+    static zu64 deczu64(const zbyte *bin);
 
 private:
     ZAllocator<zbinary_type> *_alloc;

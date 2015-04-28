@@ -19,15 +19,15 @@ namespace LibChaos {
 
 class ZParcel4Page {
 protected:
-    friend class ZParcel4Parser;
     typedef ZParcel4Parser::pageid pageid;
     typedef ZParcel4Parser::pagetype pagetype;
 
 protected:
-    ZParcel4Page(ZParcel4Parser *parser);
+    ZParcel4Page(ZParcel4Parser *_parser);
 
 public:
-    virtual void load() = 0;
+    virtual void load(pageid page) = 0;
+    virtual void save(pageid page) = 0;
 
 protected:
     ZParcel4Parser *_parser;
@@ -37,16 +37,23 @@ protected:
 
 class HeadPage : public ZParcel4Page {
 public:
-    HeadPage(ZParcel4Parser *parser);
+    HeadPage(ZParcel4Parser *_parser);
+    void load(pageid page);
+    void save(pageid page);
 
+    zu8 _pagepower;
+    zu32 _maxpages;
+    pageid _nextbackup;
+    pageid _freelistpage;
+    pageid _fieldlistpage;
 };
 
 
 class FieldPage : public ZParcel4Page {
 public:
-    FieldPage(ZParcel4Parser *parser);
-
-    void load();
+    FieldPage(ZParcel4Parser *_parser);
+    void load(pageid page);
+    void save(pageid page);
 
     pagetype _pagetype;
     pageid _prevpage;

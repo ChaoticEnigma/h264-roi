@@ -230,7 +230,8 @@ zu64 ZFile::write(const zbyte *src, zu64 size){
 }
 
 zu64 ZFile::read(ZBinary &out, zu64 size){
-    out.resize(size);
+    if(out.size() < size)
+        out.resize(size);
     return read(out.raw(), size);
 }
 

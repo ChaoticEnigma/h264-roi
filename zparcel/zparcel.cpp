@@ -59,7 +59,8 @@ void ZParcel::create(ZPath path){
 bool ZParcel::open(ZPath file){
     _file.open(file, ZFile::modereadwrite);
     _parser = new ZParcel4Parser(&_file);
-    return _parser->open();
+    _parser->open();
+    return true;
 }
 
 void ZParcel::close(){

@@ -8,6 +8,8 @@
 #define VERSION_4_SIG { 90,80,143,82,128,144,76, 4 } // 0x5A508F5280904C14 // ZPARCEL 1 4
 #define SIG_SIZE 8
 
+#define NAME "ZParcel4Parser "
+
 #define DEFAULT_PAGE_SIZE 10 // 2 ^ 10 = 1024 bytes
 #define DEFAULT_MAX_PAGES (64 * 1024) // 65536 pages
 
@@ -35,44 +37,47 @@ ZParcel4Parser::ZParcel4Parser(ZFile *file) : _file(file), _init(false){
     // Default options
     setPageSize(DEFAULT_PAGE_SIZE);
     _maxpages = DEFAULT_MAX_PAGES;
-    _freelistpage = 0;
-    _fieldpage = 0;
-    _indexpage = 0;
-    _recordpage = 0;
 }
 
 bool ZParcel4Parser::create(){
     if(_init)
-        ELOG("create: overwriting existing parcel");
-    _init = false;
-    if(!writeHeadPage()){
-        LOG(_pagepower << " " << _maxpages);
-        ELOG("create: failed to write head page");
-        return false;
-    }
+        throw ZException(NAME "create: parcel is already open");
+    if(!_file->isOpen())
+        throw ZException(NAME "create: file is not open");
+    ZParcel4Page *header = new HeadPage(this);
+
     _init = true;
     return true;
 }
 
-bool ZParcel4Parser::open(){
+void ZParcel4Parser::open(){
     if(_init)
-        ELOG("open: parcel already initialized");
-    _init = false;
-    if(!loadHeadPage()){
-        ELOG("open: failed to load head page");
-        return false;
-    }
+        throw ZException(NAME "open: parcel is already open");
+    if(!_file->isOpen())
+        throw ZException(NAME "open: file is not open");
+    ZBinary sig;
+    if(_file->read(sig, SIG_SIZE) != SIG_SIZE)
+        throw ZException(NAME "open: failed to read signature");
+    if(sig != ZBinary(VERSION_4_SIG))
+        throw ZException(NAME "open: file is not a version 4 parcel");
+    ZBinary ps;
+    if(_file->read(ps, 1) != 1)
+        throw ZException(NAME "open: failed to read page size");
+    zu8 pagepower = ps.tozu8();
+    if(pagepower < 5 || pagepower > 32)
+        throw ZException(NAME "open: invalid page power");
+    _head = new HeadPage(this);
+    _head->load(0);
+
     _init = true;
-    return true;
 }
 
 void ZParcel4Parser::setPageSize(zu8 power){
-    // Cannot be changed on existing parcels
     if(!_init){
-        _pagepower = power;
-        _pagesize = ((zu32)1 << _pagepower);
+        _pagesize = ((zu32)1 << power);
     } else {
-        ELOG("cannot change page size of existing parcel");
+        // Page size cannot be changed on existing parcels
+        throw ZException(NAME "setPageSize: cannot change page size of existing parcel");
     }
 }
 
@@ -148,51 +153,12 @@ void ZParcel4Parser::addFileRecord(fieldid field, ZPath file){
 
 }
 
-bool ZParcel4Parser::readPage(pageid page, ZBinary &data){
+void ZParcel4Parser::readPage(pageid page, ZBinary &data){
     _file->setPos(page * _pagesize);
-    return (_file->read(data, _pagesize) == _pagesize);
-}
-
-bool ZParcel4Parser::loadHeadPage(){
-    _file->setPos(0);
-    ZBinary sig;
-    if(_file->read(sig, SIG_SIZE) != SIG_SIZE)
-        return false;
-    if(sig != ZBinary(VERSION_4_SIG))
-        return false;
-
-    ZBinary nums;
-    if(_file->read(nums, 1) != 1)
-        return false;
-    _pagepower = nums.tozu8();
-    setPageSize(_pagepower);
-
-    nums.clear();
-    if(_file->read(nums, 4) != 4)
-        return false;
-    _maxpages = nums.tozu32();
-
-    nums.clear();
-    if(_file->read(nums, 4) != 4)
-        return false;
-    _freelistpage = nums.tozu32();
-
-    nums.clear();
-    if(_file->read(nums, 4) != 4)
-        return false;
-    _fieldpage = nums.tozu32();
-
-    nums.clear();
-    if(_file->read(nums, 4) != 4)
-        return false;
-    _indexpage = nums.tozu32();
-
-    nums.clear();
-    if(_file->read(nums, 4) != 4)
-        return false;
-    _recordpage = nums.tozu32();
-
-    return true;
+    data.resize(_pagesize);
+    zu64 length = _file->read(data, _pagesize);
+    for(zu64 i = 0; i < (length - _pagesize); ++i)
+        data[length + i] = 0;
 }
 
 ZParcel4Parser::pageid ZParcel4Parser::insertPage(pagetype type){
@@ -223,34 +189,6 @@ ZParcel4Parser::pageid ZParcel4Parser::insertPage(pagetype type){
             break;
     }
     return ZU32_MAX;
-}
-
-bool ZParcel4Parser::writeHeadPage(){
-    _file->setPos(0);
-    ZBinary sig = VERSION_4_SIG;
-    ZBinary tmp;
-    if(_file->write(sig) != SIG_SIZE)
-        return false;
-    tmp.fromzu8(_pagepower);
-    if(_file->write(tmp) != sizeof(zu8))
-        return false;
-    tmp.fromzu32(_maxpages);
-    if(_file->write(tmp) != sizeof(zu32))
-        return false;
-    tmp.fromzu32(_freelistpage);
-    if(_file->write(tmp) != sizeof(zu32))
-        return false;
-    tmp.fromzu32(_fieldpage);
-    if(_file->write(tmp) != sizeof(zu32))
-        return false;
-    tmp.fromzu32(_indexpage);
-    if(_file->write(tmp) != sizeof(zu32))
-        return false;
-    tmp.fromzu32(_recordpage);
-    if(_file->write(tmp) != sizeof(zu32))
-        return false;
-
-    return true;
 }
 
 bool ZParcel4Parser::zeroPad(){
