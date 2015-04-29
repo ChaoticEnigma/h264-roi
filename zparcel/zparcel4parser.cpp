@@ -5,14 +5,12 @@
 #include "zuid.h"
 #include "zmap.h"
 
-#define VERSION_4_SIG { 90,80,143,82,128,144,76, 4 } // 0x5A508F5280904C14 // ZPARCEL 1 4
-#define SIG_SIZE 8
-
 #define NAME "ZParcel4Parser "
 
 #define DEFAULT_PAGE_SIZE 10 // 2 ^ 10 = 1024 bytes
 #define DEFAULT_MAX_PAGES (64 * 1024) // 65536 pages
 
+#define HEADPAGEID 0
 #define NULLFIELD ZPARCEL_4_NULL
 
 namespace LibChaos {
@@ -44,7 +42,8 @@ bool ZParcel4Parser::create(){
         throw ZException(NAME "create: parcel is already open");
     if(!_file->isOpen())
         throw ZException(NAME "create: file is not open");
-    ZParcel4Page *header = new HeadPage(this);
+    _head = new HeadPage(this);
+    _head->save(HEADPAGEID);
 
     _init = true;
     return true;
@@ -56,44 +55,41 @@ void ZParcel4Parser::open(){
     if(!_file->isOpen())
         throw ZException(NAME "open: file is not open");
     ZBinary sig;
-    if(_file->read(sig, SIG_SIZE) != SIG_SIZE)
+    if(_file->read(sig, 9) != 9)
         throw ZException(NAME "open: failed to read signature");
-    if(sig != ZBinary(VERSION_4_SIG))
-        throw ZException(NAME "open: file is not a version 4 parcel");
-    ZBinary ps;
-    if(_file->read(ps, 1) != 1)
-        throw ZException(NAME "open: failed to read page size");
-    zu8 pagepower = ps.tozu8();
+    if(sig.readzu64() != VERSION_4_MASK)
+        throw ZException(NAME "open: invalid file signature");
+    zu8 pagepower = sig.readzu8();
     if(pagepower < 5 || pagepower > 32)
         throw ZException(NAME "open: invalid page power");
+    _pagesize = (zu32)1 << pagepower;
     _head = new HeadPage(this);
-    _head->load(0);
+    _head->load(HEADPAGEID);
 
     _init = true;
 }
 
 void ZParcel4Parser::setPageSize(zu8 power){
-    if(!_init){
-        _pagesize = ((zu32)1 << power);
-    } else {
-        // Page size cannot be changed on existing parcels
+    // Page size cannot be changed on existing parcels
+    if(_init)
         throw ZException(NAME "setPageSize: cannot change page size of existing parcel");
-    }
+    _pagesize = ((zu32)1 << power);
 }
 
 void ZParcel4Parser::setMaxPages(zu32 pages){
     _maxpages = pages;
-    if(_init)
-        writeHeadPage();
+    if(_init){
+        ((HeadPage*)_head)->_maxpages = _maxpages;
+        _head->save(HEADPAGEID);
+    }
 }
 
 ZParcel4Parser::fieldid ZParcel4Parser::addField(ZString name, fieldtype type){
     fieldid id = getFieldId(name);
-    if(id != NULLFIELD && type == getFieldType(id))
-        return id;
+    if(id != 0)
+        throw ZException(NAME "addField: field already exists");
 
-
-    return 0;
+    return getFieldId(name);
 }
 
 ZParcel4Parser::fieldid ZParcel4Parser::getFieldId(ZString name){
@@ -157,16 +153,28 @@ void ZParcel4Parser::readPage(pageid page, ZBinary &data){
     _file->setPos(page * _pagesize);
     data.resize(_pagesize);
     zu64 length = _file->read(data, _pagesize);
-    for(zu64 i = 0; i < (length - _pagesize); ++i)
-        data[length + i] = 0;
+    if(!length)
+        throw ZException(NAME "readPage: failed to read page");
+    for(zu64 i = length; i < _pagesize; ++i)
+        data[i] = 0;
+}
+
+void ZParcel4Parser::writePage(ZParcel4Parser::pageid page, const ZBinary &data){
+    ZBinary tmp(data);
+    zu64 length = tmp.size();
+    tmp.resize(_pagesize);
+    for(zu64 i = length; i < _pagesize; ++i)
+        tmp[i] = 0;
+    _file->setPos(page * _pagesize);
+    length = _file->write(tmp);
+    if(length != _pagesize)
+        throw ZException(NAME "writePage: failed to write page");
 }
 
 ZParcel4Parser::pageid ZParcel4Parser::insertPage(pagetype type){
     switch(type){
         case headpage:
-            if(writeHeadPage())
-                return 0;
-            ELOG("insertPage failed to write head page");
+
             break;
         case fieldpage:
             zeroPad();
@@ -214,8 +222,6 @@ bool ZParcel4Parser::freePage(pageid page){
 }
 
 bool ZParcel4Parser::addToFreelist(pageid page){
-    if(_freelistpage == 0)
-        _freelistpage = insertPage(freelistpage);
 
     return false;
 }

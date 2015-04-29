@@ -10,10 +10,12 @@
 #include <type_traits>
 
 // Simple Hash initial base
-#define SIMPLEHASH_INIT ((zu64)5381)
+#define ZHASH_SIMPLEHASH_INIT ((zu64)5381)
 
 // FNV-1(a) initial base is the the FNV-0 hash of "chongo <Landon Curt Noll> /\../\" (32 bytes)
-#define FNV1A_64_INIT ((zu64)0xcbf29ce484222325ULL)
+#define ZHASH_FNV1A_64_INIT ((zu64)0xcbf29ce484222325ULL)
+
+#define ZHASH_CRC32_INIT ((zu32)0x0)
 
 namespace LibChaos {
 
@@ -23,92 +25,95 @@ public:
         simpleHash64,
         xxHash64,
         fnvHash64,
+        crc32,
         defaultHash = fnvHash64,
     };
 public:
     virtual ~ZHashBase(){}
+};
+
+class ZHash32Base : public ZHashBase {
+public:
+    typedef zu32 hashtype;
+
+public:
+    ZHash32Base(zu32 hash) : _hash(hash){}
+    virtual zu32 hash() const { return _hash; }
+
+public:
+    static zu32 crcHash32_hash(const zbyte *data, zu64 size, zu32 remainder = ZHASH_CRC32_INIT);
 
 protected:
-    static void zu64toBytes(zu64 value, zbyte *hash){
-        hash[0] = value       & 0xFF;
-        hash[1] = value >>  8 & 0xFF;
-        hash[2] = value >> 16 & 0xFF;
-        hash[3] = value >> 24 & 0xFF;
-        hash[4] = value >> 32 & 0xFF;
-        hash[5] = value >> 40 & 0xFF;
-        hash[6] = value >> 48 & 0xFF;
-        hash[7] = value >> 56 & 0xFF;
-    }
-    static zu64 bytesToZu64(const zbyte *hash){
-        return (zu64)hash[0]       |
-               (zu64)hash[1] <<  8 |
-               (zu64)hash[2] << 16 |
-               (zu64)hash[3] << 24 |
-               (zu64)hash[4] << 32 |
-               (zu64)hash[5] << 40 |
-               (zu64)hash[6] << 48 |
-               (zu64)hash[7] << 56;
-    }
+    hashtype _hash;
 };
 
 class ZHash64Base : public ZHashBase {
 public:
     typedef zu64 hashtype;
-public:
-    virtual zu64 hash() const = 0;
-public:
-    static zu64 simpleHash64_hash(const zbyte *data, zu64 size, zu64 seed = SIMPLEHASH_INIT);
 
-    static zu64 fnvHash64_hash(const zbyte *data, zu64 size, zu64 hval = FNV1A_64_INIT);
+public:
+    ZHash64Base(zu64 hash) : _hash(hash){}
+    virtual zu64 hash() const { return _hash; }
+
+public:
+    static zu64 simpleHash64_hash(const zbyte *data, zu64 size, zu64 seed = ZHASH_SIMPLEHASH_INIT);
+
+    static zu64 fnvHash64_hash(const zbyte *data, zu64 size, zu64 hval = ZHASH_FNV1A_64_INIT);
 
     static zu64 xxHash64_hash(const zbyte *data, zu64 size);
     static void *xxHash64_init();
     static void xxHash64_feed(void *state, const zbyte *data, zu64 size);
     static zu64 xxHash64_done(void *state);
+
 protected:
-    virtual void feedHash(const zbyte *data, zu64 size){}
+    virtual void feedHash(const zbyte *data, zu64 size) = 0;
     virtual void doneHash(){}
+
+protected:
+    hashtype _hash;
 };
 
 // Base ZHashMethod template
 template <ZHashBase::hashMethod> class ZHashMethod;
 
+// CRC-32 (32-bit)
+template <> class ZHashMethod<ZHashBase::crc32> : public ZHash32Base {
+public:
+    ZHashMethod() : ZHash32Base(ZHASH_CRC32_INIT){}
+    ZHashMethod(const zbyte *data, zu64 size) : ZHash32Base(crcHash32_hash(data, size)){}
+protected:
+    void feedHash(const zbyte *data, zu64 size){
+        _hash = crcHash32_hash(data, size, _hash);
+    }
+};
+
 // Simple Hash (64-bit)
 template <> class ZHashMethod<ZHashBase::simpleHash64> : public ZHash64Base {
 public:
-    ZHashMethod() : _hash(0){}
-    ZHashMethod(const zbyte *data, zu64 size) : _hash(simpleHash64_hash(data, size)){}
-    hashtype hash() const { return _hash; }
+    ZHashMethod() : ZHash64Base(ZHASH_SIMPLEHASH_INIT){}
+    ZHashMethod(const zbyte *data, zu64 size) : ZHash64Base(simpleHash64_hash(data, size)){}
 protected:
     void feedHash(const zbyte *data, zu64 size){
         _hash = simpleHash64_hash(data, size, _hash);
     }
-protected:
-    hashtype _hash;
 };
 
 // FNV-1a Hash (64-bit)
 template <> class ZHashMethod<ZHashBase::fnvHash64> : public ZHash64Base {
 public:
-    ZHashMethod() : _hash(0){}
-    ZHashMethod(const zbyte *data, zu64 size) : _hash(fnvHash64_hash(data, size)){}
-    hashtype hash() const { return _hash; }
+    ZHashMethod() : ZHash64Base(ZHASH_FNV1A_64_INIT){}
+    ZHashMethod(const zbyte *data, zu64 size) : ZHash64Base(fnvHash64_hash(data, size)){}
 protected:
     void feedHash(const zbyte *data, zu64 size){
         _hash = fnvHash64_hash(data, size, _hash);
     }
-protected:
-    hashtype _hash;
 };
 
 // XXH64 (64-bit)
 template <> class ZHashMethod<ZHashBase::xxHash64> : public ZHash64Base {
 public:
-    ZHashMethod() : _hash(0), _state(nullptr){
-        _state = xxHash64_init();
-    }
-    ZHashMethod(const zbyte *data, zu64 size) : _hash(xxHash64_hash(data, size)), _state(nullptr){}
-    hashtype hash() const { return _hash; }
+    ZHashMethod() : ZHash64Base(0), _state(xxHash64_init()){}
+    ZHashMethod(const zbyte *data, zu64 size) : ZHash64Base(xxHash64_hash(data, size)), _state(nullptr){}
 protected:
     void feedHash(const zbyte *data, zu64 size){
         if(_state != nullptr)
@@ -120,7 +125,6 @@ protected:
         _state = nullptr;
     }
 protected:
-    hashtype _hash;
     void *_state;
 };
 
@@ -130,10 +134,9 @@ template <typename T, ZHashBase::hashMethod M = ZHashBase::defaultHash, typename
 // zu64 specialization
 template <> class ZHash<zu64> : public ZHash64Base {
 public:
-    ZHash(zu64 data) : _hash(data){}
-    hashtype hash() const { return _hash; }
-private:
-    hashtype _hash;
+    ZHash(zu64 data) : ZHash64Base(data){}
+protected:
+    void feedHash(const zbyte *data, zu64 size){}
 };
 
 // enum specialization

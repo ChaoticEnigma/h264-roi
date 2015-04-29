@@ -26,28 +26,36 @@ int mainwrap(int argc, char **argv){
     LOG("ZParcel Command: \"" << cmdstr << "\"");
 
     if(args.size() > 0 && args[0] == "create"){
-        if(args.size() != 2){
-            LOG("Usgae: create <file>");
+        if(args.size() < 2 || args.size() > 3){
+            LOG("Usage: create <file> [version]");
             return EXIT_FAILURE;
         }
-        LOG("Creating New ZParcel " << args[1]);
-        ZFile file(args[1], ZFile::modereadwrite);
-        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
+        zu16 version = 4;
+        if(args.size() > 2 && args[2] == "4") version = 4;
 
-        parcel->setPageSize(11);
-        parcel->setMaxPages(64 * 1024 * 2);
+        if(version == 4){
+            LOG("Creating New Version 4 ZParcel " << args[1]);
+            ZFile file(args[1], ZFile::modereadwrite);
+            ZParcel4Parser *parcel = new ZParcel4Parser(&file);
 
-        bool ok = parcel->create();
-        if(ok)
-            LOG("OK");
-        else
+            parcel->setPageSize(11); // 2KB
+            parcel->setMaxPages(64 * 1024 * 2); // 128K pages
+
+            bool ok = parcel->create();
+            if(ok)
+                LOG("OK");
+            else
+                LOG("ERROR");
+            delete parcel;
+        } else {
+            LOG("Unknown version");
             LOG("ERROR");
+        }
 
-        delete parcel;
 
     } else if(args.size() > 0 && args[0] == "modify"){
         if(args.size() < 3){
-            LOG("Usgae: modify <file> <command>");
+            LOG("Usage: modify <file> <command>");
             return EXIT_FAILURE;
         }
         LOG("Modifying Options of ZParcel " << args[1]);
@@ -91,7 +99,7 @@ int mainwrap(int argc, char **argv){
 
     } else if(args.size() > 0 && args[0] == "list"){
         if(args.size() != 2){
-            LOG("Usgae: list <file>");
+            LOG("Usage: list <file>");
             return EXIT_FAILURE;
         }
         LOG("Listing Records in ZParcel " << args[1]);
@@ -106,7 +114,7 @@ int mainwrap(int argc, char **argv){
 
     } else if(args.size() > 0 && args[0] == "add"){
         if(args.size() < 2){
-            LOG("Usgae: add <file> [field=value] ...");
+            LOG("Usage: add <file> [field=value] ...");
             return EXIT_FAILURE;
         }
         LOG("Adding Record to ZParcel " << args[1]);
@@ -172,7 +180,7 @@ int mainwrap(int argc, char **argv){
 
     } else if(args.size() > 0 && args[0] == "edit"){
         if(args.size() < 4){
-            LOG("Usgae: edit <file> <record> <field=value> [field=value] ..");
+            LOG("Usage: edit <file> <record> <field=value> [field=value] ..");
             return EXIT_FAILURE;
         }
         LOG("Editing Record in ZParcel " << args[1]);

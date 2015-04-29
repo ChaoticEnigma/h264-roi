@@ -74,11 +74,12 @@ public:
     void addFileRecord(fieldid field, ZPath file);
 
 private:
+    //! Read page from file
     void readPage(pageid page, ZBinary &data);
-    bool loadHeadPage();
+    //! Re-write existing page to file
+    void writePage(pageid page, const ZBinary &data);
 
     pageid insertPage(pagetype type);
-    bool writeHeadPage();
 
     bool zeroPad();
 
@@ -103,6 +104,7 @@ private:
   A ZParcel 4 file is page-based
   Pages may be in any order, except the head page, which must be the first page
   The page size is the smallest I/O operation that may be performed at a time
+  Parser requires at least page size * 2 memory
 
   Head Page - defines parcel options
   54 bits: parcel signature (ZPARCEL)
@@ -111,13 +113,23 @@ private:
    8 bits: page size power (minimum 5 (32B), default 10 (1KB), maximum 32 (4GB))
   32 bits: maximum number of pages (default 64K)
   32 bits: next head page backup
+  32 bits: first pagetable page number
   32 bits: first freelist page number
   32 bits: first fieldlist page number
   .. zero padding ..
 
+  Pagetable Page - defines page id aliases (for relocated pages)
+   8 bits: page type (PAGETABLEPAGETYPE)
+  32 bits: next page
+  32 bits: previous page
+  64 bits: alias-page pair
+    32 bits: alias id
+    32 bits: page id
+  .. zero padding..
+
 
   Field Page - defines the usable fields in this file
-   8 bits: page type (FIELDPAGE)
+   8 bits: page type (FIELDPAGETYPE)
   32 bits: previous page number
   32 bits: next page number
   16 bits: number of fields on this page
@@ -130,7 +142,7 @@ private:
 
 
   Freelist Page - list of pages that are unused and not at the end of the file
-   8 bits: page type (FREELISTPAGE)
+   8 bits: page type (FREELISTPAGETYPE)
   32 bits: previous page number
   32 bits: next page number
   32 bits: free page number
@@ -138,7 +150,7 @@ private:
 
   Free Page
    8 bits: page type (FREEPAGE)
-  .. zeroes ...
+  .. remainder of page is ignored ...
 
 
   Index Page - shortlist of record locations

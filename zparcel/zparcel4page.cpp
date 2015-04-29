@@ -23,39 +23,27 @@ HeadPage::HeadPage(ZParcel4Parser *parser) : ZParcel4Page(parser){
 void HeadPage::load(pageid page){
     ZBinary buffer;
     _parser->readPage(page, buffer);
-    zassert(buffer.size() != _parser->_pagesize);
-
+    zu64 sig = buffer.readzu64();
+    if(sig != VERSION_4_MASK)
+        throw ZException("HeadPage load: incorrect head page signature");
     _pagepower = buffer.readzu8();
     _maxpages = buffer.readzu32();
     _nextbackup = buffer.readzu32();
+    _pagetablepage = buffer.readzu32();
     _freelistpage = buffer.readzu32();
     _fieldlistpage = buffer.readzu32();
 }
 
 void HeadPage::save(ZParcel4Page::pageid page){
-    _file->setPos(0);
-    ZBinary sig = VERSION_4_SIG;
-    ZBinary tmp;
-    if(_file->write(sig) != SIG_SIZE)
-        return false;
-    tmp.fromzu8(_pagepower);
-    if(_file->write(tmp) != sizeof(zu8))
-        return false;
-    tmp.fromzu32(_maxpages);
-    if(_file->write(tmp) != sizeof(zu32))
-        return false;
-    tmp.fromzu32(_freelistpage);
-    if(_file->write(tmp) != sizeof(zu32))
-        return false;
-    tmp.fromzu32(_fieldpage);
-    if(_file->write(tmp) != sizeof(zu32))
-        return false;
-    tmp.fromzu32(_indexpage);
-    if(_file->write(tmp) != sizeof(zu32))
-        return false;
-    tmp.fromzu32(_recordpage);
-    if(_file->write(tmp) != sizeof(zu32))
-        return false;
+    ZBinary buffer;
+    buffer.writezu64(VERSION_4_MASK);
+    buffer.writezu8(_pagepower);
+    buffer.writezu32(_maxpages);
+    buffer.writezu32(_nextbackup);
+    buffer.writezu32(_pagetablepage);
+    buffer.writezu32(_freelistpage);
+    buffer.writezu32(_fieldlistpage);
+    _parser->writePage(page, buffer);
 }
 
 // /////////////////////////////////////////
