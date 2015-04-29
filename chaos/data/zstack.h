@@ -13,7 +13,7 @@
 
 namespace LibChaos {
 
-// ZStack is a restricted FILO ZArray wrapper
+//! FILO stack ZArray wrapper.
 template <typename T> class ZStack : public YPushPopAccess<T> {
 public:
     ZStack() : _data(){}

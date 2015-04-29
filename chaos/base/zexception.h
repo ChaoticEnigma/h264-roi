@@ -11,6 +11,7 @@
 
 namespace LibChaos {
 
+//! Throwable runtime error.
 class ZException {
 public:
     ZException(ZString description = ZString(), int code = 0, bool trace = true);

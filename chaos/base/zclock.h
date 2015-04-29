@@ -11,6 +11,7 @@
 
 namespace LibChaos {
 
+//! Measure relative time differences.
 class ZClock {
 public:
     ZClock(){

@@ -10,16 +10,16 @@
 
 namespace LibChaos {
 
-// Wraps a pointer to an arbitrary object, deletes it when the last Pointer to it is destroyed
-// Note that all Pointers to the same object point to the *same object*, and can change the common object
-// Basically a shared pointer
-
-// Implementation:
-// Each Pointer has a pointer to a struct that contains the data pointer and an integer with a references count
-// This same struct is shared by all the Pointers for the same object
-// When a new Pointers is copied or assigned a struct, the refernce count is incremented
-// When a Pointer is destroyed, the reference count is decremented
-// If a Pointer is the last reference to the object, the object is deleted when the Pointer is destroyed or re-assigned
+//! Shared pointer class.
+//! Wraps a pointer to an arbitrary object, deletes it when the last Pointer to it is destroyed. \n
+//! Note that all Pointers to the same object point to the *same object*, and can change the common object. \n
+//! \n
+//! Implementation: \n
+//! Each Pointer has a pointer to a struct that contains the data pointer and an integer with a references count. \n
+//! This same struct is shared by all the Pointers for the same object. \n
+//! When a new Pointers is copied or assigned a struct, the refernce count is incremented. \n
+//! When a Pointer is destroyed, the reference count is decremented. \n
+//! If a Pointer is the last reference to the object, the object is deleted when the Pointer is destroyed or re-assigned. \n
 
 // TEST: ZPointer NEEDS EXTENSIVE TESTING
 

@@ -15,6 +15,7 @@
 
 namespace LibChaos {
 
+//! Represent an absolute date and time.
 class ZTime {
 public:
 #if COMPILER == MSVC

@@ -63,6 +63,7 @@ struct ZLogInfo {
     ZString info;
 };
 
+//! Logging provider.
 class ZLog {
 public:
     typedef ZLogSource::zlog_source zlog_source;

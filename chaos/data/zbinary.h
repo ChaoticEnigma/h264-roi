@@ -19,6 +19,7 @@ namespace LibChaos {
 class ZBinary;
 typedef ZBinary ZBuffer;
 
+//! Binary data buffer container.
 class ZBinary : public ZPosition, public ZReader, public ZWriter {
 public:
     typedef zbyte zbinary_type;

@@ -10,6 +10,7 @@
 
 namespace LibChaos {
 
+//! OBSOLETE: Use ZMap.
 template <class K, class T> class ZAssoc {
 public:
     enum {

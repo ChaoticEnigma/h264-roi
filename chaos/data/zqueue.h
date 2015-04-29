@@ -13,6 +13,7 @@
 
 namespace LibChaos {
 
+//! FIFO queue ZList wrapper.
 template <typename T> class ZQueue : public YPushPopAccess<T> {
 public:
     ZQueue() : _data(){}

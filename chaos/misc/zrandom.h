@@ -17,6 +17,7 @@
 
 namespace LibChaos {
 
+//! Random number generation provider.
 class ZRandom {
 public:
     ZRandom();

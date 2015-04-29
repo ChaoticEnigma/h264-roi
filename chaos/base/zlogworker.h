@@ -34,6 +34,7 @@ namespace ZLogSource {
     };
 }
 
+//! Asynchronous ZLog log formatter / writer.
 class ZLogWorker {
 public:
     typedef ZLogSource::zlog_source zlog_source;

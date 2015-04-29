@@ -32,9 +32,10 @@ typedef ZAssoc<ZString, ZString> AsArZ;
 
 typedef char zstringchartype;
 
-// Represents UTF-8 string
-// Wide characters are narrowed and encoded in UTF-8
-// Internal array is always null terminated
+//! UTF-8 contiguous string container.
+//! Wide characters are narrowed and encoded in UTF-8.
+//! Internal array is always null terminated.
+//!
 class ZString : public ZIterable<zstringchartype> {
 public:
     typedef zstringchartype chartype;
