@@ -42,11 +42,11 @@ int pointer_block(){
 
     LOG(sptr.ptr()->str << " " << sptr.count());
 
-    gptr.reset();
+    gptr.release();
 
     LOG(sptr.ptr()->str << " " << sptr.count());
 
-    aptr.reset();
+    aptr.release();
 
     return 0;
 }

@@ -7,9 +7,6 @@
 
 #define NAME "ZParcel4Parser "
 
-#define DEFAULT_PAGE_SIZE 10 // 2 ^ 10 = 1024 bytes
-#define DEFAULT_MAX_PAGES (64 * 1024) // 65536 pages
-
 #define HEADPAGEID 0
 #define NULLFIELD ZPARCEL_4_NULL
 
@@ -37,16 +34,16 @@ ZParcel4Parser::ZParcel4Parser(ZFile *file) : _file(file), _init(false){
     _maxpages = DEFAULT_MAX_PAGES;
 }
 
-bool ZParcel4Parser::create(){
+void ZParcel4Parser::create(){
     if(_init)
         throw ZException(NAME "create: parcel is already open");
     if(!_file->isOpen())
         throw ZException(NAME "create: file is not open");
     _head = new HeadPage(this);
-    _head->save(HEADPAGEID);
+    _head->init();
+    _head->save();
 
     _init = true;
-    return true;
 }
 
 void ZParcel4Parser::open(){
@@ -80,7 +77,7 @@ void ZParcel4Parser::setMaxPages(zu32 pages){
     _maxpages = pages;
     if(_init){
         ((HeadPage*)_head)->_maxpages = _maxpages;
-        _head->save(HEADPAGEID);
+        _head->save();
     }
 }
 
@@ -171,32 +168,32 @@ void ZParcel4Parser::writePage(ZParcel4Parser::pageid page, const ZBinary &data)
         throw ZException(NAME "writePage: failed to write page");
 }
 
-ZParcel4Parser::pageid ZParcel4Parser::insertPage(pagetype type){
-    switch(type){
-        case headpage:
-
-            break;
-        case fieldpage:
-            zeroPad();
-
-            break;
-        case freelistpage:
-            break;
-        case indexpage:
-            break;
-        case recordpage:
-            break;
-        case blobpage:
-            break;
-        case historypage:
-            break;
-        case freepage:
-            break;
-        default:
-            ELOG("insertPage unknown page type");
-            break;
+ZParcel4Parser::pageid ZParcel4Parser::insertPage(){
+    ZBinary buffer;
+    zu64 length;
+    // Find a free page
+    // TODO: Fix this sick filth
+    for(zu64 i = 1; i < _pagecount; ++i){
+        _file->setPos(i * _pagesize);
+        length = _file->read(buffer, _pagesize);
+        if(length != _pagesize)
+            throw ZException(NAME "insertPage: read unaligned page from file");
+        buffer.rewind();
+        if(buffer.readzu8() == FREEPAGE){
+            buffer.rewind();
+            buffer.writezu8(RESERVEDPAGE);
+            _file->setPos(i * _pagesize);
+            _file->write(buffer);
+            return i;
+        }
     }
-    return ZU32_MAX;
+    // Write a new page at the end of the file
+    buffer.resize(_pagesize);
+    buffer.rewind();
+    buffer.writezu8(RESERVEDPAGE);
+    _file->setPos(_pagecount * _pagesize);
+    _file->write(buffer);
+    return _pagecount++;
 }
 
 bool ZParcel4Parser::zeroPad(){

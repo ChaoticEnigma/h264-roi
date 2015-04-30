@@ -2,6 +2,10 @@
 #define TEST_H
 
 #include "zlog.h"
+
+#define FAILTEST throw __LINE__
+#define TASSERT(X) if(!(X)) throw __LINE__;
+
 using namespace LibChaos;
 
 int sandbox();

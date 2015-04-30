@@ -75,7 +75,7 @@ public:
                     _talloc->destroy(_talloc->addressOf(_data[i].value));
                 }
             }
-            (&_alloc)->dealloc(_data);
+            _alloc->dealloc(_data);
 //            _data = nullptr;
         }
         delete _kalloc;
@@ -214,7 +214,7 @@ public:
             zu64 oldsize = _realsize;
 
             _realsize = newsize;
-            _data = (&_alloc)->alloc(_realsize);
+            _data = _alloc->alloc(_realsize);
 
             // Clear new entries
             for(zu64 i = 0; i < _realsize; ++i){
@@ -243,7 +243,7 @@ public:
                         //throw ZException("Fatal Error in addHashEntry");
                     }
                 }
-                (&_alloc)->dealloc(olddata);
+                _alloc->dealloc(olddata);
 //                olddata = nullptr;
             }
         }

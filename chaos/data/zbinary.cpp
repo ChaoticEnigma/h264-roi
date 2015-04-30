@@ -163,23 +163,23 @@ zu8 ZBinary::deczu8(const zbyte *bin){
     return (zu8)bin[0];
 }
 zu16 ZBinary::deczu16(const zbyte *bin){
-    return ((zu16)bin[0] << 8) &
+    return ((zu16)bin[0] << 8) |
            ((zu16)bin[1]);
 }
 zu32 ZBinary::deczu32(const zbyte *bin){
-    return ((zu32)bin[0] << 24) &
-           ((zu32)bin[1] << 16) &
-           ((zu32)bin[2] << 8)  &
+    return ((zu32)bin[0] << 24) |
+           ((zu32)bin[1] << 16) |
+           ((zu32)bin[2] << 8)  |
            ((zu32)bin[3]);
 }
 zu64 ZBinary::deczu64(const zbyte *bin){
-    return ((zu64)bin[0] << 56) &
-           ((zu64)bin[1] << 48) &
-           ((zu64)bin[2] << 40) &
-           ((zu64)bin[3] << 32) &
-           ((zu64)bin[4] << 24) &
-           ((zu64)bin[5] << 16) &
-           ((zu64)bin[6] << 8)  &
+    return ((zu64)bin[0] << 56) |
+           ((zu64)bin[1] << 48) |
+           ((zu64)bin[2] << 40) |
+           ((zu64)bin[3] << 32) |
+           ((zu64)bin[4] << 24) |
+           ((zu64)bin[5] << 16) |
+           ((zu64)bin[6] << 8)  |
            ((zu64)bin[7]);
 }
 

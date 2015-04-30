@@ -7,6 +7,7 @@
 #define ZPOINTER_H
 
 #include "ztypes.h"
+#include "zexception.h"
 
 namespace LibChaos {
 
@@ -25,30 +26,30 @@ namespace LibChaos {
 
 template <typename T> class ZPointer {
 public:
-    ZPointer() : _data(nullptr){
+    //! Empty container.
+    ZPointer() : _data(nullptr){}
 
-    }
-
+    //! Take ownership of the pointer.
     ZPointer(T *ptr) : ZPointer(){
         if(ptr != nullptr){
             _data = new PointerData;
             _data->ptr = ptr;
             _data->count = 0;
-            increment();
+            _increment();
         }
     }
 
-    // Copy other pointer and count
-    // Increment count
+    //! Acquire shared ownership of other contained pointer.
     // NOTE: other ZPointer object is not modified, but data struct is
     ZPointer(const ZPointer &other) : _data(other._data){
-        increment();
+        _increment();
     }
 
+    //! Release contained pointer, acquire shared ownership of other contained pointer.
     ZPointer &operator=(const ZPointer &other){
         release();
         _data = other._data;
-        increment();
+        _increment();
         return *this;
     }
 
@@ -56,13 +57,26 @@ public:
         release();
     }
 
-    void reset(){
-        release();
+    //! Release the shared pointer.
+    //! If this is the only object with shared ownership of the pointer,
+    //! delete it, otherwise decrement the reference count.
+    void release(){
+        if(_data != nullptr){
+            if(unique()){
+                // Delete the object
+                delete _data->ptr;
+                delete _data;
+            } else {
+                // Decrement reference count
+                _decrement();
+            }
+        }
         _data = nullptr;
     }
 
+    //! Swap contained pointer with another shared pointer object.
     void swap(ZPointer &other){
-        T *data = _data;
+        PointerData *data = _data;
         _data = other._data;
         other._data = data;
     }
@@ -77,22 +91,23 @@ public:
         return (_data == nullptr ? 0 : _data->count - 1);
     }
 
-    // Get pointer
+    //! Get pointer to shared object.
     T *ptr() const {
+        if(_data == nullptr)
+            throw ZException("ZPointer ptr: attempt to get pointer from object without ownership");
         return _data->ptr;
     }
-    inline T *operator&(){ return ptr(); }
+    inline T *operator->(){ return ptr(); }
 
-    // Get reference
-    T &get(){
-        return *_data->ptr;
+private:
+    void _increment(){
+        if(_data != nullptr)
+            ++(_data->count);
     }
-    inline T &operator*(){ return get(); }
-
-    const T &get() const {
-        return *_data->ptr;
+    void _decrement(){
+        if(_data != nullptr)
+            --(_data->count);
     }
-    inline const T &operator*() const { return get(); }
 
 private:
     struct PointerData {
@@ -102,32 +117,6 @@ private:
         zu64 count;
     };
 
-private:
-    void increment(){
-        if(_data != nullptr)
-            ++(_data->count);
-    }
-    void decrement(){
-        if(_data != nullptr)
-            --(_data->count);
-    }
-
-    // If this is the only Pointer to the object, delete it
-    // Otherwise decrement reference count
-    void release(){
-        if(_data != nullptr){
-            if(unique()){
-                // Delete the object
-                delete _data->ptr;
-                delete _data;
-            } else {
-                // Decrement reference count
-                decrement();
-            }
-        }
-    }
-
-private:
     PointerData *_data;
 };
 

@@ -21,10 +21,10 @@ HeadPage::HeadPage(ZParcel4Parser *parser) : ZParcel4Page(parser){
 }
 
 void HeadPage::load(pageid page){
+    _page = page;
     ZBinary buffer;
-    _parser->readPage(page, buffer);
-    zu64 sig = buffer.readzu64();
-    if(sig != VERSION_4_MASK)
+    _parser->readPage(_page, buffer);
+    if(buffer.readzu64() != VERSION_4_MASK)
         throw ZException("HeadPage load: incorrect head page signature");
     _pagepower = buffer.readzu8();
     _maxpages = buffer.readzu32();
@@ -34,7 +34,17 @@ void HeadPage::load(pageid page){
     _fieldlistpage = buffer.readzu32();
 }
 
-void HeadPage::save(ZParcel4Page::pageid page){
+void HeadPage::init(){
+    _page = 0;
+    _pagepower = DEFAULT_PAGE_SIZE;
+    _maxpages = DEFAULT_MAX_PAGES;
+    _nextbackup = 0;
+    _pagetablepage = 0;
+    _freelistpage = 0;
+    _fieldlistpage = 0;
+}
+
+void HeadPage::save(){
     ZBinary buffer;
     buffer.writezu64(VERSION_4_MASK);
     buffer.writezu8(_pagepower);
@@ -43,7 +53,7 @@ void HeadPage::save(ZParcel4Page::pageid page){
     buffer.writezu32(_pagetablepage);
     buffer.writezu32(_freelistpage);
     buffer.writezu32(_fieldlistpage);
-    _parser->writePage(page, buffer);
+    _parser->writePage(_page, buffer);
 }
 
 // /////////////////////////////////////////
@@ -55,22 +65,15 @@ FieldPage::FieldPage(ZParcel4Parser *parser) : ZParcel4Page(parser){
 }
 
 void FieldPage::load(pageid page){
-//    ZBinary buff;
-//    buff.resize(1);
-//    _parser->_file->read(buff.raw(), 1);
-//    if(buff.tozu8() != FIELDPAGE){
-//        ELOG("FieldPage created on wrong page type");
-//        return;
-//    }
-//    buff.resize(4);
-//    read(buff.raw(), 4);
-//    _prevpage = buff.tozu32();
-//    setPos(_pagesize - 4);
-//    read(buff.raw(), 4);
-    //    _nextpage = buff.tozu32();
+    _page = page;
+
 }
 
-void FieldPage::save(ZParcel4Page::pageid page){
+void FieldPage::init(){
+    _page = _parser->insertPage();
+}
+
+void FieldPage::save(){
 
 }
 

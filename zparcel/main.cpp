@@ -35,17 +35,17 @@ int mainwrap(int argc, char **argv){
 
         if(version == 4){
             LOG("Creating New Version 4 ZParcel " << args[1]);
+            if(ZFile::exists(args[1]))
+                ZFile::remove(args[1]);
             ZFile file(args[1], ZFile::modereadwrite);
             ZParcel4Parser *parcel = new ZParcel4Parser(&file);
 
-            parcel->setPageSize(11); // 2KB
+            //parcel->setPageSize(11); // 2KB
+            parcel->setPageSize(9); //512B
             parcel->setMaxPages(64 * 1024 * 2); // 128K pages
 
-            bool ok = parcel->create();
-            if(ok)
-                LOG("OK");
-            else
-                LOG("ERROR");
+            parcel->create();
+            LOG("OK");
             delete parcel;
         } else {
             LOG("Unknown version");

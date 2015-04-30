@@ -29,7 +29,7 @@ public:
     };
 
 public:
-    ZBinary(ZAllocator<zbyte> *alloc = new ZAllocator<zbyte>) : _alloc(alloc), _data(nullptr), _size(0), _rwpos(0){
+    ZBinary(ZAllocator<zbyte> *alloc = new ZAllocator<zbyte>) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0), _rwpos(0){
 
     }
     ZBinary(zu64 size) : ZBinary(){
@@ -105,9 +105,10 @@ public:
         }
     }
 
+    //! Change the logical size of the buffer.
+    //! Allocate new memory only if necessary.
     void resize(zu64 size){
-        if(size > _realsize)
-            reserve(size);
+        reserve(size);
         _size = size;
     }
 

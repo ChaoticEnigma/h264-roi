@@ -26,17 +26,7 @@ class ZParcel4Parser {
     friend class FieldPage;
 public:
     typedef zu32 pageid;
-    enum pagetype {
-        freepage,
-        fieldpage,
-        freelistpage,
-        indexpage,
-        recordpage,
-        blobpage,
-        historypage,
-        headpage,
-    };
-
+    typedef zu8 pagetype;
     typedef zu16 fieldid;
     typedef zu8 fieldtype;
 
@@ -49,7 +39,7 @@ public:
 public:
     ZParcel4Parser(ZFile *file);
 
-    bool create();
+    void create();
     void open();
 
     zu32 getPageSize() const { return _pagesize; }
@@ -79,7 +69,7 @@ private:
     //! Re-write existing page to file
     void writePage(pageid page, const ZBinary &data);
 
-    pageid insertPage(pagetype type);
+    pageid insertPage();
 
     bool zeroPad();
 
