@@ -35,15 +35,7 @@ public:
 
     struct Field {
         fieldid id;
-        union {
-            zu64 uint;
-            zs64 sint;
-            double flt;
-            ZUID uid;
-            ZString str;
-            ZBinary data;
-            ZPath file;
-        };
+        ZString data;
     };
 
 public:
@@ -67,7 +59,7 @@ public:
 
     //! Add records to the parcel
     //! \exception ZException Invalid field type
-    void addRecords(ZList<Field> fields);
+    void addRecord(ZList<Field> fields);
 
     void addBoolRecord(ZString field, bool tf);
     void addUintRecord(ZString field, zu64 num);

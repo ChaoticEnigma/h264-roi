@@ -2,6 +2,13 @@
 
 namespace LibChaos {
 
+ZBinary &ZBinary::fill(ZBinary::zbinary_type dat, zu64 size){
+    reserve(size);
+    _size = size;
+    memset(_data, dat, _size);
+    return *this;
+}
+
 ZBinary &ZBinary::concat(const ZBinary &other){
     reserve(_size + other._size);
     _alloc->rawcopy(other._data, _data + _size, other._size);
@@ -47,6 +54,50 @@ ZBinary ZBinary::getSub(zu64 start, zu64 len) const {
     if(start + len >= _size)
         len = _size - start;
     return ZBinary(_data + start, len);
+}
+
+ZBinary ZBinary::fromzu8(zu8 num){
+    ZBinary bin(1);
+    enczu8(bin._data, num);
+    return bin;
+}
+
+ZBinary ZBinary::fromzu16(zu16 num){
+    ZBinary bin(2);
+    enczu16(bin._data, num);
+    return bin;
+}
+
+ZBinary ZBinary::fromzu32(zu32 num){
+    ZBinary bin(4);
+    enczu32(bin._data, num);
+    return bin;
+}
+
+ZBinary ZBinary::fromzu64(zu64 num){
+    ZBinary bin(8);
+    enczu64(bin._data, num);
+    return bin;
+}
+
+zu8 ZBinary::tozu8() const {
+    zassert(_size == 1);
+    return deczu8(_data);
+}
+
+zu16 ZBinary::tozu16() const {
+    zassert(_size == 2);
+    return deczu16(_data);
+}
+
+zu32 ZBinary::tozu32() const {
+    zassert(_size == 4);
+    return deczu32(_data);
+}
+
+zu64 ZBinary::tozu64() const {
+    zassert(_size == 8);
+    return deczu64(_data);
 }
 
 ZBinary &ZBinary::nullTerm(){

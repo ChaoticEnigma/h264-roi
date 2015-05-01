@@ -48,7 +48,7 @@ int mainwrap(int argc, char **argv){
             LOG("OK");
             delete parcel;
         } else {
-            LOG("Unknown version");
+            LOG("Unknown Version");
             LOG("ERROR");
         }
 
@@ -130,37 +130,9 @@ int mainwrap(int argc, char **argv){
             ZString fieldname = pair[0];
             ZString fieldvalue = pair[1];
             //LOG(fieldname << "(" << ZParcel4Parser::getFieldTypeName(ftype) << ") : " << pair[1]);
-            ZParcel4Parser::fieldid fid = parcel->getFieldId(fieldname);
+            ZParcel4Parser::fieldid fid = parcel->getField(fieldname);
             if(fid){
-                ZParcel4Parser::fieldtype type = parcel->getFieldType(fid);
-                switch(type){
-                    case ZPARCEL_4_BOOL:
-                        parcel->addBoolRecord(fid, (fieldvalue == "true" ? true : false));
-                        break;
-                    case ZPARCEL_4_UINT:
-                        parcel->addUintRecord(fid, fieldvalue.tozu64());
-                        break;
-                    case ZPARCEL_4_SINT:
-                        parcel->addSintRecord(fid, (zs64)fieldvalue.tozu64());
-                        break;
-                    case ZPARCEL_4_FLOAT:
-                        parcel->addFloatRecord(fid, fieldvalue.toFloat());
-                        break;
-                    case ZPARCEL_4_ZUID:
-                        parcel->addZUIDRecord(fid, ZUID(fieldvalue));
-                        break;
-                    case ZPARCEL_4_STRING:
-                        parcel->addStringRecord(fid, fieldvalue);
-                        break;
-                    case ZPARCEL_4_BINARY:
-
-                        break;
-                    case ZPARCEL_4_FILE:
-                        parcel->addFileRecord(fid, ZPath(fieldvalue));
-                        break;
-                    default:
-                        ELOG("Unsupported type");
-                }
+                fieldlist.push({ fid, fieldvalue });
             } else {
                 ELOG("Bad field \"" << fieldname << '"');
             }
@@ -170,11 +142,10 @@ int mainwrap(int argc, char **argv){
             LOG(fieldlist[i].id << " : " << fieldlist[i].data.size() << " bytes");
         }
 
-        bool ok = parcel->addRecord(fieldlist);
-        if(ok)
-            LOG("OK");
-        else
-            ELOG("ERROR");
+        // Create record
+        ZUID uid = parcel->addRecord(fieldlist);
+        LOG("Added record " << uid.str());
+        LOG("OK");
 
         delete parcel;
 

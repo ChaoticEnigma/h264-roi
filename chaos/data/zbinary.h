@@ -112,12 +112,7 @@ public:
         _size = size;
     }
 
-    ZBinary &fill(zbinary_type dat, zu64 size){
-        reserve(size);
-        _size = size;
-        memset(_data, dat, _size);
-        return *this;
-    }
+    ZBinary &fill(zbinary_type dat, zu64 size);
 
     ZBinary &concat(const ZBinary &other);
 
@@ -127,39 +122,15 @@ public:
 
     ZBinary getSub(zu64 start, zu64 len) const;
 
-    void fromzu8(zu8 num){
-        resize(1);
-        enczu8(_data, num);
-    }
-    void fromzu16(zu16 num){
-        resize(2);
-        enczu16(_data, num);
-    }
-    void fromzu32(zu32 num){
-        resize(4);
-        enczu32(_data, num);
-    }
-    void fromzu64(zu64 num){
-        resize(8);
-        enczu64(_data, num);
-    }
+    static ZBinary fromzu8(zu8 num);
+    static ZBinary fromzu16(zu16 num);
+    static ZBinary fromzu32(zu32 num);
+    static ZBinary fromzu64(zu64 num);
 
-    zu8 tozu8() const {
-        zassert(_size == 1);
-        return deczu8(_data);
-    }
-    zu16 tozu16() const {
-        zassert(_size == 2);
-        return deczu16(_data);
-    }
-    zu32 tozu32() const {
-        zassert(_size == 4);
-        return deczu32(_data);
-    }
-    zu64 tozu64() const {
-        zassert(_size == 8);
-        return deczu64(_data);
-    }
+    zu8 tozu8() const;
+    zu16 tozu16() const;
+    zu32 tozu32() const;
+    zu64 tozu64() const;
 
     ZBinary &nullTerm();
     ZBinary printable() const;

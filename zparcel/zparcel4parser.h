@@ -23,6 +23,8 @@ class ZParcel4Page;
 class ZParcel4Parser {
     friend class ZParcel4Page;
     friend class HeadPage;
+    friend class PageTablePage;
+    friend class FreeListPage;
     friend class FieldPage;
 public:
     typedef zu32 pageid;
@@ -32,56 +34,70 @@ public:
 
     struct Field {
         fieldid id;
-        ZBinary data;
+        ZString data;
     };
     typedef ZList<Field> FieldList;
 
 public:
     ZParcel4Parser(ZFile *file);
 
+    //! Create a new parcel, write a new blank head page.
     void create();
+    //! Read the head page from the parcel.
     void open();
 
-    zu32 getPageSize() const { return _pagesize; }
-    zu32 getMaxPages() const { return _maxpages; }
+    zu64 getPageSize() const { return _pagesize; }
+    zu64 getMaxPages() const { return _maxpages; }
 
     void setPageSize(zu8 power);
     void setMaxPages(zu32 pages);
 
     fieldid addField(ZString name, fieldtype type);
-    fieldid getFieldId(ZString name);
+    fieldid getField(ZString name);
     fieldtype getFieldType(fieldid id);
 
-    bool addRecord(FieldList fields);
+    ZUID addRecord(FieldList fields);
 
-    void addBoolRecord(fieldid field, bool tf);
-    void addUintRecord(fieldid field, zu64 num);
-    void addSintRecord(fieldid field, zs64 num);
-    void addZUIDRecord(fieldid field, ZUID uid);
-    void addFloatRecord(fieldid field, double flt);
-    void addStringRecord(fieldid field, ZString str);
-    void addBinaryRecord(fieldid field, ZBinary bin);
-    void addFileRecord(fieldid field, ZPath file);
+    //! Add a boolean value to a record.
+    ZUID addBoolData(ZUID record, fieldid field, bool tf);
+    //! Add an unsigned integer value to a record.
+    ZUID addUintData(ZUID record, fieldid field, zu64 num);
+    //! Add a signed integer value to a record.
+    ZUID addSintData(ZUID record, fieldid field, zs64 num);
+    //! Add a ZUID to a record.
+    ZUID addZUIDData(ZUID record, fieldid field, ZUID uid);
+    //! Add a floating-point (double) value to a record.
+    ZUID addFloatData(ZUID record, fieldid field, double flt);
+    //! Add text (string) data to a record.
+    //! All strings are stored as UTF-8. Deal with it.
+    ZUID addStringData(ZUID record, fieldid field, ZString str);
+    //! Add binary blob data to a record.
+    ZUID addBinaryData(ZUID record, fieldid field, ZBinary bin);
+    //! Add a file reference to a record.
+    ZUID addFileData(ZUID record, fieldid field, ZPath file);
 
 private:
-    //! Read page from file
+    //! Read page from file.
     void readPage(pageid page, ZBinary &data);
-    //! Re-write existing page to file
+    //! Re-write existing page to file.
     void writePage(pageid page, const ZBinary &data);
 
+    //! Reserve a new page.
     pageid insertPage();
 
     bool zeroPad();
 
+    //! Mark a page as free and add to the free list.
+    //! \note Page should not be reference by other pages.
     bool freePage(pageid page);
     bool addToFreelist(pageid page);
 
 private:
     ZFile *_file;
     bool _init;
-    zu32 _pagesize;
-    zu32 _maxpages;
-    zu32 _pagecount;
+    zu64 _pagesize;
+    zu64 _maxpages;
+    zu64 _pagecount;
 
     ZParcel4Page *_head;
 
@@ -101,17 +117,20 @@ private:
    4 bits: parcel category (1)
    4 bits: parcel version (4)
    8 bits: page size power (minimum 5 (32B), default 10 (1KB), maximum 32 (4GB))
-  32 bits: maximum number of pages (default 64K)
+  56 bits: maximum number of pages (default 64K)
   32 bits: next head page backup
+  64 bits: reserved
   32 bits: first pagetable page number
   32 bits: first freelist page number
   32 bits: first fieldlist page number
   .. zero padding ..
 
+
   Pagetable Page - defines page id aliases (for relocated pages)
    8 bits: page type (PAGETABLEPAGETYPE)
   32 bits: next page
   32 bits: previous page
+  32 bits: pages in page
   64 bits: alias-page pair
     32 bits: alias id
     32 bits: page id
@@ -120,8 +139,8 @@ private:
 
   Field Page - defines the usable fields in this file
    8 bits: page type (FIELDPAGETYPE)
-  32 bits: previous page number
   32 bits: next page number
+  32 bits: previous page number
   16 bits: number of fields on this page
   4+n bytes:
     16 bits: field id

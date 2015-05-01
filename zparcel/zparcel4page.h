@@ -16,13 +16,13 @@
 #define FREEPAGE            0x00
 #define RESERVEDPAGE        0xFF
 #define HEADPAGETYPE        0x5A
-#define FIELDPAGETYPE       0x01
-#define FREELISTPAGETYPE    0x02
+#define FIELDPAGE           0x01
+#define FREELISTPAGE        0x02
 #define INDEXPAGETYPE       0x03
 #define RECORDPAGETYPE      0x04
 #define BLOBPAGETYPE        0x05
 #define HISTORYPAGETYPE     0x06
-#define PAGETABLEPAGETYPE   0x07
+#define PAGETABLEPAGE       0x07
 
 namespace LibChaos {
 
@@ -30,9 +30,11 @@ class ZParcel4Page {
 protected:
     typedef ZParcel4Parser::pageid pageid;
     typedef ZParcel4Parser::pagetype pagetype;
+    typedef ZParcel4Parser::fieldid fieldid;
+    typedef ZParcel4Parser::fieldtype fieldtype;
 
 protected:
-    ZParcel4Page(ZParcel4Parser *_parser);
+    ZParcel4Page(ZParcel4Parser *parser);
 
 public:
     //! Parse existing page in file.
@@ -46,40 +48,87 @@ public:
 
     virtual pagetype type() = 0;
 
+    pageid page() const { return _page; }
+
 protected:
     ZParcel4Parser *_parser;
     pageid _page;
 };
 
-
+//! The head page contains information about the parcel.
+//! Contains locations of important pages.
 class HeadPage : public ZParcel4Page {
 public:
-    HeadPage(ZParcel4Parser *_parser);
+    HeadPage(ZParcel4Parser *parser);
     void load(pageid page);
     void init();
     void save();
     pagetype type(){ return HEADPAGETYPE; }
 
     zu8 _pagepower;
-    zu32 _maxpages;
+    zu64 _maxpages;
     pageid _nextbackup;
     pageid _pagetablepage;
     pageid _freelistpage;
-    pageid _fieldlistpage;
+    pageid _fieldpage;
 };
 
-
-class FieldPage : public ZParcel4Page {
+//! A page table page translates page ids to page locations.
+//! Only pages that have different ids and locations go in the page table,
+//! usually pages that have been moved since they were created.
+class PageTablePage : public ZParcel4Page {
 public:
-    FieldPage(ZParcel4Parser *_parser);
+    struct PagePair {
+        pageid id;
+        pageid position;
+    };
+public:
+    PageTablePage(ZParcel4Parser *parser);
     void load(pageid page);
     void init();
     void save();
-    pagetype type(){ return FIELDPAGETYPE; }
+    pagetype type(){ return PAGETABLEPAGE; }
 
-    pagetype _pagetype;
-    pageid _prevpage;
     pageid _nextpage;
+    pageid _prevpage;
+    ZMap<PagePair> _table;
+};
+
+//! Contains a list of page locations that have been deleted.
+//! New pages can replace free pages, rather than making the file larger.
+class FreeListPage : public ZParcel4Page {
+public:
+    FreeListPage(ZParcel4Parser *parcel);
+    void load(pageid page);
+    void init();
+    void save();
+    pagetype type(){ return FREELISTPAGE; }
+
+    pageid _nextpage;
+    pageid _prevpage;
+    ZArray<pageid> _pages;
+};
+
+//! Defines fields that can contain recrod data.
+class FieldPage : public ZParcel4Page {
+public:
+    struct Field {
+        fieldid id;
+        fieldtype type;
+        zu8 options;
+        ZString name;
+    };
+public:
+    FieldPage(ZParcel4Parser *parser);
+    void load(pageid page);
+    void init();
+    void save();
+    pagetype type(){ return FIELDPAGE; }
+
+    pageid _nextpage;
+    pageid _prevpage;
+    zu16 _pagefields;
+    ZArray<Field> _fields;
 };
 
 }

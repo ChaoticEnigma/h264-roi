@@ -82,14 +82,14 @@ void ZParcel4Parser::setMaxPages(zu32 pages){
 }
 
 ZParcel4Parser::fieldid ZParcel4Parser::addField(ZString name, fieldtype type){
-    fieldid id = getFieldId(name);
+    fieldid id = getField(name);
     if(id != 0)
         throw ZException(NAME "addField: field already exists");
 
-    return getFieldId(name);
+    return getField(name);
 }
 
-ZParcel4Parser::fieldid ZParcel4Parser::getFieldId(ZString name){
+ZParcel4Parser::fieldid ZParcel4Parser::getField(ZString name){
 
     return 0;
 }
@@ -99,51 +99,88 @@ ZParcel4Parser::fieldtype ZParcel4Parser::getFieldType(fieldid id){
     return NULLFIELD;
 }
 
-bool ZParcel4Parser::addRecord(FieldList fields){
-
-    return false;
+ZUID ZParcel4Parser::addRecord(FieldList fields){
+    for(zu64 i = 0; i < fields.size(); ++i){
+        fieldid id = fields[i].id;
+        ZString data = fields[i].data;
+        fieldtype type = getFieldType(id);
+        switch(type){
+            case ZPARCEL_4_BOOL:
+//                addBoolData(id, (data == "true" ? true : false));
+                break;
+            case ZPARCEL_4_UINT:
+//                addUintData(id, data.tozu64());
+                break;
+            case ZPARCEL_4_SINT:
+//                addSintData(id, (zs64)data.tozu64());
+                break;
+            case ZPARCEL_4_FLOAT:
+//                addFloatData(id, data.toFloat());
+                break;
+            case ZPARCEL_4_ZUID:
+//                addZUIDData(id, ZUID(data));
+                break;
+            case ZPARCEL_4_STRING:
+//                addStringData(id, data);
+                break;
+            case ZPARCEL_4_BINARY:
+//                addBinaryData(id, ZBinary((const zbyte *)data.cc(), data.size());
+                break;
+            case ZPARCEL_4_FILE:
+//                addFileData(id, ZPath(data));
+                break;
+            default:
+                throw ZException(NAME "addRecord: Invalid type");
+        }
+    }
+    return ZUID_NIL;
 }
 
-void ZParcel4Parser::addBoolRecord(ZParcel4Parser::fieldid field, bool tf){
-    ZBinary bin;
-    bin.fromzu8((zu8)tf);
+ZUID ZParcel4Parser::addBoolData(ZUID record, ZParcel4Parser::fieldid field, bool tf){
+    ZBinary bin = ZBinary::fromzu8((zu8)tf);
 
+    return ZUID_NIL;
 }
 
-void ZParcel4Parser::addUintRecord(fieldid field, zu64 num){
-    ZBinary bin;
-    bin.fromzu64(num);
+ZUID ZParcel4Parser::addUintData(ZUID record, fieldid field, zu64 num){
+    ZBinary bin = ZBinary::fromzu64(num);
 
+    return ZUID_NIL;
 }
 
-void ZParcel4Parser::addSintRecord(fieldid field, zs64 num){
-    ZBinary bin;
-    bin.fromzu64((zu64)num);
+ZUID ZParcel4Parser::addSintData(ZUID record, fieldid field, zs64 num){
+    ZBinary bin = ZBinary::fromzu64((zu64)num);
 
+    return ZUID_NIL;
 }
 
-void ZParcel4Parser::addZUIDRecord(fieldid field, ZUID uid){
+ZUID ZParcel4Parser::addZUIDData(ZUID record, fieldid field, ZUID uid){
     ZBinary bin = ZBinary(uid.raw(), 16);
 
+    return ZUID_NIL;
 }
 
-void ZParcel4Parser::addFloatRecord(fieldid field, double flt){
+ZUID ZParcel4Parser::addFloatData(ZUID record, fieldid field, double flt){
 
+    return ZUID_NIL;
 }
 
-void ZParcel4Parser::addStringRecord(fieldid field, ZString str){
-    ZBinary bin = ZBinary((const zbyte *)str.cc(), str.size());
+ZUID ZParcel4Parser::addStringData(ZUID record, fieldid field, ZString str){
+    ZBinary bin((const zbyte *)str.cc(), str.size());
 
+    return ZUID_NIL;
 }
 
-void ZParcel4Parser::addBinaryRecord(fieldid field, ZBinary bin){
+ZUID ZParcel4Parser::addBinaryData(ZUID record, fieldid field, ZBinary bin){
 
+    return ZUID_NIL;
 }
 
-void ZParcel4Parser::addFileRecord(fieldid field, ZPath file){
+ZUID ZParcel4Parser::addFileData(ZUID record, fieldid field, ZPath file){
     ZString str = file.str();
-    ZBinary bin = ZBinary((const zbyte *)str.cc(), str.size());
+    ZBinary bin((const zbyte *)str.cc(), str.size());
 
+    return ZUID_NIL;
 }
 
 void ZParcel4Parser::readPage(pageid page, ZBinary &data){
@@ -211,10 +248,10 @@ bool ZParcel4Parser::zeroPad(){
 
 bool ZParcel4Parser::freePage(pageid page){
     _file->setPos(page * _pagesize);
-    if(_file->write(ZBinary({(zu8)0})) == 1){
-        if(addToFreelist(page))
-            return true;
-    }
+    if(_file->write(ZBinary::fromzu8(0)) != 1)
+        throw ZException(NAME "freePage: failed to change page type");
+    if(addToFreelist(page))
+        return true;
     return false;
 }
 
