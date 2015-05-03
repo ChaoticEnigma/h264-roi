@@ -196,21 +196,31 @@ public:
 
     //! Encode unsigned 8-bit integer into 1 byte
     static void enczu8(zbyte *bin, zu8 num);
-    //! Encode unsigned 16-bit integer into 2 bytes
+    //! Encode unsigned 16-bit integer into 2 big-endian bytes
     static void enczu16(zbyte *bin, zu16 num);
-    //! Encode unsigned 32-bit integer into 4 bytes
+    //! Encode unsigned 32-bit integer into 4 big-endian bytes
     static void enczu32(zbyte *bin, zu32 num);
-    //! Encode unsigned 64-bit integer into 8 bytes
+    //! Encode unsigned 64-bit integer into 8 big-endian bytes
     static void enczu64(zbyte *bin, zu64 num);
 
     //! Decode 1 byte into unsigned 8-bit integer
     static zu8 deczu8(const zbyte *bin);
-    //! Decode 2 bytes into unsigned 16-bit integer
+    //! Decode 2 big-endian bytes into unsigned 16-bit integer
     static zu16 deczu16(const zbyte *bin);
-    //! Decode 4 bytes into unsigned 32-bit integer
+    //! Decode 4 big-endian bytes into unsigned 32-bit integer
     static zu32 deczu32(const zbyte *bin);
-    //! Decode 8 bytes into unsigned 64-bit integer
+    //! Decode 8 big-endian bytes into unsigned 64-bit integer
     static zu64 deczu64(const zbyte *bin);
+
+    //! Encode a 32-bit double into 4 big-endian bytes
+    static void encfloat(zbyte *bin, float flt);
+    //! Encode a 64-bit double into 8 big-endian bytes
+    static void encdouble(zbyte *bin, double dbl);
+
+    //! Decode 4 big-endian bytes into a 32-bit double
+    static float decfloat(const zbyte *bin);
+    //! Decode 8 big-endian bytes into a 64-bit double
+    static double decdouble(const zbyte *bin);
 
 private:
     ZAllocator<zbinary_type> *_alloc;

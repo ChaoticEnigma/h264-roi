@@ -229,4 +229,7 @@ static_assert(sizeof(zu64) == 8, "zu64 has incorrect size");
 
 }
 
+// Byte Endianess
+#define LIBCHAOS_BIG_ENDIAN (*(const zu16 *)"\0\xff" < 0x100) /* pure evil */
+
 #endif // ZTYPES_H
