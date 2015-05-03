@@ -34,7 +34,7 @@ public:
     typedef zu16 fieldid;
 
     struct Field {
-        fieldid id;
+        ZString id;
         ZString data;
     };
 
@@ -57,9 +57,13 @@ public:
     //! Add new data field to parcel
     void addField(ZString name, fieldtype type);
 
-    //! Add records to the parcel
+    //! Add a record to the parcel
     //! \exception ZException Invalid field type
-    void addRecord(ZList<Field> fields);
+    void addRecord(ZMap<ZString, ZString> fields);
+
+    //! Add multiple records to the parcel
+    //! \exception ZException Invalid field type
+    void addRecords(ZList< ZMap<ZString, ZString> > records);
 
     void addBoolRecord(ZString field, bool tf);
     void addUintRecord(ZString field, zu64 num);

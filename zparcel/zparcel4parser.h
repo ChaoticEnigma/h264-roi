@@ -58,23 +58,22 @@ public:
 
     ZUID addRecord(FieldList fields);
 
-    //! Add a boolean value to a record.
-    ZUID addBoolData(ZUID record, fieldid field, bool tf);
-    //! Add an unsigned integer value to a record.
-    ZUID addUintData(ZUID record, fieldid field, zu64 num);
-    //! Add a signed integer value to a record.
-    ZUID addSintData(ZUID record, fieldid field, zs64 num);
-    //! Add a ZUID to a record.
-    ZUID addZUIDData(ZUID record, fieldid field, ZUID uid);
-    //! Add a floating-point (double) value to a record.
-    ZUID addFloatData(ZUID record, fieldid field, double flt);
-    //! Add text (string) data to a record.
-    //! All strings are stored as UTF-8. Deal with it.
-    ZUID addStringData(ZUID record, fieldid field, ZString str);
-    //! Add binary blob data to a record.
-    ZUID addBinaryData(ZUID record, fieldid field, ZBinary bin);
-    //! Add a file reference to a record.
-    ZUID addFileData(ZUID record, fieldid field, ZPath file);
+    //! Format a boolean value for the parcel.
+    static ZBinary formatBool(bool tf);
+    //! Format an unsigned integer value for the parcel.
+    static ZBinary formatUint(zu64 uint);
+    //! Format a signed integer value for the parcel.
+    static ZBinary formatSint(zs64 sint);
+    //! Format a floating-point (double) value for the parcel.
+    static ZBinary formatFloat(double flt);
+    //! Format a ZUID for the parcel.
+    static ZBinary formatZUID(ZUID uid);
+    //! Format text (string) data for the parcel.
+    static ZBinary formatString(ZString str);
+    //! Format binary blob data for the parcel.
+    static ZBinary formatBinary(ZBinary bin);
+    //! Format a file reference for the parcel.
+    static ZBinary formatFile(ZPath file);
 
 private:
     //! Read page from file.

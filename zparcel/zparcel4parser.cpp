@@ -136,51 +136,38 @@ ZUID ZParcel4Parser::addRecord(FieldList fields){
     return ZUID_NIL;
 }
 
-ZUID ZParcel4Parser::addBoolData(ZUID record, ZParcel4Parser::fieldid field, bool tf){
-    ZBinary bin = ZBinary::fromzu8((zu8)tf);
-
-    return ZUID_NIL;
+ZBinary ZParcel4Parser::formatBool(bool tf){
+    return ZBinary::fromzu8((zu8)tf);
 }
 
-ZUID ZParcel4Parser::addUintData(ZUID record, fieldid field, zu64 num){
-    ZBinary bin = ZBinary::fromzu64(num);
-
-    return ZUID_NIL;
+ZBinary ZParcel4Parser::formatUint(zu64 uint){
+    return ZBinary::fromzu64(uint);
 }
 
-ZUID ZParcel4Parser::addSintData(ZUID record, fieldid field, zs64 num){
-    ZBinary bin = ZBinary::fromzu64((zu64)num);
-
-    return ZUID_NIL;
+ZBinary ZParcel4Parser::formatSint(zs64 sint){
+    return ZBinary::fromzu64((zu64)sint);
 }
 
-ZUID ZParcel4Parser::addZUIDData(ZUID record, fieldid field, ZUID uid){
-    ZBinary bin = ZBinary(uid.raw(), 16);
-
-    return ZUID_NIL;
+ZBinary ZParcel4Parser::formatFloat(double flt){
+    ZBinary bin;
+    return bin;
 }
 
-ZUID ZParcel4Parser::addFloatData(ZUID record, fieldid field, double flt){
-
-    return ZUID_NIL;
+ZBinary ZParcel4Parser::formatZUID(ZUID uid){
+    return ZBinary(uid.raw(), 16);
 }
 
-ZUID ZParcel4Parser::addStringData(ZUID record, fieldid field, ZString str){
-    ZBinary bin((const zbyte *)str.cc(), str.size());
-
-    return ZUID_NIL;
+ZBinary ZParcel4Parser::formatString(ZString str){
+    return ZBinary((const zbyte *)str.cc(), str.size());
 }
 
-ZUID ZParcel4Parser::addBinaryData(ZUID record, fieldid field, ZBinary bin){
-
-    return ZUID_NIL;
+ZBinary ZParcel4Parser::formatBinary(ZBinary bin){
+    return bin;
 }
 
-ZUID ZParcel4Parser::addFileData(ZUID record, fieldid field, ZPath file){
+ZBinary ZParcel4Parser::formatFile(ZPath file){
     ZString str = file.str();
-    ZBinary bin((const zbyte *)str.cc(), str.size());
-
-    return ZUID_NIL;
+    return
 }
 
 void ZParcel4Parser::readPage(pageid page, ZBinary &data){

@@ -23,6 +23,7 @@ public:
         time,
         //! Randomly-generated Version 4 UUID.
         random,
+        unknown,
     };
 
 public:
@@ -34,6 +35,9 @@ public:
 
     //! Compare UUIDs.
     bool operator==(const ZUID &uid);
+
+    //! Get the type of the UUID.
+    uuidtype getType() const;
 
     //! Get hexadecimal UUID string.
     ZString str() const;

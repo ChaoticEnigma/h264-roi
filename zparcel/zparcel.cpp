@@ -1,5 +1,7 @@
 #include "zparcel.h"
 
+#include "zlog.h"
+
 namespace LibChaos {
 
 static const ZMap<ZString, ZParcel::fieldtype> nametofield = {
@@ -68,7 +70,12 @@ void ZParcel::close(){
     _file.close();
 }
 
-void ZParcel::addRecord(ZList<ZParcel::Field> fields){
+void ZParcel::addRecord(ZMap<ZString, ZString> fields){
+    addRecords({ fields });
+}
+
+void ZParcel::addRecords(ZList< ZMap<ZString, ZString> > records){
+    LOG("Adding " << records.size() << " records");
 
 }
 

@@ -13,12 +13,10 @@ OPTION(LIBCHAOS_UTIL    "Build LibChaos Utilities"                  OFF )
 OPTION(LIBCHAOS_BBB     "Build LibChaos BeagleBone Black library"   OFF )
 
 # Build Settings
-INCLUDE(cmake/configure_build.cmake)
+INCLUDE(cmake/ConfigureBuild.cmake)
 #INCLUDE(cmake/source_hash.cmake)
 
-# Configure Build Options
-configure_build()
-
+# Export Options
 SET(LibChaos_COMPILER   ${LIBCHAOS_COMPILER}    PARENT_SCOPE)
 SET(LibChaos_PLATFORM   ${LIBCHAOS_PLATFORM}    PARENT_SCOPE)
 SET(LibChaos_BUILD      ${LIBCHAOS_BUILD}       PARENT_SCOPE)
@@ -33,11 +31,12 @@ SET(PLATFORM_FREEBSD    ${PLATFORM_FREEBSD}     PARENT_SCOPE)
 SET(PLATFORM_WINDOWS    ${PLATFORM_WINDOWS}     PARENT_SCOPE)
 SET(PLATFORM_MACOSX     ${PLATFORM_MACOSX}      PARENT_SCOPE)
 
-#ADD_EXECUTABLE(libchaos_dummy EXCLUDE_FROM_ALL
-#    README.txt
-#    Projects.txt
-#    LibChaos_Todo_Ideas.txt
-#)
+# Readme Files
+ADD_CUSTOM_TARGET(dummy SOURCES
+    doc/README.txt
+    doc/Projects.txt
+    doc/LibChaos_Todo_Ideas.txt
+)
 
 ## Libraries
 
@@ -95,13 +94,6 @@ EXECUTE_PROCESS(
     COMMAND git describe --all --long --always --abbrev=8 --dirty=*
     OUTPUT_VARIABLE LIBCHAOS_DESCRIBE
     OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-# Readme Files
-ADD_CUSTOM_TARGET(dummy SOURCES
-    doc/README.txt
-    doc/Projects.txt
-    doc/LibChaos_Todo_Ideas.txt
 )
 
 # Doxygen
