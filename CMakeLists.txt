@@ -4,7 +4,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 PROJECT(LibChaos)
 
 # Options
-OPTION(LIBCHAOS_ZPARCEL "Build ZParcel tool"                        ON  )
+OPTION(LIBCHAOS_ZPARCEL "Build ZParcel tool"                        OFF )
 
 OPTION(LIBCHAOS_EXTERN  "Build LibChaos with External Libraries"    OFF )
 OPTION(LIBCHAOS_UI      "Build LibChaos UI library"                 OFF )

@@ -8,6 +8,7 @@
 
 #include "ztypes.h"
 #include "zstring.h"
+#include "zbinary.h"
 
 #define ZUID_NIL LibChaos::ZUID(LibChaos::ZUID::nil)
 
@@ -41,8 +42,18 @@ public:
 
     //! Get hexadecimal UUID string.
     ZString str() const;
+    //! Get binary container object
+    ZBinary bin() const;
     //! Get pointer to raw 16-octet UUID.
     const zoctet *raw() const { return _id_octets; }
+
+public:
+    //! Get an acceptable MAC address
+    static ZBinary getMACAddress();
+
+private:
+    //! Check if MAC address is acceptable
+    static bool validMAC(const zoctet *addr);
 
 private:
     zoctet _id_octets[16];

@@ -29,8 +29,6 @@ zu64 prevtime;
 zu16 prevclock = 0;
 ZBinary prevmac;
 
-ZBinary getMACAddress();
-
 ZUID::ZUID(uuidtype type){
     if(type == nil){
         // Nil UUID
@@ -174,7 +172,11 @@ ZString ZUID::str() const {
     return uid;
 }
 
-ZBinary getMACAddress(){
+ZBinary ZUID::bin() const {
+    return ZBinary(_id_octets, 16);
+}
+
+ZBinary ZUID::getMACAddress(){
 #if PLATFORM == WINDOWS
     PIP_ADAPTER_INFO adapterInfo;
     ULONG bufLen = sizeof(IP_ADAPTER_INFO);
@@ -183,27 +185,26 @@ ZBinary getMACAddress(){
     // Get number of adapters and list of adapter info
     DWORD status = GetAdaptersInfo(adapterInfo, &bufLen);
     if(status == ERROR_BUFFER_OVERFLOW){
+        // Make larger list for adapters
         delete[] adapterInfo;
         adapterInfo = new IP_ADAPTER_INFO[bufLen];
         status = GetAdaptersInfo(adapterInfo, &bufLen);
     }
-    // Get MAC of first adapter
-    if(status == NO_ERROR){
-        // Loop through linked list of adapters
-//        PIP_ADAPTER_INFO adapterInfoList = adapterInfo;
-//        do {
-//            ArZ mac;
-//            for(zu64 i = 0; i < 6; ++i)
-//                mac.push(ZString::ItoS(adapterInfoList->Address[i], 16, 2));
-//            LOG(ZString::compound(mac, ":") << " " << adapterInfoList->Description);
-//            adapterInfoList = adapterInfoList->Next; // Progress through
-//        } while(adapterInfoList); // Terminate if last adapter
 
-        ZBinary bin;
-        bin.write(adapterInfo->Address, 6);
-        delete[] adapterInfo;
-        return bin;
+    if(status == NO_ERROR){
+        // Get first acceptable MAC from list
+        PIP_ADAPTER_INFO adapterInfoList = adapterInfo;
+        while(adapterInfoList != NULL){
+            if(validMAC(adapterInfoList->Address)){
+                ZBinary bin(adapterInfoList->Address, 6);
+                delete[] adapterInfo;
+                return bin;
+            }
+            adapterInfoList = adapterInfoList->Next;
+        }
     }
+    delete[] adapterInfo;
+
 #elif PLATFORM == MACOSX
 
 #else
@@ -249,11 +250,16 @@ ZBinary getMACAddress(){
 #endif
 
     // Otherwise, generate random 6 bytes
-    ZBinary rand;
-    rand.resize(6);
-    // TODO: Randomness here
-    rand[0] |= 0x01; // Avoid collision with IEEE 802 MAC Addresses
-    return rand;
+    ZRandom rand;
+    ZBinary addr = rand.generate(6);
+    addr[0] |= 0x02; // Mark as locally administered to avoid collision with real IEEE 802 MAC Addresses
+    return addr;
+}
+
+bool ZUID::validMAC(const zoctet *addr){
+    if(addr == NULL) return false;
+    if(addr[0] &= 0x02) return false; // Locally administered address
+    return true;
 }
 
 }

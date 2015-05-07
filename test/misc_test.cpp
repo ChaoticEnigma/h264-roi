@@ -24,13 +24,22 @@ int uid_block(){
     ZUID uid6(ZUID::random);
     LOG("Random:\t\t" << uid6.str());
 
-    ZArray<ZUID> uidlist;
-    for(zu64 i = 0; i < 20; ++i){
-        uidlist.push(ZUID());
+    ZBinary mac = ZUID::getMACAddress();
+    ZString macstr;
+    for(zu64 i = 0 ; i < mac.size(); ++i){
+        macstr += ZString::ItoS(mac[i], 16, 2) += ":";
     }
-    for(zu64 i = 0; i < uidlist.size(); ++i){
-        LOG(uidlist[i].str());
-    }
+    macstr.substr(0, macstr.size()-1);
+    LOG("MAC: \t\t" << macstr << " " << mac.size() << " " << mac);
+    LOG(ZUID().str());
+
+    //ZArray<ZUID> uidlist;
+    //for(zu64 i = 0; i < 20; ++i){
+    //    uidlist.push(ZUID());
+    //}
+    //for(zu64 i = 0; i < uidlist.size(); ++i){
+    //    LOG(uidlist[i].str());
+    //}
 
     return 0;
 }
