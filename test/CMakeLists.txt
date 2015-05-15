@@ -62,7 +62,7 @@ ENDIF()
 
 ADD_DEFINITIONS(-DBUILDING)
 
-ADD_EXECUTABLE(testchaos ${LibChaos_Test_SOURCES})
+ADD_EXECUTABLE(testchaos ${LIBCHAOS_TEST_ALL} ${LibChaos_Test_SOURCES})
 TARGET_LINK_LIBRARIES(testchaos chaos)
 IF(ENABLE_ZPNG)
     TARGET_LINK_LIBRARIES(testchaos chaosextern)

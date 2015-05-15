@@ -17,7 +17,7 @@ SET(LibChaosUI_HEADERS ### =================== HEADERS =================== ###S
     table.h
     progress.h
 )
-IF(WINDOWS) ### =================== SOURCES =================== ###
+IF(LIBCHAOS_PLATFORM_WINDOWS) ### =================== SOURCES =================== ###
     SET(LibChaosUI_SOURCES
         win32/window_win32.cpp
         win32/windowproc_win32.cpp
@@ -31,13 +31,13 @@ IF(WINDOWS) ### =================== SOURCES =================== ###
     )
 ELSE()
     SET(LibChaosUI_SOURCES
-        zuiwindow.cpp
-        zuiwindowproc.cpp
-        zuicontrol.cpp
-        zuibutton.cpp
-        zuiedit.cpp
-        zuifont.cpp
-        zuitable.cpp
+        #zuiwindow.cpp
+        #zuiwindowproc.cpp
+        #zuicontrol.cpp
+        #zuibutton.cpp
+        #zuiedit.cpp
+        #zuifont.cpp
+        #zuitable.cpp
     )
 ENDIF()
 
@@ -56,8 +56,8 @@ INCLUDE_DIRECTORIES(
 ADD_DEFINITIONS(-DBUILDING)
 ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
 
-ADD_LIBRARY(chaosui ${LibChaosUI_SOURCES})
-IF(WINDOWS)
+ADD_LIBRARY(chaosui ${LIBCHAOS_UI_ALL} ${LibChaosUI_SOURCES})
+IF(LIBCHAOS_PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(chaosui chaos comctl32)
 ELSE()
     TARGET_LINK_LIBRARIES(chaosui chaos)

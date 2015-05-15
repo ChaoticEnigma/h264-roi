@@ -107,27 +107,30 @@ int png_block(){
     ZArray<ZPath> files;
     //files = ZFile::listFiles("png");
     //files = { "png/f00n2c08.png" };
-    files = { "png/PngSuite.png", "toucan.png", "whois.png" };
+    files = { "png/PngSuite.png", "toucan.png" };
     //FOREACHIN(files, ZPath, file){
     for(zu64 i = 0; i < files.size(); ++i){
         ZPath file = files[i];
         LOG(file.last());
 
         // PNG parse
-        ZBinary pngdata = ZFile::readBinary(file);
+        ZBinary pngdata;
+        ZFile::readBinary(file, pngdata);
         ZArray<ZPNG::PngChunk> chunks = ZPNG::parsePngAncillaryChunks(pngdata);
         for(zu64 j = 0; j < chunks.size(); ++j){
-            LOG("    " << chunks[j].size << " " << chunks[j].name);
-            //LOG("    " << chunks[j].size << " " << chunks[j].name << " " << chunks[j].data);
+            //LOG("    " << chunks[j].size << " " << chunks[j].name);
+            LOG("    " << chunks[j].size << " " << chunks[j].name << " " << chunks[j].data << " " << chunks[j].crc_ok);
         }
 
-        continue;
+        //continue;
 
         // PNG read
 
         ZPNG pngin;
-        if(!pngin.read(file)){
-            LOG("    Read Failed: " << pngin.getError().what());
+        try {
+            pngin.read(file);
+        } catch(ZException e){
+            LOG("    Read Failed: " << e.what());
             continue;
         }
 
@@ -139,8 +142,11 @@ int png_block(){
 
         ZPath pngpath = ZPath("pngout/") + file.last();
         ZPNG pngout(imgin);
-        if(!pngout.write(pngpath)){
-            LOG("    PNG Write Failed: " << pngout.getError().what());
+        try {
+            pngout.write(pngpath);
+        } catch(ZException e){
+            LOG("    PNG Write Failed: " << e.what());
+            continue;
         }
 
         ZPNG tmppngin;

@@ -26,12 +26,18 @@ SET(LibChaos_Extern_HEADERS ### =================== HEADERS =================== 
 )
 
 SET(LibChaos_Extern_SOURCES ### =================== SOURCES =================== ###
+
 )
+
 IF(ENABLE_ZPNG)
-    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES} zpng.cpp)
+    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES}
+        zpng.cpp
+    )
 ENDIF()
 IF(ENABLE_ZJPEG)
-    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES} zjpeg.cpp)
+    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES
+        zjpeg.cpp
+    )
 ENDIF()
 IF(ENABLE_ZH264)
     SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES}
@@ -42,12 +48,12 @@ ENDIF()
 
 ### =================== CONFIG =================== ###
 
-SET(LibChaosExtern_INCLUDE
-    ${LibChaos_Extern_SOURCE_DIR}
+SET(LibChaos_Extern_INCLUDE
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 # Export Include Path
-SET(LibChaosExtern_INCLUDE ${LibChaosExtern_INCLUDE} PARENT_SCOPE)
+SET(LibChaos_Extern_INCLUDE ${LibChaos_Extern_INCLUDE} PARENT_SCOPE)
 
 # Include Directories
 INCLUDE_DIRECTORIES(
@@ -64,7 +70,7 @@ ENDIF()
 ADD_DEFINITIONS(-DBUILDING)
 
 IF(LibChaos_Extern_SOURCES)
-    ADD_LIBRARY(chaosextern ${LibChaos_Extern_SOURCES})
+    ADD_LIBRARY(chaosextern ${LIBCHAOS_EXTERN_ALL} ${LibChaos_Extern_SOURCES})
     TARGET_LINK_LIBRARIES(chaosextern chaos)
 
     # Link libpng and zlib

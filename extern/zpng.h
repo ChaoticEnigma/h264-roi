@@ -52,6 +52,7 @@ public:
         ZString name;
         ZBinary data;
         zu32 crc;
+        bool crc_ok;
     };
 
     struct PngInfo {
@@ -83,12 +84,6 @@ public:
 
     ZString &pngText(ZString key){
         return text[key];
-    }
-
-    ZException getError(){
-        ZException err = error;
-        error.clear();
-        return err;
     }
 
     ZImage &getImage(){
@@ -161,7 +156,6 @@ private:
 private:
     ZImage image;
     AsArZ text;
-    ZException error;
 };
 
 }

@@ -14,7 +14,7 @@ namespace LibChaos {
 
 bool ZPNG::decode(ZBinary &pngdata_in){
 #ifdef DISABLE_LIBPNG
-    throw ZError("FUCK");
+    throw ZError("LIBPNG IS DISABLED YOU FUCK");
 #else
     PngReadData *data = new PngReadData;
 
@@ -88,12 +88,11 @@ bool ZPNG::decode(ZBinary &pngdata_in){
         data->image_data = NULL;
 
     } catch(ZException e){
-        error = e;
         //ELOG("ZPNG Read error " << e.code() << ": " << e.what());
         pngdata_in.rewind();
         readpng_cleanup(data);
         delete data;
-        return false;
+        throw e;
     }
 
     pngdata_in.rewind();
@@ -189,11 +188,10 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
         }
 
     } catch(ZException e){
-        error = e;
         //ELOG("ZPNG Write error " << e.code() << ": " << e.what());
         writepng_cleanup(data);
         delete data;
-        return false;
+        throw e;
     }
 
     writepng_cleanup(data);
@@ -204,16 +202,10 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
 
 bool ZPNG::read(ZPath path){
     ZBinary data;
-    try {
-        data = ZFile::readBinary(path);
-    } catch(ZException e){
-        error = e;
-        return false;
-    }
+    ZFile::readBinary(path, data);
 
     if(!data.size()){
-        error = ZException("PNG Read: empty read file", PNGError::badfile, false);
-        return false;
+        throw ZException("PNG Read: empty read file", PNGError::badfile, false);
     }
 
     return decode(data);
@@ -224,8 +216,9 @@ bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
     if(!encode(data, options))
         return false;
 
-    if(!ZFile::writeBinary(path, data))
-        error = ZException("PNG Read: cannot write file", PNGError::badwritefile, false);
+    if(!ZFile::writeBinary(path, data)){
+        throw ZException("PNG Read: cannot write file", PNGError::badwritefile, false);
+    }
 
     return true;
 }
@@ -241,17 +234,7 @@ ZArray<ZPNG::PngChunk> ZPNG::parsePngChunks(ZBinary pngdata){
         PngChunk chunk;
 
         // Size (big-endian in PNG chunks)
-        size = 4;
-        buffer = new unsigned char[size];
-        //pngdata.read((unsigned char *)&chunk.size, 4);
-        //chunk.size = chunk.size >> 24;
-        pngdata.read(buffer, size);
-        chunk.size = 0;
-        for(zu8 j = 0; j < size; ++j){
-            //chunk.size += (zu32)(*(zu8*)(&buffer[j])) << (j * 8);
-            ((unsigned char *)&chunk.size)[j] = buffer[size - 1 - j];
-        }
-        delete[] buffer;
+        chunk.size = pngdata.readzu32();
 
         // Name
         size = 4;
@@ -268,11 +251,8 @@ ZArray<ZPNG::PngChunk> ZPNG::parsePngChunks(ZBinary pngdata){
         delete[] buffer;
 
         // CRC
-        //size = 4;
-        //buffer = new unsigned char[size];
-        pngdata.read((unsigned char *)&chunk.crc, 4);
-        //chunk.crc = *(zu32*)(&buffer[0]);
-        //delete[] buffer;
+        chunk.crc = pngdata.readzu32();
+        chunk.crc_ok = (chunk.crc == ZHash32Base::crcHash32_hash(chunk.data.raw(), chunk.size));
 
         chunks.push(chunk);
     }
@@ -297,7 +277,7 @@ ZString ZPNG::libpngVersionInfo(){
 #ifdef DISABLE_LIBPNG
     return "No libpng or zlib";
 #else
-    return ZString("Compiled libpng: ") << PNG_LIBPNG_VER_STRING << ", Using libpng: " << png_libpng_ver << ", Compiled zlib: " << ZLIB_VERSION << ", Using zlib: " << zlib_version;
+    return ZString("Compiled with libpng ") << PNG_LIBPNG_VER_STRING << ", Using libpng " << png_libpng_ver << ", Compiled with zlib " << ZLIB_VERSION << ", Using zlib " << zlib_version;
 #endif
 }
 

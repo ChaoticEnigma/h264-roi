@@ -170,17 +170,17 @@ SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
 
 # Export Include Path
 SET(LibChaos_Core_INCLUDE
-    ${LibChaos_Core_SOURCE_DIR}
-    ${LibChaos_Core_SOURCE_DIR}/abstract
-    ${LibChaos_Core_SOURCE_DIR}/base
-    ${LibChaos_Core_SOURCE_DIR}/data
-    ${LibChaos_Core_SOURCE_DIR}/file
-    ${LibChaos_Core_SOURCE_DIR}/lib
-    ${LibChaos_Core_SOURCE_DIR}/net
-    ${LibChaos_Core_SOURCE_DIR}/math
-    ${LibChaos_Core_SOURCE_DIR}/misc
-    ${LibChaos_Core_SOURCE_DIR}/string
-    ${LibChaos_Core_SOURCE_DIR}/thread
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/abstract
+    ${CMAKE_CURRENT_SOURCE_DIR}/base
+    ${CMAKE_CURRENT_SOURCE_DIR}/data
+    ${CMAKE_CURRENT_SOURCE_DIR}/file
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/net
+    ${CMAKE_CURRENT_SOURCE_DIR}/math
+    ${CMAKE_CURRENT_SOURCE_DIR}/misc
+    ${CMAKE_CURRENT_SOURCE_DIR}/string
+    ${CMAKE_CURRENT_SOURCE_DIR}/thread
 )
 
 SET(LibChaos_Core_INCLUDE ${LibChaos_Core_INCLUDE} PARENT_SCOPE)

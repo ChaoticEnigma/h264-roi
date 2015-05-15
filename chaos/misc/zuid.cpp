@@ -258,7 +258,7 @@ ZBinary ZUID::getMACAddress(){
 
 bool ZUID::validMAC(const zoctet *addr){
     if(addr == NULL) return false;
-    if(addr[0] &= 0x02) return false; // Locally administered address
+    if(addr[0] & 0x02) return false; // Locally administered address
     return true;
 }
 
