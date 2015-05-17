@@ -17,8 +17,9 @@
 namespace LibChaos {
 
 //! Linked list sequence container.
-//! Implemented as a circular doubly-linked list
-//! ZList push/pop paradigm is FIFO
+//! Implemented as a circular doubly-linked list.
+//! ZList push/pop paradigm is FIFO.
+
 template <typename T> class ZList : public YIndexedAccess<T>, public YPushPopAccess<T> {
 public:
     struct Node {

@@ -35,7 +35,7 @@ IF(ENABLE_ZPNG)
     )
 ENDIF()
 IF(ENABLE_ZJPEG)
-    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES
+    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES}
         zjpeg.cpp
     )
 ENDIF()
@@ -69,20 +69,18 @@ ENDIF()
 
 ADD_DEFINITIONS(-DBUILDING)
 
-IF(LibChaos_Extern_SOURCES)
-    ADD_LIBRARY(chaosextern ${LIBCHAOS_EXTERN_ALL} ${LibChaos_Extern_SOURCES})
-    TARGET_LINK_LIBRARIES(chaosextern chaos)
+ADD_LIBRARY(chaosextern ${LIBCHAOS_EXTERN_ALL} ${LibChaos_Extern_HEADERS} ${LibChaos_Extern_SOURCES})
+TARGET_LINK_LIBRARIES(chaosextern chaos)
 
-    # Link libpng and zlib
-    IF(ENABLE_ZPNG)
-        TARGET_LINK_LIBRARIES(chaosextern png z)
-    ENDIF()
-    # Link libjpeg
-    IF(ENABLE_ZJPEG)
-        TARGET_LINK_LIBRARIES(chaosextern jpeg)
-    ENDIF()
-    # Link x264 and libavcodec
-    IF(ENABLE_ZH264)
-        TARGET_LINK_LIBRARIES(chaosextern avcodec avutil swscale x264)
-    ENDIF()
+# Link libpng and zlib
+IF(ENABLE_ZPNG)
+    TARGET_LINK_LIBRARIES(chaosextern png z)
+ENDIF()
+# Link libjpeg
+IF(ENABLE_ZJPEG)
+    TARGET_LINK_LIBRARIES(chaosextern jpeg)
+ENDIF()
+# Link x264 and libavcodec
+IF(ENABLE_ZH264)
+    TARGET_LINK_LIBRARIES(chaosextern avcodec avutil swscale x264)
 ENDIF()

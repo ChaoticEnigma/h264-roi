@@ -96,7 +96,7 @@ namespace utf {
             unsigned char lead = (unsigned char)*p++;
 
             // First byte is fully validated here
-            int trail_size = trail_length(lead);
+            int trail_size = trail_length((char)lead);
 
             if(NOWIDE_UNLIKELY(trail_size < 0))
                 return illegal;
@@ -108,7 +108,7 @@ namespace utf {
             if(trail_size == 0)
                 return lead;
 
-            code_point c = lead & ((1 << (6 - trail_size)) - 1);
+            code_point c = lead & (unsigned int)((1 << (unsigned int)(6 - trail_size)) - 1);
 
             // Read the rest
             unsigned char tmp;
@@ -138,7 +138,7 @@ namespace utf {
                 return illegal;
 
             // make sure it is the most compact representation
-            if(NOWIDE_UNLIKELY(width(c)!=trail_size + 1))
+            if(NOWIDE_UNLIKELY(width(c) != trail_size + 1))
                 return illegal;
 
             return c;
@@ -315,7 +315,7 @@ template<typename CharOut, typename CharIn> std::basic_string<CharOut> utf_to_ut
     typedef std::back_insert_iterator< std::basic_string<CharOut> > inserter_type;
 
     std::basic_string<CharOut> result;
-    result.reserve(end - begin);
+    result.reserve((zu64)(end - begin));
     inserter_type inserter(result);
     utf::code_point codepoint;
     while(begin != end){

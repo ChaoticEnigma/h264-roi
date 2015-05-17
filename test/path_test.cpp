@@ -1,6 +1,6 @@
 #include "test.h"
 
-int path_block(){
+int path_test(){
     LOG("-- Parse:");  // /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ZPath path1 = ZString("/some/odd/../complic/ated/../path");

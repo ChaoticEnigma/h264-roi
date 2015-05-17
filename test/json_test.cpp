@@ -1,7 +1,7 @@
 #include "test.h"
 #include "zjson.h"
 
-int json_block(){
+int json_test(){
     ZString str = "{   \"text\" \n :  \"and text\"  ,   \"3453\"   :   \"456456\"   }";
     //str = "{  }";
     str = "{\"txt\":{\"more\":\"here\"}}";

@@ -2,7 +2,7 @@
 
 #include "zautobuffer.h"
 
-int autobuffer_block(){
+int autobuffer_test(){
 
     ZAutoBuffer buffer;
 

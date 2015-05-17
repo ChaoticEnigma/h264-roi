@@ -16,25 +16,12 @@
 
 namespace LibChaos {
 
-// Notes on Usage:
-// Guarantee: buffer will never be allocated to a nonzero size different than size(). buffer may be null when size() is nonzero.
-// size() returns the size of the image in bytes, but this does NOT guarantee the buffer() is allocated
+//! Image bitmap container.
+//! Supports variable color channels, channel depths, and planes.
 
-// setDimensions() sets the virtual size of the image, may delete buffer, but does not allocate buffer
-//      check the actual dimensions after setting dimensions
-//      partial dimensions are allowed
-//      no image may be loaded unless all dimenions are valid
-//      (channels * depth) % 8 must be zero. dimensions are invalid otherwise
-// copyData() copies raw data of size() into buffer, buffer is allocated if necessary
-// takeData() takes ownership of raw data. CAUTION: do not free memory passed to takeData()
-
-// validDimensions() - check that current dimensions can represent an image
-//      true - _buffer may or may not be null
-//      false - _buffer must be null
-
-// isLoaded() - check validDimensions() and buffer() is non-null, check this before using raw buffer() access
-//      true - dimensions are valid AND buffer() points to image of size()
-//      false - dimensions are invalid OR buffer() is null
+//! Notes on Usage:
+//! Guarantee: buffer will never be allocated to a nonzero size different than size(). buffer may be null when size() is nonzero.
+//! size() returns the size of the image in bytes, but this does NOT guarantee the buffer() is allocated.
 
 class ZImage {
 public:
@@ -42,33 +29,37 @@ public:
 
     enum imagetype {
         unknown = 0,
-        rgb24   = 1,
-        rgba32  = 2,
-        rgb48   = 3,
-        rgba64  = 4,
-        g8      = 5,
-        ga16    = 6,
-        g16     = 7,
-        ga32    = 8,
+        //! Red, Green, Blue (3 channels, 8 bits each)
+        rgb24,
+        //! Red, Green, Blue (3 channels, 16 bits each)
+        rgb48,
+        //! Red, Green, Blue, Alpha (4 channels, 8 bits each)
+        rgba32,
+        //! Red, Green, Blue, Alpha (4 channels, 16 bits each)
+        rgba64,
+        //! Greyscale (1 channel, 8 bits each)
+        g8,
+        //! Greyscale (1 channel, 16 bits each)
+        g16,
+        //! Greyscale with Alpha (2 channels, 8 bits each)
+        ga16,
+        //! Greyscale with Alpha (2 channels, 16 bits each)
+        ga32,
     };
-
-//    struct ImageType {
-//        imagetype type;
-//        zu8 channels;
-//        zu8 depth;
-//    };
-//    static const ZArray<ImageType> types;
 
     struct ImageType {
         zu8 channels;
         zu8 depth;
+        zu8 planes;
     };
     static const ZMap<imagetype, ImageType> types;
-
 
 public:
     ZImage() : _width(0), _height(0), _channels(0), _depth(0), _buffer(nullptr){
 
+    }
+    ZImage(zu64 width, zu64 height, imagetype type = rgb24) : ZImage(){
+        setDimensions(width, height, types[type].channels, types[type].depth);
     }
     ZImage(zu64 width, zu64 height, zu8 channels = 3, zu8 depth = 8) : ZImage(){
         setDimensions(width, height, channels, depth);
@@ -107,27 +98,49 @@ public:
         return &_buffer[(y * _width + x) * pixelSize()];
     }
 
+    //! Sets the virtual size of the image, may delete buffer, but does not allocate buffer.
+    //!      check the actual dimensions after setting dimensions.
+    //!      partial dimensions are allowed.
+    //!      no image may be loaded unless all dimenions are valid.
+    //!      (channels * depth) % 8 must be zero. dimensions are invalid otherwise.
     void setDimensions(zu64 width, zu64 height, zu8 channels, zu8 depth);
 
+    //! validDimensions() - check that current dimensions can represent an image.
+    //!      true - _buffer may or may not be null.
+    //!      false - _buffer must be null.
+    inline bool validDimensions() const {
+        return validDimensions(_width, _height, _channels, _depth);
+    }
+    static inline bool validDimensions(zu64 width, zu64 height, zu8 channels, zu8 depth){
+        return width && height && channels && depth && ((zu16)(channels * depth) % (zu16)8) == 0 && size(width, height, channels, depth);
+    }
+
+    //! Allocates a new buffer with current dimensions.
     void newData();
+    //! Zeroes the buffer, buffer is allocated in necessary.
     void zeroData();
+    //! Copies raw data of size() into buffer, buffer is allocated if necessary.
     void copyData(const byte *data);
+    //! Takes ownership of raw data.
+    //! \warning Do not free memory passed to takeData().
     void takeData(byte *data);
 
-    // Takes Y, U, and V planes separately
-    // Planes are expected unpadded and packed width * height or width * height / 4
+    //! Takes Y, U, and V planes separately.
+    //! Planes are expected unpadded and packed width * height or width * height / 4.
     void convertYUV420toRGB24(zu64 width, zu64 height, const byte *ydata, const byte *udata, const byte *vdata);
 
     void transferImage(ZImage &other);
 
-    // Need bitwise operations to do this
-    // Example: reformat({'R','G','B'}, {'R','G','B','A'});
-    // each arbitrary char corresponds to a channel component of a pixel before and after the transform, in the order they are packed in buffer
-    // the same char may not be used twice in <before>
-    // channels corresponding to a char in <before> and <after> are reordered according to <after> in every pixel
-    // channels corresponding to a char in <before> but not <after> are lost in every pixel
-    // channels corresponding to a char in <after> but not <before> are zero in every pixel
-    // after may be kept in the zimage as a hint about the image content
+    //! Reformat the channels in the buffer.
+    //! \todo
+    //! Each unique char corresponds to a channel component of a pixel before and after the transform, in the order they are packed in buffer.
+    //! The same char may not be used twice in \p before.
+    //! There must be channels() chars in \p before. \n
+    //! Channels corresponding to a char in \p before and \p after are re-packed according to \p after in every pixel. \n
+    //! Channels corresponding to a char in \p before but not \p after are lost in every pixel. \n
+    //! Channels corresponding to a char in \p after but not \p before are zero in every pixel. \n
+    //! \p after may be kept in the zimage as a hint about the image content.
+    //! \note Example: reformat({'R','G','B'}, {'R','G','B','A'});
     void reformat(ZArray<char> before, ZArray<char> after);
 
     // if channels is increased, expandmask will be copied to each pixel before original channels are copied
@@ -143,13 +156,9 @@ public:
 
     void strip16to8bit();
 
-    inline bool validDimensions() const {
-        return validDimensions(_width, _height, _channels, _depth);
-    }
-    static inline bool validDimensions(zu64 width, zu64 height, zu8 channels, zu8 depth){
-        return width && height && channels && depth && ((zu16)(channels * depth) % (zu16)8) == 0 && size(width, height, channels, depth);
-    }
-
+    //! Check validDimensions() and buffer() is non-null, check this before using raw buffer() access.
+    //!      true - dimensions are valid AND buffer() points to image of size().
+    //!      false - dimensions are invalid OR buffer() is null.
     inline bool isLoaded() const {
         return validDimensions() && _buffer != nullptr;
     }

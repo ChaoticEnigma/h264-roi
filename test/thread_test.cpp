@@ -25,7 +25,7 @@ void *thread_func2(void *zarg){
     return NULL;
 }
 
-int thread_block(){
+int thread_test(){
     LOG("=== Thread Test...");
     /*
     LOG("this text " << ZThread::thisTid());
@@ -104,7 +104,7 @@ HANDLE CreateChild(const char *name){
     return hThread;
 }
 
-int mutex_block(){
+int mutex_test(){
     HANDLE hT[4];
     InitializeCriticalSection(&gCS);
 

@@ -12,7 +12,7 @@ void intHandle(ZError::zerror_signal sig){
 
 int trace_block();
 
-int error_block(){
+int error_test(){
     trace_block();
     return 0;
 

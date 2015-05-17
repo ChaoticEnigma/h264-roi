@@ -18,22 +18,20 @@ typedef LibChaos::zu32 crc;
 //#define CHECK_VALUE         0xCBF43926
 
 #define WIDTH   32
-#define TOPBIT  (1 << (WIDTH - 1))
+#define TOPBIT  ((LibChaos::zu32)1 << (WIDTH - 1))
 
-#define REFLECT_DATA(X)         ((unsigned char)reflect((X), 8))
-#define REFLECT_REMAINDER(X)    ((crc)reflect((X), WIDTH))
+#define REFLECT_DATA(X)         ((unsigned char)reflect(X, 8))
+#define REFLECT_REMAINDER(X)    ((crc)reflect(X, WIDTH))
 
 namespace LibChaos {
 
-static zu32 reflect(zu32 data, unsigned char bits){
+static zu32 reflect(zu32 data, zu8 bits){
     zu32 reflection = 0x00000000;
-    unsigned char bit;
-
     // * Reflect the data about the center bit.
-    for(bit = 0; bit < bits; ++bit){
+    for(zu8 bit = 0; bit < bits; ++bit){
         // * If the LSB bit is set, set the reflection of it.
         if(data & 0x01){
-            reflection |= (1 << (bits - bit - 1));
+            reflection |= ((zu32)1 << (bits - bit - 1));
         }
         data = (data >> 1);
     }
@@ -41,6 +39,7 @@ static zu32 reflect(zu32 data, unsigned char bits){
 }
 
 zu32 ZHash32Base::crcHash32_hash(const zbyte *data, zu64 size, zu32 remainder){
+    // Convert the input remainder to the expected input
     remainder = (REFLECT_REMAINDER(remainder) ^ FINAL_XOR_VALUE);
     zu64 byte;
     unsigned char bit;
@@ -48,7 +47,7 @@ zu32 ZHash32Base::crcHash32_hash(const zbyte *data, zu64 size, zu32 remainder){
     // * Perform modulo-2 division, a byte at a time.
     for(byte = 0; byte < size; ++byte){
         // * Bring the next byte into the remainder.
-        remainder ^= (REFLECT_DATA(data[byte]) << (WIDTH - 8));
+        remainder ^= ((zu32)REFLECT_DATA(data[byte]) << (WIDTH - 8));
         // Perform modulo-2 division, a bit at a time.
         for(bit = 8; bit > 0; --bit){
             // * Try to divide the current data bit.

@@ -24,7 +24,8 @@
 namespace LibChaos {
 
 //! Hash map unsequenced container.
-//! For the purposes of this class, keys that evaluate equal must have the same hashes, and vice-versa
+//! For the purposes of this class, keys that evaluate equal must have the same hashes, and vice-versa.
+
 template <typename K, typename T> class ZMap {
 public:
     enum { none = ZU64_MAX };

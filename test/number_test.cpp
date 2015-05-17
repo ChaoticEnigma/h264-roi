@@ -13,7 +13,7 @@ void printnum(zu64 num){
     LOG(str1 << num);
 }
 
-int number_block(){
+int number_test(){
 
     zu32 num1 = 453;
     printnum(num1);

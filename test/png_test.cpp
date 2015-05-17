@@ -4,7 +4,7 @@
 #include "zbmp.h"
 #include "zfile.h"
 
-int png_block(){
+int png_test(){
 
     LOG(ZPNG::libpngVersionInfo());
 
@@ -122,10 +122,7 @@ int png_block(){
             LOG("    " << chunks[j].size << " " << chunks[j].name << " " << chunks[j].data << " " << chunks[j].crc_ok);
         }
 
-        //continue;
-
         // PNG read
-
         ZPNG pngin;
         try {
             pngin.read(file);
@@ -134,12 +131,12 @@ int png_block(){
             continue;
         }
 
+        // Dump
         ZImage imgin = pngin.getImage();
-        ZFile::writeBinary("imgin-dump.bin", ZBinary(imgin.buffer(), imgin.realSize()));
+        ZFile::writeBinary("imgin-dump.bin", ZBinary(imgin.buffer(), imgin.size()));
         LOG("    " << imgin.width() << " " << imgin.height() << " " << imgin.channels() << " " << imgin.depth());
 
         // PNG write
-
         ZPath pngpath = ZPath("pngout/") + file.last();
         ZPNG pngout(imgin);
         try {

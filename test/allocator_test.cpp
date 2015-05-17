@@ -2,7 +2,7 @@
 #include "zallocator.h"
 #include "zstorage.h"
 
-int allocator_block(){
+int allocator_test(){
     LOG("alloc char");
     ZAllocator<char> alloc;
     char *test = alloc.alloc(20);

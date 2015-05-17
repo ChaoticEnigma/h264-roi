@@ -2,7 +2,7 @@
 #include "zlist.h"
 #include "zqueue.h"
 
-int list_block(){
+int list_test(){
     ZList<int> tst;
     // push some values
     tst.pushBack(10);
@@ -60,7 +60,7 @@ int list_block(){
     return 0;
 }
 
-int queue_block(){
+int queue_test(){
     ZQueue<int> tst1;
 
     return 0;

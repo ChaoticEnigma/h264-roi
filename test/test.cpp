@@ -7,6 +7,7 @@ int main(int argc, char **argv){
     try {
         //ZLog::init(); // BUG: threaded zlog sometimes crashes
         ZLog::formatStdout(ZLogSource::normal, "%clock% %thread% - %log%");
+        ZLog::formatStdout(ZLogSource::debug, "%clock% %thread% - %log%");
         ZLog::formatStderr(ZLogSource::error, "%clock% %thread% %function% (%file%:%line%) - %log%");
         ZPath lgf = ZPath("logs") + ZLog::genLogFileName("testchaos_");
         ZLog::addLogFile(lgf, ZLogSource::normal, "%time% %thread% - %log%");
@@ -14,32 +15,33 @@ int main(int argc, char **argv){
         ZLog::addLogFile(lgf, ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
 
         ZAssoc<ZString, test_func> defaulttests = {
-            { "pointer", pointer_block },
-            { "allocator", allocator_block },
-            { "storage", storage_block },
+            { "pointer", pointer_test },
+            { "allocator", allocator_test },
+            { "storage", storage_test },
 
-            { "binary", binary_block },
+            { "binary", binary_test },
 
-            { "array", array_block },
-            { "assoc", assoc_block },
-            { "stack", stack_block },
-            { "map", map_block },
-            { "list", list_block },
-            { "queue", queue_block },
+            { "array", array_test },
+            { "assoc", assoc_test },
+            { "stack", stack_test },
+            { "map", map_test },
+            { "list", list_test },
+            { "queue", queue_test },
 
-            { "string", string_block },
-            { "path", path_block },
+            { "string", string_test },
+            { "path", path_test },
 
-            { "thread", thread_block },
-            { "mutex", mutex_block },
+            { "thread", thread_test },
+            { "mutex", mutex_test },
 
-            { "number", number_block },
-            { "uid", uid_block },
-            { "hash", hash_block },
+            { "number", number_test },
+            { "uid", uid_test },
+            { "hash", hash_test },
 
-            { "file", file_block },
-            { "autobuffer", autobuffer_block },
-            { "json", json_block },
+            { "file", file_test },
+            { "image", image_test },
+            { "autobuffer", autobuffer_test },
+            { "json", json_test },
         };
 
         ZAssoc<ZString, test_func> tests = defaulttests;
@@ -52,12 +54,12 @@ int main(int argc, char **argv){
             { "tcpserver3", tcpserver_test3 },
 
     #ifdef TEST_ZPNG
-            { "png", png_block },
+            { "png", png_test },
     #endif
 
             { "sandbox", sandbox },
 
-            { "error", error_block },
+            { "error", error_test },
         });
 
         ZAssoc<ZString, test_func> runtests;

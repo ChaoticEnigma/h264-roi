@@ -14,7 +14,8 @@ bool ZJPEG::encode(ZBinary &jepgdata_out, JPEGWrite::jpegoptions options){
 }
 
 bool ZJPEG::read(ZPath path){
-    ZBinary data = ZFile::readBinary(path);
+    ZBinary data;
+    ZFile::readBinary(path, data);
     if(!data.size())
         error = ZException("JPEG Read: empty read file", JPEGError::badreadfile, false);
 

@@ -10,34 +10,35 @@ using namespace LibChaos;
 
 int sandbox();
 
-int array_block();
-int assoc_block();
-int stack_block();
-int map_block();
-int list_block();
-int queue_block();
+int array_test();
+int assoc_test();
+int stack_test();
+int map_test();
+int list_test();
+int queue_test();
 
-int binary_block();
+int binary_test();
 
-int string_block();
-int path_block();
+int string_test();
+int path_test();
 
-int pointer_block();
-int allocator_block();
-int storage_block();
+int pointer_test();
+int allocator_test();
+int storage_test();
 
-int thread_block();
-int mutex_block();
+int thread_test();
+int mutex_test();
 
-int number_block();
+int number_test();
 
-int uid_block();
-int hash_block();
+int uid_test();
+int hash_test();
 
-int file_block();
-int png_block();
+int file_test();
+int png_test();
+int image_test();
 
-int autobuffer_block();
+int autobuffer_test();
 
 int udp_test();
 int udpserver_test();
@@ -47,9 +48,9 @@ int tcpserver_test();
 int tcpserver_test2();
 int tcpserver_test3();
 
-int json_block();
+int json_test();
 
-int error_block();
+int error_test();
 
 typedef int (*test_func)(void);
 

@@ -1,7 +1,7 @@
 #include "test.h"
 #include "zbinary.h"
 
-int binary_block(){
+int binary_test(){
     ZBinary bin1({'A','B','C','D','E','F'});
     LOG(ZString(bin1.printable().asChar()));
     LOG(ZString(bin1.getSub(0, 2).printable().asChar()));

@@ -5,7 +5,7 @@
 #include <cmath>
 #include <iostream>
 
-int string_block(){
+int string_test(){
     ZString str1;
     ZString str2("A String!");
     ZString str3("test3");

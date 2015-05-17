@@ -23,7 +23,7 @@ void a(ZPointer<AnObject> &sptr, ZPointer<AnObject> ptr){
     //sptr.swap(ptr);
 }
 
-int pointer_block(){
+int pointer_test(){
 
     ZPointer<AnObject> sptr;
 

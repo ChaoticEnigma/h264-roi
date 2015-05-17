@@ -3,7 +3,7 @@
 #include "zlist.h"
 #include "zhash.h"
 
-int uid_block(){
+int uid_test(){
     ZUID uid1;
     LOG("Default (time):\t" << uid1.str());
 
@@ -44,7 +44,7 @@ int uid_block(){
     return 0;
 }
 
-int hash_block(){
+int hash_test(){
     int data1 = -34563;
     zu64 hash1 = ZHash<int>(data1).hash();
     LOG(data1 << " " << hash1);

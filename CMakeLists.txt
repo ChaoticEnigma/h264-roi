@@ -135,10 +135,10 @@ IF(DOXYGEN_FOUND)
     INCLUDE(cmake/FindHTMLHelp.cmake)
     IF(HTML_HELP_COMPILER)
         SET(DOXYGEN_HHC ${HTML_HELP_COMPILER})
-        CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile-chm.in" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-chm" @ONLY)
+        CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile-help.in" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-help" @ONLY)
         ADD_CUSTOM_TARGET(doxyhelp ${DOXYGEN_AUTO}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            COMMAND ${DOXYGEN_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-chm"
+            COMMAND ${DOXYGEN_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-help"
             COMMAND ${CMAKE_COMMAND} -E rename chm/LibChaos.chm LibChaos.chm
         )
     ENDIF()

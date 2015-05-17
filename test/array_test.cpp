@@ -3,7 +3,7 @@
 #include "zstack.h"
 #include "zmap.h"
 
-int array_block(){
+int array_test(){
     ZArray<int> tst;
     tst.push(10);
     tst.pushFront(45);
@@ -50,7 +50,7 @@ int array_block(){
     return 0;
 }
 
-int assoc_block(){
+int assoc_test(){
     LOG("=== Assoc Test...");
     ZAssoc<ZString, ZString> zarr;
     zarr["here"] = "there";
@@ -62,7 +62,7 @@ int assoc_block(){
     return 0;
 }
 
-int stack_block(){
+int stack_test(){
     ZStack<int> tst1;
 
     zu64 u = 56546;
@@ -72,7 +72,7 @@ int stack_block(){
     return 0;
 }
 
-int map_block(){
+int map_test(){
     ZMap<ZString, zu64> map1;
     map1.add("test1", 11);
     map1.add("test2", 22);

@@ -16,15 +16,15 @@ bool ZPNG::decode(ZBinary &pngdata_in){
 #ifdef DISABLE_LIBPNG
     throw ZError("LIBPNG IS DISABLED YOU FUCK");
 #else
-    PngReadData *data = new PngReadData;
+    PngReadData data;
 
     try {
         if(!pngdata_in.size())
             throw ZException("PNG Read: empty input", PNGError::emptyinput, false);
 
-        data->filedata = &pngdata_in;
+        data.filedata = &pngdata_in;
 
-        int result = readpng_init(data);
+        int result = readpng_init(&data);
         switch(result){
         case 1:
             throw ZException("PNG Read: signature read fail", PNGError::sigreadfail, false);
@@ -35,13 +35,13 @@ bool ZPNG::decode(ZBinary &pngdata_in){
         case 4:
             throw ZException("PNG Read: info struct create fail", PNGError::infostructfail, false);
         case 5:
-            throw ZException(ZString("PNG Read: ") + data->err_str, PNGError::libpngerror, false);
+            throw ZException(ZString("PNG Read: ") + data.err_str, PNGError::libpngerror, false);
         default:
             break;
         }
 
-        for(int i = 0; i < data->info_ptr->num_text; ++i){
-            text.push(data->info_ptr->text[i].key, data->info_ptr->text[i].text);
+        for(int i = 0; i < data.info_ptr->num_text; ++i){
+            text.push(data.info_ptr->text[i].key, data.info_ptr->text[i].text);
         }
 
 //        data->bg_red = 0;
@@ -63,10 +63,10 @@ bool ZPNG::decode(ZBinary &pngdata_in){
 
         double default_display_exponent = 1.0;
 
-        result = readpng_get_image(data, default_display_exponent);
+        result = readpng_get_image(&data, default_display_exponent);
         switch(result){
         case 1:
-            throw ZException(ZString("PNG Read: ") + data->err_str, PNGError::libpngerror, false);
+            throw ZException(ZString("PNG Read: ") + data.err_str, PNGError::libpngerror, false);
         case 2:
             throw ZException("PNG Read: invalid color type", PNGError::invalidcolortype, false);
         case 3:
@@ -77,27 +77,25 @@ bool ZPNG::decode(ZBinary &pngdata_in){
             break;
         }
 
-        if(!data->image_data){
+        if(!data.image_data){
             throw ZException("readpng_get_image failed", PNGError::badpointer, false);
         }
 
-        image.setDimensions(data->width, data->height, data->channels, data->bit_depth);
+        image.setDimensions(data.width, data.height, data.channels, data.bit_depth);
         if(!image.validDimensions())
-            throw ZException(ZString("PNG Read: invalid dimensions ") + image.width() + "x" + image.height() + " " + image.channels() + "," + image.depth() + " " + data->color_type, PNGError::invaliddimensions, false);
-        image.takeData(data->image_data);
-        data->image_data = NULL;
+            throw ZException(ZString("PNG Read: invalid dimensions ") + image.width() + "x" + image.height() + " " + image.channels() + "," + image.depth() + " " + data.color_type, PNGError::invaliddimensions, false);
+        image.takeData(data.image_data);
+        data.image_data = NULL;
 
     } catch(ZException e){
         //ELOG("ZPNG Read error " << e.code() << ": " << e.what());
         pngdata_in.rewind();
-        readpng_cleanup(data);
-        delete data;
+        readpng_cleanup(&data);
         throw e;
     }
 
     pngdata_in.rewind();
-    readpng_cleanup(data);
-    delete data;
+    readpng_cleanup(&data);
     return true;
 #endif
 }
@@ -207,7 +205,6 @@ bool ZPNG::read(ZPath path){
     if(!data.size()){
         throw ZException("PNG Read: empty read file", PNGError::badfile, false);
     }
-
     return decode(data);
 }
 
@@ -219,7 +216,6 @@ bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
     if(!ZFile::writeBinary(path, data)){
         throw ZException("PNG Read: cannot write file", PNGError::badwritefile, false);
     }
-
     return true;
 }
 
@@ -289,14 +285,10 @@ ZString ZPNG::libpngVersionInfo(){
 
 int ZPNG::readpng_init(PngReadData *data){
     // Check PNG signature
-    const zu8 sigbytes = 8;
-    unsigned char sig[sigbytes];
-    if(data->filedata->read(sig, sigbytes) != sigbytes){
-        return 1;
-    }
-    if(png_sig_cmp(sig, 0, 1)){
+    if(png_sig_cmp(data->filedata->raw(), 0, 1)){
         return 2;
     }
+    data->filedata->setPos(8);
 
     // Create PNG read struct
     data->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, readpng_error_handler, readpng_warning_handler);
@@ -319,7 +311,7 @@ int ZPNG::readpng_init(PngReadData *data){
     png_set_read_fn(data->png_ptr, data->filedata, readpng_read_fn);
 
     // Read PNG info
-    png_set_sig_bytes(data->png_ptr, sigbytes);
+    png_set_sig_bytes(data->png_ptr, 8);
     png_read_info(data->png_ptr, data->info_ptr);
 
     // Retrieve PNG information
@@ -530,13 +522,13 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
     png_set_write_fn(data->png_ptr, data->filedata, writepng_write_fn, NULL);
 
     // Set filter heuristics
-    png_set_filter_heuristics(data->png_ptr, PNG_FILTER_HEURISTIC_UNWEIGHTED, 0, NULL, NULL);
-    //png_set_filter_heuristics(data->png_ptr, PNG_FILTER_HEURISTIC_WEIGHTED, 0, NULL, NULL);
+    //png_set_filter_heuristics(data->png_ptr, PNG_FILTER_HEURISTIC_UNWEIGHTED, 0, NULL, NULL);
+    png_set_filter_heuristics(data->png_ptr, PNG_FILTER_HEURISTIC_WEIGHTED, 0, NULL, NULL);
 
     // Enable all filters
-    //png_set_filter(data->png_ptr, 0, PNG_ALL_FILTERS);
+    png_set_filter(data->png_ptr, 0, PNG_ALL_FILTERS);
     // Filtering should be disabled on palette images
-    png_set_filter(data->png_ptr, 0, PNG_FILTER_NONE);
+    //png_set_filter(data->png_ptr, 0, PNG_FILTER_NONE);
     //png_set_filter(data->png_ptr, 0, PNG_FILTER_SUB);
     //png_set_filter(data->png_ptr, 0, PNG_FILTER_UP);
     //png_set_filter(data->png_ptr, 0, PNG_FILTER_AVG);
@@ -545,11 +537,12 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
     // We want max compression
     png_set_compression_level(data->png_ptr, Z_BEST_COMPRESSION);
 
-    //png_set_compression_strategy(data->png_ptr, Z_DEFAULT_STRATEGY);
-    png_set_compression_strategy(data->png_ptr, Z_FILTERED);
+    png_set_compression_strategy(data->png_ptr, Z_DEFAULT_STRATEGY);
+    //png_set_compression_strategy(data->png_ptr, Z_FILTERED);
 
     // Must be Z_DEFLATED
-    //png_set_compression_method(data->png_ptr, Z_DEFLATED);
+    png_set_compression_method(data->png_ptr, Z_DEFLATED);
+
     // Maximum window size
     png_set_compression_window_bits(data->png_ptr, 15);
     // Maximum memory usage

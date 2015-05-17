@@ -19,14 +19,14 @@ namespace LibChaos {
 //};
 
 const ZMap<ZImage::imagetype, ZImage::ImageType> ZImage::types = {
-    { ZImage::rgb24,    { 3, 8  } },
-    { ZImage::rgba32,   { 4, 8  } },
-    { ZImage::rgb48,    { 3, 16 } },
-    { ZImage::rgba64,   { 4, 16 } },
-    { ZImage::g8,       { 1, 8  } },
-    { ZImage::ga16,     { 2, 8  } },
-    { ZImage::g16,      { 1, 16 } },
-    { ZImage::ga32,     { 2, 16 } },
+    { ZImage::rgb24,    { 3,  8, 1 } },
+    { ZImage::rgba32,   { 4,  8, 1 } },
+    { ZImage::rgb48,    { 3, 16, 1 } },
+    { ZImage::rgba64,   { 4, 16, 1 } },
+    { ZImage::g8,       { 1,  8, 1 } },
+    { ZImage::ga16,     { 2,  8, 1 } },
+    { ZImage::g16,      { 1, 16, 1 } },
+    { ZImage::ga32,     { 2, 16, 1 } },
 };
 
 void ZImage::destroy(){
@@ -49,8 +49,9 @@ bool ZImage::operator==(const ZImage &other) const {
            _height == other._height &&
            _channels == other._channels &&
            _depth == other._depth &&
-           ((_buffer == nullptr && other._buffer == nullptr) || (_buffer != nullptr && other._buffer != nullptr)) &&
-           memcmp(_buffer, other._buffer, size()) == 0;
+            // Either both data are null, or are the same
+           ((_buffer == nullptr && other._buffer == nullptr) ||
+           ((_buffer != nullptr && other._buffer != nullptr) && memcmp(_buffer, other._buffer, size()) == 0));
 }
 
 void ZImage::setDimensions(zu64 width, zu64 height, zu8 channels, zu8 depth){

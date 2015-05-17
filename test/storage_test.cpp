@@ -2,7 +2,7 @@
 #include "zstorage.h"
 #include "zdefaultstorage.h"
 
-int storage_block(){
+int storage_test(){
     ZStorage *stor = new ZDefaultStorage;
 
     auto print = [&](){
