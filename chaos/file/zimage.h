@@ -29,21 +29,21 @@ public:
 
     enum imagetype {
         unknown = 0,
-        //! Red, Green, Blue (3 channels, 8 bits each)
+        //! Red, Green, Blue (3 channels, 8 bits each).
         rgb24,
-        //! Red, Green, Blue (3 channels, 16 bits each)
+        //! Red, Green, Blue (3 channels, 16 bits each).
         rgb48,
-        //! Red, Green, Blue, Alpha (4 channels, 8 bits each)
+        //! Red, Green, Blue, Alpha (4 channels, 8 bits each).
         rgba32,
-        //! Red, Green, Blue, Alpha (4 channels, 16 bits each)
+        //! Red, Green, Blue, Alpha (4 channels, 16 bits each).
         rgba64,
-        //! Greyscale (1 channel, 8 bits each)
+        //! Greyscale (1 channel, 8 bits each).
         g8,
-        //! Greyscale (1 channel, 16 bits each)
+        //! Greyscale (1 channel, 16 bits each).
         g16,
-        //! Greyscale with Alpha (2 channels, 8 bits each)
+        //! Greyscale with Alpha (2 channels, 8 bits each).
         ga16,
-        //! Greyscale with Alpha (2 channels, 16 bits each)
+        //! Greyscale with Alpha (2 channels, 16 bits each).
         ga32,
     };
 

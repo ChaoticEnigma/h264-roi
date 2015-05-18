@@ -48,8 +48,8 @@ public:
     }
 
 private:
-    unsigned char *convertBMPDatatoRGB(unsigned char *bmpbuffer, zu32 height, zu32 width);
-    unsigned char *convertRGBtoBMPData(unsigned char *rgbbuffer, zu32 height, zu32 width, zu64 &outsize);
+    unsigned char *convertBMPDatatoRGB(const unsigned char *bmpbuffer, zu32 width, zu32 height);
+    unsigned char *convertRGBtoBMPData(const unsigned char *rgbbuffer, zu32 width, zu32 height, zu64 &outsize);
 
 private:
     ZImage image;

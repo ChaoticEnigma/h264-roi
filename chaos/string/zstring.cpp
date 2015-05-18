@@ -33,7 +33,6 @@ ZString::ZString(const ZString &other) : ZString(){
     if(other._size && other._data)
         _alloc.rawcopy(other._data, _data, other._size);
 }
-
 ZString::ZString(const ZString::chartype *str) : ZString(){
     if(str != nullptr){
         zu64 i = 0;

@@ -331,6 +331,7 @@ zu64 ZFile::readBinary(ZPath file, ZBinary &out){
         throw ZException("ZFile: fread error");
 
     out.write(buffer, size);
+    out.rewind();
     delete[] buffer;
     return size;
 }

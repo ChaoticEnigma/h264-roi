@@ -11,6 +11,7 @@
 #endif
 
 #define BI_RGB 0x0000
+#define BITMAP_TYPE 0x4D42
 
 namespace LibChaos {
 
@@ -37,82 +38,50 @@ struct BitmapInfoHeader {
 };
 
 void readFileHeader(ZBinary &bin, BitmapFileHeader *fileh){
-//    fileh->bfType       = *(const unsigned short*)(&start[0]);
-//    fileh->bfSize       = *(const unsigned int*)  (&start[2]);
-//    fileh->bfReserved1  = *(const unsigned short*)(&start[6]);
-//    fileh->bfReserved2  = *(const unsigned short*)(&start[8]);
-//    fileh->bfOffBits    = *(const unsigned int*)  (&start[10]);
-    bin.read((zbyte *)&fileh->bfType, 2);
-    bin.read((zbyte *)&fileh->bfSize, 4);
-    bin.read((zbyte *)&fileh->bfReserved1, 2);
-    bin.read((zbyte *)&fileh->bfReserved2, 2);
-    bin.read((zbyte *)&fileh->bfOffBits, 4);
+    fileh->bfType      = bin.readle16();
+    fileh->bfSize      = bin.readle32();
+    fileh->bfReserved1 = bin.readle16();
+    fileh->bfReserved2 = bin.readle16();
+    fileh->bfOffBits   = bin.readle32();
 }
 void readInfoHeader(ZBinary &bin, BitmapInfoHeader *infoh){
-//    infoh->biSize           = *(const unsigned int*)  (&start[0]);
-//    infoh->biWidth          = *(const unsigned int*)  (&start[4]);
-//    infoh->biHeight         = *(const unsigned int*)  (&start[8]);
-//    infoh->biPlanes         = *(const unsigned short*)(&start[12]);
-//    infoh->biBitCount       = *(const unsigned short*)(&start[14]);
-//    infoh->biCompression    = *(const unsigned int*)  (&start[16]);
-//    infoh->biSizeImage      = *(const unsigned int*)  (&start[20]);
-//    infoh->biXPelsPerMeter  = *(const unsigned int*)  (&start[24]);
-//    infoh->biYPelsPerMeter  = *(const unsigned int*)  (&start[28]);
-//    infoh->biClrUsed        = *(const unsigned int*)  (&start[32]);
-//    infoh->biClrImportant   = *(const unsigned int*)  (&start[36]);
-    bin.read((zbyte *)&infoh->biSize,           4);
-    bin.read((zbyte *)&infoh->biWidth,          4);
-    bin.read((zbyte *)&infoh->biHeight,         4);
-    bin.read((zbyte *)&infoh->biPlanes,         2);
-    bin.read((zbyte *)&infoh->biBitCount,       2);
-    bin.read((zbyte *)&infoh->biCompression,    4);
-    bin.read((zbyte *)&infoh->biSizeImage,      4);
-    bin.read((zbyte *)&infoh->biXPelsPerMeter,  4);
-    bin.read((zbyte *)&infoh->biYPelsPerMeter,  4);
-    bin.read((zbyte *)&infoh->biClrUsed,        4);
-    bin.read((zbyte *)&infoh->biClrImportant,   4);
+    infoh->biSize          = bin.readle32();
+    infoh->biWidth         = bin.readle32();
+    infoh->biHeight        = bin.readle32();
+    infoh->biPlanes        = bin.readle16();
+    infoh->biBitCount      = bin.readle16();
+    infoh->biCompression   = bin.readle32();
+    infoh->biSizeImage     = bin.readle32();
+    infoh->biXPelsPerMeter = bin.readle32();
+    infoh->biYPelsPerMeter = bin.readle32();
+    infoh->biClrUsed       = bin.readle32();
+    infoh->biClrImportant  = bin.readle32();
 }
 
 ZBinary writeFileHeader(const BitmapFileHeader *fileh){
+    // 14 byte file header
     ZBinary out;
-    out.fill(0, 14);
-    out.write((const zbyte *)&fileh->bfType,        2);
-    out.write((const zbyte *)&fileh->bfSize,        4);
-    out.write((const zbyte *)&fileh->bfReserved1,   2);
-    out.write((const zbyte *)&fileh->bfReserved2,   2);
-    out.write((const zbyte *)&fileh->bfOffBits,     4);
-//    *(unsigned short*)(&out.raw()[0])   = fileh->bfType;
-//    *(unsigned int*)  (&out.raw()[2])   = fileh->bfSize;
-//    *(unsigned short*)(&out.raw()[6])   = fileh->bfReserved1;
-//    *(unsigned short*)(&out.raw()[8])   = fileh->bfReserved2;
-//    *(unsigned int*)  (&out.raw()[10])  = fileh->bfOffBits;
+    out.writele16(fileh->bfType);
+    out.writele32(fileh->bfSize);
+    out.writele16(fileh->bfReserved1);
+    out.writele16(fileh->bfReserved2);
+    out.writele32(fileh->bfOffBits);
     return out;
 }
 ZBinary writeInfoHeader(const BitmapInfoHeader *infoh){
+    // 40 byte bitmap info header
     ZBinary out;
-    out.fill(0, 40);
-    out.write((const zbyte *)&infoh->biSize,            4);
-    out.write((const zbyte *)&infoh->biWidth,           4);
-    out.write((const zbyte *)&infoh->biHeight,          4);
-    out.write((const zbyte *)&infoh->biPlanes,          2);
-    out.write((const zbyte *)&infoh->biBitCount,        2);
-    out.write((const zbyte *)&infoh->biCompression,     4);
-    out.write((const zbyte *)&infoh->biSizeImage,       4);
-    out.write((const zbyte *)&infoh->biXPelsPerMeter,   4);
-    out.write((const zbyte *)&infoh->biYPelsPerMeter,   4);
-    out.write((const zbyte *)&infoh->biClrUsed,         4);
-    out.write((const zbyte *)&infoh->biClrImportant,    4);
-//    *(unsigned int*)  (&out.raw()[0])   = infoh->biSize;
-//    *(unsigned int*)  (&out.raw()[4])   = infoh->biWidth;
-//    *(unsigned int*)  (&out.raw()[8])   = infoh->biHeight;
-//    *(unsigned short*)(&out.raw()[12])  = infoh->biPlanes;
-//    *(unsigned short*)(&out.raw()[14])  = infoh->biBitCount;
-//    *(unsigned int*)  (&out.raw()[16])  = infoh->biCompression;
-//    *(unsigned int*)  (&out.raw()[20])  = infoh->biSizeImage;
-//    *(unsigned int*)  (&out.raw()[24])  = infoh->biXPelsPerMeter;
-//    *(unsigned int*)  (&out.raw()[28])  = infoh->biYPelsPerMeter;
-//    *(unsigned int*)  (&out.raw()[32])  = infoh->biClrUsed;
-//    *(unsigned int*)  (&out.raw()[36])  = infoh->biClrImportant;
+    out.writele32(infoh->biSize);
+    out.writele32(infoh->biWidth);
+    out.writele32(infoh->biHeight);
+    out.writele16(infoh->biPlanes);
+    out.writele16(infoh->biBitCount);
+    out.writele32(infoh->biCompression);
+    out.writele32(infoh->biSizeImage);
+    out.writele32(infoh->biXPelsPerMeter);
+    out.writele32(infoh->biYPelsPerMeter);
+    out.writele32(infoh->biClrUsed);
+    out.writele32(infoh->biClrImportant);
     return out;
 }
 
@@ -126,7 +95,7 @@ bool ZBMP::read(ZPath path){
         BitmapFileHeader fileh;
         readFileHeader(buffer, &fileh);
 
-        if(fileh.bfType != 0x4d42){
+        if(fileh.bfType != BITMAP_TYPE){
             throw ZException("Not a BMP file", BMPError::notabmp, false);
         }
         if(fileh.bfSize != buffer.size()){
@@ -173,38 +142,43 @@ bool ZBMP::write(ZPath path){
     }
 
     zu64 outsize;
-    unsigned char *dataout = convertRGBtoBMPData(image.buffer(), image.width(), image.height(), outsize);
+    zbyte *dataout = convertRGBtoBMPData(image.buffer(), image.width(), image.height(), outsize);
     if(!dataout){
         error = ZException("BMP Write: error in RGB conversion");
         return false;
     }
 
     // sizes of headers in file
-    const zu8 fileheadersize = 14;
-    const zu8 infoheadersize = 40;
+    const zu32 fileheadersize = 14;
+    const zu32 infoheadersize = 40;
 
-    const zu32 filesize = (zu32)(fileheadersize + infoheadersize + outsize);
+    const zu32 filesize = fileheadersize + infoheadersize + outsize;
 
     ZBinary out;
 
     BitmapFileHeader fileh;
-    memset(&fileh, 0, sizeof(BitmapFileHeader));
-    fileh.bfType = 0x4d42;  // magic bmp signature
-    fileh.bfSize = filesize;
-    fileh.bfOffBits = fileheadersize + infoheadersize;
-    out.concat(writeFileHeader(&fileh));
+    fileh.bfType = BITMAP_TYPE;
+    fileh.bfSize = filesize; // total size of file
+    fileh.bfReserved1 = 0;
+    fileh.bfReserved2 = 0;
+    fileh.bfOffBits = fileheadersize + infoheadersize; // offset to pixel data
+    zassert(out.write(writeFileHeader(&fileh)) == fileheadersize);
 
     BitmapInfoHeader infoh;
-    memset(&infoh, 0, sizeof(BitmapInfoHeader));
-    infoh.biSize = infoheadersize;
+    infoh.biSize = infoheadersize; // size of info header
     infoh.biWidth = (unsigned)image.width();
     infoh.biHeight = (unsigned)image.height();
     infoh.biPlanes = 1;
-    infoh.biBitCount = image.channels() * image.depth();    // will always be 24, but still
-    infoh.biCompression = 0;    // no compression
-    out.concat(writeInfoHeader(&infoh));
+    infoh.biBitCount = image.channels() * image.depth(); // will always be 24
+    infoh.biCompression = 0; // no compression
+    infoh.biSizeImage = 0;
+    infoh.biXPelsPerMeter = 0;
+    infoh.biYPelsPerMeter = 0;
+    infoh.biClrUsed = 0;
+    infoh.biClrImportant = 0;
+    zassert(out.write(writeInfoHeader(&infoh)) == infoheadersize);
 
-    out.concat(ZBinary(dataout, outsize));
+    zassert(out.write(dataout, outsize) == outsize);
     delete[] dataout;
 
     if(!ZFile::writeBinary(path, out)){
@@ -215,61 +189,51 @@ bool ZBMP::write(ZPath path){
     return true;
 }
 
-unsigned char *ZBMP::convertBMPDatatoRGB(unsigned char *bmpbuffer, zu32 height, zu32 width){
+zbyte *ZBMP::convertBMPDatatoRGB(const zbyte *bmpbuffer, zu32 width, zu32 height){
     if((NULL == bmpbuffer) || (width == 0) || (height == 0))
         return NULL;
 
-    zu32 padding = 0;
-    zu32 scanlinebytes = width * 3;
-    while((scanlinebytes + padding) % 4 != 0)
-        padding++;
-    zu32 psw = scanlinebytes + padding;
+    zu32 rowsize = (width * 3) + ((width * 3) % 4);
+    zbyte *rgbbuffer = new zbyte[width * height * 3];
 
-    unsigned char* newbuf = new unsigned char[width * height * 3];
+    zu64 bmppos = 0;
+    zu64 rgbpos = 0;
+    for(zu64 y = 0; y < height; ++y){
+        for(zu64 x = 0; x < width; ++x){
+            bmppos = ((height - y - 1) * rowsize) + (x * 3);
+            rgbpos = (y * width * 3) + (x * 3);
 
-    zu64 bufpos = 0;
-    zu64 newpos = 0;
-    for ( zu64 y = 0; y < height; y++ ){
-        for ( zu64 x = 0; x < 3 * width; x+=3 ){
-            newpos = y * 3 * width + x;
-            bufpos = ( height - y - 1 ) * psw + x;
-
-            newbuf[newpos]     = bmpbuffer[bufpos + 2];
-            newbuf[newpos + 1] = bmpbuffer[bufpos + 1];
-            newbuf[newpos + 2] = bmpbuffer[bufpos];
+            rgbbuffer[rgbpos]     = bmpbuffer[bmppos + 2];
+            rgbbuffer[rgbpos + 1] = bmpbuffer[bmppos + 1];
+            rgbbuffer[rgbpos + 2] = bmpbuffer[bmppos];
         }
     }
-    return newbuf;
+    return rgbbuffer;
 }
 
-unsigned char *ZBMP::convertRGBtoBMPData(unsigned char *rgbbuffer, zu32 height, zu32 width, zu64 &outsize){
+zbyte *ZBMP::convertRGBtoBMPData(const zbyte *rgbbuffer, zu32 width, zu32 height, zu64 &outsize){
     if((rgbbuffer == NULL) || (width == 0) || (height == 0))
         return NULL;
 
-    zu32 padding = 0;
-    zu32 scanlinebytes = width * 3;
-    while((scanlinebytes + padding) % 4 != 0)
-        padding++;
-    zu32 psw = scanlinebytes + padding;
+    zu32 rowsize = (width * 3) + ((width * 3) % 4);
+    outsize = height * rowsize;
+    zbyte *bmpbuffer = new zbyte[outsize];
 
-    outsize = height * psw;
-    unsigned char *newbuf = new unsigned char[outsize];
+    //memset(bmpbuffer, 0, outsize);
 
-    memset(newbuf, 0, outsize);
+    zu64 rgbpos = 0;
+    zu64 bmppos = 0;
+    for(zu32 y = 0; y < height; ++y){
+        for(zu32 x = 0; x < width; ++x){
+            rgbpos = (y * width * 3) + (x * 3);                 // position in original buffer
+            bmppos = ((height - y - 1) * rowsize) + (x * 3);    // position in padded buffer
 
-    zu64 bufpos = 0;
-    zu64 newpos = 0;
-    for(zu32 y = 0; y < height; y++){
-        for(zu32 x = 0; x < 3 * width; x += 3){
-            bufpos = y * 3 * width + x;                 // position in original buffer
-            newpos = (height - y - 1) * psw + x;        // position in padded buffer
-
-            newbuf[newpos]     = rgbbuffer[bufpos + 2]; // swap r and b
-            newbuf[newpos + 1] = rgbbuffer[bufpos + 1]; // g stays
-            newbuf[newpos + 2] = rgbbuffer[bufpos];     // swap b and r
+            bmpbuffer[bmppos]     = rgbbuffer[rgbpos + 2];      // swap r and b
+            bmpbuffer[bmppos + 1] = rgbbuffer[rgbpos + 1];      // g stays
+            bmpbuffer[bmppos + 2] = rgbbuffer[rgbpos];          // swap b and r
         }
     }
-    return newbuf;
+    return bmpbuffer;
 
 }
 

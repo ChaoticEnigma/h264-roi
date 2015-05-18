@@ -186,20 +186,80 @@ void ZBinary::writezu64(zu64 num){
     _rwpos += 8;
 }
 
+zu16 ZBinary::readle16(){
+    zassert((_size - _rwpos) >= 2);
+    zu16 num = decle16(_data + _rwpos);
+    _rwpos += 2;
+    return num;
+}
+zu32 ZBinary::readle32(){
+    zassert((_size - _rwpos) >= 4);
+    zu32 num = decle32(_data + _rwpos);
+    _rwpos += 4;
+    return num;
+}
+zu64 ZBinary::readle64(){
+    zassert((_size - _rwpos) >= 8);
+    zu64 num = decle64(_data + _rwpos);
+    _rwpos += 8;
+    return num;
+}
+
+void ZBinary::writele16(zu16 num){
+    resize(_size + 2);
+    encle16(_data + _rwpos, num);
+    _rwpos += 2;
+}
+void ZBinary::writele32(zu32 num){
+    resize(_size + 4);
+    encle32(_data + _rwpos, num);
+    _rwpos += 4;
+}
+void ZBinary::writele64(zu64 num){
+    resize(_size + 8);
+    encle64(_data + _rwpos, num);
+    _rwpos += 8;
+}
+
+zu8 ZBinary::deczu8(const zbyte *bin){
+    return (zu8)bin[0];
+}
 void ZBinary::enczu8(zbyte *bin, zu8 num){
     bin[0] = (zbyte)num;
 }
-void ZBinary::enczu16(zbyte *bin, zu16 num){
+
+zu16 ZBinary::decbe16(const zbyte *bin){
+    return ((zu16)bin[0] << 8) |
+           ((zu16)bin[1]);
+}
+zu32 ZBinary::decbe32(const zbyte *bin){
+    return ((zu32)bin[0] << 24) |
+           ((zu32)bin[1] << 16) |
+           ((zu32)bin[2] << 8)  |
+           ((zu32)bin[3]);
+}
+zu64 ZBinary::decbe64(const zbyte *bin){
+    return ((zu64)bin[0] << 56) |
+           ((zu64)bin[1] << 48) |
+           ((zu64)bin[2] << 40) |
+           ((zu64)bin[3] << 32) |
+           ((zu64)bin[4] << 24) |
+           ((zu64)bin[5] << 16) |
+           ((zu64)bin[6] << 8)  |
+           ((zu64)bin[7]);
+}
+
+void ZBinary::encbe16(zbyte *bin, zu16 num){
     bin[0] = (zbyte)((num >> 8) & 0xFF);
     bin[1] = (zbyte)((num)      & 0xFF);
 }
-void ZBinary::enczu32(zbyte *bin, zu32 num){
+void ZBinary::encbe32(zbyte *bin, zu32 num){
     bin[0] = (zbyte)((num >> 24) & 0xFF);
     bin[1] = (zbyte)((num >> 16) & 0xFF);
     bin[2] = (zbyte)((num >> 8)  & 0xFF);
     bin[3] = (zbyte)((num)       & 0xFF);
 }
-void ZBinary::enczu64(zbyte *bin, zu64 num){
+void ZBinary::encbe64(zbyte *bin, zu64 num){
     bin[0] = (zbyte)((num >> 56) & 0xFF);
     bin[1] = (zbyte)((num >> 48) & 0xFF);
     bin[2] = (zbyte)((num >> 40) & 0xFF);
@@ -210,64 +270,46 @@ void ZBinary::enczu64(zbyte *bin, zu64 num){
     bin[7] = (zbyte)((num)       & 0xFF);
 }
 
-zu8 ZBinary::deczu8(const zbyte *bin){
-    return (zu8)bin[0];
+zu16 ZBinary::decle16(const zbyte *bin){
+    return ((zu16)bin[1] << 8) |
+           ((zu16)bin[0]);
 }
-zu16 ZBinary::deczu16(const zbyte *bin){
-    return ((zu16)bin[0] << 8) |
-           ((zu16)bin[1]);
+zu32 ZBinary::decle32(const zbyte *bin){
+    return ((zu32)bin[3] << 24) |
+           ((zu32)bin[2] << 16) |
+           ((zu32)bin[1] << 8)  |
+           ((zu32)bin[0]);
 }
-zu32 ZBinary::deczu32(const zbyte *bin){
-    return ((zu32)bin[0] << 24) |
-           ((zu32)bin[1] << 16) |
-           ((zu32)bin[2] << 8)  |
-           ((zu32)bin[3]);
-}
-zu64 ZBinary::deczu64(const zbyte *bin){
-    return ((zu64)bin[0] << 56) |
-           ((zu64)bin[1] << 48) |
-           ((zu64)bin[2] << 40) |
-           ((zu64)bin[3] << 32) |
-           ((zu64)bin[4] << 24) |
-           ((zu64)bin[5] << 16) |
-           ((zu64)bin[6] << 8)  |
-            ((zu64)bin[7]);
+zu64 ZBinary::decle64(const zbyte *bin){
+    return ((zu64)bin[7] << 56) |
+           ((zu64)bin[6] << 48) |
+           ((zu64)bin[5] << 40) |
+           ((zu64)bin[4] << 32) |
+           ((zu64)bin[3] << 24) |
+           ((zu64)bin[2] << 16) |
+           ((zu64)bin[1] << 8)  |
+           ((zu64)bin[0]);
 }
 
-void ZBinary::encfloat(zbyte *bin, float flt){
-    zbyte *raw;
-    if(LIBCHAOS_BIG_ENDIAN){
-        raw = (zbyte *)&flt;
-    } else {
-        zbyte *rawbe = (zbyte *)&flt;
-        float out;
-        raw = (zbyte *)&out;
-        raw[0] = rawbe[3];
-        raw[1] = rawbe[2];
-        raw[2] = rawbe[1];
-        raw[3] = rawbe[0];
-    }
-    enczu32(bin, *(zu32 *)raw);
+void ZBinary::encle16(zbyte *bin, zu16 num){
+    bin[1] = (zbyte)((num >> 8) & 0xFF);
+    bin[0] = (zbyte)((num)      & 0xFF);
 }
-
-void ZBinary::encdouble(zbyte *bin, double dbl){
-    zbyte *raw;
-    if(LIBCHAOS_BIG_ENDIAN){
-        raw = (zbyte *)&dbl;
-    } else {
-        zbyte *rawbe = (zbyte *)&dbl;
-        double out;
-        raw = (zbyte *)&out;
-        raw[0] = rawbe[7];
-        raw[1] = rawbe[6];
-        raw[2] = rawbe[5];
-        raw[3] = rawbe[4];
-        raw[4] = rawbe[3];
-        raw[5] = rawbe[2];
-        raw[6] = rawbe[1];
-        raw[7] = rawbe[0];
-    }
-    enczu64(bin, *(zu64 *)raw);
+void ZBinary::encle32(zbyte *bin, zu32 num){
+    bin[3] = (zbyte)((num >> 24) & 0xFF);
+    bin[2] = (zbyte)((num >> 16) & 0xFF);
+    bin[1] = (zbyte)((num >> 8)  & 0xFF);
+    bin[0] = (zbyte)((num)       & 0xFF);
+}
+void ZBinary::encle64(zbyte *bin, zu64 num){
+    bin[7] = (zbyte)((num >> 56) & 0xFF);
+    bin[6] = (zbyte)((num >> 48) & 0xFF);
+    bin[5] = (zbyte)((num >> 40) & 0xFF);
+    bin[4] = (zbyte)((num >> 32) & 0xFF);
+    bin[3] = (zbyte)((num >> 24) & 0xFF);
+    bin[2] = (zbyte)((num >> 16) & 0xFF);
+    bin[1] = (zbyte)((num >> 8)  & 0xFF);
+    bin[0] = (zbyte)((num)       & 0xFF);
 }
 
 float ZBinary::decfloat(const zbyte *bin){
@@ -304,6 +346,42 @@ double ZBinary::decdouble(const zbyte *bin){
         raw[7] = rawbe[0];
         return out;
     }
+}
+
+void ZBinary::encfloat(zbyte *bin, float flt){
+    zbyte *raw;
+    if(LIBCHAOS_BIG_ENDIAN){
+        raw = (zbyte *)&flt;
+    } else {
+        zbyte *rawbe = (zbyte *)&flt;
+        float out;
+        raw = (zbyte *)&out;
+        raw[0] = rawbe[3];
+        raw[1] = rawbe[2];
+        raw[2] = rawbe[1];
+        raw[3] = rawbe[0];
+    }
+    enczu32(bin, *(zu32 *)raw);
+}
+
+void ZBinary::encdouble(zbyte *bin, double dbl){
+    zbyte *raw;
+    if(LIBCHAOS_BIG_ENDIAN){
+        raw = (zbyte *)&dbl;
+    } else {
+        zbyte *rawbe = (zbyte *)&dbl;
+        double out;
+        raw = (zbyte *)&out;
+        raw[0] = rawbe[7];
+        raw[1] = rawbe[6];
+        raw[2] = rawbe[5];
+        raw[3] = rawbe[4];
+        raw[4] = rawbe[3];
+        raw[5] = rawbe[2];
+        raw[6] = rawbe[1];
+        raw[7] = rawbe[0];
+    }
+    enczu64(bin, *(zu64 *)raw);
 }
 
 }
