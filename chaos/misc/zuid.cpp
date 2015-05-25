@@ -15,7 +15,7 @@
     #include <iptypes.h>
     #include <iphlpapi.h>
 #else
-    #include <time.h>
+    #include <sys/time.h>
     #include <sys/ioctl.h>
     #include <net/if.h>
     #include <unistd.h>
@@ -60,7 +60,7 @@ ZUID::ZUID(uuidtype type){
         // POSIX UTC start January 1, 1970, 00:00:00.000000
         // We need UTC since October 15, 1582, 00:00:00.0000000
         // Add 387 years + 17 days in Oct + 30 days in Nov + 31 days in Dec + 94 leap days, to seconds, to 100 nanosecond interval
-        zu64 utctime = (tvime * 10) + ((zu64)((387*365)+17+30+31+5) * (60*60*24) * (1000*1000*10));
+        zu64 utctime = (tvtime * 10) + ((zu64)((387*365)+17+30+31+5) * (60*60*24) * (1000*1000*10));
 #endif
 
         zu32 utchi = (utctime >> 32);

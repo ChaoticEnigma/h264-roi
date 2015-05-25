@@ -131,7 +131,7 @@ int mutex_test(){
 
 #else
 
-int mutex_block(){
+int mutex_test(){
     return 0;
 }
 
