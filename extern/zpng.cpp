@@ -13,9 +13,6 @@
 namespace LibChaos {
 
 bool ZPNG::decode(ZBinary &pngdata_in){
-#ifdef DISABLE_LIBPNG
-    throw ZError("LIBPNG IS DISABLED YOU FUCK");
-#else
     PngReadData data;
 
     try {
@@ -97,13 +94,9 @@ bool ZPNG::decode(ZBinary &pngdata_in){
     pngdata_in.rewind();
     readpng_cleanup(&data);
     return true;
-#endif
 }
 
 bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
-#ifdef DISABLE_LIBPNG
-    throw ZError("FUCK");
-#else
     PngWriteData *data = new PngWriteData;
 
     try {
@@ -195,7 +188,6 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
     writepng_cleanup(data);
     delete data;
     return true;
-#endif
 }
 
 bool ZPNG::read(ZPath path){

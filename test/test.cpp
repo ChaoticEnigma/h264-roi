@@ -14,6 +14,8 @@ int main(int argc, char **argv){
         ZLog::addLogFile(lgf, ZLogSource::debug, "%time% %thread% %function% (%file%:%line%) - %log%");
         ZLog::addLogFile(lgf, ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
 
+        LOG("LibChaos: " << LibChaosDescribe());
+
         ZAssoc<ZString, test_func> defaulttests = {
             { "pointer", pointer_test },
             { "allocator", allocator_test },

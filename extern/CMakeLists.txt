@@ -3,8 +3,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
 PROJECT(LibChaos_Extern)
 
+FIND_PACKAGE(PNG)
+
 OPTION(ENABLE_ZPNG "Link zlib and libpng and build ZPNG" OFF)
-OPTION(ENABLE_ZJPEG "Link libjepg-turbo and build ZJPEG" OFF )
+OPTION(ENABLE_ZJPEG "Link libjepg-turbo and build ZJPEG" OFF)
 #OPTION(ENABLE_ZWEBP "Link libwebp and build ZWebP" OFF)
 OPTION(ENABLE_ZH264 "Link libavcodec and libx264 and build ZH264Decoder and ZH264Encoder" OFF)
 
@@ -19,32 +21,32 @@ IF(ENABLE_ALL_EXTERN)
 ENDIF()
 
 SET(LibChaos_Extern_HEADERS ### =================== HEADERS =================== ###
+    zjpeg.h
     zh264decoder.h
     zh264encoder.h
-    zjpeg.h
-    zpng.h
 )
 
-SET(LibChaos_Extern_SOURCES ### =================== SOURCES =================== ###
-
-)
-
-IF(ENABLE_ZPNG)
-    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES}
+### =================== SOURCES =================== ###
+IF(PNG_FOUND)
+    LIST(APPEND LIBCHAOS_EXTERN_LIBS "PNG")
+    SET(LibChaos_Extern_SOURCES
+        zpng.h
         zpng.cpp
     )
 ENDIF()
 IF(ENABLE_ZJPEG)
-    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES}
-        zjpeg.cpp
-    )
+    LIST(APPEND LIBCHAOS_EXTERN_LIBS "JPEG")
+    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES} zjpeg.cpp)
 ENDIF()
 IF(ENABLE_ZH264)
+    LIST(APPEND LIBCHAOS_EXTERN_LIBS "H264")
     SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES}
         zh264decoder.cpp
         zh264encoder.cpp
     )
 ENDIF()
+
+MESSAGE(STATUS "Extern Libs: " ${LIBCHAOS_EXTERN_LIBS})
 
 ### =================== CONFIG =================== ###
 
@@ -66,8 +68,6 @@ IF(NOT ENABLE_ZPNG)
 ENDIF()
 
 ### =================== BUILD =================== ###
-
-ADD_DEFINITIONS(-DBUILDING)
 
 ADD_LIBRARY(chaosextern ${LIBCHAOS_EXTERN_ALL} ${LibChaos_Extern_HEADERS} ${LibChaos_Extern_SOURCES})
 TARGET_LINK_LIBRARIES(chaosextern chaos)

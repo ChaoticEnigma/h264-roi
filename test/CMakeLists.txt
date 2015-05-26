@@ -8,8 +8,6 @@ SET(LibChaos_Test_HEADERS ### =================== SOURCES =================== ##
 )
 
 SET(LibChaos_Test_SOURCES ### =================== SOURCES =================== ###
-    ${LibChaos_Test_HEADERS}
-
     test.cpp
 
     pointer_test.cpp
@@ -61,9 +59,7 @@ ENDIF()
 
 ### =================== BUILD =================== ###
 
-ADD_DEFINITIONS(-DBUILDING)
-
-ADD_EXECUTABLE(testchaos ${LIBCHAOS_TEST_ALL} ${LibChaos_Test_SOURCES})
+ADD_EXECUTABLE(testchaos ${LIBCHAOS_TEST_ALL} ${LibChaos_Test_HEADERS} ${LibChaos_Test_SOURCES})
 TARGET_LINK_LIBRARIES(testchaos chaos)
 IF(ENABLE_ZPNG)
     TARGET_LINK_LIBRARIES(testchaos chaosextern)

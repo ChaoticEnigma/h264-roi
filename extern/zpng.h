@@ -9,10 +9,8 @@
 #include "zexception.h"
 #include "zbinary.h"
 
-#ifndef DISABLE_LIBPNG
-    #define PNG_DEBUG 3
-    #include <png.h>
-#endif
+#define PNG_DEBUG 3
+#include <png.h>
 
 namespace LibChaos {
 
@@ -90,7 +88,6 @@ public:
         return image;
     }
 
-#ifndef DISABLE_LIBPNG
 private:
     struct PngReadData {
         ZBinary *filedata;
@@ -151,7 +148,6 @@ private:
     static void writepng_cleanup(PngWriteData *mainprog_ptr);
     static void writepng_warning_handler(png_struct *png_ptr, png_const_charp msg);
     static void writepng_error_handler(png_struct *png_ptr, png_const_charp msg);
-#endif
 
 private:
     ZImage image;

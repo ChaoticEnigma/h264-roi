@@ -13,7 +13,8 @@
 /*! \mainpage LibChaos Home
  *
  *  \section intro_sec Introduction
- *  Introduction goes here.
+ *  Documentation built for LibChaos ${LIBCHAOS_DESCRIBE}. \n
+ *  LibChaos is a general-purpose
  *
  *  \section build_sec Building LibChaos
  *  Using CMake.
@@ -24,6 +25,9 @@
 // Y-prefixed classes enforce interfaces on inheriting classes
 // Other classes from LibChaos are not intended to be used outside the library code
 
+// Git Describe
+#define LIBCHAOS_DESCRIBE "${LIBCHAOS_DESCRIBE}"
+
 // Require C++
 #ifndef __cplusplus
     #error LibChaos requires a C++ compiler!
@@ -31,7 +35,7 @@
 
 // Warn if greater than C++11
 #if __cplusplus > 201103L
-    #warning LibChaos is not tested with C++ specs after than C++11
+    #warning LibChaos is not tested with C++ specs after C++11
 #endif
 
 //
@@ -119,10 +123,13 @@
     #error Unknown signed integer encoding?
 #endif
 
+// Byte Endianess
+#define LIBCHAOS_BIG_ENDIAN (*(const zu16 *)"\0\xff" < 0x100) /* pure evil */
+
 // Constants
-//#ifdef NULL
+#ifdef NULL
     #undef NULL
-//#endif
+#endif
 //#define NULL (void *)0
 #define NULL nullptr
 
@@ -227,9 +234,10 @@ static_assert(sizeof(zu64) == 8, "zu64 has incorrect size");
 // Force 64-bit platform
 //static_assert(sizeof(void *) == 8, "void pointer is not 64-bit");
 
+static const char *LibChaosDescribe(){
+    return LIBCHAOS_DESCRIBE;
 }
 
-// Byte Endianess
-#define LIBCHAOS_BIG_ENDIAN (*(const zu16 *)"\0\xff" < 0x100) /* pure evil */
+}
 
 #endif // ZTYPES_H
