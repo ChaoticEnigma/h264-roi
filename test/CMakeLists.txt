@@ -36,6 +36,8 @@ SET(LibChaos_Test_SOURCES ### =================== SOURCES =================== ##
     socket_test.cpp
     socket2_test.cpp
 
+    png_test.cpp
+
     sandbox.cpp
     error_test.cpp
 )
@@ -53,7 +55,7 @@ INCLUDE_DIRECTORIES(
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
 
 # Set preprocessor defines
-IF(ENABLE_ZPNG)
+IF(LIBCHAOS_HAS_PNG)
     ADD_DEFINITIONS(-DTEST_ZPNG)
 ENDIF()
 
@@ -61,6 +63,6 @@ ENDIF()
 
 ADD_EXECUTABLE(testchaos ${LIBCHAOS_TEST_ALL} ${LibChaos_Test_HEADERS} ${LibChaos_Test_SOURCES})
 TARGET_LINK_LIBRARIES(testchaos chaos)
-IF(ENABLE_ZPNG)
+IF(LIBCHAOS_HAS_PNG)
     TARGET_LINK_LIBRARIES(testchaos chaosextern)
 ENDIF()

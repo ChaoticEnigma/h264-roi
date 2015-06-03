@@ -50,6 +50,10 @@ int tcpserver_test3();
 
 int json_test();
 
+#ifdef TEST_PNG
+int png_test();
+#endif
+
 int error_test();
 
 typedef int (*test_func)(void);

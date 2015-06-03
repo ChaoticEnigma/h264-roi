@@ -55,9 +55,9 @@ int main(int argc, char **argv){
             { "tcpserver2", tcpserver_test2 },
             { "tcpserver3", tcpserver_test3 },
 
-    #ifdef TEST_ZPNG
+#ifdef TEST_ZPNG
             { "png", png_test },
-    #endif
+#endif
 
             { "sandbox", sandbox },
 

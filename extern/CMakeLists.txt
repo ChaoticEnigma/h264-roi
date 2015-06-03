@@ -3,12 +3,15 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
 PROJECT(LibChaos_Extern)
 
-FIND_PACKAGE(PNG)
+INCLUDE(FindPNG)
 
-OPTION(ENABLE_ZPNG "Link zlib and libpng and build ZPNG" OFF)
+OPTION(DISABLE_ZPNG "Link zlib and libpng and build ZPNG" OFF)
 OPTION(ENABLE_ZJPEG "Link libjepg-turbo and build ZJPEG" OFF)
 #OPTION(ENABLE_ZWEBP "Link libwebp and build ZWebP" OFF)
 OPTION(ENABLE_ZH264 "Link libavcodec and libx264 and build ZH264Decoder and ZH264Encoder" OFF)
+
+SET(BUILD_PNG PNG_FOUND AND NOT DISABLE_PNG)
+SET(LIBCHAOS_HAS_PNG BUILD_PNG PARENT_SCOPE)
 
 # Enable all extern classes
 IF(ENABLE_ALL_EXTERN)
@@ -27,7 +30,7 @@ SET(LibChaos_Extern_HEADERS ### =================== HEADERS =================== 
 )
 
 ### =================== SOURCES =================== ###
-IF(PNG_FOUND)
+IF(BUILD_PNG)
     LIST(APPEND LIBCHAOS_EXTERN_LIBS "PNG")
     SET(LibChaos_Extern_SOURCES
         zpng.h
@@ -60,11 +63,11 @@ SET(LibChaos_Extern_INCLUDE ${LibChaos_Extern_INCLUDE} PARENT_SCOPE)
 # Include Directories
 INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
+    ${PNG_INCLUDE_DIRS}
 )
 
-IF(NOT ENABLE_ZPNG)
-    ADD_DEFINITIONS(-DDISABLE_LIBPNG)
-    SET(DISABLE_LIBPNG 1 PARENT_SCOPE)
+IF(BUILD_PNG)
+    ADD_DEFINITIONS(${PNG_DEFINITIONS} -DLIBCHAOS_HAS_PNG)
 ENDIF()
 
 ### =================== BUILD =================== ###
@@ -73,8 +76,8 @@ ADD_LIBRARY(chaosextern ${LIBCHAOS_EXTERN_ALL} ${LibChaos_Extern_HEADERS} ${LibC
 TARGET_LINK_LIBRARIES(chaosextern chaos)
 
 # Link libpng and zlib
-IF(ENABLE_ZPNG)
-    TARGET_LINK_LIBRARIES(chaosextern png z)
+IF(BUILD_PNG)
+    TARGET_LINK_LIBRARIES(chaosextern ${PNG_LIBRARIES})
 ENDIF()
 # Link libjpeg
 IF(ENABLE_ZJPEG)
