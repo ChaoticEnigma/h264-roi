@@ -27,7 +27,6 @@ SET(LibChaos_Test_SOURCES ### =================== SOURCES =================== ##
     thread_test.cpp
 
     file_test.cpp
-    image_test.cpp
     autobuffer_test.cpp
     json_test.cpp
 
@@ -36,14 +35,15 @@ SET(LibChaos_Test_SOURCES ### =================== SOURCES =================== ##
     socket_test.cpp
     socket2_test.cpp
 
-    png_test.cpp
-
     sandbox.cpp
     error_test.cpp
 )
 
 IF(ENABLE_ZPNG)
-    SET(LibChaos_Test_SOURCES ${LibChaos_Test_SOURCES} png_test.cpp)
+    SET(LibChaos_Test_SOURCES ${LibChaos_Test_SOURCES}
+        image_test.cpp
+        png_test.cpp
+    )
 ENDIF()
 
 ### =================== CONFIG =================== ###

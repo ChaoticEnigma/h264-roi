@@ -41,7 +41,10 @@ int main(int argc, char **argv){
             { "hash", hash_test },
 
             { "file", file_test },
+#ifdef TEST_ZPNG
             { "image", image_test },
+            { "png", png_test },
+#endif
             { "autobuffer", autobuffer_test },
             { "json", json_test },
         };
@@ -54,10 +57,6 @@ int main(int argc, char **argv){
             { "tcpserver", tcpserver_test },
             { "tcpserver2", tcpserver_test2 },
             { "tcpserver3", tcpserver_test3 },
-
-#ifdef TEST_ZPNG
-            { "png", png_test },
-#endif
 
             { "sandbox", sandbox },
 
