@@ -54,6 +54,7 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     file/zbmp.h
     file/zfile.h
     file/zimage.h
+    file/zoptions.h
     file/zppm.h
 
     lib/fnv-5.0.3/fnv.h
@@ -110,6 +111,7 @@ SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ##
     file/zbmp.cpp
     file/zfile.cpp
     file/zimage.cpp
+    file/zoptions.cpp
     file/zppm.cpp
 
     lib/fnv-5.0.3/hash_64a.c
