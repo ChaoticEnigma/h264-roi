@@ -91,7 +91,6 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
 )
 
 SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ###
-    ${LibChaos_Core_HEADERS}
 
     base/zclock.cpp
     base/zerror.cpp
@@ -155,6 +154,10 @@ IF(LIBCHAOS_PLATFORM_WINDOWS)
     )
 ENDIF()
 
+SET(LibChaos_Core_FILES ${LibChaos_Core_HEADERS} ${LibChaos_Core_SOURCES} PARENT_SCOPE)
+
+### =================== CONFIG =================== ###
+
 # Visual Studio Project Filters
 SOURCE_GROUP(""         FILES ztypes.h)
 SOURCE_GROUP(abstract   REGULAR_EXPRESSION "abstract/.*")
@@ -167,8 +170,6 @@ SOURCE_GROUP(misc       REGULAR_EXPRESSION "misc/.*")
 SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
 SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
 SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
-
-### =================== CONFIG =================== ###
 
 # Export Include Path
 SET(LibChaos_Core_INCLUDE
@@ -206,7 +207,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/ztypes.h" "${CMAKE_CURRENT_BINARY_DI
 
 ### =================== BUILD =================== ###
 
-ADD_LIBRARY(chaos ${LIBCHAOS_LINK} ${LibChaos_Core_SOURCES})
+ADD_LIBRARY(chaos ${LIBCHAOS_LINK} ${LibChaos_Core_HEADERS} ${LibChaos_Core_SOURCES})
 IF(LIBCHAOS_PLATFORM_WINDOWS)
     IF(LIBCHAOS_COMPILER_MSVC)
         TARGET_LINK_LIBRARIES(chaos Ws2_32 iphlpapi)

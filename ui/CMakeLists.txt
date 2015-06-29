@@ -3,8 +3,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
 PROJECT(LibChaosUI)
 
-#ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../chaos ${CMAKE_CURRENT_BINARY_DIR}/chaos)
-
 SET(LibChaosUI_HEADERS ### =================== HEADERS =================== ###S
     zui.h
     align.h
@@ -17,27 +15,30 @@ SET(LibChaosUI_HEADERS ### =================== HEADERS =================== ###S
     table.h
     progress.h
 )
+
 IF(LIBCHAOS_PLATFORM_WINDOWS) ### =================== SOURCES =================== ###
     SET(LibChaosUI_SOURCES
-        win32/window_win32.cpp
-        win32/windowproc_win32.cpp
         win32/align_win32.cpp
-        win32/control_win32.cpp
         win32/button_win32.cpp
+        win32/control_win32.cpp
         win32/edit_win32.cpp
         win32/font_win32.cpp
-        win32/table_win32.cpp
         win32/progress_win32.cpp
+        win32/table_win32.cpp
+        win32/window_win32.cpp
+        win32/windowproc_win32.cpp
     )
 ELSE()
     SET(LibChaosUI_SOURCES
-        #zuiwindow.cpp
-        #zuiwindowproc.cpp
-        #zuicontrol.cpp
-        #zuibutton.cpp
-        #zuiedit.cpp
-        #zuifont.cpp
-        #zuitable.cpp
+        align.cpp
+        button.cpp
+        control.cpp
+        edit.cpp
+        font.cpp
+        progress.cpp
+        table.cpp
+        window.cpp
+        windowproc.cpp
     )
 ENDIF()
 
@@ -49,14 +50,12 @@ INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
 )
 
-#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -ansi -std=c++11 -Wl,--subsystem,windows")
-
 ### =================== BUILD =================== ###
 
 ADD_DEFINITIONS(-DBUILDING)
 ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
 
-ADD_LIBRARY(chaosui ${LIBCHAOS_UI_ALL} ${LibChaosUI_SOURCES})
+ADD_LIBRARY(chaosui ${LIBCHAOS_UI_ALL} ${LibChaosUI_HEADERS} ${LibChaosUI_SOURCES})
 IF(LIBCHAOS_PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(chaosui chaos comctl32)
 ELSE()

@@ -16,13 +16,13 @@ public:
 
     struct ShowMode {
         enum Show {
-            def = 0, // Default
-            show = 1, // Display with curent size / pos
-            hide = 2, // Hide (never activate)
-            maximize = 3, // Maximize (always activate)
-            minimize = 4, // Minimize
-            restore = 5, // Restore to original size / pos (always activate)
-            normal = 6 // Display with original size / pos
+            def = 0,        // Default
+            show = 1,       // Display with curent size / pos
+            hide = 2,       // Hide (never activate)
+            maximize = 3,   // Maximize (always activate)
+            minimize = 4,   // Minimize
+            restore = 5,    // Restore to original size / pos (always activate)
+            normal = 6      // Display with original size / pos
         } display;
         bool activate;
     };

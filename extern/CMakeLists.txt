@@ -28,7 +28,8 @@ IF(ENABLE_ALL_EXTERN)
     SET(ENABLE_ZH264 1 PARENT_SCOPE)
 ENDIF()
 
-SET(LibChaos_Extern_HEADERS ### =================== HEADERS =================== ###
+### =================== HEADERS =================== ###
+SET(LibChaos_Extern_HEADERS
     zjpeg.h
     zh264decoder.h
     zh264encoder.h
@@ -54,9 +55,11 @@ IF(ENABLE_ZH264)
     )
 ENDIF()
 
-MESSAGE(STATUS "Extern Libs: " ${LIBCHAOS_EXTERN_LIBS})
+SET(LibChaos_Extern_FILES ${LibChaos_Extern_HEADERS} ${LibChaos_Extern_SOURCES} PARENT_SCOPE)
 
 ### =================== CONFIG =================== ###
+
+MESSAGE(STATUS "Extern Libs: " ${LIBCHAOS_EXTERN_LIBS})
 
 SET(LibChaos_Extern_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}

@@ -14,6 +14,8 @@ OPTION(LIBCHAOS_BBB     "Build LibChaos BeagleBone Black library"   OFF )
 
 OPTION(LIBCHAOS_SHARED  "Build LibChaos as a shared library"        OFF )
 
+OPTION(LIBCHAOS_DOXYGEN "Build LibChaos documentation with Doxygen" ON  )
+
 # Build Settings
 INCLUDE(cmake/ConfigureBuild.cmake)
 
@@ -69,17 +71,20 @@ ADD_CUSTOM_TARGET(dummy SOURCES
 ADD_SUBDIRECTORY(chaos)
 SET(LibChaos_BUILD_LIST "Core")
 SET(LibChaos_INCLUDE ${LibChaos_Core_INCLUDE})
+SET(LibChaos_ALL_FILES ${LibChaos_Core_FILES})
 
 # LibChaos Extern
 IF(NOT LIBCHAOS_EXTERN)
     SET(LIBCHAOS_EXTERN_ALL EXCLUDE_FROM_ALL)
 ENDIF()
 ADD_SUBDIRECTORY(extern)
+SET(LibChaos_ALL_FILES ${LibChaos_ALL_FILES} ${LibChaos_Extern_FILES})
 IF(LIBCHAOS_EXTERN)
     SET(LibChaos_BUILD_LIST ${LibChaos_BUILD_LIST} "Extern")
     SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} ${LibChaos_Extern_INCLUDE})
 ENDIF()
 
+# Export Include Directories
 IF(HAS_PARENT)
     SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} PARENT_SCOPE)
 ENDIF()
@@ -89,6 +94,7 @@ IF(NOT LIBCHAOS_UI)
     SET(LIBCHAOS_UI_ALL EXCLUDE_FROM_ALL)
 ENDIF()
 ADD_SUBDIRECTORY(ui)
+SET(LibChaos_ALL_FILES ${LibChaos_ALL_FILES} ${LibChaos_UI_FILES})
 IF(LIBCHAOS_UI)
     SET(LibChaos_BUILD_LIST ${LibChaos_BUILD_LIST} "UI")
     IF(HAS_PARENT)
@@ -138,41 +144,7 @@ IF(LIBCHAOS_ZPARCEL)
 ENDIF()
 
 # Doxygen
-FIND_PACKAGE(Doxygen)
-IF(DOXYGEN_FOUND)
-    IF(LIBCHAOS_DOXYGEN)
-        SET(DOXYGEN_AUTO ALL)
-    ENDIF()
-
-    # General Doxygen Options
-    SET(DOXYGEN_INPUT ${CMAKE_CURRENT_SOURCE_DIR})
-    SET(DOXYGEN_OUTPUT ${CMAKE_CURRENT_BINARY_DIR})
-    SET(DOXYGEN_VERSION ${LIBCHAOS_DESCRIBE})
-    IF(DEBUG)
-        SET(DOXYGEN_DEBUG "YES")
-    ELSE()
-        SET(DOXYGEN_DEBUG "NO")
-    ENDIF()
-
-    # Build Compressed HTML on Windows
-    INCLUDE(cmake/FindHTMLHelp.cmake)
-    IF(HTML_HELP_COMPILER)
-        SET(DOXYGEN_HHC ${HTML_HELP_COMPILER})
-        CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile-help.in" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-help" @ONLY)
-        ADD_CUSTOM_TARGET(doxyhelp ${DOXYGEN_AUTO}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            COMMAND ${DOXYGEN_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-help"
-            COMMAND ${CMAKE_COMMAND} -E rename chm/LibChaos.chm LibChaos.chm
-        )
-    ENDIF()
-
-    # Build Normal HTML
-    CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
-    ADD_CUSTOM_TARGET(doxygen ${DOXYGEN_AUTO}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND ${DOXYGEN_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
-    )
-ENDIF()
+INCLUDE(cmake/Doxygen.cmake)
 
 # Build Status Line
 STRING(REPLACE ";" "," LIBCHAOS_BUILD_LIST_STRING "${LibChaos_BUILD_LIST}")
