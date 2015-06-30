@@ -29,6 +29,9 @@ zu64 prevtime;
 zu16 prevclock = 0;
 ZBinary prevmac;
 
+/*! Generates an RFC 4122 compliant UUID of \a type.
+ *  Default is time-based UUID (type 1).
+ */
 ZUID::ZUID(uuidtype type){
     if(type == nil){
         // Nil UUID

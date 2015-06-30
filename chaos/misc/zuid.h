@@ -28,23 +28,22 @@ public:
     };
 
 public:
-    //! Generate new UUID of type.
-    //! Default time-based UUID.
+    //! Generate new UUID of \a type
     ZUID(uuidtype type = time);
-    //! Parse existing UUID.
+    //! Parse existing UUID
     ZUID(ZString str);
 
-    //! Compare UUIDs.
+    //! Compare UUIDs
     bool operator==(const ZUID &uid);
 
-    //! Get the type of the UUID.
+    //! Get the type of the UUID
     uuidtype getType() const;
 
-    //! Get hexadecimal UUID string.
+    //! Get hexadecimal UUID string
     ZString str() const;
     //! Get binary container object
     ZBinary bin() const;
-    //! Get pointer to raw 16-octet UUID.
+    //! Get pointer to raw 16-octet UUID
     const zoctet *raw() const { return _id_octets; }
 
 public:
