@@ -74,6 +74,25 @@ int ZTime::getSecs() const {
     return 0;
 }
 
+/*! Format Options:
+ *  - h(h) - Most significant digit(s) of hour, leading zeroes removed
+ *  - m(m) - Most significant digit(s) of minute, leading zeroes removed
+ *  - s(s) - Most significant digit(s) of second, leading zeroes removed
+ *  - H(H) - Most significant digit(s) of hour, leading zeroes kept
+ *  - M(M) - Most significant digit(s) of minute, leading zeroes kept
+ *  - S(S) - Most significant digit(s) of second, leading zeroes kept
+ *  Examples:
+ *  - "hh:mm:ss" -> "2:50:23"
+ *  - "HH:MM:SS" -> "05:32:03"
+ *  \param format Format String
+ *  \return Formatted Time String
+ */
+ZString ZTime::formatStr(ZString format) const {
+    ZString str;
+    // TODO: ZTime formatStr()
+    return str;
+}
+
 ZString ZTime::timeStr() const {
     struct tm *time;
     time = localtime(&_time);

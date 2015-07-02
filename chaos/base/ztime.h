@@ -15,7 +15,7 @@
 
 namespace LibChaos {
 
-//! Represent an absolute date and time.
+//! Represents an absolute date and time.
 class ZTime {
 public:
 #if COMPILER == MSVC
@@ -38,6 +38,9 @@ public:
     }
 
     int getSecs() const;
+
+    //! Get a formatted string representation of the time.
+    ZString formatStr(ZString format) const;
 
     ZString timeStr() const;
     ZString dateStr() const;

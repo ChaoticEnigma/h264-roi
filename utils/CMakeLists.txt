@@ -1,5 +1,5 @@
-## LibChaos Utility CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+## LibChaos Utilities CMakeLists.txt
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
 PROJECT(LibChaos_Utils)
 
@@ -39,13 +39,6 @@ SET(LibChaos_Extern_FILES
 
 ### =================== CONFIG =================== ###
 
-OPTION(LIBCHAOS_UTIL_EXTENSION_FIXER          "Build LibChaos Extension Fixer"        OFF )
-OPTION(LIBCHAOS_UTIL_AUDIOBOOK_SORTER         "Build LibChaos Audiobook Sorter"       OFF )
-OPTION(LIBCHAOS_UTIL_DUPLICATE_FINDER         "Build LibChaos Duplicate Finder"       OFF )
-OPTION(LIBCHAOS_UTIL_IMAGE_DOWNLOADER         "Build LibChaos Image Downloader"       OFF )
-OPTION(LIBCHAOS_UTIL_IMAGE_LIBRARY_MANAGER    "Build LibChaos Image Library Manager"  OFF )
-OPTION(LIBCHAOS_UTIL_IMAGE_REVERSE_SEARCH     "Build LibChaos Image Reverse Search"   OFF )
-
 INCLUDE_DIRECTORIES(
     ${LibChaos_Utils_SOURCE_DIR}
     ${LibChaos_INCLUDE}
@@ -53,7 +46,7 @@ INCLUDE_DIRECTORIES(
 
 ### =================== BUILD =================== ###
 
-ADD_DEFINITIONS(-DBUILDING)
+#ADD_DEFINITIONS(-DBUILDING)
 
 # Extension Fixer
 IF(NOT LIBCHAOS_UTIL_EXTENSION_FIXER)

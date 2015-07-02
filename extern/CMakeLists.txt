@@ -1,21 +1,17 @@
-## LibChaos CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+## LibChaos Extern CMakeLists.txt
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
 PROJECT(LibChaos_Extern)
 
+# Find libpng and zlib
 INCLUDE(FindPNG)
-
-OPTION(ENABLE_ZPNG "Link zlib and libpng and build ZPNG" OFF)
-OPTION(ENABLE_ZJPEG "Link libjepg-turbo and build ZJPEG" OFF)
-#OPTION(ENABLE_ZWEBP "Link libwebp and build ZWebP" OFF)
-OPTION(ENABLE_ZH264 "Link libavcodec and libx264 and build ZH264Decoder and ZH264Encoder" OFF)
 
 IF(PNG_FOUND AND ENABLE_ZPNG)
     SET(BUILD_PNG TRUE)
-    SET(LIBCHAOS_HAS_PNG TRUE PARENT_SCOPE)
+    SET(LibChaos_Has_PNG TRUE PARENT_SCOPE)
 ELSE()
     SET(BUILD_PNG FALSE)
-    SET(LIBCHAOS_HAS_PNG FALSE PARENT_SCOPE)
+    SET(LibChaos_Has_PNG FALSE PARENT_SCOPE)
 ENDIF()
 
 # Enable all extern classes
@@ -37,18 +33,18 @@ SET(LibChaos_Extern_HEADERS
 
 ### =================== SOURCES =================== ###
 IF(BUILD_PNG)
-    LIST(APPEND LIBCHAOS_EXTERN_LIBS "PNG")
+    SET(EXTERN_BUILD_LIST ${EXTERN_BUILD_LIST} "PNG")
     SET(LibChaos_Extern_SOURCES
         zpng.h
         zpng.cpp
     )
 ENDIF()
 IF(ENABLE_ZJPEG)
-    LIST(APPEND LIBCHAOS_EXTERN_LIBS "JPEG")
+    SET(EXTERN_BUILD_LIST ${EXTERN_BUILD_LIST} "JPEG")
     SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES} zjpeg.cpp)
 ENDIF()
 IF(ENABLE_ZH264)
-    LIST(APPEND LIBCHAOS_EXTERN_LIBS "H264")
+    SET(EXTERN_BUILD_LIST ${EXTERN_BUILD_LIST} "H264")
     SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES}
         zh264decoder.cpp
         zh264encoder.cpp
@@ -59,7 +55,7 @@ SET(LibChaos_Extern_FILES ${LibChaos_Extern_HEADERS} ${LibChaos_Extern_SOURCES} 
 
 ### =================== CONFIG =================== ###
 
-MESSAGE(STATUS "Extern Libs: " ${LIBCHAOS_EXTERN_LIBS})
+SET(EXTERN_BUILD_LIST ${EXTERN_BUILD_LIST} PARENT_SCOPE)
 
 SET(LibChaos_Extern_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}

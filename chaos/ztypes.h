@@ -66,7 +66,8 @@
 // Other classes from LibChaos are not intended to be used outside the library code
 
 // Git Describe
-#define LIBCHAOS_DESCRIBE "${LIBCHAOS_DESCRIBE}"
+//#define LIBCHAOS_DESCRIBE "${LIBCHAOS_DESCRIBE}"
+#define LIBCHAOS_DESCRIBE _LIBCHAOS_DESCRIBE
 
 // Require C++
 #ifndef __cplusplus

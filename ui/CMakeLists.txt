@@ -1,5 +1,5 @@
-## Project LibChaosUI CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+## LibChaos UI CMakeLists.txt
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
 PROJECT(LibChaosUI)
 

@@ -1,19 +1,10 @@
-## Main LibChaos CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+## LibChaos CMakeLists.txt
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
 PROJECT(LibChaos)
 
 # Options
-OPTION(LIBCHAOS_ZPARCEL "Build ZParcel tool"                        OFF )
-
-OPTION(LIBCHAOS_EXTERN  "Build LibChaos with External Libraries"    ON  )
-OPTION(LIBCHAOS_UI      "Build LibChaos UI library"                 OFF )
-OPTION(LIBCHAOS_TEST    "Build LibChaos Test suite"                 ON  )
-OPTION(LIBCHAOS_UTIL    "Build LibChaos Utilities"                  OFF )
-
-OPTION(LIBCHAOS_SHARED  "Build LibChaos as a shared library"        OFF )
-
-OPTION(LIBCHAOS_DOXYGEN "Build LibChaos documentation with Doxygen" ON  )
+INCLUDE(cmake/Options.cmake)
 
 # Build Settings
 INCLUDE(cmake/ConfigureBuild.cmake)
@@ -25,7 +16,7 @@ EXECUTE_PROCESS(
     OUTPUT_VARIABLE LIBCHAOS_DESCRIBE
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-#SET(LIBCHAOS_CXX_FLAGS "${LIBCHAOS_CXX_FLAGS} -D\"_LIBCHAOS_DESCRIBE=${LIBCHAOS_DESCRIBE}\"")
+SET(LIBCHAOS_CXX_FLAGS "${LIBCHAOS_CXX_FLAGS} -D_LIBCHAOS_DESCRIBE=\\\"${LIBCHAOS_DESCRIBE}\\\"")
 
 IF(LIBCHAOS_LINK_SHARED)
     SET(LIBCHAOS_LINK SHARED)
@@ -62,6 +53,8 @@ ADD_CUSTOM_TARGET(dummy SOURCES
     doc/README.txt
     doc/Projects.txt
     doc/LibChaos_Todo_Ideas.txt
+    doc/Doxyfile.in
+    doc/Doxyfile-help.in
 )
 
 ## Libraries
@@ -79,7 +72,7 @@ ENDIF()
 ADD_SUBDIRECTORY(extern)
 SET(LibChaos_ALL_FILES ${LibChaos_ALL_FILES} ${LibChaos_Extern_FILES})
 IF(LIBCHAOS_EXTERN)
-    SET(LibChaos_BUILD_LIST ${LibChaos_BUILD_LIST} "Extern")
+    SET(LibChaos_BUILD_LIST ${LibChaos_BUILD_LIST} ${EXTERN_BUILD_LIST})
     SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} ${LibChaos_Extern_INCLUDE})
 ENDIF()
 
@@ -116,7 +109,7 @@ ENDIF()
 IF(NOT LIBCHAOS_UTIL)
     SET(LIBCHAOS_UTIL_ALL EXCLUDE_FROM_ALL)
 ENDIF()
-ADD_SUBDIRECTORY(util)
+ADD_SUBDIRECTORY(utils)
 IF(LIBCHAOS_UTIL)
     SET(LibChaos_BUILD_LIST ${LibChaos_BUILD_LIST} "Util")
 ENDIF()
