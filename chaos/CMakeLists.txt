@@ -152,6 +152,8 @@ IF(LIBCHAOS_PLATFORM_WINDOWS)
     )
 ENDIF()
 
+
+FOREACH(SRC ${LibChaos_Core_HEADERS})
 SET(LibChaos_Core_FILES ${LibChaos_Core_HEADERS} ${LibChaos_Core_SOURCES} PARENT_SCOPE)
 
 ### =================== CONFIG =================== ###
