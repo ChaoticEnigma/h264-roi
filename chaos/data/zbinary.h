@@ -116,6 +116,8 @@ public:
 
     ZBinary &concat(const ZBinary &other);
 
+    ZBinary &append(zbinary_type byte);
+
     void reverse();
 
     zu64 findFirst(const ZBinary &find) const;

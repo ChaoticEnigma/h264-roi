@@ -37,6 +37,7 @@ int hash_test();
 int file_test();
 int png_test();
 int image_test();
+int pdf_test();
 
 int autobuffer_test();
 

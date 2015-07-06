@@ -1,10 +1,6 @@
 
 FIND_PACKAGE(Doxygen)
 IF(DOXYGEN_FOUND)
-    IF(LIBCHAOS_DOXYGEN)
-        SET(DOXYGEN_AUTO ALL)
-    ENDIF()
-
     # General Doxygen Options
     SET(DOXYGEN_INPUT ${CMAKE_SOURCE_DIR})
     SET(DOXYGEN_OUTPUT ${CMAKE_BINARY_DIR})
@@ -16,40 +12,54 @@ IF(DOXYGEN_FOUND)
     ENDIF()
     SET(DOXYGEN_CONFIG_IN ${DOXYGEN_INPUT}/doc/Doxyfile.in)
     SET(DOXYGEN_CONFIG_OUT ${DOXYGEN_OUTPUT}/Doxyfile)
+    SET(DOXYGEN_CONFIG_HELP_IN ${DOXYGEN_INPUT}/doc/Doxyfile-help.in)
+    SET(DOXYGEN_CONFIG_HELP_OUT ${DOXYGEN_OUTPUT}/Doxyfile-help)
     SET(DOXYGEN_HTML ${DOXYGEN_OUTPUT}/html/index.html)
     SET(DOXYGEN_PDF ${DOXYGEN_OUTPUT}/${PROJECT_NAME}.pdf)
+    SET(DOXYGEN_HELP ${DOXYGEN_OUTPUT}/${PROJECT_NAME}.chm)
 
     # Build Compressed HTML on Windows
     INCLUDE(cmake/FindHTMLHelp.cmake)
     IF(HTML_HELP_COMPILER)
         SET(DOXYGEN_HHC ${HTML_HELP_COMPILER})
-        CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/doc/Doxyfile-help.in" "${CMAKE_BINARY_DIR}/Doxyfile-help" @ONLY)
-        ADD_CUSTOM_TARGET(doxyhelp ${DOXYGEN_AUTO}
-            DEPENDS ${LibChaos_ALL_FILES}
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMAND ${DOXYGEN_EXECUTABLE} "${CMAKE_BINARY_DIR}/Doxyfile-help"
-            COMMAND ${CMAKE_COMMAND} -E rename chm/LibChaos.chm LibChaos.chm
+        CONFIGURE_FILE("${DOXYGEN_CONFIG_HELP_IN}" "${DOXYGEN_CONFIG_HELP_OUT}" @ONLY)
+        ADD_CUSTOM_COMMAND(OUTPUT ${DOXYGEN_HELP}
+            DEPENDS ${LibChaos_ALL_FILES} ${DOXYGEN_CONFIG_HELP_IN}
+            WORKING_DIRECTORY ${DOXYGEN_OUTPUT}
+            COMMAND ${DOXYGEN_EXECUTABLE} "${DOXYGEN_CONFIG_HELP_OUT}"
+            COMMAND ${CMAKE_COMMAND} -E copy chm/LibChaos.chm "${DOXYGEN_HELP}"
+        )
+
+        ADD_CUSTOM_TARGET(doxyhelp
+            DEPENDS ${DOXYGEN_HELP}
         )
     ENDIF()
 
     # Build Normal HTML
     CONFIGURE_FILE("${DOXYGEN_CONFIG_IN}" "${DOXYGEN_CONFIG_OUT}" @ONLY)
     ADD_CUSTOM_COMMAND(OUTPUT ${DOXYGEN_HTML}
-        DEPENDS ${LibChaos_ALL_FILES} ${DOXYGEN_CONFIG_OUT}
+        DEPENDS ${LibChaos_ALL_FILES} ${DOXYGEN_CONFIG_IN}
         WORKING_DIRECTORY ${DOXYGEN_OUTPUT}
         COMMAND ${DOXYGEN_EXECUTABLE} "${DOXYGEN_CONFIG_OUT}"
     )
 
     # Build PDF
-    ADD_CUSTOM_COMMAND(OUTPUT ${DOXYGEN_PDF}
-        DEPENDS ${DOXYGEN_HTML}
-        WORKING_DIRECTORY ${DOXYGEN_OUTPUT}/latex
-        COMMAND make pdf
-        COMMAND ${CMAKE_COMMAND} -E copy refman.pdf "${DOXYGEN_PDF}"
-    )
+    FIND_PACKAGE(LATEX)
+    IF(LATEX_FOUND)
+        ADD_CUSTOM_COMMAND(OUTPUT ${DOXYGEN_PDF}
+            DEPENDS ${DOXYGEN_HTML}
+            WORKING_DIRECTORY ${DOXYGEN_OUTPUT}/latex
+            COMMAND make pdf
+            COMMAND ${CMAKE_COMMAND} -E copy refman.pdf "${DOXYGEN_PDF}"
+        )
 
-    ADD_CUSTOM_TARGET(doxygen ${DOXYGEN_AUTO}
-        DEPENDS ${DOXYGEN_HTML} ${DOXYGEN_PDF}
-    )
+        ADD_CUSTOM_TARGET(doxygen
+            DEPENDS ${DOXYGEN_PDF}
+        )
+    ELSE()
+        ADD_CUSTOM_TARGET(doxygen
+            DEPENDS ${DOXYGEN_HTML}
+        )
+    ENDIF()
 
 ENDIF()

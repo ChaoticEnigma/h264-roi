@@ -45,6 +45,8 @@ int main(int argc, char **argv){
             { "image", image_test },
             { "png", png_test },
 #endif
+            { "pdf", pdf_test },
+
             { "autobuffer", autobuffer_test },
             { "json", json_test },
         };

@@ -12,10 +12,9 @@ PROJECT_BRIEF = "LibChaos Library"
 QUIET = YES
 
 # Files
-INPUT = "@DOXYGEN_INPUT@" \
-        "@DOXYGEN_OUTPUT@/chaos/ztypes.h"
-EXCLUDE = "@DOXYGEN_INPUT@/chaos/lib/" \
-          "@DOXYGEN-INPUT@/chaos/ztypes.h"
+INPUT = "@DOXYGEN_INPUT@"
+EXCLUDE = "@DOXYGEN_INPUT@/chaos/lib/"
+EXCLUDE_SYMLINKS = YES
 RECURSIVE = YES
 OUTPUT_DIRECTORY = "@DOXYGEN_OUTPUT@"
 

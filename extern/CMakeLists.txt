@@ -51,7 +51,10 @@ IF(ENABLE_ZH264)
     )
 ENDIF()
 
-SET(LibChaos_Extern_FILES ${LibChaos_Extern_HEADERS} ${LibChaos_Extern_SOURCES} PARENT_SCOPE)
+FOREACH(SRC ${LibChaos_Extern_HEADERS} ${LibChaos_Extern_SOURCES})
+    LIST(APPEND LibChaos_Extern_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${SRC})
+ENDFOREACH()
+SET(LibChaos_Extern_FILES ${LibChaos_Extern_FILES} PARENT_SCOPE)
 
 ### =================== CONFIG =================== ###
 

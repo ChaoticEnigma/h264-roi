@@ -29,6 +29,7 @@ SET(LibChaos_Test_SOURCES ### =================== SOURCES =================== ##
     file_test.cpp
     autobuffer_test.cpp
     json_test.cpp
+    pdf_test.cpp
 
     misc_test.cpp
 

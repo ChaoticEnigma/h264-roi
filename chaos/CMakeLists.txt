@@ -53,6 +53,7 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     file/zfile.h
     file/zimage.h
     file/zoptions.h
+    file/zpdf.h
     file/zppm.h
 
     lib/fnv-5.0.3/fnv.h
@@ -109,6 +110,7 @@ SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ##
     file/zfile.cpp
     file/zimage.cpp
     file/zoptions.cpp
+    file/zpdf.cpp
     file/zppm.cpp
 
     lib/fnv-5.0.3/hash_64a.c
@@ -152,9 +154,10 @@ IF(LIBCHAOS_PLATFORM_WINDOWS)
     )
 ENDIF()
 
-
-FOREACH(SRC ${LibChaos_Core_HEADERS})
-SET(LibChaos_Core_FILES ${LibChaos_Core_HEADERS} ${LibChaos_Core_SOURCES} PARENT_SCOPE)
+FOREACH(SRC ${LibChaos_Core_HEADERS} ${LibChaos_Core_SOURCES})
+    LIST(APPEND LibChaos_Core_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${SRC})
+ENDFOREACH()
+SET(LibChaos_Core_FILES ${LibChaos_Core_FILES} PARENT_SCOPE)
 
 ### =================== CONFIG =================== ###
 

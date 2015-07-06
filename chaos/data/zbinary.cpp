@@ -16,6 +16,12 @@ ZBinary &ZBinary::concat(const ZBinary &other){
     return *this;
 }
 
+ZBinary &ZBinary::append(ZBinary::zbinary_type byte){
+    reserve(_size + 1);
+    operator[](_size - 1) = byte;
+    return *this;
+}
+
 void ZBinary::reverse(){
     zbinary_type *buffer = _alloc->alloc(_realsize);
     for(zu64 i = 0; i < _size; ++i){
