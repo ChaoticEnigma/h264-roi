@@ -49,6 +49,7 @@
  *
  *  - WIP:
  *      - Configuration Files  (\ref LibChaos::ZOptions         "ZOptions")
+ *      - PDF                  (\ref LibChaos::ZPDF             "ZPDF")
  *      - Math                 (\ref LibChaos::ZNumber          "ZNumber",
  *                              \ref LibChaos::ZExpression      "ZExpression",
  *                              \ref LibChaos::ZFormula         "ZFormula")
