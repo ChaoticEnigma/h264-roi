@@ -7,7 +7,8 @@ PROJECT(LibChaos_Core)
 #    SET(IBERTY_DEMANGLE ON)
 #ENDIF()
 
-SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ###
+### =================== HEADERS =================== ###
+SET(LibChaos_Core_HEADERS
     ztypes.h
 
     abstract/yindexedaccess.h
@@ -28,8 +29,6 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     base/ziterator.h
     base/zlog.h
     base/zlogworker.h
-    #base/zpath.h
-    #base/zstring.h
     base/ztime.h
 
     data/zallocator.h
@@ -39,13 +38,11 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     data/zdata.h
     data/zdefaultstorage.h
     data/zfilestorage.h
-    #data/zjson.h
     data/zlist.h
     data/zmap.h
     data/zpointer.h
     data/zqueue.h
     data/zstack.h
-    #data/zxml.h
 
     file/database.h
     file/zbitmap.h
@@ -89,21 +86,17 @@ SET(LibChaos_Core_HEADERS ### =================== HEADERS =================== ##
     thread/zthread.h
 )
 
-SET(LibChaos_Core_SOURCES ### =================== SOURCES =================== ###
+### =================== SOURCES =================== ###
+SET(LibChaos_Core_SOURCES
 
     base/zclock.cpp
     base/zerror.cpp
     base/zexception.cpp
     base/zlog.cpp
     base/zlogworker.cpp
-    #base/zpath.cpp
-    #base/zstring.cpp
-    #base/zstring_encode.cpp
     base/ztime.cpp
 
     data/zbinary.cpp
-    #data/zjson.cpp
-    #data/zxml.cpp
 
     #file/database.cpp
     file/zbmp.cpp
@@ -154,12 +147,24 @@ IF(LIBCHAOS_PLATFORM_WINDOWS)
     )
 ENDIF()
 
-FOREACH(SRC ${LibChaos_Core_HEADERS} ${LibChaos_Core_SOURCES})
-    LIST(APPEND LibChaos_Core_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${SRC})
-ENDFOREACH()
-SET(LibChaos_Core_FILES ${LibChaos_Core_FILES} PARENT_SCOPE)
-
 ### =================== CONFIG =================== ###
+
+GatherSources(${LibChaos_Core_HEADERS} ${LibChaos_Core_SOURCES})
+
+SET(LibChaos_Core_INCLUDE
+    .
+    abstract
+    base
+    data
+    file
+    lib
+    net
+    math
+    misc
+    string
+    thread
+)
+GatherIncludes(${LibChaos_Core_INCLUDE})
 
 # Visual Studio Project Filters
 SOURCE_GROUP(""         FILES ztypes.h)
@@ -174,24 +179,6 @@ SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
 SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
 SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
 
-# Export Include Path
-SET(LibChaos_Core_INCLUDE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    #${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/abstract
-    ${CMAKE_CURRENT_SOURCE_DIR}/base
-    ${CMAKE_CURRENT_SOURCE_DIR}/data
-    ${CMAKE_CURRENT_SOURCE_DIR}/file
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/net
-    ${CMAKE_CURRENT_SOURCE_DIR}/math
-    ${CMAKE_CURRENT_SOURCE_DIR}/misc
-    ${CMAKE_CURRENT_SOURCE_DIR}/string
-    ${CMAKE_CURRENT_SOURCE_DIR}/thread
-)
-
-SET(LibChaos_Core_INCLUDE ${LibChaos_Core_INCLUDE} PARENT_SCOPE)
-
 # Include Directories
 INCLUDE_DIRECTORIES(
     ${LibChaos_Core_INCLUDE}
@@ -199,18 +186,15 @@ INCLUDE_DIRECTORIES(
 )
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)
-#ADD_DEFINITIONS(-DZLOG_STD_MUTEX)
 
 IF(IBERTY_DEMANGLE)
     ADD_DEFINITIONS(-DIBERTY_DEMANGLE)
 ENDIF()
 
-# Configure
-#CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/ztypes.h" "${CMAKE_CURRENT_BINARY_DIR}/ztypes.h")
-
 ### =================== BUILD =================== ###
 
 ADD_LIBRARY(chaos ${LIBCHAOS_LINK} ${LibChaos_Core_HEADERS} ${LibChaos_Core_SOURCES})
+
 IF(LIBCHAOS_PLATFORM_WINDOWS)
     IF(LIBCHAOS_COMPILER_MSVC)
         TARGET_LINK_LIBRARIES(chaos Ws2_32 iphlpapi)

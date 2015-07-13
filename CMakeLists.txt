@@ -5,9 +5,10 @@ PROJECT(LibChaos)
 
 # Options
 INCLUDE(cmake/Options.cmake)
-
 # Build Settings
 INCLUDE(cmake/ConfigureBuild.cmake)
+# CMake Utils
+INCLUDE(cmake/Utils.cmake)
 
 # Git Describe
 EXECUTE_PROCESS(
@@ -49,7 +50,7 @@ ENDIF()
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LIBCHAOS_CXX_FLAGS}")
 
 # Readme Files
-ADD_CUSTOM_TARGET(dummy SOURCES
+SET(LibChaos_OTHER_FILES
     doc/README.txt
     doc/Projects.txt
     doc/LibChaos_Todo_Ideas.txt
@@ -70,7 +71,6 @@ IF(NOT LIBCHAOS_EXTERN)
     SET(LIBCHAOS_EXTERN_ALL EXCLUDE_FROM_ALL)
 ENDIF()
 ADD_SUBDIRECTORY(extern)
-SET(LibChaos_ALL_FILES ${LibChaos_ALL_FILES} ${LibChaos_Extern_FILES})
 IF(LIBCHAOS_EXTERN)
     SET(LibChaos_BUILD_LIST ${LibChaos_BUILD_LIST} ${EXTERN_BUILD_LIST})
     SET(LibChaos_INCLUDE ${LibChaos_INCLUDE} ${LibChaos_Extern_INCLUDE})
@@ -86,7 +86,6 @@ IF(NOT LIBCHAOS_UI)
     SET(LIBCHAOS_UI_ALL EXCLUDE_FROM_ALL)
 ENDIF()
 ADD_SUBDIRECTORY(ui)
-SET(LibChaos_ALL_FILES ${LibChaos_ALL_FILES} ${LibChaos_UI_FILES})
 IF(LIBCHAOS_UI)
     SET(LibChaos_BUILD_LIST ${LibChaos_BUILD_LIST} "UI")
     IF(HAS_PARENT)
@@ -125,6 +124,13 @@ ENDIF()
 
 # Doxygen
 INCLUDE(cmake/Doxygen.cmake)
+
+# Add All Sources to Dummy Target for IDE File Listing
+GET_PROPERTY(LibChaosAllSources GLOBAL PROPERTY LibChaosAllSources)
+ADD_CUSTOM_TARGET(dummy SOURCES
+    ${LibChaosAllSources}
+    ${LibChaos_OTHER_FILES}
+)
 
 # Build Status Line
 STRING(REPLACE ";" "," LIBCHAOS_BUILD_LIST_STRING "${LibChaos_BUILD_LIST}")

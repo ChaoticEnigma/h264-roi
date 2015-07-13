@@ -1,9 +1,11 @@
 ## LibChaos UI CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
-PROJECT(LibChaosUI)
+PROJECT(LibChaos_UI)
 
-SET(LibChaosUI_HEADERS ### =================== HEADERS =================== ###S
+### =================== HEADERS =================== ###
+
+SET(LibChaos_UI_HEADERS
     zui.h
     align.h
     base.h
@@ -16,35 +18,43 @@ SET(LibChaosUI_HEADERS ### =================== HEADERS =================== ###S
     progress.h
 )
 
-IF(LIBCHAOS_PLATFORM_WINDOWS) ### =================== SOURCES =================== ###
-    SET(LibChaosUI_SOURCES
-        win32/align_win32.cpp
-        win32/button_win32.cpp
-        win32/control_win32.cpp
-        win32/edit_win32.cpp
-        win32/font_win32.cpp
-        win32/progress_win32.cpp
-        win32/table_win32.cpp
-        win32/window_win32.cpp
-        win32/windowproc_win32.cpp
-    )
-ELSE()
-    SET(LibChaosUI_SOURCES
-        align.cpp
-        button.cpp
-        control.cpp
-        edit.cpp
-        font.cpp
-        progress.cpp
-        table.cpp
-        window.cpp
-        windowproc.cpp
-    )
-ENDIF()
+### =================== SOURCES =================== ###
+
+SET(LibChaos_UI_X11_SOURCES
+    align.cpp
+    button.cpp
+    control.cpp
+    edit.cpp
+    font.cpp
+    progress.cpp
+    table.cpp
+    window.cpp
+    windowproc.cpp
+)
+
+SET(LibChaos_UI_WIN32_SOURCES
+    win32/align_win32.cpp
+    win32/button_win32.cpp
+    win32/control_win32.cpp
+    win32/edit_win32.cpp
+    win32/font_win32.cpp
+    win32/progress_win32.cpp
+    win32/table_win32.cpp
+    win32/window_win32.cpp
+    win32/windowproc_win32.cpp
+)
 
 ### =================== CONFIG =================== ###
 
-SET(LibChaosUI_INCLUDE ${LibChaosUI_SOURCE_DIR} PARENT_SCOPE)
+GatherSources(${LibChaos_UI_HEADERS} ${LibChaos_UI_X11_SOURCES} ${LibChaos_UI_WIN32_SOURCES})
+
+IF(LIBCHAOS_PLATFORM_WINDOWS)
+    SET(LibChaos_UI_SOURCES ${LibChaos_UI_WIN32_SOURCES})
+ELSE()
+    SET(LibChaos_UI_SOURCES ${LibChaos_UI_X11_SOURCES})
+ENDIF()
+
+SET(LibChaos_UI_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
 
 INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
@@ -53,9 +63,11 @@ INCLUDE_DIRECTORIES(
 ### =================== BUILD =================== ###
 
 ADD_DEFINITIONS(-DBUILDING)
-ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
+IF(LIBCHAOS_PLATFORM_WINDOWS)
+    ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
+ENDIF()
 
-ADD_LIBRARY(chaosui ${LIBCHAOS_UI_ALL} ${LibChaosUI_HEADERS} ${LibChaosUI_SOURCES})
+ADD_LIBRARY(chaosui ${LIBCHAOS_UI_ALL} ${LibChaos_UI_HEADERS} ${LibChaos_UI_SOURCES})
 IF(LIBCHAOS_PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(chaosui chaos comctl32)
 ELSE()
