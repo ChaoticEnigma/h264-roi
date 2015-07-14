@@ -56,8 +56,17 @@ int string_test(){
 //    ZString(zu64);
 //    ZString(zs64);
 
-//    static ZString ItoS(zu64 num, unsigned base = 10, zu64 pad = 0);
-//    static ZString ItoS(zs64 num, unsigned base = 10);
+    LOG("-- Integer to String:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ZString itos1 = ZString::ItoS((zu64)4565464, 10);
+    LOG(itos1);
+    if(itos1 != "4565464")
+        throw __LINE__;
+    ZString itos2 = ZString::ItoS((zs64)-980948, 16);
+    LOG(itos2);
+    if(itos2 != "-ef7d4")
+        throw __LINE__;
+
 //    int tint() const;
 
 //    ZString(double flt, unsigned places = -1);

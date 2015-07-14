@@ -49,8 +49,14 @@ ENDIF()
 
 ### =================== CONFIG =================== ###
 
+# Include Directories
+GET_PROPERTY(LibChaosInclude GLOBAL PROPERTY LibChaosInclude)
+GET_PROPERTY(LibChaosExternInclude GLOBAL PROPERTY LibChaosExternInclude)
+GET_PROPERTY(LibChaosUIInclude GLOBAL PROPERTY LibChaosUIInclude)
 INCLUDE_DIRECTORIES(
-    ${LibChaos_INCLUDE}
+    ${LibChaosInclude}
+    ${LibChaosExternInclude}
+    ${LibChaosUIInclude}
 )
 
 ADD_DEFINITIONS(-DZLOG_USE_THREAD)

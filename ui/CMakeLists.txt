@@ -46,18 +46,20 @@ SET(LibChaos_UI_WIN32_SOURCES
 
 ### =================== CONFIG =================== ###
 
-GatherSources(${LibChaos_UI_HEADERS} ${LibChaos_UI_X11_SOURCES} ${LibChaos_UI_WIN32_SOURCES})
-
 IF(LIBCHAOS_PLATFORM_WINDOWS)
     SET(LibChaos_UI_SOURCES ${LibChaos_UI_WIN32_SOURCES})
 ELSE()
     SET(LibChaos_UI_SOURCES ${LibChaos_UI_X11_SOURCES})
 ENDIF()
 
-SET(LibChaos_UI_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
+# Export Properties
+GatherSources(${LibChaos_UI_HEADERS} ${LibChaos_UI_X11_SOURCES} ${LibChaos_UI_WIN32_SOURCES})
+GatherIncludes(LibChaosUI .)
 
+# Include Directories
+GET_PROPERTY(LibChaosInclude GLOBAL PROPERTY LibChaosInclude)
 INCLUDE_DIRECTORIES(
-    ${LibChaos_INCLUDE}
+    ${LibChaosInclude}
 )
 
 ### =================== BUILD =================== ###

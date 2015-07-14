@@ -64,20 +64,17 @@ IF(WITH_H264)
     SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES} ${LibChaos_Extern_H264_SOURCES})
 ENDIF()
 
-GatherSources(${LibChaos_Extern_HEADERS} ${LibChaos_Extern_PNG_SOURCES} ${LibChaos_Extern_JPEG_SOURCES} ${LibChaos_Extern_H264_SOURCES})
-
+# Export Build List
 SET(EXTERN_BUILD_LIST ${EXTERN_BUILD_LIST} PARENT_SCOPE)
 
-SET(LibChaos_Extern_INCLUDE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-# Export Include Path
-SET(LibChaos_Extern_INCLUDE ${LibChaos_Extern_INCLUDE} PARENT_SCOPE)
+# Export Properties
+GatherSources(${LibChaos_Extern_HEADERS} ${LibChaos_Extern_PNG_SOURCES} ${LibChaos_Extern_JPEG_SOURCES} ${LibChaos_Extern_H264_SOURCES})
+GatherIncludes(LibChaosExtern .)
 
 # Include Directories
+GET_PROPERTY(LibChaosInclude GLOBAL PROPERTY LibChaosInclude)
 INCLUDE_DIRECTORIES(
-    ${LibChaos_INCLUDE}
+    ${LibChaosInclude}
     ${PNG_INCLUDE_DIRS}
 )
 

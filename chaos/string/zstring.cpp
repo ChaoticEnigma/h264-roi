@@ -5,6 +5,7 @@
 *******************************************************************************/
 #include "zstring.h"
 #include "zarray.h"
+#include "zmath.h"
 
 // std::stringstream
 #include <sstream>
@@ -85,62 +86,23 @@ ZString::ZString(ZString::chartype ch, zu64 len) : ZString(){
 }
 
 ZString ZString::ItoS(zu64 value, zu8 base, zu64 pad){
-//    ZString buffer;
-//    if(base < 2 || base > 16)
-//        return buffer;
-//    const char *digits = "0123456789abcdef";
-//    zu64 quotient = value;
-//    do {
-//        buffer += digits[quotient % base];
-//        quotient /= base;
-//    } while(quotient);
-//    buffer.reverse();
-//    if(buffer.size() < pad){
-//        buffer = ZString('0', pad - buffer.size()) + buffer;
-//    }
-//    return buffer;
-    std::string buf;
+    ZString buffer;
     if(base < 2 || base > 16)
-        return buf;
-    buf.reserve(35);
+        return buffer;
+    buffer.reserve(35);
     zu64 quotient = value;
     do {
-        buf += "0123456789abcdef"[std::labs((long)((zu64)quotient % (zu64)base))];
+        buffer += "0123456789abcdef"[ZMath::abs(quotient % (zu64)base)];
         quotient /= base;
     } while(quotient);
-    std::reverse(buf.begin(), buf.end());
-    ZString tmp = buf;
-    if(tmp.size() < pad){
-        tmp = ZString('0', pad-tmp.size()) + tmp;
-    }
-    return tmp;
+    buffer.reverse();
+    if(buffer.size() < pad)
+        buffer.append(ZString('0', pad - buffer.size()));
+    return buffer;
 }
+
 ZString ZString::ItoS(zs64 value, zu8 base){
-//    ZString buffer;
-//    if(base < 2 || base > 16)
-//        return buffer;
-//    const char *digits = "0123456789abcdef";
-//    zu64 quotient = value;
-//    do {
-//        buffer += digits[quotient % base];
-//        quotient /= base;
-//    } while(quotient);
-//    if(value < 0)
-//        buffer += '-';
-//    buffer.reverse();
-//    return buffer;
-    std::string buf;
-    if (base < 2 || base > 16)
-        return buf;
-    buf.reserve(35);
-    zs64 quotient = value;
-    do {
-        buf += "0123456789abcdef"[std::labs(quotient % (zs64)base)];
-        quotient /= base;
-    } while(quotient);
-    if (value < 0) buf += '-';
-    std::reverse(buf.begin(), buf.end());
-    return ZString(buf);
+    return (value < 0 ? "-" : "") + ItoS((zu64)ZMath::abs(value), base);
 }
 
 bool ZString::isInteger(zu8 base) const {

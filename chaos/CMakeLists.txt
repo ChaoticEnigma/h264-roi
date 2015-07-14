@@ -60,6 +60,7 @@ SET(LibChaos_Core_HEADERS
     math/zexpression.h
     math/zformula.h
     math/znumber.h
+    math/zmath.h
 
     misc/zautobuffer.h
     misc/zautobufferunit.h
@@ -114,6 +115,7 @@ SET(LibChaos_Core_SOURCES
     math/zexpression.cpp
     math/zformula.cpp
     math/znumber.cpp
+    math/zmath.cpp
     #math/znumber-reference.cpp
 
     misc/zautobuffer.cpp
@@ -149,6 +151,19 @@ ENDIF()
 
 ### =================== CONFIG =================== ###
 
+# Visual Studio Project Filters
+SOURCE_GROUP(""         FILES ztypes.h)
+SOURCE_GROUP(abstract   REGULAR_EXPRESSION "abstract/.*")
+SOURCE_GROUP(base       REGULAR_EXPRESSION "base/.*")
+SOURCE_GROUP(data       REGULAR_EXPRESSION "data/.*")
+SOURCE_GROUP(file       REGULAR_EXPRESSION "file/.*")
+#SOURCE_GROUP(lib        REGULAR_EXPRESSION "lib/.*")
+SOURCE_GROUP(math       REGULAR_EXPRESSION "math/.*")
+SOURCE_GROUP(misc       REGULAR_EXPRESSION "misc/.*")
+SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
+SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
+SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
+
 GatherSources(${LibChaos_Core_HEADERS} ${LibChaos_Core_SOURCES})
 
 SET(LibChaos_Core_INCLUDE
@@ -164,20 +179,8 @@ SET(LibChaos_Core_INCLUDE
     string
     thread
 )
-GatherIncludes(${LibChaos_Core_INCLUDE})
 
-# Visual Studio Project Filters
-SOURCE_GROUP(""         FILES ztypes.h)
-SOURCE_GROUP(abstract   REGULAR_EXPRESSION "abstract/.*")
-SOURCE_GROUP(base       REGULAR_EXPRESSION "base/.*")
-SOURCE_GROUP(data       REGULAR_EXPRESSION "data/.*")
-SOURCE_GROUP(file       REGULAR_EXPRESSION "file/.*")
-#SOURCE_GROUP(lib        REGULAR_EXPRESSION "lib/.*")
-SOURCE_GROUP(math       REGULAR_EXPRESSION "math/.*")
-SOURCE_GROUP(misc       REGULAR_EXPRESSION "misc/.*")
-SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
-SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
-SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
+GatherIncludes(LibChaos ${LibChaos_Core_INCLUDE})
 
 # Include Directories
 INCLUDE_DIRECTORIES(
