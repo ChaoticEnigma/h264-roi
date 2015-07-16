@@ -15,6 +15,7 @@
 // FNV-1(a) initial base is the the FNV-0 hash of "chongo <Landon Curt Noll> /\../\" (32 bytes)
 #define ZHASH_FNV1A_64_INIT ((zu64)0xcbf29ce484222325ULL)
 
+// CRC 32 initial remainder
 #define ZHASH_CRC32_INIT ((zu32)0x0)
 
 namespace LibChaos {
