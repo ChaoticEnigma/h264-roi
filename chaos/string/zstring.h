@@ -241,6 +241,8 @@ public:
     // Allows ZString to be used with std streams
     friend std::ostream &operator<<(std::ostream &lhs, ZString rhs);
 
+    void swap(ZString &other);
+
     inline bool isEmpty() const { return (size() == 0); }
 
     // Number of bytes (code units)

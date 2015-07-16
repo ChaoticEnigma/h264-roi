@@ -34,13 +34,15 @@ ZString::ZString(const ZString &other) : ZString(){
     if(other._size && other._data)
         _alloc.rawcopy(other._data, _data, other._size);
 }
+
 ZString::ZString(const ZString::chartype *str) : ZString(){
     if(str != nullptr){
         zu64 i = 0;
         while(str[i] != 0){
             ++i;
         }
-        assign(ZString(str, i));
+        ZString filled(str, i);
+        swap(filled);
     }
 }
 
@@ -55,6 +57,7 @@ ZString::ZString(const ZArray<ZString::chartype> &array) : ZString(array.raw(), 
 }
 
 ZString::ZString(std::string str) : ZString(str.c_str(), str.size()){}
+
 std::string ZString::str() const {
     return std::string(_data, size());
 }
@@ -74,6 +77,7 @@ ZString::ZString(const ZArray<wchar_t> &array) : ZString(array.raw(), array.size
 ZString::ZString(std::wstring wstr) : ZString(){
     fromUtf16(wstr);
 }
+
 std::wstring ZString::wstr() const {
     return toUtf16();
 }
@@ -278,6 +282,7 @@ bool ZString::startsWith(const ZString &test, bool ignorews) const {
     }
     return true;
 }
+
 bool ZString::startsWith(const ZString &str, const ZString &test, bool ignorews){
     return str.startsWith(test, ignorews);
 }
@@ -298,6 +303,7 @@ ZString &ZString::insert(zu64 pos, const ZString &txt){
     }
     return *this;
 }
+
 ZString ZString::insert(ZString str, zu64 pos, const ZString &txt){
     return str.insert(pos, txt);
 }
@@ -306,6 +312,7 @@ ZString &ZString::substr(zu64 pos){
     substr(pos, none);
     return *this;
 }
+
 ZString ZString::substr(ZString str, zu64 pos){
     return str.substr(pos);
 }
@@ -319,6 +326,7 @@ ZString &ZString::substr(zu64 pos, zu64 len){
     }
     return *this;
 }
+
 ZString ZString::substr(ZString str, zu64 pos, zu64 len){
     if(pos >= str.size() || len == 0)
         return ZString();
@@ -344,6 +352,7 @@ zu64 ZString::findFirst(const ZString &find, zu64 start) const {
     }
     return none;
 }
+
 zu64 ZString::findFirst(const ZString &str, const ZString &find, zu64 start){
     return str.findFirst(find, start);
 }
@@ -373,6 +382,7 @@ ZString &ZString::replacePos(zu64 pos, zu64 len, const ZString &after){
     append(after).append(part2);
     return *this;
 }
+
 ZString ZString::replacePos(ZString str, zu64 pos, zu64 len, const ZString &after){
     return str.replacePos(pos, len, after);
 }
@@ -383,6 +393,7 @@ ZString &ZString::replaceFirst(const ZString &before, const ZString &after, zu64
     _strReplace(before, after, start);
     return *this;
 }
+
 ZString ZString::replaceFirst(ZString str, const ZString &before, const ZString &after, zu64 start){
     return str.replaceFirst(before, after, start);
 }
@@ -402,6 +413,7 @@ ZString &ZString::replace(const ZString &before, const ZString &after, zu64 max)
     }
     return *this;
 }
+
 ZString ZString::replace(ZString str, const ZString &before, const ZString &after, zu64 max){
     return str.replace(before, after, max);
 }
@@ -419,6 +431,7 @@ ZString &ZString::replaceRecursive(const ZString &before, const ZString &after, 
     }
     return *this;
 }
+
 ZString ZString::replaceRecursive(ZString str, const ZString &before, const ZString &after, zu64 max){
     return str.replaceRecursive(before, after, max);
 }
@@ -544,6 +557,7 @@ ZString ZString::findFirstXmlTagCont(ZString tag){
     close << "</" << tag << ">";
     return findFirstBetween(open, close);
 }
+
 ZString ZString::replaceXmlTagCont(ZString tag, ZString after){
     ZString open;
     open << "<" << tag << ">";
@@ -557,6 +571,7 @@ ZString &ZString::label(const ZString &labeltxt, const ZString &value){
     replace(txt, value);
     return *this;
 }
+
 ZString &ZString::label(const AsArZ &values){
     for(zu64 i = 0; i < values.size(); ++i)
         label(values.key(i), values[i]);
@@ -722,9 +737,9 @@ ZString &ZString::strip(chartype target){
     }
     if(clen > 0)
         substr(0, size() - clen);
-
     return *this;
 }
+
 ZString ZString::strip(ZString str, chartype target){
     return str.strip(target);
 }
@@ -738,12 +753,14 @@ ZString ZString::removeWhitespace(){
 
 ZString &ZString::reverse(){
     ZString buff;
+    buff.reserve(size());
     for(zu64 i = size(); i > 0; --i){
         buff += _data[i-1];
     }
-    assign(buff);
+    swap(buff);
     return *this;
 }
+
 ZString ZString::reverse(ZString str){
     return str.reverse();
 }
@@ -757,6 +774,7 @@ ZString &ZString::toLower(){
     }
     return *this;
 }
+
 ZString ZString::toLower(ZString str){
     return str.toLower();
 }
@@ -789,6 +807,7 @@ ZString &ZString::duplicate(zu64 iter){
 //    }
 //    return ZString(formatted.get());
 //}
+
 //ZString &ZString::format(...){
 //    va_list arglist;
 //    ZString fmt = data;
@@ -797,7 +816,6 @@ ZString &ZString::duplicate(zu64 iter){
 //    va_end(arglist);
 //    return *this;
 //}
-
 
 bool ZString::charIsAlphabetic(chartype ch){
     return (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122);
@@ -814,6 +832,18 @@ bool ZString::alphaTest(ZString str1, ZString str2){
     if(str1.size() <= str2.size())
         return true;
     return false;
+}
+
+void ZString::swap(ZString &other){
+    zu64 size = _size;
+    zu64 realsize = _realsize;
+    chartype *data = _data;
+    _size = other._size;
+    _realsize = other._realsize;
+    _data = other._data;
+    other._size = size;
+    other._realsize = realsize;
+    other._data = data;
 }
 
 zu64 ZString::length() const {
