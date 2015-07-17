@@ -59,7 +59,7 @@ ZUID::ZUID(uuidtype type){
         timeval tv;
         gettimeofday(&tv, NULL);
         // Time in microseconds
-        zu64 tvtime = (tv.tv_sec * 1000 * 1000) + tv.tv_usec;
+        zu64 tvtime = (zu64)((tv.tv_sec * 1000 * 1000) + tv.tv_usec);
         // POSIX UTC start January 1, 1970, 00:00:00.000000
         // We need UTC since October 15, 1582, 00:00:00.0000000
         // Add 387 years + 17 days in Oct + 30 days in Nov + 31 days in Dec + 94 leap days, to seconds, to 100 nanosecond interval
@@ -210,6 +210,8 @@ ZBinary ZUID::getMACAddress(){
 
 #elif PLATFORM == MACOSX
 
+    // Will fall through to random MAC
+
 #else
     struct ifreq ifr;
     struct ifconf ifc;
@@ -217,14 +219,18 @@ ZBinary ZUID::getMACAddress(){
     int success = 0;
 
     int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
-    if (sock == -1) { /* handle error*/ };
+    if(sock == -1){
+        /* handle error*/
+    }
 
     ifc.ifc_len = sizeof(buf);
     ifc.ifc_buf = buf;
-    if (ioctl(sock, SIOCGIFCONF, &ifc) == -1) { /* handle error */ }
+    if(ioctl(sock, SIOCGIFCONF, &ifc) == -1){
+        /* handle error */
+    }
 
     struct ifreq* it = ifc.ifc_req;
-    const struct ifreq* const end = it + (ifc.ifc_len / sizeof(struct ifreq));
+    const struct ifreq* const end = it + ((unsigned long)ifc.ifc_len / sizeof(struct ifreq));
 
     for(; it != end; ++it){
         strcpy(ifr.ifr_name, it->ifr_name);

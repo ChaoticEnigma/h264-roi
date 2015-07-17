@@ -15,7 +15,7 @@ ZOptions::~ZOptions(){
 }
 
 ZString ZOptions::getOption(ZString name){
-
+    return ZString();
 }
 
 }
