@@ -123,7 +123,7 @@ IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
         ENDIF()
 
         SET(CXXGNU "${CXXGNU} -Werror=return-type") # Should be errors
-        #SET(CXXF "${CXXF} -Wshadow ") # Some warnings are too verbose to be useful
+        SET(CXXF "${CXXF} -Wshadow ") # Some warnings are too verbose to be useful
         #SET(CXXF "${CXXF} -Wmissing-declarations -Wold-style-cast") # Not actually errors
         SET(CXXGNU "${CXXGNU} -Wno-unused-parameter -Wno-unused") # Disabled Warnings
         IF(NOT COMPILER_MINGW)
@@ -136,7 +136,7 @@ IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
 ELSEIF(LIBCHAOS_COMPILER_MSVC)
     #SET(CXXVC "${CXXVC} /MD")
 
-    SET(LINKVC "/ignore:4221 /wd4221") # LNK4221: File does not define any public symbols
+    SET(LINKVC "/ignore:4221") # LNK4221: File does not define any public symbols
     SET(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} ${LINKVC}")
     SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINKVC}")
     SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} ${LINKVC}")
