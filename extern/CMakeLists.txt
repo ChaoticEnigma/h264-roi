@@ -1,7 +1,7 @@
 ## LibChaos Extern CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
-PROJECT(LibChaos_Extern)
+PROJECT(LibChaosExtern)
 
 # Find libpng and zlib
 INCLUDE(FindPNG)
@@ -25,7 +25,7 @@ ENDIF()
 
 ### =================== HEADERS =================== ###
 
-SET(LibChaos_Extern_HEADERS
+SET(LibChaosExtern_HEADERS
     zpng.h
     zjpeg.h
     zh264decoder.h
@@ -34,15 +34,15 @@ SET(LibChaos_Extern_HEADERS
 
 ### =================== SOURCES =================== ###
 
-SET(LibChaos_Extern_PNG_SOURCES
+SET(LibChaosExtern_PNG_SOURCES
     zpng.cpp
 )
 
-SET(LibChaos_Extern_JPEG_SOURCES
+SET(LibChaosExtern_JPEG_SOURCES
     zjpeg.cpp
 )
 
-SET(LibChaos_Extern_H264_SOURCES
+SET(LibChaosExtern_H264_SOURCES
     zh264decoder.cpp
     zh264encoder.cpp
 )
@@ -51,25 +51,25 @@ SET(LibChaos_Extern_H264_SOURCES
 
 IF(WITH_PNG)
     SET(EXTERN_BUILD_LIST ${EXTERN_BUILD_LIST} "PNG")
-    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES} ${LibChaos_Extern_PNG_SOURCES})
+    SET(LibChaosExtern_SOURCES ${LibChaosExtern_SOURCES} ${LibChaosExtern_PNG_SOURCES})
 ENDIF()
 
 IF(WITH_JPEG)
     SET(EXTERN_BUILD_LIST ${EXTERN_BUILD_LIST} "JPEG")
-    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES} ${LibChaos_Extern_JPEG_SOURCES})
+    SET(LibChaosExtern_SOURCES ${LibChaosExtern_SOURCES} ${LibChaosExtern_JPEG_SOURCES})
 ENDIF()
 
 IF(WITH_H264)
     SET(EXTERN_BUILD_LIST ${EXTERN_BUILD_LIST} "H264")
-    SET(LibChaos_Extern_SOURCES ${LibChaos_Extern_SOURCES} ${LibChaos_Extern_H264_SOURCES})
+    SET(LibChaosExtern_SOURCES ${LibChaosExtern_SOURCES} ${LibChaosExtern_H264_SOURCES})
 ENDIF()
 
 # Export Build List
 SET(EXTERN_BUILD_LIST ${EXTERN_BUILD_LIST} PARENT_SCOPE)
 
 # Export Properties
-GatherSources(${LibChaos_Extern_HEADERS} ${LibChaos_Extern_PNG_SOURCES} ${LibChaos_Extern_JPEG_SOURCES} ${LibChaos_Extern_H264_SOURCES})
-GatherIncludes(LibChaosExtern .)
+GatherSources(${LibChaosExtern_HEADERS} ${LibChaosExtern_PNG_SOURCES} ${LibChaosExtern_JPEG_SOURCES} ${LibChaosExtern_H264_SOURCES})
+GatherIncludes(.)
 
 # Include Directories
 GET_PROPERTY(LibChaosInclude GLOBAL PROPERTY LibChaosInclude)
@@ -84,7 +84,7 @@ ENDIF()
 
 ### =================== BUILD =================== ###
 
-ADD_LIBRARY(chaosextern ${LIBCHAOS_EXTERN_ALL} ${LibChaos_Extern_HEADERS} ${LibChaos_Extern_SOURCES})
+ADD_LIBRARY(chaosextern ${LIBCHAOS_EXTERN_ALL} ${LibChaosExtern_HEADERS} ${LibChaosExtern_SOURCES})
 
 TARGET_LINK_LIBRARIES(chaosextern chaos)
 

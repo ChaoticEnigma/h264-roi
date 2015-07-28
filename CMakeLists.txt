@@ -1,7 +1,7 @@
 ## LibChaos CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
-PROJECT(LibChaos)
+#PROJECT(LibChaos)
 
 # Options
 INCLUDE(cmake/Options.cmake)
@@ -32,7 +32,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LIBCHAOS_CXX_FLAGS}")
 
 # Readme Files
 SET(LibChaos_OTHER_FILES
-    doc/README.txt
+    doc/README.md
     doc/Projects.txt
     doc/LibChaos_Todo_Ideas.txt
     doc/Doxyfile.in

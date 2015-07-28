@@ -1,14 +1,14 @@
 ## LibChaos Core CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
-PROJECT(LibChaos_Core)
+PROJECT(LibChaos)
 
 #IF(LIBCHAOS_PLATFORM_LINUX AND LIBCHAOS_COMPILER_GCC AND LIBCHAOS_BUILD_DEBUG)
 #    SET(IBERTY_DEMANGLE ON)
 #ENDIF()
 
 ### =================== HEADERS =================== ###
-SET(LibChaos_Core_HEADERS
+SET(LibChaos_HEADERS
     ztypes.h
 
     abstract/yindexedaccess.h
@@ -88,7 +88,7 @@ SET(LibChaos_Core_HEADERS
 )
 
 ### =================== SOURCES =================== ###
-SET(LibChaos_Core_SOURCES
+SET(LibChaos_SOURCES
 
     base/zclock.cpp
     base/zerror.cpp
@@ -143,8 +143,8 @@ SET(LibChaos_Core_SOURCES
 )
 
 IF(LIBCHAOS_PLATFORM_WINDOWS)
-    SET(LibChaos_Core_SOURCES
-        ${LibChaos_Core_SOURCES}
+    SET(LibChaos_SOURCES
+        ${LibChaos_SOURCES}
         #lib/StackWalker.cpp
     )
 ENDIF()
@@ -164,9 +164,9 @@ SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
 SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
 SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
 
-GatherSources(${LibChaos_Core_HEADERS} ${LibChaos_Core_SOURCES})
+GatherSources(${LibChaos_HEADERS} ${LibChaos_SOURCES})
 
-SET(LibChaos_Core_INCLUDE
+SET(LibChaos_INCLUDE
     .
     abstract
     base
@@ -180,11 +180,11 @@ SET(LibChaos_Core_INCLUDE
     thread
 )
 
-GatherIncludes(LibChaos ${LibChaos_Core_INCLUDE})
+GatherIncludes(${LibChaos_INCLUDE})
 
 # Include Directories
 INCLUDE_DIRECTORIES(
-    ${LibChaos_Core_INCLUDE}
+    ${LibChaos_INCLUDE}
     lib/fnv-5.0.3
 )
 
@@ -196,7 +196,7 @@ ENDIF()
 
 ### =================== BUILD =================== ###
 
-ADD_LIBRARY(chaos ${LIBCHAOS_LINK} ${LibChaos_Core_HEADERS} ${LibChaos_Core_SOURCES})
+ADD_LIBRARY(chaos ${LIBCHAOS_LINK} ${LibChaos_HEADERS} ${LibChaos_SOURCES})
 
 IF(LIBCHAOS_PLATFORM_WINDOWS)
     IF(LIBCHAOS_COMPILER_MSVC)

@@ -10,57 +10,6 @@
  *  ztypes header file
  */
 
-/*! \mainpage LibChaos Home
- *
- *  Documentation built for LibChaos ${LIBCHAOS_DESCRIBE}. \n
- *
- *  \section intro_sec Introduction
- *  LibChaos is a general-purpose C++ utilities library. \n
- *  Includes:
- *  - Functional:
- *      - Data Structures:
- *          - Array            (\ref LibChaos::ZArray           "ZArray")
- *          - List             (\ref LibChaos::ZList            "ZList")
- *          - Stack            (\ref LibChaos::ZStack           "ZStack")
- *          - Queue            (\ref LibChaos::ZQueue           "ZQueue")
- *          - Map              (\ref LibChaos::ZMap             "ZMap")
- *          - Smart Pointer    (\ref LibChaos::ZPointer         "ZPointer")
- *      - String Manipulation  (\ref LibChaos::ZString          "ZString"
- *                              \ref LibChaos::ZJSON            "ZJSON")
- *      - File Manipulation    (\ref LibChaos::ZFile            "ZFile",
- *                              \ref LibChaos::ZPath            "ZPath")
- *      - Threading            (\ref LibChaos::ZThread          "ZThread",
- *                              \ref LibChaos::ZMutex           "ZMutex",
- *                              \ref LibChaos::ZCondition       "ZCondition",
- *                              \ref LibChaos::ZLock            "ZLock")
- *      - Hashing              (\ref LibChaos::ZHash            "ZHash")
- *      - UUID Generation      (\ref LibChaos::ZUID             "ZUID")
- *      - File Format Support:
- *          - PNG Images       (\ref LibChaos::ZPNG             "ZPNG")
- *          - BMP Images       (\ref LibChaos::ZBMP             "ZBMP")
- *          - PPM Images       (\ref LibChaos::ZPPM             "ZPPM")
- *
- *  - Experimental:
- *      - Networking           (\ref LibChaos::ZSocket          "ZSocket",
- *                              \ref LibChaos::ZAddress         "ZAddress",
- *                              \ref LibChaos::ZDatagramSocket  "ZDatagramSocket",
- *                              \ref LibChaos::ZStreamSocket    "ZStreamSocket",
- *                              \ref LibChaos::ZConnection      "ZConnection")
- *
- *  - WIP:
- *      - Configuration Files  (\ref LibChaos::ZOptions         "ZOptions")
- *      - PDF                  (\ref LibChaos::ZPDF             "ZPDF")
- *      - Math                 (\ref LibChaos::ZNumber          "ZNumber",
- *                              \ref LibChaos::ZExpression      "ZExpression",
- *                              \ref LibChaos::ZFormula         "ZFormula")
- *      - XML                  (\ref LibChaos::ZXML             "ZXML")
- *      - Non-Memory Storage   (\ref LibChaos::ZDefaultStorage  "ZDefaultStorage",
- *                              \ref LibChaos::ZFileStorage     "ZFileStorage")
- *
- *  \section build_sec Building LibChaos
- *  Using CMake.
- */
-
 // General LibChaos Notes
 // Z-prefixed classes are classes that should be used in user code
 // Y-prefixed classes enforce interfaces on inheriting classes
