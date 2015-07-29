@@ -1,15 +1,17 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                                zallocator.h                                **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #ifndef ZALLOCATOR_H
 #define ZALLOCATOR_H
 
 #include "ztypes.h"
 
-#include <new>
+// For memcpy, memset
 #include <string.h>
+// For std::nothrow
+#include <new>
 
 namespace LibChaos {
 

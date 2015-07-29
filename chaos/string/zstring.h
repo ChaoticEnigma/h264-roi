@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                                  zstring.h                                 **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #ifndef ZSTRING_H
 #define ZSTRING_H
@@ -12,9 +12,7 @@
 #include "zhash.h"
 #include "ziterable.h"
 
-#include <cstring>
-//#include <bits/stringfwd.h>
-#include <string>
+// Needed for std::ostream overload
 #include <iosfwd>
 
 #if PLATFORM == WINDOWS

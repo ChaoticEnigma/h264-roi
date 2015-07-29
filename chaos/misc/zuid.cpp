@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                                  zuid.cpp                                  **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zuid.h"
 #include "zlog.h"
@@ -33,13 +33,13 @@ ZBinary prevmac;
  *  Default is time-based UUID (type 1).
  */
 ZUID::ZUID(uuidtype type){
-    if(type == nil){
+    if(type == NIL){
         // Nil UUID
         for(zu8 i = 0; i < 16; ++i){
             _id_octets[i] = 0;
         }
 
-    } else if(type == time){
+    } else if(type == TIME){
         // Time-Clock-MAC Version 1 UUID
         zuidlock.lock();
 
@@ -89,8 +89,8 @@ ZUID::ZUID(uuidtype type){
         // Test previous values
         if(prevclock == 0){
             ZRandom randgen;
-            ZBinary random = randgen.generate(2);
-            clock = (random[0] << 8) | random[1];
+            ZBinary randomdat = randgen.generate(2);
+            clock = (randomdat[0] << 8) | randomdat[1];
 //            random.read(_id_octets + 8, 2);
         } else {
             clock = prevclock;
@@ -117,7 +117,7 @@ ZUID::ZUID(uuidtype type){
 
         zuidlock.unlock();
 
-    } else if(type == random){
+    } else if(type == RANDOM){
         // Randomly generated Version 4 UUID
         ZRandom randgen;
         ZBinary random = randgen.generate(16);
@@ -156,11 +156,11 @@ ZUID::uuidtype ZUID::getType() const {
     zu8 type = _id_octets[6] & 0xF0 >> 4;
     switch(type){
         case 1:
-            return time;
+            return TIME;
         case 4:
-            return random;
+            return RANDOM;
         default:
-            return unknown;
+            return UNKNOWN;
     }
 }
 

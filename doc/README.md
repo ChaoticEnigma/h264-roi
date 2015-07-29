@@ -57,3 +57,9 @@ LibChaos is a general-purpose C++ utilities library.
     cd LibChaos-build
     cmake ../LibChaos
     make
+
+
+## General LibChaos Notes
+Z-prefixed classes are classes that should be used in user code.
+Y-prefixed classes enforce interfaces on inheriting classes.
+Other classes from LibChaos are not intended to be used outside the library code.

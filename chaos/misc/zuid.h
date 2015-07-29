@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                                   zuid.h                                   **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #ifndef ZUID_H
 #define ZUID_H
@@ -10,7 +10,7 @@
 #include "zstring.h"
 #include "zbinary.h"
 
-#define ZUID_NIL LibChaos::ZUID(LibChaos::ZUID::nil)
+#define ZUID_NIL LibChaos::ZUID(LibChaos::ZUID::NIL)
 
 namespace LibChaos {
 
@@ -19,17 +19,18 @@ class ZUID {
 public:
     enum uuidtype {
         //! Nil UUID (00000000-0000-0000-0000-000000000000).
-        nil = 0,
+        NIL = 0,
         //! Time-based Version 1 UUID.
-        time,
+        TIME,
         //! Randomly-generated Version 4 UUID.
-        random,
-        unknown,
+        RANDOM,
+        //! Error value.
+        UNKNOWN,
     };
 
 public:
-    //! Generate new UUID of \a type
-    ZUID(uuidtype type = time);
+    //! Generate new UUID of \a type.
+    ZUID(uuidtype type = TIME);
     //! Parse existing UUID
     ZUID(ZString str);
 

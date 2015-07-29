@@ -139,7 +139,7 @@ public:
     ZString debug() const {
         ZString str;
         Node *current = head;
-        for(int i = 0; i < _size; ++i){
+        for(zu64 i = 0; i < _size; ++i){
             str += ZString::ItoS((zu64)current->prev, 16) + " ";
             str += ZString::ItoS((zu64)current, 16);
             str += " " + ZString::ItoS((zu64)current->next, 16);

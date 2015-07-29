@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                             zstring-encode.cpp                             **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zstring.h"
 
@@ -292,7 +292,7 @@ namespace utf {
         template<typename It> static code_point decode(It &current,It last){
             if(NOWIDE_UNLIKELY(current == last))
                 return incomplete;
-            code_point c = *current++;
+            code_point c = (code_point)*current++;
             if(NOWIDE_UNLIKELY(!is_valid_codepoint(c)))
                 return illegal;
             return c;
@@ -303,7 +303,7 @@ namespace utf {
             return 1;
         }
         template<typename It>
-        static It encode(code_point u,It out){
+        static It encode(code_point u, It out){
             *out++ = u;
             return out;
         }

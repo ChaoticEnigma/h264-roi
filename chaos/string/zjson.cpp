@@ -1,11 +1,12 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                                  zjson.cpp                                 **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zjson.h"
 
-#include <cassert>
+#include <string>
+#include <assert.h>
 
 namespace LibChaos {
 

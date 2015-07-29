@@ -1,22 +1,16 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                                  ztypes.h                                  **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #ifndef ZTYPES_H
 #define ZTYPES_H
 
 /*! \file ztypes.h
- *  ztypes header file
+ *  ztypes header file.
  */
 
-// General LibChaos Notes
-// Z-prefixed classes are classes that should be used in user code
-// Y-prefixed classes enforce interfaces on inheriting classes
-// Other classes from LibChaos are not intended to be used outside the library code
-
 // Git Describe
-//#define LIBCHAOS_DESCRIBE "${LIBCHAOS_DESCRIBE}"
 #define LIBCHAOS_DESCRIBE _LIBCHAOS_DESCRIBE
 
 // Require C++
@@ -225,6 +219,7 @@ static_assert(sizeof(zu64) == 8, "zu64 has incorrect size");
 // Force 64-bit platform
 //static_assert(sizeof(void *) == 8, "void pointer is not 64-bit");
 
+//! Get a string describing this version of LibChaos.
 static const char *LibChaosDescribe(){
     return LIBCHAOS_DESCRIBE;
 }

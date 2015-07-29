@@ -4,6 +4,7 @@
 **                          (c) 2015 Charlie Waters                           **
 *******************************************************************************/
 #include "ztime.h"
+#include <stdio.h>
 
 #if COMPILER == MSVC
     #include <windows.h>
