@@ -238,10 +238,11 @@ ZBinary ZUID::getMACAddress(){
                         // Get hardware address
 #if PLATFORM == FREEBSD
                         if(ioctl(sock, SIOCGIFMAC, &ifr) == 0){
+                            memcpy(mac_address, ifr.ifr_mac.sa_data, 6);
 #else
                         if(ioctl(sock, SIOCGIFHWADDR, &ifr) == 0){
-#endif
                             memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
+#endif
                             if(validMAC(mac_address)){
                                 //ArZ mac;
                                 //for(zu64 i = 0; i < 6; ++i)
