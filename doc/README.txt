@@ -1,2 +1,0 @@
-LibChaos README.txt
-

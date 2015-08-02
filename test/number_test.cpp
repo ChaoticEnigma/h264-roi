@@ -3,15 +3,17 @@
 #include "zbinary.h"
 #include <bitset>
 
-void printnum(zu64 num){
-    std::bitset<32> b1(num);
-    ZString str1 = b1.to_string();
-    for(zu64 i = 0; i < str1.size(); i++){
-        i += 8;
-        str1.insert(i, " ");
-    }
-    LOG(str1 << num);
-}
+#define printnum(A) LOG(ZString::ItoS((zu64)(A), 2, 64) << " " << (A))
+
+//void printnum(zu64 num){
+//    std::bitset<32> b1(num);
+//    ZString str1 = b1.to_string();
+//    for(zu64 i = 0; i < str1.size(); i++){
+//        i += 8;
+//        str1.insert(i, " ");
+//    }
+//    LOG(str1 << num);
+//}
 
 int number_test(){
 

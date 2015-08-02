@@ -86,23 +86,23 @@ ZLog &ZLog::log(ZString logtext){
 ZLog &ZLog::operator<<(ZLogInfo in){
     if(job){
         switch(in.type){
-            case ZLogInfo::file:
+            case ZLogInfo::FILE:
                 job->file = in.info;
                 break;
-            case ZLogInfo::line:
+            case ZLogInfo::LINE:
                 job->line = in.info;
                 break;
-            case ZLogInfo::function:
+            case ZLogInfo::FUNCTION:
                 job->func = in.info;
                 break;
 
-            case ZLogInfo::time:
+            case ZLogInfo::TIME:
     //            job->file = in.info;
                 break;
-            case ZLogInfo::clock:
+            case ZLogInfo::CLOCK:
     //            job->line = in.info;
                 break;
-            case ZLogInfo::thread:
+            case ZLogInfo::THREAD:
     //            job->func = in.info;
                 break;
 

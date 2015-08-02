@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                              zautobufferunit.h                             **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #ifndef ZAUTOBUFFERUNIT_H
 #define ZAUTOBUFFERUNIT_H

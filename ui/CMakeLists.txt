@@ -1,11 +1,11 @@
 ## LibChaos UI CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
-PROJECT(LibChaos_UI)
+PROJECT(LibChaosUI)
 
 ### =================== HEADERS =================== ###
 
-SET(LibChaos_UI_HEADERS
+SET(LibChaosUI_HEADERS
     zui.h
     align.h
     base.h
@@ -20,7 +20,7 @@ SET(LibChaos_UI_HEADERS
 
 ### =================== SOURCES =================== ###
 
-SET(LibChaos_UI_X11_SOURCES
+SET(LibChaosUI_X11_SOURCES
     align.cpp
     button.cpp
     control.cpp
@@ -32,7 +32,7 @@ SET(LibChaos_UI_X11_SOURCES
     windowproc.cpp
 )
 
-SET(LibChaos_UI_WIN32_SOURCES
+SET(LibChaosUI_WIN32_SOURCES
     win32/align_win32.cpp
     win32/button_win32.cpp
     win32/control_win32.cpp
@@ -47,14 +47,14 @@ SET(LibChaos_UI_WIN32_SOURCES
 ### =================== CONFIG =================== ###
 
 IF(LIBCHAOS_PLATFORM_WINDOWS)
-    SET(LibChaos_UI_SOURCES ${LibChaos_UI_WIN32_SOURCES})
+    SET(LibChaosUI_SOURCES ${LibChaosUI_WIN32_SOURCES})
 ELSE()
-    SET(LibChaos_UI_SOURCES ${LibChaos_UI_X11_SOURCES})
+    SET(LibChaosUI_SOURCES ${LibChaosUI_X11_SOURCES})
 ENDIF()
 
 # Export Properties
-GatherSources(${LibChaos_UI_HEADERS} ${LibChaos_UI_X11_SOURCES} ${LibChaos_UI_WIN32_SOURCES})
-GatherIncludes(LibChaosUI .)
+GatherSources(${LibChaosUI_HEADERS} ${LibChaosUI_X11_SOURCES} ${LibChaosUI_WIN32_SOURCES})
+GatherIncludes(.)
 
 # Include Directories
 GET_PROPERTY(LibChaosInclude GLOBAL PROPERTY LibChaosInclude)
@@ -69,7 +69,7 @@ IF(LIBCHAOS_PLATFORM_WINDOWS)
     ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
 ENDIF()
 
-ADD_LIBRARY(chaosui ${LIBCHAOS_UI_ALL} ${LibChaos_UI_HEADERS} ${LibChaos_UI_SOURCES})
+ADD_LIBRARY(chaosui ${LIBCHAOS_UI_ALL} ${LibChaosUI_HEADERS} ${LibChaosUI_SOURCES})
 IF(LIBCHAOS_PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(chaosui chaos comctl32)
 ELSE()
