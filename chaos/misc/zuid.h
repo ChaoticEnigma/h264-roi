@@ -47,6 +47,8 @@ public:
     const zoctet *raw() const { return _id_octets; }
 
 public:
+    //! Get an acceptable timestamp
+    static zu64 getTimestamp();
     //! Get an acceptable MAC address
     static ZBinary getMACAddress();
 
