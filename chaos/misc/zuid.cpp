@@ -220,6 +220,7 @@ ZBinary ZUID::getMACAddress(){
     struct ifreq ifr;
     struct ifconf ifc;
     char buf[1024];
+    unsigned char mac_address[6];
 
     int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if(sock != -1){
@@ -228,21 +229,28 @@ ZBinary ZUID::getMACAddress(){
         if(ioctl(sock, SIOCGIFCONF, &ifc) != -1){
             struct ifreq* it = ifc.ifc_req;
             const struct ifreq* const end = it + ((unsigned long)ifc.ifc_len / sizeof(struct ifreq));
-
             for(; it != end; ++it){
                 strcpy(ifr.ifr_name, it->ifr_name);
+                // Get interface flags
                 if(ioctl(sock, SIOCGIFFLAGS, &ifr) == 0){
-                    if(!(ifr.ifr_flags & IFF_LOOPBACK)){ // skip loopback
+                    // Skip loopback interface
+                    if(!(ifr.ifr_flags & IFF_LOOPBACK)){
+                        // Get hardware address
+#if PLATFORM == FREEBSD
+                        if(ioctl(sock, SIOCGIFMAC, &ifr) == 0){
+#else
                         if(ioctl(sock, SIOCGIFHWADDR, &ifr) == 0){
-                            unsigned char mac_address[6];
+#endif
                             memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
-                            ArZ mac;
-                            for(zu64 i = 0; i < 6; ++i)
-                                mac.push(ZString::ItoS(mac_address[i], 16, 2));
-                            LOG(ZString::compound(mac, ":") << " " << ifr.ifr_name);
+                            if(validMAC(mac_address)){
+                                //ArZ mac;
+                                //for(zu64 i = 0; i < 6; ++i)
+                                //    mac.push(ZString::ItoS(mac_address[i], 16, 2));
+                                //LOG(ZString::compound(mac, ":") << " " << ifr.ifr_name);
 
-                            ZBinary bin(mac_address, 6);
-                            return bin;
+                                ZBinary bin(mac_address, 6);
+                                return bin;
+                            }
                         }
                     }
                 } else {

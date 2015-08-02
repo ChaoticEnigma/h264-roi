@@ -9,11 +9,11 @@ int uid_test(){
 
     ZString uidstr2 = "abcdef00-1234-5678-9012-fedcbaabcdef";
     ZUID uid2 = uidstr2;
-    LOG("String:\t\t" << uid2.str() << " " << (uid2.str() == uidstr2));
+    LOG("String:\t" << uid2.str() << " " << (uid2.str() == uidstr2));
 
     ZString uidstr3 = "o23h4oi23h4";
     ZUID uid3 = uidstr3;
-    LOG("String Fail:\t\t" << uid3.str() << " " << uidstr3 << " " << (uid3 == ZUID_NIL));
+    LOG("String Fail:\t" << uid3.str() << " " << uidstr3 << " " << (uid3 == ZUID_NIL));
 
     ZUID uid4(ZUID::NIL);
     LOG("Nil:\t\t" << uid4.str());
@@ -22,7 +22,7 @@ int uid_test(){
     LOG("Time:\t\t" << uid5.str());
 
     ZUID uid6(ZUID::RANDOM);
-    LOG("Random:\t\t" << uid6.str());
+    LOG("Random:\t" << uid6.str());
 
     ZBinary mac = ZUID::getMACAddress();
     ZString macstr;
