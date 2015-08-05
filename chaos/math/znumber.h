@@ -49,6 +49,10 @@ namespace LibChaos {
 // -a = ~a + 1
 class ZNumber {
 public:
+    typedef zu32 datatype;
+
+public:
+    //! Default constructor, initializes to positive zero.
     ZNumber();
 
 //    ZNumber(void *value, zu64 bits) : ZNumber(){
@@ -57,33 +61,68 @@ public:
 //        memcpy(_data, value, bytes);
 //    }
 
+    //! Initialize to @a num.
+    ZNumber(zu64 num);
+    //! Initialize to @a num.
+    ZNumber(unsigned char num) : ZNumber((zu64)num){}
+    //! Initialize to @a num.
+    ZNumber(unsigned short num) : ZNumber((zu64)num){}
+    //! Initialize to @a num.
+    ZNumber(unsigned int num) : ZNumber((zu64)num){}
+    //ZNumber(unsigned long num) : ZNumber((zu64)num){}
+
+    //! Initialize to @a num.
     ZNumber(zs64 num);
+    //! Initialize to @a num.
     ZNumber(signed char num) : ZNumber((zs64)num){}
+    //! Initialize to @a num.
     ZNumber(char num) : ZNumber((zs64)num){}
     //ZNumber(signed short num) : ZNumber((zs64)num){}
+    //! Initialize to @a num.
     ZNumber(short num) : ZNumber((zs64)num){}
     //ZNumber(signed int num) : ZNumber((zs64)num){}
+    //! Initialize to @a num.
     ZNumber(int num) : ZNumber((zs64)num){}
     //ZNumber(signed long num) : ZNumber((zs64)num){}
     //ZNumber(long num) : ZNumber((zs64)num){}
 
-    ZNumber(zu64 num);
-    ZNumber(unsigned char num) : ZNumber((zu64)num){}
-    ZNumber(unsigned short num) : ZNumber((zu64)num){}
-    ZNumber(unsigned int num) : ZNumber((zu64)num){}
-    //ZNumber(unsigned long num) : ZNumber((zu64)num){}
+    //! Initialize from @a str.
+    ZNumber(ZString str);
 
     ZNumber(const ZNumber &other);
 
-    ZNumber(ZString str);
-
-    ~ZNumber(){ clear(); }
+    ~ZNumber();
 
     // Conversions
     //operator zu64();
 
     // Assignment
+    //! Assignment operator.
     ZNumber &operator=(const ZNumber &other);
+
+    // Arithmetic Assignment
+    //! Addition assignment operator.
+    ZNumber &operator+=(const ZNumber &other);
+    //! Subtraction assignment operator.
+    ZNumber &operator-=(const ZNumber &other);
+    //! Multiplication assignment operator.
+    ZNumber &operator*=(const ZNumber &other);
+    //! Division assignment operator.
+    ZNumber &operator/=(const ZNumber &other);
+    //! Modulus assignment operator.
+    ZNumber &operator%=(const ZNumber &other);
+
+    // Bitwise Assignment
+    //! Bitwise AND assignment operator.
+    ZNumber &operator&=(const ZNumber &other);
+    //! Bitwise OR assignment operator.
+    ZNumber &operator|=(const ZNumber &other);
+    //! Bitwise XOR assignment operator.
+    ZNumber &operator^=(const ZNumber &other);
+    //! Bitwise Left Shift assignment operator.
+    ZNumber &operator<<=(const ZNumber &other);
+    //! Bitwise Right Shift assignment operator.
+    ZNumber &operator>>=(const ZNumber &other);
 
     // Comparison
     friend bool operator==(const ZNumber &lhs, const ZNumber &rhs);
@@ -112,32 +151,18 @@ public:
     friend ZNumber operator<<(ZNumber lhs, const ZNumber &rhs); // Uses <<=
     friend ZNumber operator>>(ZNumber lhs, const ZNumber &rhs); // Uses >>=
 
-    // Arithmetic Assignment
-    ZNumber &operator+=(const ZNumber &other);
-    ZNumber &operator-=(const ZNumber &other);
-    ZNumber &operator*=(const ZNumber &other);
-    ZNumber &operator/=(const ZNumber &other);
-    ZNumber &operator%=(const ZNumber &other);
-
-    // Bitwise Assignment
-    ZNumber &operator&=(const ZNumber &other);
-    ZNumber &operator|=(const ZNumber &other);
-    ZNumber &operator^=(const ZNumber &other);
-    ZNumber &operator<<=(const ZNumber &other);
-    ZNumber &operator>>=(const ZNumber &other);
-
-    // Prefix Increment
+    //! Prefix Increment.
     ZNumber &operator++();
-    // Postfix Increment
+    //! Postfix Increment.
     ZNumber operator++(int){
         ZNumber tmp(*this);
         operator++();
         return tmp;
     }
 
-    // Prefix Decrement
+    //! Prefix Decrement.
     ZNumber &operator--();
-    // Postfix Decrement
+    //! Postfix Decrement.
     ZNumber operator--(int){
         ZNumber tmp(*this);
         operator--();
@@ -146,52 +171,45 @@ public:
 
     void clear();
 
+    //! Calculate the factorial.
     ZNumber factorial() const;
 
-    // Expensive!
+    /*! Generate a numeric string with numeric @a base.
+     *  @note Expensive!
+     */
     ZString str(zu16 base = 10) const;
 
     ZString strBytes() const;
 
     // zero is positive (should it be negative too?)
+    //! Check if number is positive.
     bool isPositive() const {
         return !isNegative();
     }
+    //! Check if number is negative.
     bool isNegative() const;
 
-#ifdef ZNUMBER_REFERENCE
-    zbyte *data() const {
-        return (zbyte *)&_number;
-    }
-    zu64 size() const {
-        return 8;
-    }
-#else
-    zbyte *data() const {
+    //! Pointer to raw data.
+    datatype *data() const {
         return _data;
     }
-    zu64 size() const {
-        return _size;
-    }
-#endif
 
-    zbyte byte(zu64 i) const {
-        return (i < size() ? data()[i] : 0);
+    //! Size of data in bytes.
+    zu64 size() const {
+        return _size * sizeof(datatype);
     }
 
 private:
+    //! Pad end of data with @a num elements.
     void pad(zu64 num);
-
+    //! Remove zeroed elements from end of data.
     void clean();
 
 private:
-#ifdef ZNUMBER_REFERENCE
+    ZAllocator<datatype> *_alloc;
     bool _sign;
-    zu64 _number;
-#else
-    zbyte *_data;
+    datatype *_data;
     zu64 _size;
-#endif
 };
 
 // Comparison

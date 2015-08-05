@@ -236,6 +236,7 @@ ZBinary ZUID::getMACAddress(){
                     // Skip loopback interface
                     if(!(ifr.ifr_flags & IFF_LOOPBACK)){
                         // Get hardware address
+                        // TODO: FreeBSD MAC Address
 #if PLATFORM == FREEBSD
                         if(ioctl(sock, SIOCGIFMAC, &ifr) == 0){
                             memcpy(mac_address, ifr.ifr_mac.sa_data, 6);

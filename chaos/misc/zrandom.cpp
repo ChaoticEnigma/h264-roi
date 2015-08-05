@@ -51,7 +51,8 @@ ZRandom::~ZRandom(){
 zu64 ZRandom::genzu(zu64 min, zu64 max){
     ZBinary buff = generate(8);
     zu64 rand = (zu64)buff[0] | (zu64)buff[1] << 8 | (zu64)buff[2] << 16 | (zu64)buff[3] << 24 | (zu64)buff[4] << 32 | (zu64)buff[5] << 40 | (zu64)buff[6] << 48 | (zu64)buff[7] << 56;
-    rand = rand % (max - min) + min; // TODO: imperfect distribution
+    // TODO: Imperfect random distribution
+    rand = rand % (max - min) + min;
     return rand;
 }
 

@@ -199,6 +199,14 @@ public:
     ZString &label(const ZString &label, const ZString &value);
     ZString &label(const AsArZ &values);
 
+    // Strip occurences of <target> from beginning of <str>
+    ZString &stripFront(chartype target);
+    static ZString stripFront(ZString str, chartype target);
+
+    // Strip occurences of <target> from end of <str>
+    ZString &stripBack(chartype target);
+    static ZString stripBack(ZString str, chartype target);
+
     // Strip occurences of <target> from beginning and end of <str>
     ZString &strip(chartype target);
     static ZString strip(ZString str, chartype target);
