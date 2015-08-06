@@ -242,14 +242,14 @@ ZString &ZString::prepend(const ZString &str){
     return *this;
 }
 
-zu64 ZString::count(ZString needle) const {
+zu64 ZString::count(ZString test) const {
     ZString haystack = _data;
     zu64 cnt = 0;
     for(zu64 i = 0; i < haystack.size(); ++i){
-        if(haystack[i] == needle[0]){
+        if(haystack[i] == test[0]){
             bool good = true;
-            for(zu64 g = i, j = 0; j < needle.size(); ++g, ++j){
-                if(haystack[g] != needle[j]){
+            for(zu64 g = i, j = 0; j < test.size(); ++g, ++j){
+                if(haystack[g] != test[j]){
                     good = false;
                     break;
                 }
