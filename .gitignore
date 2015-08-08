@@ -7,3 +7,6 @@
 
 # Apple
 .DS_Store
+
+# Vim
+*.swp
