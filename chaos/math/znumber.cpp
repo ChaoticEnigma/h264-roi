@@ -9,51 +9,42 @@
 
 namespace LibChaos {
 
-ZNumber::ZNumber() : _data(nullptr), _size(0){
-    //clear(); // Redundant?
-}
+ZNumber::ZNumber() : _alloc(new ZAllocator<datatype>), _sign(false), _data(nullptr), _size(0){
 
-ZNumber::ZNumber(zs64 num) : ZNumber(){
-    zu8 length = 0;
-    for(zu8 i = 0; i < sizeof(num); ++i){
-        if(((zbyte*)&num)[i] == 0){
-            length = i;
-            break;
-        }
-    }
-    if(!length)
-        return;
-    _size = length;
-    _data = new zbyte[_size];
-    memcpy(_data, &num, _size);
 }
 
 ZNumber::ZNumber(zu64 num) : ZNumber(){
-    zu8 length = 0;
-    for(zu8 i = 0; i < sizeof(num); ++i){
-        if(((zbyte*)&num)[i] == 0){
-            length = i;
-            break;
-        }
+    _size = sizeof(zu64) / sizeof(datatype);
+    _data = _alloc->alloc(_size);
+    for(zu8 i = 0; i < _size; ++i){
+        _data[i] = (datatype)(num >> ((sizeof(datatype) * 8) * i));
     }
-    if(!length)
-        return;
-    _size = length;
-    _data = new zbyte[_size];
-    memcpy(_data, &num, _size);
 }
 
-ZNumber::ZNumber(const ZNumber &other) : ZNumber(){
-    if(other._size > 0){
-        _size = other._size;
-        _data = new zbyte[_size];
-        memcpy(_data, other._data, other._size);
-        //_sign = other._sign;
+ZNumber::ZNumber(zs64 num) : ZNumber(){
+    _size = sizeof(zu64) / sizeof(datatype);
+    _sign = num < 0;
+    _data = _alloc->alloc(_size);
+    for(zu8 i = 0; i < _size; ++i){
+        _data[i] = (datatype)(num >> ((sizeof(datatype) * 8) * i));
     }
 }
 
 ZNumber::ZNumber(ZString str) : ZNumber(){
 
+}
+
+ZNumber::ZNumber(const ZNumber &other) : ZNumber(){
+    if(other._size > 0){
+        _size = other._size;
+        _data = new datatype[_size];
+        memcpy(_data, other._data, other._size);
+        //_sign = other._sign;
+    }
+}
+
+ZNumber::~ZNumber(){
+    clear();
 }
 
 //ZNumber::operator zu64(){
@@ -64,9 +55,9 @@ ZNumber &ZNumber::operator=(const ZNumber &other){
     clear();
     if(other._size > 0){
         _size = other._size;
-        _data = new zbyte[_size];
-        memcpy(_data, other._data, other._size);
-        //_sign = other._sign;
+        _data = _alloc->alloc(_size);
+        _alloc->copy(other._data, _data, _size);
+        _sign = other._sign;
     }
     return *this;
 }
@@ -84,11 +75,11 @@ ZNumber &ZNumber::operator+=(const ZNumber &other){
     if(other._size > _size){
         pad(other._size - _size);
     }
-    zu8 carry = 0;
+    datatype carry = 0;
     for(zu64 i = 0; i < MAX(_size, other._size); ++i){
-        zu16 sum = byte(i) + other.byte(i) + carry;
-        _data[i] = ((zbyte*)&sum)[0];
-        carry = ((zbyte*)&sum)[1];
+        zu64 sum = _data[i] + other._data[i] + carry;
+        _data[i] = (datatype)(sum);
+        carry = (datatype)(sum >> (sizeof(datatype) * 8));
     }
     if(carry){
         pad(1);
@@ -157,9 +148,9 @@ ZNumber &ZNumber::operator--(){
 }
 
 void ZNumber::clear(){
-    //_sign = true;
+    _sign = true;
     _size = 0;
-    delete[] _data;
+    _alloc->dealloc(_data);
     _data = nullptr;
 }
 
@@ -176,11 +167,11 @@ ZNumber ZNumber::factorial() const {
 
 // Still working this out...
 ZString ZNumber::str(zu16 base) const {
-    if(_data == nullptr){
+    if(_data == nullptr || _size == 0){
         return "0";
     }
     if(base > 64){
-        return "!";
+        return "ERROR";
     }
 
     const char *digits =
@@ -191,46 +182,59 @@ ZString ZNumber::str(zu16 base) const {
         "ghijklmnopqrstuv" // Base 32
         "wxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@"; // Base 64
 
-    ZString out;
-
+    ZString out = (isNegative() ? "-" : "");
     bool bit = 0;
     for(zu64 i = 0; i < _size; ++i){
-        for(zu8 j = 0, m = 1; j < 8; ++j, m <<= 1){
-            bit = _data[i] & m;
-
-            //out += (bit ? "1" : "0");
-            out += digits[bit];
+        for(zu8 j = 0; j < sizeof(datatype); ++j){
+            datatype m = 1U << (j * 8);
+            for(zu8 k = 0; k < 8; ++k){
+                bit = _data[i] & m;
+                m <<= 1;
+                //out += (bit ? "1" : "0");
+                out += digits[bit];
+            }
         }
-        out += " ";
     }
-    out.strip(' ');
-
+    out.reverse();
+    out.stripFront('0');
     return out;
 }
 
 ZString ZNumber::strBytes() const {
-    ZString out;
-    for(zu64 i = 0; i < _size; ++i){
-        std::bitset<8> b1(_data[i]);
-        out = ZString(b1.to_string()) << " " << out;
+    if(_data == nullptr){
+        return "null";
     }
-    out.strip(' ');
+    const char *digits = "01";
+    ZString out;
+    bool bit = 0;
+    for(zu64 i = 0; i < _size; ++i){
+        for(zu8 j = 0; j < sizeof(datatype); ++j){
+            datatype m = 1U << (j * 8);
+            for(zu8 k = 0; k < 8; ++k){
+                bit = _data[i] & m;
+                m <<= 1;
+                out += digits[bit];
+            }
+            out += " ";
+        }
+    }
+    out.stripBack(' ');
+    out.reverse();
     return out;
 }
 
 bool ZNumber::isNegative() const {
-    return _data[_size-1] & 128;
+    return _sign;
 }
 
 void ZNumber::pad(zu64 num){
-    zbyte *tmp = _data;
-    _data = new zbyte[_size + num];
-    memcpy(_data, tmp, _size);
-    delete[] tmp;
+    datatype *tmp = _data;
+    _data = _alloc->alloc(_size + num);
+    _alloc->copy(tmp, _data, _size);
+    _alloc->dealloc(tmp);
     for(zu64 i = _size; i < _size + num; ++i){
         _data[i] = 0;
     }
-    //memset(_data + _size, 0, num);
     _size += num;
 }
 
@@ -242,8 +246,8 @@ void ZNumber::clean(){
             break;
         }
     }
-    zbyte *tmp = _data;
-    _data = new zbyte[length];
+    datatype *tmp = _data;
+    _data = new datatype[length];
     memcpy(_data, tmp, length);
     delete[] tmp;
     _size = length;

@@ -1,15 +1,17 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                                zallocator.h                                **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #ifndef ZALLOCATOR_H
 #define ZALLOCATOR_H
 
 #include "ztypes.h"
 
-#include <new>
+// For memcpy, memset
 #include <string.h>
+// For std::nothrow
+#include <new>
 
 namespace LibChaos {
 
@@ -18,7 +20,7 @@ struct zallocator_exception {
     const char *what;
 };
 
-template <class T> class ZAllocator {
+template <class T = void> class ZAllocator {
 public:
     virtual ~ZAllocator(){}
 
@@ -81,7 +83,7 @@ public:
     }
 
     virtual void move(T *src, T *dest, zu64 count = 1){
-        // TODO: ZAlocator move
+        // TODO: ZAllocator move
         for(zu64 i = 0; i < count; ++i){
 //            new (dest++) T(*src++);
 //            new (&(dest[i])) T(src[i]);

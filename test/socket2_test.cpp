@@ -199,8 +199,6 @@ int tcpserver_test2(){
         unsigned char *buffer[bufsize];
         long len = 0;
         zu64 currpos = 0;
-        AsArZ headers;
-        zu64 currentline = 0;
 
         ArZ warnings;
 

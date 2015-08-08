@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                                  zstring.h                                 **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #ifndef ZSTRING_H
 #define ZSTRING_H
@@ -12,9 +12,7 @@
 #include "zhash.h"
 #include "ziterable.h"
 
-#include <cstring>
-//#include <bits/stringfwd.h>
-#include <string>
+// Needed for std::ostream overload
 #include <iosfwd>
 
 #if PLATFORM == WINDOWS
@@ -32,10 +30,10 @@ typedef ZAssoc<ZString, ZString> AsArZ;
 
 typedef char zstringchartype;
 
-//! UTF-8 contiguous string container.
-//! Wide characters are narrowed and encoded in UTF-8.
-//! Internal array is always null terminated.
-
+/*! UTF-8 contiguous string container.
+ *  Wide characters are narrowed and encoded in UTF-8.
+ *  Internal array is always null terminated.
+ */
 class ZString : public ZIterable<zstringchartype> {
 public:
     typedef zstringchartype chartype;
@@ -126,83 +124,122 @@ public:
     // Resize (IMPORTANT: memory is only allocated and initialized here)
     void reserve(zu64 size);
 
-    // Appends <str> to this and returns this
+    //! Append \a str to string.
     ZString &append(const ZString &str);
+    //! Operator overload for append().
     inline ZString &operator+=(const ZString &str){ return append(str); }
+    //! Operator overload for append().
     inline ZString &operator<<(const ZString &str){ return append(str); }
 
-    // Concatenates this and <str> and returns result
+    //! Concatenate string and \a str.
     ZString concat(const ZString &str) const;
+    //! Concatenate \a lhs and \a rhs.
     friend ZString operator+(const ZString &lhs, const ZString &rhs);
 
-    // Prepends <str> to this and returns this
+    //! Prepend \a str to string.
     ZString &prepend(const ZString &str);
 
+    //! Get reference to character at \a i.
     inline char &operator[](zu64 i){ return _data[i]; }
+    //! Get constant reference to character at \a i.
     inline const char &operator[](zu64 i) const { return _data[i]; }
 
-    zu64 count(ZString) const;
+    //! Count occurrences of \a test.
+    zu64 count(ZString test) const;
 
-    // Tests if <str> begins with <test>. Ignores whitespace at beginning of string if <ignore_whitespace>
+    //! Tests if \a str begins with \a test. Ignores whitespace at beginning of string if \a ignore_whitespace.
     bool startsWith(const ZString &test, bool ignore_whitespace = true) const;
+    //! Tests if string begins with \a test. Ignores whitespace at beginning of string if \a ignore_whitespace.
     static bool startsWith(const ZString &str, const ZString &test, bool ignore_whitespace = true);
 
-    // Alias for startsWith, always ignores whitespace
+    //! Alias for startsWith, always ignores whitespace
     inline bool beginsWith(ZString test) const { return startsWith(test, false); }
 
-    // Tests if <str> ends with <test>
+    //! Tests if string ends with \a test.
     bool endsWith(ZString test) const;
 
-    // Insert string at position
+    //! Insert \a txt at \a pos in string.
     ZString &insert(zu64 pos, const ZString &txt);
+    //! Insert \a txt at \a pos in \a str.
     static ZString insert(ZString str, zu64 pos, const ZString &txt);
 
-    // Get portion of <str> from <pos> to end
+    //! Get portion of string from \a pos to end.
     ZString &substr(zu64 pos);
+    //! Get portion of \a str from \a pos to end.
     static ZString substr(ZString str, zu64 pos);
 
-    // Get <len> characters after <pos> of <str>
+    //! Get \a len characters after \a pos of string.
     ZString &substr(zu64 pos, zu64 len);
+    //! Get \a len characters after \a pos of \a str.
     static ZString substr(ZString str, zu64 pos, zu64 len);
 
-    // Get location of first character of first occurrence of <find> in <str>
+    //! Get location of of first occurrence of \a find in string after \a start.
     zu64 findFirst(const ZString &find, zu64 start = 0) const;
+    //! Get location of of first occurrence of \a find in \a str after \a start.
     static zu64 findFirst(const ZString &str, const ZString &find, zu64 start = 0);
 
-    // Get locations of first characters of all non-overlapping occurrences of <find> in <str>
+    //! Get locations of of all non-overlapping occurrences of \a find in string.
     ZArray<zu64> findAll(const ZString &find) const;
+    //! Get locations of of all non-overlapping occurrences of \a find in \a str.
     static ZArray<zu64> findAll(const ZString &str, const ZString &find);
 
-    // Replace section <len> characters long at <pos> with <after> in <str>
+    //! Replace section \a len characters long at \a pos with \a after in string.
     ZString &replacePos(zu64 pos, zu64 len, const ZString &after);
+    //! Replace section \a len characters long at \a pos with \a after in \a str.
     static ZString replacePos(ZString str, zu64 pos, zu64 len, const ZString &after);
 
+    //! Replace first occurence of \a before in string with \a after after \a start.
     ZString &replaceFirst(const ZString &before, const ZString &after, zu64 start = 0);
+    //! Replace first occurence of \a before in \a str with \a after after \a start.
     static ZString replaceFirst(ZString str, const ZString &before, const ZString &after, zu64 start = 0);
 
-    // Replace up to <max> occurences of <before> with <after> in <str>
-    // <max> = 0 for unlimited
+    /*! Replace up to \a max occurrences of \a before in string with \a after.
+     *  \param max Number of occurrences to replace (0 for unlimited)
+     */
     ZString &replace(const ZString &before, const ZString &after, zu64 max = 0);
+    /*! Replace up to \a max occurrences of \a before in \a str with \a after.
+     *  \param max Number of occurrences to replace (0 for unlimited)
+     */
     static ZString replace(ZString str, const ZString &before, const ZString &after, zu64 max = 0);
 
-    // Replace the first occurrence of <before> in <str> with <after>, up to <max> times
-    // <max> = 0 for unlimited
+    /*! Replace the first occurrence of \a before in string with \a after, up to \a max times.
+     *  Replaces recursively, so will search entire string each replace.
+     *  \param max Number of occurrences to replace (0 for unlimited)
+     */
     ZString &replaceRecursive(const ZString &before, const ZString &after, zu64 max = 1000);
+    /*! Replace the first occurrence of \a before in \a str with \a after, up to \a max times.
+     *  Replaces recursively, so will search entire string each replace.
+     *  \param max Number of occurrences to replace (0 for unlimited)
+     */
     static ZString replaceRecursive(ZString str, const ZString &before, const ZString &after, zu64 max = 1000);
 
-    // Get sub-string of <str> before first occurence of <find> in <str>
+    //! Get sub-string of \a str before first occurence of \a find in \a str.
     static ZString getUntil(ZString str, const ZString &find);
 
-    ZString findFirstBetween(ZString, ZString);
+    //! Get first string between \a start and \a end in string.
+    ZString findFirstBetween(ZString start, ZString end);
+    //! Replace first string between \a start and \a end in string with \a after.
     ZString replaceBetween(ZString start, ZString end, ZString after);
+
     ZString findFirstXmlTagCont(ZString tag);
     ZString replaceXmlTagCont(ZString tag, ZString after);
 
     ZString &label(const ZString &label, const ZString &value);
     ZString &label(const AsArZ &values);
 
-    // Strip occurences of <target> from beginning and end of <str>
+    //! Strip occurences of \a target from beginning of string.
+    ZString &stripFront(chartype target);
+    //! Strip occurences of \a target from beginning of \a str.
+    static ZString stripFront(ZString str, chartype target);
+
+    //! Strip occurences of \a target from end of string.
+    ZString &stripBack(chartype target);
+    //! Strip occurences of \a target from end of \a str.
+    static ZString stripBack(ZString str, chartype target);
+
+    //! Strip occurences of \a target from beginning and end of string.
     ZString &strip(chartype target);
+    //! Strip occurences of \a target from beginning and end of \a str.
     static ZString strip(ZString str, chartype target);
 
     ZString removeWhitespace();

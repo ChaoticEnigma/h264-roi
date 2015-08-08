@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                                 zstring.cpp                                **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zstring.h"
 #include "zarray.h"
@@ -96,12 +96,12 @@ ZString ZString::ItoS(zu64 value, zu8 base, zu64 pad){
     buffer.reserve(35);
     zu64 quotient = value;
     do {
-        buffer += "0123456789abcdef"[ZMath::abs(quotient % (zu64)base)];
+        buffer += "0123456789abcdef"[ZMath::abs((zs64)(quotient % base))];
         quotient /= base;
     } while(quotient);
     buffer.reverse();
     if(buffer.size() < pad)
-        buffer.append(ZString('0', pad - buffer.size()));
+        buffer.prepend(ZString('0', pad - buffer.size()));
     return buffer;
 }
 
@@ -160,6 +160,7 @@ bool ZString::isFloat() const {
     return true;
 }
 
+// TODO: Fix ZString float conversion
 float ZString::toFloat() const {
     if(!isFloat())
         return 0.0f;
@@ -241,14 +242,14 @@ ZString &ZString::prepend(const ZString &str){
     return *this;
 }
 
-zu64 ZString::count(ZString needle) const {
+zu64 ZString::count(ZString test) const {
     ZString haystack = _data;
     zu64 cnt = 0;
     for(zu64 i = 0; i < haystack.size(); ++i){
-        if(haystack[i] == needle[0]){
+        if(haystack[i] == test[0]){
             bool good = true;
-            for(zu64 g = i, j = 0; j < needle.size(); ++g, ++j){
-                if(haystack[g] != needle[j]){
+            for(zu64 g = i, j = 0; j < test.size(); ++g, ++j){
+                if(haystack[g] != test[j]){
                     good = false;
                     break;
                 }
@@ -716,7 +717,7 @@ ZString ZString::compound(ArZ parts, ZString delim){
     return name;
 }
 
-ZString &ZString::strip(chartype target){
+ZString &ZString::stripFront(ZString::chartype target){
     zu64 clen = 0;
     for(zu64 i = 0; i < size(); ++i){
         if(_data[i] == target)
@@ -726,8 +727,15 @@ ZString &ZString::strip(chartype target){
     }
     if(clen > 0)
         substr(clen, size());
+    return *this;
+}
 
-    clen = 0;
+ZString ZString::stripFront(ZString str, ZString::chartype target){
+    return str.stripFront(target);
+}
+
+ZString &ZString::stripBack(ZString::chartype target){
+    zu64 clen = 0;
     for(zu64 i = 0; i < size(); ++i){
         zu64 curr = size() - 1 - i;
         if(_data[curr] == target)
@@ -737,6 +745,16 @@ ZString &ZString::strip(chartype target){
     }
     if(clen > 0)
         substr(0, size() - clen);
+    return *this;
+}
+
+ZString ZString::stripBack(ZString str, ZString::chartype target){
+    return str.stripBack(target);
+}
+
+ZString &ZString::strip(chartype target){
+    stripFront(target);
+    stripBack(target);
     return *this;
 }
 

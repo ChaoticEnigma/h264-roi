@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                                  zuid.cpp                                  **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zuid.h"
 #include "zlog.h"
@@ -33,39 +33,18 @@ ZBinary prevmac;
  *  Default is time-based UUID (type 1).
  */
 ZUID::ZUID(uuidtype type){
-    if(type == nil){
+    if(type == NIL){
         // Nil UUID
         for(zu8 i = 0; i < 16; ++i){
             _id_octets[i] = 0;
         }
 
-    } else if(type == time){
+    } else if(type == TIME){
         // Time-Clock-MAC Version 1 UUID
         zuidlock.lock();
 
         // Get the time
-#if PLATFORM == WINDOWS
-        SYSTEMTIME systime;
-        GetSystemTime(&systime);
-        FILETIME filetime;
-        SystemTimeToFileTime(&systime, &filetime);
-        // Time in 100-nanosecond intervals
-        zu64 mstime = ((zu64)filetime.dwHighDateTime << 32) | filetime.dwLowDateTime;
-        // Microsoft UTC starts January 1, 1601, 00:00:00.0000000
-        // We need UTC since October 15, 1582, 00:00:00.0000000
-        // Add 18 years + 17 days in Oct + 30 days in Nov + 31 days in Dec + 5 leap days, to seconds, to 100 nanosecond interval
-        zu64 utctime = mstime + ((zu64)((18*365)+17+30+31+5) * (60*60*24) * (1000*1000*10));
-#else
-        timeval tv;
-        gettimeofday(&tv, NULL);
-        // Time in microseconds
-        zu64 tvtime = (zu64)((tv.tv_sec * 1000 * 1000) + tv.tv_usec);
-        // POSIX UTC start January 1, 1970, 00:00:00.000000
-        // We need UTC since October 15, 1582, 00:00:00.0000000
-        // Add 387 years + 17 days in Oct + 30 days in Nov + 31 days in Dec + 94 leap days, to seconds, to 100 nanosecond interval
-        zu64 utctime = (tvtime * 10) + ((zu64)((387*365)+17+30+31+5) * (60*60*24) * (1000*1000*10));
-#endif
-
+        zu64 utctime = getTimestamp();
         zu32 utchi = (utctime >> 32);
         zu32 utclo = (utctime & 0xFFFFFFFF);
 
@@ -89,8 +68,8 @@ ZUID::ZUID(uuidtype type){
         // Test previous values
         if(prevclock == 0){
             ZRandom randgen;
-            ZBinary random = randgen.generate(2);
-            clock = (random[0] << 8) | random[1];
+            ZBinary randomdat = randgen.generate(2);
+            clock = (randomdat[0] << 8) | randomdat[1];
 //            random.read(_id_octets + 8, 2);
         } else {
             clock = prevclock;
@@ -117,7 +96,7 @@ ZUID::ZUID(uuidtype type){
 
         zuidlock.unlock();
 
-    } else if(type == random){
+    } else if(type == RANDOM){
         // Randomly generated Version 4 UUID
         ZRandom randgen;
         ZBinary random = randgen.generate(16);
@@ -156,11 +135,11 @@ ZUID::uuidtype ZUID::getType() const {
     zu8 type = _id_octets[6] & 0xF0 >> 4;
     switch(type){
         case 1:
-            return time;
+            return TIME;
         case 4:
-            return random;
+            return RANDOM;
         default:
-            return unknown;
+            return UNKNOWN;
     }
 }
 
@@ -177,6 +156,31 @@ ZString ZUID::str() const {
 
 ZBinary ZUID::bin() const {
     return ZBinary(_id_octets, 16);
+}
+
+zu64 ZUID::getTimestamp(){
+#if PLATFORM == WINDOWS
+    SYSTEMTIME systime;
+    GetSystemTime(&systime);
+    FILETIME filetime;
+    SystemTimeToFileTime(&systime, &filetime);
+    // Time in 100-nanosecond intervals
+    zu64 mstime = ((zu64)filetime.dwHighDateTime << 32) | filetime.dwLowDateTime;
+    // Microsoft UTC starts January 1, 1601, 00:00:00.0000000
+    // We need UTC since October 15, 1582, 00:00:00.0000000
+    // Add 18 years + 17 days in Oct + 30 days in Nov + 31 days in Dec + 5 leap days, to seconds, to 100 nanosecond interval
+    zu64 utctime = mstime + ((zu64)((18*365)+17+30+31+5) * (60*60*24) * (1000*1000*10));
+#else
+    timeval tv;
+    gettimeofday(&tv, NULL);
+    // Time in microseconds
+    zu64 tvtime = (zu64)((tv.tv_sec * 1000 * 1000) + tv.tv_usec);
+    // POSIX UTC start January 1, 1970, 00:00:00.000000
+    // We need UTC since October 15, 1582, 00:00:00.0000000
+    // Add 387 years + 17 days in Oct + 30 days in Nov + 31 days in Dec + 94 leap days, to seconds, to 100 nanosecond interval
+    zu64 utctime = (tvtime * 10) + ((zu64)((387*365)+17+30+31+5) * (60*60*24) * (1000*1000*10));
+#endif
+    return utctime;
 }
 
 ZBinary ZUID::getMACAddress(){
@@ -216,46 +220,52 @@ ZBinary ZUID::getMACAddress(){
     struct ifreq ifr;
     struct ifconf ifc;
     char buf[1024];
-    int success = 0;
+    unsigned char mac_address[6];
 
     int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
-    if(sock == -1){
-        /* handle error*/
-    }
+    if(sock != -1){
+        ifc.ifc_len = sizeof(buf);
+        ifc.ifc_buf = buf;
+        if(ioctl(sock, SIOCGIFCONF, &ifc) != -1){
+            struct ifreq* it = ifc.ifc_req;
+            const struct ifreq* const end = it + ((unsigned long)ifc.ifc_len / sizeof(struct ifreq));
+            for(; it != end; ++it){
+                strcpy(ifr.ifr_name, it->ifr_name);
+                // Get interface flags
+                if(ioctl(sock, SIOCGIFFLAGS, &ifr) == 0){
+                    // Skip loopback interface
+                    if(!(ifr.ifr_flags & IFF_LOOPBACK)){
+                        // Get hardware address
+                        // TODO: FreeBSD MAC Address
+#if PLATFORM == FREEBSD
+                        if(ioctl(sock, SIOCGIFMAC, &ifr) == 0){
+                            memcpy(mac_address, ifr.ifr_mac.sa_data, 6);
+#else
+                        if(ioctl(sock, SIOCGIFHWADDR, &ifr) == 0){
+                            memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
+#endif
+                            if(validMAC(mac_address)){
+                                //ArZ mac;
+                                //for(zu64 i = 0; i < 6; ++i)
+                                //    mac.push(ZString::ItoS(mac_address[i], 16, 2));
+                                //LOG(ZString::compound(mac, ":") << " " << ifr.ifr_name);
 
-    ifc.ifc_len = sizeof(buf);
-    ifc.ifc_buf = buf;
-    if(ioctl(sock, SIOCGIFCONF, &ifc) == -1){
-        /* handle error */
-    }
-
-    struct ifreq* it = ifc.ifc_req;
-    const struct ifreq* const end = it + ((unsigned long)ifc.ifc_len / sizeof(struct ifreq));
-
-    for(; it != end; ++it){
-        strcpy(ifr.ifr_name, it->ifr_name);
-        if(ioctl(sock, SIOCGIFFLAGS, &ifr) == 0){
-            if(!(ifr.ifr_flags & IFF_LOOPBACK)){ // skip loopback
-                if(ioctl(sock, SIOCGIFHWADDR, &ifr) == 0){
-                    unsigned char mac_address[6];
-                    memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
-                    ArZ mac;
-                    for(zu64 i = 0; i < 6; ++i)
-                        mac.push(ZString::ItoS(mac_address[i], 16, 2));
-                    LOG(ZString::compound(mac, ":") << " " << ifr.ifr_name);
-
-                    ZBinary bin(mac_address, 6);
-                    return bin;
+                                ZBinary bin(mac_address, 6);
+                                return bin;
+                            }
+                        }
+                    }
+                } else {
+                    // Try next interface
+                    continue;
                 }
             }
         } else {
-            /* handle error */
+            // ioctl failed
         }
+    } else {
+        // socket failed
     }
-
-    unsigned char mac_address[6];
-    if(success)
-        memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
 #endif
 
     // Otherwise, generate random 6 bytes

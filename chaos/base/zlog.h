@@ -47,17 +47,16 @@ namespace LibChaos {
 
 struct ZLogInfo {
     enum info_type {
-        file = 1,
-        line = 2,
-        function = 3,
-
-        clock = 4,
-        date = 5,
-        time = 6,
-        thread = 7
+        FILE = 1,
+        LINE = 2,
+        FUNCTION = 3,
+        CLOCK = 4,
+        DATE = 5,
+        TIME = 6,
+        THREAD = 7
     };
 
-    ZLogInfo(info_type type, ZString info) : type(type), info(info){}
+    ZLogInfo(info_type logtype, ZString loginfo) : type(logtype), info(loginfo){}
 
     info_type type;
     ZString info;

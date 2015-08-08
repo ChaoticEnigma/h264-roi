@@ -4,6 +4,7 @@
 **                          (c) 2015 Charlie Waters                           **
 *******************************************************************************/
 #include "zppm.h"
+#include <stdio.h>
 
 namespace LibChaos {
 
@@ -17,7 +18,7 @@ bool ZPPM::write(ZPath path){
     if(file == NULL)
         return false;
 
-    fprintf(file, "P6\n%llu %llu\n255\n", image.width(), image.height());
+    fprintf(file, "P6\n%lu %lu\n255\n", image.width(), image.height());
 
     for(zu64 y = 0; y < image.height(); ++y)
         fwrite(image.buffer() + (y * image.rowSize()), 1, image.rowSize(), file);
