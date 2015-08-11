@@ -34,13 +34,6 @@ int string_test(){
     if(str3 != str5)
         throw __LINE__;
 
-//    ZString(std::string);
-//    std::string &str();
-
-//    //ZString(char*);
-//    //char *c();
-
-//    ZString(const unsigned char *);
 //    ZString(const char *);
 //    const char *cc() const;
 

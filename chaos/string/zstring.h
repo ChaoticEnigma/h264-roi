@@ -57,7 +57,7 @@ public:
     // Assumed UTF-8
     ZString(const chartype *str); // Null-terminated C-string
     ZString(const chartype *ptr, zu64 length);
-    ZString(const ZArray<chartype> &array); //  ZArray<char>
+    ZString(const ZArray<chartype> &array); // ZArray<char>
 
     // std strings
     // Assumed UTF-8
