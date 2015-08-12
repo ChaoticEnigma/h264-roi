@@ -42,7 +42,7 @@ public:
     };
 
 public:
-    ZString();
+    ZString(ZAllocator<chartype> *alloc = new ZAllocator<chartype>);
     ~ZString();
 
 //    ZString(ZStorage *stor) : ZString(){
@@ -346,7 +346,7 @@ private:
     };
 
 private:
-    ZAllocator<chartype> _alloc;
+    ZAllocator<chartype> *_alloc;
     zu64 _size;
     zu64 _realsize;
     chartype *_data;

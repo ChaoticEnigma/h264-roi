@@ -20,19 +20,19 @@
 
 namespace LibChaos {
 
-ZString::ZString() : _size(0), _realsize(0), _data(nullptr){
+ZString::ZString(ZAllocator<chartype> *alloc) : _alloc(alloc), _size(0), _realsize(0), _data(nullptr){
     clear(); // Empty string with null terminator
 }
 
 ZString::~ZString(){
     if(_data != nullptr)
-        _alloc.dealloc(_data);
+        _alloc->dealloc(_data);
 }
 
 ZString::ZString(const ZString &other) : ZString(){
     resize(other._size);
     if(other._size && other._data)
-        _alloc.rawcopy(other._data, _data, other._size);
+        _alloc->rawcopy(other._data, _data, other._size);
 }
 
 ZString::ZString(const ZString::chartype *str) : ZString(){
@@ -49,7 +49,7 @@ ZString::ZString(const ZString::chartype *str) : ZString(){
 ZString::ZString(const ZString::chartype *ptr, zu64 length) : ZString(){
     resize(length);
     if(length && ptr)
-        _alloc.rawcopy(ptr, _data, length);
+        _alloc->rawcopy(ptr, _data, length);
 }
 
 ZString::ZString(const ZArray<ZString::chartype> &array) : ZString(array.raw(), array.size()){
@@ -200,7 +200,7 @@ ZString::ZString(double num, unsigned places) : ZString(){
 ZString &ZString::assign(const ZString &other){
     resize(other.size());
     if(other.size())
-        _alloc.rawcopy(other._data, _data, other.size());
+        _alloc->rawcopy(other._data, _data, other.size());
     return *this;
 }
 
@@ -208,11 +208,11 @@ void ZString::reserve(zu64 size){
     if(size > _realsize || _data == nullptr){ // Only reallocate if new size is larger than buffer
         // TEST: newsize, but always leave extra space for null terminator, but don't count null terminator in realsize
         zu64 newsize = MAX(_realsize * 2, size);
-        chartype *buff = _alloc.alloc(newsize + 1); // New size + null terminator
-        _alloc.rawcopy(_data, buff, _size); // Copy data to new buffer
+        chartype *buff = _alloc->alloc(newsize + 1); // New size + null terminator
+        _alloc->rawcopy(_data, buff, _size); // Copy data to new buffer
         // Update new buffer size
         _realsize = newsize;
-        _alloc.dealloc(_data); // Delete old buffer
+        _alloc->dealloc(_data); // Delete old buffer
         _data = buff;
     }
 }
@@ -221,7 +221,7 @@ ZString &ZString::append(const ZString &str){
     if(str.size()){
         zu64 oldsize = size();
         resize(oldsize + str.size());
-        _alloc.rawcopy(str._data, _data + oldsize, str.size());
+        _alloc->rawcopy(str._data, _data + oldsize, str.size());
     }
     return *this;
 }
@@ -236,8 +236,8 @@ ZString &ZString::prepend(const ZString &str){
     if(str.size()){
         zu64 oldsize = size();
         resize(str.size() + oldsize);
-        _alloc.rawmove(_data, _data + str.size(), oldsize);
-        _alloc.rawcopy(str._data, _data, str.size());
+        _alloc->rawmove(_data, _data + str.size(), oldsize);
+        _alloc->rawcopy(str._data, _data, str.size());
     }
     return *this;
 }

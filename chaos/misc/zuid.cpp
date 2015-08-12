@@ -227,10 +227,11 @@ ZBinary ZUID::getMACAddress(){
         ifc.ifc_len = sizeof(buf);
         ifc.ifc_buf = buf;
         if(ioctl(sock, SIOCGIFCONF, &ifc) != -1){
-            struct ifreq* it = ifc.ifc_req;
-            const struct ifreq* const end = it + ((unsigned long)ifc.ifc_len / sizeof(struct ifreq));
+            struct ifreq *it = ifc.ifc_req;
+            const struct ifreq *end = it + ((unsigned long)ifc.ifc_len / sizeof(struct ifreq));
             for(; it != end; ++it){
                 strcpy(ifr.ifr_name, it->ifr_name);
+                DLOG(ifr.ifr_name);
                 // Get interface flags
                 if(ioctl(sock, SIOCGIFFLAGS, &ifr) == 0){
                     // Skip loopback interface
@@ -252,21 +253,32 @@ ZBinary ZUID::getMACAddress(){
 
                                 ZBinary bin(mac_address, 6);
                                 return bin;
+                            } else {
+                                DLOG("in2valid mac");
                             }
+                        } else {
+                            DLOG("failed to get mac");
                         }
+                    } else {
+                        DLOG("skip loopback");
                     }
                 } else {
                     // Try next interface
+                    DLOG("failed to get if flags");
                     continue;
                 }
             }
         } else {
             // ioctl failed
+            DLOG("failed to get if config");
         }
     } else {
         // socket failed
+        DLOG("failed to open socket");
     }
 #endif
+
+    DLOG("random");
 
     // Otherwise, generate random 6 bytes
     ZRandom rand;
