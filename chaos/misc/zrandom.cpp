@@ -10,32 +10,40 @@
 
 #include <assert.h>
 
+#if PLATFORM == WINDOWS
+    #include <windows.h>
+    #define RAND_DEV "ZRANDOM_GENERATOR"
+#elif PLATFORM == MACOSX
+    // OSX's /dev/random is equivalent to UNIX's /dev/urandom
+    #define RAND_DEV "/dev/random"
+#else
+    // Use /dev/urandom for simplicity
+    #define RAND_DEV "/dev/urandom"
+#endif
+
 namespace LibChaos {
 
 ZRandom::ZRandom(){
 #if PLATFORM == WINDOWS
-    ZString keyset = "ZRANDOM_GENERATOR";
+    ZString keyset = RAND_DEV;
     // Try to use existing named keyset
     BOOL ret = CryptAcquireContextA(&_cryptprov, keyset.cc(), NULL, PROV_RSA_FULL, 0);
     if(ret == FALSE){
         if(GetLastError() == 0x80090016){
             // Create new named keyset
             ret = CryptAcquireContextA(&_cryptprov, keyset.cc(), NULL, PROV_RSA_FULL, CRYPT_NEWKEYSET);
-            if(ret == FALSE)
+            if(ret == FALSE){
                 ELOG(ZError::getSystemError());
+            }
+        } else {
+            ELOG(ZError::getSystemError());
         }
-        ELOG(ZError::getSystemError());
     }
-#elif PLATFORM == MACOSX
-    // OSX's /dev/random is equivalent to UNIX's /dev/urandom
-    _devrandom = fopen("/dev/random", "r");
-    if(_devrandom == NULL)
-        ELOG("Failed to open /dev/random:" << ZError::getSystemError());
 #else
-    // Use /dev/urandom for simplicity
-    _devrandom = fopen("/dev/urandom", "r");
+    // Use OS filesystem random device
+    _devrandom = fopen(RAND_DEV, "r");
     if(_devrandom == NULL)
-        ELOG("Failed to open /dev/urandom:" << ZError::getSystemError());
+        ELOG("Failed to open " RAND_DEV ":" << ZError::getSystemError());
 #endif
 }
 

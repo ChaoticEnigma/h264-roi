@@ -31,6 +31,7 @@ int mutex_test();
 
 int number_test();
 
+int random_test();
 int uid_test();
 int hash_test();
 

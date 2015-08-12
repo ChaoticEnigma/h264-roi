@@ -1,7 +1,15 @@
 #include "test.h"
+#include "zrandom.h"
 #include "zuid.h"
 #include "zlist.h"
 #include "zhash.h"
+
+int random_test(){
+    ZRandom random;
+    LOG(random.genzu());
+
+    return 0;
+}
 
 int uid_test(){
     ZUID uid1;

@@ -12,7 +12,7 @@
 #if PLATFORM == WINDOWS
     #include <windows.h>
 #else
-    #include "zfile.h"
+    #include <stdio.h>
 #endif
 
 namespace LibChaos {

@@ -13,7 +13,7 @@ INCLUDE(cmake/Utils.cmake)
 # Git Describe
 EXECUTE_PROCESS(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND git describe --all --long --always --abbrev=8 --dirty=*
+    COMMAND git describe --all --long --always --abbrev=16 --dirty=*
     OUTPUT_VARIABLE LIBCHAOS_DESCRIBE
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
