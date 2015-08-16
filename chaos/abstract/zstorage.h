@@ -10,11 +10,15 @@
 
 namespace LibChaos {
 
+/*! Defines an interface for c
+ *  The ZStorage abstract class defines an interface
+ */
+
 // Implementations are expected to behave as follows.
 // Implementations should expect the following behaviors of other implementations.
 // Implementations should not expect any other behaviors from other implementations.
 
-// 1. A ZStorage object may represent more data than can be stored in memory
+// 1. A ZStorage object *may* represent more data than can be stored in memory
 // 2. Implementations should only call copy constructors of stored objects if the method requires it
 // 2. getBlock() may allocate <size> bytes in order to map data to memory
 // 3. freeBlock() and commitBlock() may invalidate a pointer returned from getBlock
