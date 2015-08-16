@@ -64,10 +64,10 @@ public:
     }
 
     virtual void rawcopy(const T *src, T *dest, zu64 count = 1){
-        memcpy(dest, src, sizeof(T) * count);
+        memcpy((void *)dest, (void *)src, sizeof(T) * count);
     }
     virtual void rawmove(const T *src, T *dest, zu64 count = 1){
-        memmove(dest, src, sizeof(T) * count);
+        memmove((void *)dest, (void *)src, sizeof(T) * count);
     }
 
     // Expects <src> originally returned by alloc() and construct()ed

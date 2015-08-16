@@ -133,6 +133,10 @@ IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
         ENDIF()
     ENDIF()
 
+    IF(LIBCHAOS_COMPILER_CLANG)
+        SET(CXXGNU "${CXXGNU} -Wno-nested-anon-types") # Clang warns about nested anonymous types
+    ENDIF()
+
     SET(CXXF "${CXXF} ${CXXGNU}")
 
 ELSEIF(LIBCHAOS_COMPILER_MSVC)
