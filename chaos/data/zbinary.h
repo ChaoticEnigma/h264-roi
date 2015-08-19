@@ -8,7 +8,6 @@
 
 #include "ztypes.h"
 #include "zarray.h"
-#include <string.h>
 #include "zposition.h"
 #include "zreader.h"
 #include "zwriter.h"

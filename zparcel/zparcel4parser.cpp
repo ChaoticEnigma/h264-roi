@@ -149,7 +149,7 @@ ZBinary ZParcel4Parser::formatSint(zs64 sint){
 }
 
 ZBinary ZParcel4Parser::formatFloat(double flt){
-    ZBinary bin;
+    ZBinary bin(4);
     return bin;
 }
 
@@ -158,7 +158,7 @@ ZBinary ZParcel4Parser::formatZUID(ZUID uid){
 }
 
 ZBinary ZParcel4Parser::formatString(ZString str){
-    return ZBinary((const zbyte *)str.cc(), str.size());
+    return ZBinary(str.cc(), str.size());
 }
 
 ZBinary ZParcel4Parser::formatBinary(ZBinary bin){
@@ -167,7 +167,7 @@ ZBinary ZParcel4Parser::formatBinary(ZBinary bin){
 
 ZBinary ZParcel4Parser::formatFile(ZPath file){
     ZString str = file.str();
-    return
+    return ZBinary(str.cc(), str.size());
 }
 
 void ZParcel4Parser::readPage(pageid page, ZBinary &data){

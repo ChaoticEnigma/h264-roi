@@ -188,27 +188,46 @@ public:
     //! Replace section \a len characters long at \a pos with \a after in \a str.
     static ZString replacePos(ZString str, zu64 pos, zu64 len, const ZString &after);
 
-    //! Replace first occurence of \a before in string with \a after after \a start.
+    /*! Replace first occurence of \a before in string with \a after after \a start.
+     *  \param before String to search for.
+     *  \param after Replacement string.
+     *  \param start Position to start searching.
+     */
     ZString &replaceFirst(const ZString &before, const ZString &after, zu64 start = 0);
-    //! Replace first occurence of \a before in \a str with \a after after \a start.
+    /*! Replace first occurence of \a before in \a str with \a after after \a start.
+     *  \param str String object.
+     *  \param before String to search for.
+     *  \param after Replacement string.
+     *  \param start Position to start searching.
+     */
     static ZString replaceFirst(ZString str, const ZString &before, const ZString &after, zu64 start = 0);
 
     /*! Replace up to \a max occurrences of \a before in string with \a after.
-     *  \param max Number of occurrences to replace (0 for unlimited)
+     *  \param before String to search for.
+     *  \param after Replacement string.
+     *  \param max Number of occurrences to replace (0 for unlimited).
      */
     ZString &replace(const ZString &before, const ZString &after, zu64 max = 0);
     /*! Replace up to \a max occurrences of \a before in \a str with \a after.
+     *  \param str String object.
+     *  \param before String to search for.
+     *  \param after Replacement string.
      *  \param max Number of occurrences to replace (0 for unlimited)
      */
     static ZString replace(ZString str, const ZString &before, const ZString &after, zu64 max = 0);
 
     /*! Replace the first occurrence of \a before in string with \a after, up to \a max times.
      *  Replaces recursively, so will search entire string each replace.
+     *  \param before String to search for.
+     *  \param after Replacement string.
      *  \param max Number of occurrences to replace (0 for unlimited)
      */
     ZString &replaceRecursive(const ZString &before, const ZString &after, zu64 max = 1000);
     /*! Replace the first occurrence of \a before in \a str with \a after, up to \a max times.
      *  Replaces recursively, so will search entire string each replace.
+     *  \param str String object.
+     *  \param before String to search for.
+     *  \param after Replacement string.
      *  \param max Number of occurrences to replace (0 for unlimited)
      */
     static ZString replaceRecursive(ZString str, const ZString &before, const ZString &after, zu64 max = 1000);

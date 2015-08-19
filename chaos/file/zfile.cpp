@@ -12,6 +12,7 @@
 #include <cstring>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <string>
 
 #if COMPILER == GCC || COMPILER == MINGW || COMPILER == CLANG
     #include <dirent.h>
@@ -37,7 +38,7 @@ ZFile::ZFile() : _options(0 | readbit), _handle(NULL){}
 ZFile::ZFile() : _options(0 | readbit), _file(NULL){}
 #endif
 
-ZFile::ZFile(ZPath name, int mode) : ZFile(){
+ZFile::ZFile(ZPath name, zu16 mode) : ZFile(){
     open(name, mode);
 }
 
@@ -120,19 +121,19 @@ bool ZFile::open(ZPath path){
 #endif
 }
 
-bool ZFile::open(ZPath path, int mode){
+bool ZFile::open(ZPath path, zu16 mode){
     setMode(mode);
     return open(path);
 }
 
-void ZFile::setMode(int mode){
+void ZFile::setMode(zu16 mode){
     _options = 0;
-    if(mode & moderead){
+    if(mode & READ){
         _options |= readbit;
     }
 
-    if(mode & modewrite){
-        if(mode & nocreate){
+    if(mode & WRITE){
+        if(mode & NOCREATE){
             _options |= writebit;
         } else {
             _options |= writebit;
@@ -141,7 +142,7 @@ void ZFile::setMode(int mode){
     }
 
     // If append not set and truncate set
-    if(!(mode & append) && mode & truncate)
+    if(!(mode & APPEND) && mode & TRUNCATE)
         _options |= apptruncbit;
 }
 
@@ -340,7 +341,7 @@ zu64 ZFile::writeBinary(ZPath path, const ZBinary &data){
     if(!ZFile::createDirsTo(path))
         throw ZException("could not create dirs to file");
 
-    ZFile file(path, ZFile::modewrite);
+    ZFile file(path, ZFile::WRITE);
     if(!file.isOpen())
         return 0;
     zu64 wrt = file.write(data.raw(), data.size());

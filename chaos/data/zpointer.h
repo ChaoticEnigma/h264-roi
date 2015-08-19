@@ -11,19 +11,18 @@
 
 namespace LibChaos {
 
-//! Shared pointer class.
-//! Wraps a pointer to an arbitrary object, deletes it when the last Pointer to it is destroyed. \n
-//! Note that all Pointers to the same object point to the *same object*, and can change the common object. \n
-//! \n
-//! Implementation: \n
-//! Each Pointer has a pointer to a struct that contains the data pointer and an integer with a references count. \n
-//! This same struct is shared by all the Pointers for the same object. \n
-//! When a new Pointers is copied or assigned a struct, the refernce count is incremented. \n
-//! When a Pointer is destroyed, the reference count is decremented. \n
-//! If a Pointer is the last reference to the object, the object is deleted when the Pointer is destroyed or re-assigned. \n
-
 // TEST: ZPointer NEEDS EXTENSIVE TESTING
-
+/*! Shared pointer class.
+ *  Wraps a pointer to an arbitrary object, deletes it when the last Pointer to it is destroyed. \n
+ *  Note that all Pointers to the same object point to the *same object*, and can change the common object. \n
+ *  \n
+ *  Implementation: \n
+ *  Each Pointer has a pointer to a struct that contains the data pointer and an integer with a references count. \n
+ *  This same struct is shared by all the Pointers for the same object. \n
+ *  When a new Pointers is copied or assigned a struct, the refernce count is incremented. \n
+ *  When a Pointer is destroyed, the reference count is decremented. \n
+ *  If a Pointer is the last reference to the object, the object is deleted when the Pointer is destroyed or re-assigned. \n
+ */
 template <typename T> class ZPointer {
 public:
     //! Empty container.
@@ -57,9 +56,10 @@ public:
         release();
     }
 
-    //! Release the shared pointer.
-    //! If this is the only object with shared ownership of the pointer,
-    //! delete it, otherwise decrement the reference count.
+    /*! Release the shared pointer.
+     *  If this is the only object with shared ownership of the pointer,
+     *  delete it, otherwise decrement the reference count.
+     */
     void release(){
         if(_data != nullptr){
             if(unique()){

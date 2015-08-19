@@ -20,8 +20,9 @@
 
 namespace LibChaos {
 
-//! Dynamic contiguous array sequence container.
-//! ZArray push/pop paradigm is FILO
+/*! Dynamic contiguous array sequence container.
+ *  ZArray push/pop paradigm is FILO
+ */
 template <typename T> class ZArray : public YIndexedAccess<T>, public YPushPopAccess<T>, public ZIterable<T> {
 public:
     enum {

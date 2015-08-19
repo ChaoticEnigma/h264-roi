@@ -37,7 +37,7 @@ int mainwrap(int argc, char **argv){
             LOG("Creating New Version 4 ZParcel " << args[1]);
             if(ZFile::exists(args[1]))
                 ZFile::remove(args[1]);
-            ZFile file(args[1], ZFile::modereadwrite);
+            ZFile file(args[1], ZFile::READWRITE);
             ZParcel4Parser *parcel = new ZParcel4Parser(&file);
 
             //parcel->setPageSize(11); // 2KB
@@ -59,7 +59,7 @@ int mainwrap(int argc, char **argv){
             return EXIT_FAILURE;
         }
         LOG("Modifying Options of ZParcel " << args[1]);
-        ZFile file(args[1], ZFile::modereadwrite);
+        ZFile file(args[1], ZFile::READWRITE);
         ZParcel4Parser *parcel = new ZParcel4Parser(&file);
         parcel->open();
 
@@ -103,7 +103,7 @@ int mainwrap(int argc, char **argv){
             return EXIT_FAILURE;
         }
         LOG("Listing Records in ZParcel " << args[1]);
-        ZFile file(args[1], ZFile::modereadwrite);
+        ZFile file(args[1], ZFile::READWRITE);
         ZParcel4Parser *parcel = new ZParcel4Parser(&file);
         parcel->open();
 
@@ -118,7 +118,7 @@ int mainwrap(int argc, char **argv){
             return EXIT_FAILURE;
         }
         LOG("Adding Record to ZParcel " << args[1]);
-        ZFile file(args[1], ZFile::modereadwrite);
+        ZFile file(args[1], ZFile::READWRITE);
         ZParcel4Parser *parcel = new ZParcel4Parser(&file);
         parcel->open();
 
@@ -155,7 +155,7 @@ int mainwrap(int argc, char **argv){
             return EXIT_FAILURE;
         }
         LOG("Editing Record in ZParcel " << args[1]);
-        ZFile file(args[1], ZFile::modereadwrite);
+        ZFile file(args[1], ZFile::READWRITE);
         ZParcel4Parser *parcel = new ZParcel4Parser(&file);
         parcel->open();
 

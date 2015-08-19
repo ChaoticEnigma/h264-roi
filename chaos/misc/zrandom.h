@@ -9,9 +9,7 @@
 #include "ztypes.h"
 #include "zbinary.h"
 
-#if PLATFORM == WINDOWS
-    #include <windows.h>
-#else
+#if PLATFORM != WINDOWS
     #include <stdio.h>
 #endif
 
@@ -19,6 +17,8 @@ namespace LibChaos {
 
 //! Random number generation provider.
 class ZRandom {
+public:
+    typedef unsigned long long HCRYPTPROV;
 public:
     ZRandom();
     ~ZRandom();

@@ -12,14 +12,14 @@
 #include "yindexedaccess.h"
 #include "ypushpopaccess.h"
 
-#include "zstring.h"
+#include <initializer_list>
 
 namespace LibChaos {
 
-//! Linked list sequence container.
-//! Implemented as a circular doubly-linked list.
-//! ZList push/pop paradigm is FIFO.
-
+/*! Linked list sequence container.
+ *  Implemented as a circular doubly-linked list.
+ *  ZList push/pop paradigm is FIFO.
+ */
 template <typename T> class ZList : public YIndexedAccess<T>, public YPushPopAccess<T> {
 public:
     struct Node {
@@ -30,6 +30,10 @@ public:
 
 public:
     ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _talloc(new ZAllocator<T>()), _size(0), head(nullptr){}
+    ZList(std::initializer_list<T> ls) : ZList(){
+        for(auto item = ls.begin(); item < ls.end(); ++item)
+            pushBack(*item);
+    }
 
     ZList(const T *data, zu64 size) : ZList(){
         for(zu64 i = 0; i < size; ++i)

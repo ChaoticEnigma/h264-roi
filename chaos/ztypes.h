@@ -18,9 +18,9 @@
     #error LibChaos requires a C++ compiler!
 #endif
 
-// Warn if greater than C++11
-#if __cplusplus > 201103L
-    #warning LibChaos is not tested with C++ specs after C++11
+// Warn if greater than C++14
+#if __cplusplus > 201402L
+    #warning LibChaos is not tested with C++ specs after C++14
 #endif
 
 //

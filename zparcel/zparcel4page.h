@@ -55,8 +55,9 @@ protected:
     pageid _page;
 };
 
-//! The head page contains information about the parcel.
-//! Contains locations of important pages.
+/*! The head page contains information about the parcel.
+ *  Contains locations of important pages.
+ */
 class HeadPage : public ZParcel4Page {
 public:
     HeadPage(ZParcel4Parser *parser);
@@ -73,15 +74,11 @@ public:
     pageid _fieldpage;
 };
 
-//! A page table page translates page ids to page locations.
-//! Only pages that have different ids and locations go in the page table,
-//! usually pages that have been moved since they were created.
+/*! A page table page translates page ids to page locations.
+ *  Only pages that have different ids and locations go in the page table,
+ *  usually pages that have been moved since they were created.
+ */
 class PageTablePage : public ZParcel4Page {
-public:
-    struct PagePair {
-        pageid id;
-        pageid position;
-    };
 public:
     PageTablePage(ZParcel4Parser *parser);
     void load(pageid page);
@@ -91,11 +88,12 @@ public:
 
     pageid _nextpage;
     pageid _prevpage;
-    ZMap<PagePair> _table;
+    ZMap<pageid, pageid> _table;
 };
 
-//! Contains a list of page locations that have been deleted.
-//! New pages can replace free pages, rather than making the file larger.
+/*! Contains a list of page locations that have been deleted.
+ *  New pages can replace free pages, rather than making the file larger.
+ */
 class FreeListPage : public ZParcel4Page {
 public:
     FreeListPage(ZParcel4Parser *parcel);

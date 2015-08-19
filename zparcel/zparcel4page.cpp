@@ -61,7 +61,7 @@ void HeadPage::save(){
 // PageTablePage
 // /////////////////////////////////////////
 
-PageTablePage::PageTablePage(ZParcel4Parser *parser) : ZParcel4Parser(parser){
+PageTablePage::PageTablePage(ZParcel4Parser *parser) : ZParcel4Page(parser){
 
 }
 
@@ -88,7 +88,7 @@ void PageTablePage::save(){
 // FreeListPage
 // /////////////////////////////////////////
 
-FreeListPage::FreeListPage(ZParcel4Parser *parcel) : ZParcel4Parser(parcel){
+FreeListPage::FreeListPage(ZParcel4Parser *parcel) : ZParcel4Page(parcel){
 
 }
 

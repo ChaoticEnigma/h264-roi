@@ -23,8 +23,9 @@ SET(ZParcel_SOURCES ### =================== SOURCES =================== ###
 
 ### =================== CONFIG =================== ###
 
+GET_PROPERTY(LibChaos_Include GLOBAL PROPERTY LibChaosInclude)
 INCLUDE_DIRECTORIES(
-    ${LibChaos_INCLUDE}
+    ${LibChaos_Include}
 )
 
 ### =================== BUILD =================== ###

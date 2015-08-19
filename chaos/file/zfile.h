@@ -26,15 +26,13 @@ namespace LibChaos {
 class ZFile : public ZPosition, public ZReader, public ZWriter {
 public:
     enum zfile_mode {
-        moderead        = 0x001,    // Set to allow reading
-        modewrite       = 0x002,    // Set to allow writing (implies create)
-        modereadwrite   = 0x003,
-
-        create          = 0x004,
-        nocreate        = 0x008,    // Takes priority if create and nocreate set
-
-        append          = 0x016,    // Takes priority if append and truncate set
-        truncate        = 0x032,
+        READ        = 0x01,    //!< Set to allow reading
+        WRITE       = 0x02,    //!< Set to allow writing (implies create)
+        READWRITE   = 0x03,
+        CREATE      = 0x04,
+        NOCREATE    = 0x08,    //!< Takes priority if create and nocreate set
+        APPEND      = 0x16,    //!< Takes priority if append and truncate set
+        TRUNCATE    = 0x32,
     };
 
 private:
@@ -51,17 +49,15 @@ private:
 
 public:
     ZFile();
-    ZFile(ZPath path, int mode = moderead);
-
+    ZFile(ZPath path, zu16 mode = READ);
     ZFile(const ZFile &){
         throw ZException("Someone tried to copy a ZFile");
     }
-
     ~ZFile();
 
     bool open(ZPath path);
-    bool open(ZPath path, int mode);
-    void setMode(int mode);
+    bool open(ZPath path, zu16 mode);
+    void setMode(zu16 mode);
     bool close();
 
     // ZPosition
@@ -91,7 +87,7 @@ public:
 #else
     bool isOpen() const { return (_file != NULL); }
 #endif
-    int &bits(){ return _options; }
+    zu16 &bits(){ return _options; }
     ZPath path() const { return _path; }
 
 #if PLATFORM == WINDOWS
@@ -132,7 +128,7 @@ public:
     static zu64 fileHash(ZPath path);
 
 private:
-    int _options;
+    zu16 _options;
     ZPath _path;
 #if PLATFORM == WINDOWS
     HANDLE _handle;
