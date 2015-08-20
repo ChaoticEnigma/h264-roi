@@ -34,9 +34,14 @@ public:
 
     struct Field {
         fieldid id;
-        ZString data;
+        ZBinary data;
     };
-    typedef ZList<Field> FieldList;
+
+    struct Record {
+        Record(ZList<Field> fieldlist) : fields(fieldlist){}
+        ZUID uid;
+        ZList<Field> fields;
+    };
 
 public:
     ZParcel4Parser(ZFile *file);
@@ -56,7 +61,14 @@ public:
     fieldid getField(ZString name);
     fieldtype getFieldType(fieldid id);
 
-    ZUID addRecord(FieldList fields);
+    /*! Add @a record to the parcel.
+     *  \return UID of the added record. NIL UUID on failure.
+     */
+    ZUID addRecord(Record record);
+    /*! Add a list of records to the parcel.
+     *  \return UIDs of the added records, corresponding to input records. NIL UUID for each failed record.
+     */
+    ZList<ZUID> addRecords(ZList<Record> records);
 
     //! Format a boolean value for the parcel.
     static ZBinary formatBool(bool tf);

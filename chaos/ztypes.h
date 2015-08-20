@@ -26,6 +26,7 @@
 //
 // Compiler
 //
+
 #define GCC         0x11
 #define MINGW       0x12
 #define MSVC        0x13
@@ -44,7 +45,7 @@
     #warning Unknown Compiler!
 #endif
 
-// Warn if detected and specified compilers different
+// Warn if detected and specified compilers are different
 #if COMPILER != _LIBCHAOS_COMPILER
     #warning Different detected and specified compilers!
 #endif
@@ -60,6 +61,7 @@
 //
 // Platform
 //
+
 #define LINUX       0x21
 #define FREEBSD     0x22
 #define WINDOWS     0x23
@@ -82,7 +84,7 @@
     #warning Unknown Platform!
 #endif
 
-// Warn if detected and specified platforms different
+// Warn if detected and specified platforms are different
 #if PLATFORM != _LIBCHAOS_PLATFORM
     #warning Different detected and specified platforms!
 #endif
@@ -90,6 +92,7 @@
 //
 // Build
 //
+
 #define LIBCHAOS_DEBUG      0x31
 #define LIBCHAOS_RELEASE    0x32
 #define LIBCHAOS_NORMAL     0x33
@@ -217,7 +220,9 @@ static_assert(sizeof(zs64) == 8, "zs64 has incorrect size");
 static_assert(sizeof(zu64) == 8, "zu64 has incorrect size");
 
 // Force 64-bit platform
-//static_assert(sizeof(void *) == 8, "void pointer is not 64-bit");
+#ifdef FORCE_X64
+    static_assert(sizeof(void *) == 8, "void pointer is not 64-bit");
+#endif
 
 //! Get a string describing this version of LibChaos.
 static const char *LibChaosDescribe(){

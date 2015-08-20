@@ -65,25 +65,25 @@ public:
             node->prev = head;
             node->next = head;
         } else {
+            head->prev->next = node;
+            head->next->prev = node;
             node->prev = head->prev;
             node->next = head;
             head = node;
-            head->next->prev = head;
-            head->prev->next = head;
         }
         ++_size;
     }
     void pushBack(const T &data){
         Node *node = newNode(data);
         if(head == nullptr){
-            node->prev = node;
-            node->next = node;
             head = node;
+            node->prev = head;
+            node->next = head;
         } else {
             node->prev = head->prev;
             node->next = head;
+            head->prev->next = node;
             head->prev = node;
-            head->prev->prev->next = node;
         }
         ++_size;
     }

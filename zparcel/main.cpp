@@ -31,7 +31,8 @@ int mainwrap(int argc, char **argv){
             return EXIT_FAILURE;
         }
         zu16 version = 4;
-        if(args.size() > 2 && args[2] == "4") version = 4;
+        if(args.size() > 2 && args[2] == "4")
+            version = 4;
 
         if(version == 4){
             LOG("Creating New Version 4 ZParcel " << args[1]);
@@ -49,9 +50,7 @@ int mainwrap(int argc, char **argv){
             delete parcel;
         } else {
             LOG("Unknown Version");
-            LOG("ERROR");
         }
-
 
     } else if(args.size() > 0 && args[0] == "modify"){
         if(args.size() < 3){
@@ -122,7 +121,7 @@ int mainwrap(int argc, char **argv){
         ZParcel4Parser *parcel = new ZParcel4Parser(&file);
         parcel->open();
 
-        ZParcel4Parser::FieldList fieldlist;
+        ZList<ZParcel4Parser::Field> fieldlist;
         for(zu64 i = 2; i < args.size(); ++i){
             ArZ pair = args[i].split("=");
             if(pair.size() != 2)

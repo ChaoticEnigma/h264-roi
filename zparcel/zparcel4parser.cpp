@@ -99,41 +99,56 @@ ZParcel4Parser::fieldtype ZParcel4Parser::getFieldType(fieldid id){
     return NULLFIELD;
 }
 
-ZUID ZParcel4Parser::addRecord(FieldList fields){
-    for(zu64 i = 0; i < fields.size(); ++i){
-        fieldid id = fields[i].id;
-        ZString data = fields[i].data;
-        fieldtype type = getFieldType(id);
-        switch(type){
+ZUID ZParcel4Parser::addRecord(Record record){
+    return addRecords({ record }).front();
+}
+
+ZList<ZUID> ZParcel4Parser::addRecords(ZList<Record> records){
+    if(!_init)
+        throw ZException(NAME "addRecords: parcel is not open");
+
+    ZList<ZUID> uids;
+    for(zu64 i = 0; i < records.size(); ++i){
+        ZUID uid = records[i].uid;
+        if(uid == ZUID_NIL)
+            uid = ZUID(ZUID::TIME);
+        ZList<Field> fields = records[i].fields;
+        for(zu64 j = 0; j < fields.size(); ++j){
+            fieldid id = fields[j].id;
+            ZBinary data = fields[j].data;
+            fieldtype type = getFieldType(id);
+            switch(type){
             case ZPARCEL_4_BOOL:
-//                addBoolData(id, (data == "true" ? true : false));
+                //                addBoolData(id, (data == "true" ? true : false));
                 break;
             case ZPARCEL_4_UINT:
-//                addUintData(id, data.tozu64());
+                //                addUintData(id, data.tozu64());
                 break;
             case ZPARCEL_4_SINT:
-//                addSintData(id, (zs64)data.tozu64());
+                //                addSintData(id, (zs64)data.tozu64());
                 break;
             case ZPARCEL_4_FLOAT:
-//                addFloatData(id, data.toFloat());
+                //                addFloatData(id, data.toFloat());
                 break;
             case ZPARCEL_4_ZUID:
-//                addZUIDData(id, ZUID(data));
+                //                addZUIDData(id, ZUID(data));
                 break;
             case ZPARCEL_4_STRING:
-//                addStringData(id, data);
+                //                addStringData(id, data);
                 break;
             case ZPARCEL_4_BINARY:
-//                addBinaryData(id, ZBinary((const zbyte *)data.cc(), data.size());
+                //                addBinaryData(id, ZBinary((const zbyte *)data.cc(), data.size());
                 break;
             case ZPARCEL_4_FILE:
-//                addFileData(id, ZPath(data));
+                //                addFileData(id, ZPath(data));
                 break;
             default:
-                throw ZException(NAME "addRecord: Invalid type");
+                throw ZException(NAME "addRecords: Invalid type");
+            }
         }
+        uids.push(uid);
     }
-    return ZUID_NIL;
+    return uids;
 }
 
 ZBinary ZParcel4Parser::formatBool(bool tf){
