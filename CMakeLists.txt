@@ -107,17 +107,17 @@ IF(HAS_PARENT)
     SET(LibChaos_COMPILER_MSVC      ${LIBCHAOS_COMPILER_MSVC}       PARENT_SCOPE)
     SET(LibChaos_COMPILER_CLANG     ${LIBCHAOS_COMPILER_CLANG}      PARENT_SCOPE)
 
-    SET(LibChaos_CXX_FLAGS  ${LIBCHAOS_CXX_FLAGS}   PARENT_SCOPE)
+    GET_PROPERTY(LibChaosInclude        GLOBAL PROPERTY LibChaosInclude)
+    GET_PROPERTY(LibChaosExternInclude  GLOBAL PROPERTY LibChaosExternInclude)
+    GET_PROPERTY(LibChaosUIInclude      GLOBAL PROPERTY LibChaosUIInclude)
 
-    GET_PROPERTY(LibChaosInclude GLOBAL PROPERTY LibChaosInclude)
-    GET_PROPERTY(LibChaosExternInclude GLOBAL PROPERTY LibChaosExternInclude)
-    GET_PROPERTY(LibChaosUIInclude GLOBAL PROPERTY LibChaosUIInclude)
+    # Add to INCLUDE_DIRECTORIES() in parent scope
+    SET(LibChaos_INCLUDE        ${LibChaosInclude}          PARENT_SCOPE)
+    SET(LibChaos_Extern_INCLUDE ${LibChaosExternInclude}    PARENT_SCOPE)
+    SET(LibChaos_UI_INCLUDE     ${LibChaosUIInclude}        PARENT_SCOPE)
 
-    SET(LibChaos_INCLUDE ${LibChaosInclude} PARENT_SCOPE)
-    SET(LibChaos_Extern_INCLUDE ${LibChaosExternInclude} PARENT_SCOPE)
-    SET(LibChaos_UI_INCLUDE ${LibChaosUIInclude} PARENT_SCOPE)
-
-    SET(LibChaos_CXX_FLAGS ${LIBCHAOS_CXX_FLAGS} PARENT_SCOPE)
+    # Add to ${CMAKE_CXX_FLAGS} in parent scope
+    SET(LibChaos_CXX_FLAGS      ${LIBCHAOS_CXX_FLAGS}       PARENT_SCOPE)
 ENDIF()
 
 # Doxygen

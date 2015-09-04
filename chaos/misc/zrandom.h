@@ -18,7 +18,7 @@ namespace LibChaos {
 //! Random number generation provider.
 class ZRandom {
 public:
-    typedef unsigned long long HCRYPTPROV;
+    typedef unsigned long HCRYPTPROV;
 public:
     ZRandom();
     ~ZRandom();

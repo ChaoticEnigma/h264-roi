@@ -14,6 +14,9 @@
 
 #include <initializer_list>
 
+// For debug()
+#include "zstring.h"
+
 namespace LibChaos {
 
 /*! Linked list sequence container.
