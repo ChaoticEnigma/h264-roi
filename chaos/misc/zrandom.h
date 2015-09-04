@@ -18,8 +18,6 @@ namespace LibChaos {
 //! Random number generation provider.
 class ZRandom {
 public:
-    typedef unsigned long HCRYPTPROV;
-public:
     ZRandom();
     ~ZRandom();
 
@@ -28,7 +26,7 @@ public:
 
 private:
 #if PLATFORM == WINDOWS
-    HCRYPTPROV _cryptprov;
+    void *_cryptprov;
 #else
     FILE *_devrandom;
 #endif

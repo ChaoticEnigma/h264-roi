@@ -25,13 +25,14 @@ namespace LibChaos {
 
 ZRandom::ZRandom(){
 #if PLATFORM == WINDOWS
+    _cryptprov = new HCRYPTPROV;
     ZString keyset = RAND_DEV;
     // Try to use existing named keyset
-    BOOL ret = CryptAcquireContextA(&_cryptprov, keyset.cc(), NULL, PROV_RSA_FULL, 0);
+    BOOL ret = CryptAcquireContextA((HCRYPTPROV*)_cryptprov, keyset.cc(), NULL, PROV_RSA_FULL, 0);
     if(ret == FALSE){
         if(GetLastError() == 0x80090016){
             // Create new named keyset
-            ret = CryptAcquireContextA(&_cryptprov, keyset.cc(), NULL, PROV_RSA_FULL, CRYPT_NEWKEYSET);
+            ret = CryptAcquireContextA((HCRYPTPROV*)&_cryptprov, keyset.cc(), NULL, PROV_RSA_FULL, CRYPT_NEWKEYSET);
             if(ret == FALSE){
                 ELOG(ZError::getSystemError());
             }
@@ -49,7 +50,7 @@ ZRandom::ZRandom(){
 
 ZRandom::~ZRandom(){
 #if PLATFORM == WINDOWS
-
+    delete (HCRYPTPROV*)_cryptprov;
 #else
     fclose(_devrandom);
     _devrandom = NULL;
@@ -67,7 +68,7 @@ zu64 ZRandom::genzu(zu64 min, zu64 max){
 ZBinary ZRandom::generate(zu64 size){
     ZBuffer buffer(size);
 #if PLATFORM == WINDOWS
-    BOOL ret = CryptGenRandom(_cryptprov, size, buffer.raw());
+    BOOL ret = CryptGenRandom(*(HCRYPTPROV*)_cryptprov, size, buffer.raw());
     if(ret == FALSE)
         ELOG(ZError::getSystemError());
 #else
