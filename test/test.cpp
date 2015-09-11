@@ -19,8 +19,8 @@ int main(int argc, char **argv){
         LOG("Testing LibChaos: " << LibChaosDescribe());
 
         ZAssoc<ZString, test_func> defaulttests = {
-            { "pointer", pointer_test },
             { "allocator", allocator_test },
+            { "pointer", pointer_test },
             { "storage", storage_test },
 
             { "binary", binary_test },

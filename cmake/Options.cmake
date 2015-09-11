@@ -1,18 +1,17 @@
-
 ## Options
 
 # General Options
 OPTION(LIBCHAOS_SHARED                      "Build LibChaos as a shared library"        OFF )
 OPTION(IBERTY_DEMANGLE                      "Use libiberty to demangle symbols"         OFF )
 
+# Library Components
+OPTION(LIBCHAOS_EXTERN                      "Build LibChaos with External Libraries"    OFF  )
+OPTION(LIBCHAOS_UI                          "Build LibChaos UI library"                 OFF )
+OPTION(LIBCHAOS_TEST                        "Build and Run LibChaos Test suite"         ON  )
+OPTION(LIBCHAOS_UTIL                        "Build LibChaos Utilities"                  OFF )
+
 # ZParcel Tool
 OPTION(LIBCHAOS_ZPARCEL                     "Build ZParcel tool"                        OFF )
-
-# Library Components
-OPTION(LIBCHAOS_EXTERN                      "Build LibChaos with External Libraries"    ON  )
-OPTION(LIBCHAOS_UI                          "Build LibChaos UI library"                 OFF )
-OPTION(LIBCHAOS_TEST                        "Build LibChaos Test suite"                 ON  )
-OPTION(LIBCHAOS_UTIL                        "Build LibChaos Utilities"                  OFF )
 
 # Extern Library Support
 OPTION(ENABLE_ZPNG                          "Link zlib and libpng and build ZPNG"       OFF )
@@ -29,8 +28,32 @@ OPTION(LIBCHAOS_UTIL_IMAGE_LIBRARY_MANAGER  "Build LibChaos Image Library Manage
 OPTION(LIBCHAOS_UTIL_IMAGE_REVERSE_SEARCH   "Build LibChaos Image Reverse Search"       OFF )
 
 # All Extra Targets Excluded from All
-SET(LIBCHAOS_EXTERN_ALL     EXCLUDE_FROM_ALL)
-SET(LIBCHAOS_UI_ALL         EXCLUDE_FROM_ALL)
-SET(LIBCHAOS_TEST_ALL       EXCLUDE_FROM_ALL)
-SET(LIBCHAOS_UTIL_ALL       EXCLUDE_FROM_ALL)
-SET(LIBCHAOS_ZPARCEL_ALL    EXCLUDE_FROM_ALL)
+IF(LIBCHAOS_EXTERN)
+    SET(LIBCHAOS_EXTERN_ALL)
+ELSE()
+    SET(LIBCHAOS_EXTERN_ALL     EXCLUDE_FROM_ALL)
+ENDIF()
+
+IF(LIBCHAOS_UI)
+    SET(LIBCHAOS_UI_ALL)
+ELSE()
+    SET(LIBCHAOS_UI_ALL         EXCLUDE_FROM_ALL)
+ENDIF()
+
+IF(LIBCHAOS_TEST)
+    SET(LIBCHAOS_TEST_ALL)
+ELSE()
+    SET(LIBCHAOS_TEST_ALL       EXCLUDE_FROM_ALL)
+ENDIF()
+
+IF(LIBCHAOS_UTIL)
+    SET(LIBCHAOS_UTIL_ALL)
+ELSE()
+    SET(LIBCHAOS_UTIL_ALL       EXCLUDE_FROM_ALL)
+ENDIF()
+
+IF(LIBCHAOS_ZPARCEL)
+    SET(LIBCHAOS_ZPARCEL_ALL)
+ELSE()
+    SET(LIBCHAOS_ZPARCEL_ALL    EXCLUDE_FROM_ALL)
+ENDIF()

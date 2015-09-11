@@ -30,8 +30,10 @@ INCLUDE_DIRECTORIES(
 
 ### =================== BUILD =================== ###
 
-ADD_DEFINITIONS(-DBUILDING)
-
 # Parcelor
 ADD_EXECUTABLE(zparcel ${LIBCHAOS_ZPARCEL_ALL} ${ZParcel_SOURCES})
 TARGET_LINK_LIBRARIES(zparcel chaos)
+
+### =================== TESTS =================== ###
+
+ADD_TEST(NAME create_parcel COMMAND $<TARGET_FILE:zparcel> create test.parcel)

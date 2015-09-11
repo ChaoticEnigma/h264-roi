@@ -10,6 +10,8 @@ INCLUDE(cmake/ConfigureBuild.cmake)
 # CMake Utils
 INCLUDE(cmake/Utils.cmake)
 
+INCLUDE(cmake/Tests.cmake)
+
 # Git Describe
 EXECUTE_PROCESS(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
