@@ -108,8 +108,11 @@ ENDIF()
 SET(CONFIGURE_BUILD_STRING ${BUILD_STRING})
 
 IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
-    #SET(CXXGNU "${CXXGNU} -std=c++11")
-    SET(CXXGNU "${CXXGNU} -std=c++14")
+    IF(LIBCHAOS_COMPILER_GCC)
+        SET(CXXGNU "${CXXGNU} -std=c++14")
+    ELSE()
+        SET(CXXGNU "${CXXGNU} -std=c++11")
+    ENDIF()
 
     IF(DEBUG) # Enable gratuitous warnings on debug build
         SET(CXXGNU "${CXXGNU} -Wall -Wextra -Wpedantic")

@@ -1,7 +1,9 @@
 ## LibChaos Utilities CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
 PROJECT(LibChaosUtils)
+
+### =================== SOURCES =================== ###
 
 SET(LibChaosUtils_ExtensionFixer_SOURCES
     extensionfixer.cpp

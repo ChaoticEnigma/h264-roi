@@ -1,18 +1,22 @@
 ## ZParcel CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
 PROJECT(ZParcel)
 
-SET(ZParcel_HEADERS ### =================== HEADERS =================== ###
+### =================== HEADERS =================== ###
+
+SET(ZParcel_HEADERS
     main.h
     zparcel.h
     #zparceltypes.h
     #zparcelconvert.h
     zparcel4page.h
     zparcel4parser.h
-
 )
-SET(ZParcel_SOURCES ### =================== SOURCES =================== ###
+
+### =================== SOURCES =================== ###
+
+SET(ZParcel_SOURCES
     ${ZParcel_HEADERS}
     main.cpp
     zparcel.cpp
@@ -30,10 +34,9 @@ INCLUDE_DIRECTORIES(
 
 ### =================== BUILD =================== ###
 
-# Parcelor
 ADD_EXECUTABLE(zparcel ${LIBCHAOS_ZPARCEL_ALL} ${ZParcel_SOURCES})
 TARGET_LINK_LIBRARIES(zparcel chaos)
 
 ### =================== TESTS =================== ###
 
-ADD_TEST(NAME create_parcel COMMAND $<TARGET_FILE:zparcel> create test.parcel)
+ADD_TEST(NAME "Create Parcel" CONFIGURATIONS zparcel COMMAND $<TARGET_FILE:zparcel> create test.parcel)

@@ -1,13 +1,12 @@
 ## LibChaos Core CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
 PROJECT(LibChaos)
 
-#IF(LIBCHAOS_PLATFORM_LINUX AND LIBCHAOS_COMPILER_GCC AND LIBCHAOS_BUILD_DEBUG)
-#    SET(IBERTY_DEMANGLE ON)
-#ENDIF()
+#SET(IBERTY_DEMANGLE ON)
 
 ### =================== HEADERS =================== ###
+
 SET(LibChaos_HEADERS
     ztypes.h
 
@@ -88,6 +87,7 @@ SET(LibChaos_HEADERS
 )
 
 ### =================== SOURCES =================== ###
+
 SET(LibChaos_SOURCES
 
     base/zclock.cpp
