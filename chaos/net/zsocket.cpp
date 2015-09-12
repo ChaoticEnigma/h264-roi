@@ -323,7 +323,7 @@ bool ZSocket::setBlocking(bool set){
 #if PLATFORM == WINDOWS
 
     DWORD opt = set ? 0 : 1;
-    if(ioctlsocket(_socket, FIONBIO, &opt) != 0){
+    if(ioctlsocket(_socket, (long)FIONBIO, &opt) != 0){
         error = ZException("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
         return false;
     }

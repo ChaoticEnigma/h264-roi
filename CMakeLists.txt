@@ -9,8 +9,8 @@ INCLUDE(cmake/Options.cmake)
 INCLUDE(cmake/ConfigureBuild.cmake)
 # CMake Utils
 INCLUDE(cmake/Utils.cmake)
-
-INCLUDE(cmake/Tests.cmake)
+# CTest
+INCLUDE(CTest)
 
 # Git Describe
 EXECUTE_PROCESS(
