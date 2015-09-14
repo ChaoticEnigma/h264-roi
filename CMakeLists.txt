@@ -120,6 +120,10 @@ IF(HAS_PARENT)
 
     # Add to ${CMAKE_CXX_FLAGS} in parent scope
     SET(LibChaos_CXX_FLAGS      ${LIBCHAOS_CXX_FLAGS}       PARENT_SCOPE)
+
+    SET(LibChaos_With_PNG  ${LIBCHAOS_WITH_PNG}  PARENT_SCOPE)
+    SET(LibChaos_With_JPEG ${LIBCHAOS_WITH_JPEG} PARENT_SCOPE)
+    SET(LibChaos_With_H264 ${LIBCHAOS_WITH_H264} PARENT_SCOPE)
 ENDIF()
 
 # Doxygen

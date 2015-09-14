@@ -5,7 +5,7 @@ OPTION(LIBCHAOS_SHARED                      "Build LibChaos as a shared library"
 OPTION(IBERTY_DEMANGLE                      "Use libiberty to demangle symbols"         OFF )
 
 # Library Components
-OPTION(LIBCHAOS_EXTERN                      "Build LibChaos with External Libraries"    OFF  )
+OPTION(LIBCHAOS_EXTERN                      "Build LibChaos with External Libraries"    ON  )
 OPTION(LIBCHAOS_UI                          "Build LibChaos UI library"                 OFF )
 OPTION(LIBCHAOS_TEST                        "Build and Run LibChaos Test suite"         ON  )
 OPTION(LIBCHAOS_UTIL                        "Build LibChaos Utilities"                  OFF )
@@ -14,10 +14,10 @@ OPTION(LIBCHAOS_UTIL                        "Build LibChaos Utilities"          
 OPTION(LIBCHAOS_ZPARCEL                     "Build ZParcel tool"                        OFF )
 
 # Extern Library Support
-OPTION(ENABLE_ZPNG                          "Link zlib and libpng and build ZPNG"       OFF )
-OPTION(ENABLE_ZJPEG                         "Link libjepg-turbo and build ZJPEG"        OFF )
-OPTION(ENABLE_ZWEBP                         "Link libwebp and build ZWebP"              OFF )
-OPTION(ENABLE_ZH264                         "Link libavcodec and libx264 and build ZH264Decoder and ZH264Encoder" OFF)
+OPTION(DISABLE_ZPNG                         "Disable PNG support"                       OFF )
+OPTION(DISABLE_ZJPEG                        "Disable JPEG support"                      OFF )
+OPTION(DISABLE_ZWEBP                        "Disable WebP support"                      OFF )
+OPTION(DISABLE_ZH264                        "Disable H264 support"                      OFF )
 
 # Util Executables
 OPTION(LIBCHAOS_UTIL_EXTENSION_FIXER        "Build LibChaos Extension Fixer"            OFF )
