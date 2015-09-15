@@ -173,9 +173,13 @@ public:
     //! Get \a len characters after \a pos of \a str.
     static ZString substr(ZString str, zu64 pos, zu64 len);
 
-    //! Get location of of first occurrence of \a find in string after \a start.
+    /*! Get location of of first occurrence of \a find in string after \a start.
+     *  \return Index of first character of \a find if found, else \ref none.
+     */
     zu64 findFirst(const ZString &find, zu64 start = 0) const;
-    //! Get location of of first occurrence of \a find in \a str after \a start.
+    /*! Get location of of first occurrence of \a find in \a str after \a start.
+     *  \return Index of first character of \a find if found, else \ref none.
+     */
     static zu64 findFirst(const ZString &str, const ZString &find, zu64 start = 0);
 
     //! Get locations of of all non-overlapping occurrences of \a find in string.

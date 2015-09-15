@@ -113,7 +113,7 @@ int mainwrap(int argc, char **argv){
 
     } else if(args.size() > 0 && args[0] == "add"){
         if(args.size() < 2){
-            LOG("Usage: add <file> [field=value] ...");
+            LOG("Usage: add <file> [field[:type]=value] ...");
             return EXIT_FAILURE;
         }
         LOG("Adding Record to ZParcel " << args[1]);
@@ -127,6 +127,11 @@ int mainwrap(int argc, char **argv){
             if(pair.size() != 2)
                 ELOG("Format error in \"" << args[i] << '"');
             ZString fieldname = pair[0];
+            if(fieldname.findFirst(":") != ZString::none){
+
+            } else {
+
+            }
             ZString fieldvalue = pair[1];
             //LOG(fieldname << "(" << ZParcel4Parser::getFieldTypeName(ftype) << ") : " << pair[1]);
             ZParcel4Parser::fieldid fid = parcel->getField(fieldname);

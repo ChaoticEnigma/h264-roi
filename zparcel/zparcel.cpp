@@ -27,20 +27,21 @@ static const ZMap<ZString, ZParcel::fieldtype> nametofield = {
     { "text",       ZParcel::stringfield },
 
     { "binary",     ZParcel::blobfield },
+    { "bin",        ZParcel::blobfield },
     { "blob",       ZParcel::blobfield },
 
     { "file",       ZParcel::filefield },
 };
 
 static const ZMap<ZParcel::fieldtype, ZString> fieldtoname = {
-    { ZParcel::nullfield,        "null" },
-    { ZParcel::uintfield, "unsigned int" },
+    { ZParcel::nullfield,   "null" },
+    { ZParcel::uintfield,   "unsigned int" },
     { ZParcel::sintfield,   "signed int" },
-    { ZParcel::floatfield,       "float" },
-    { ZParcel::zuidfield,        "zuid" },
-    { ZParcel::stringfield,      "string" },
-    { ZParcel::filefield,        "file" },
-    { ZParcel::blobfield,      "binary" },
+    { ZParcel::floatfield,  "float" },
+    { ZParcel::zuidfield,   "zuid" },
+    { ZParcel::stringfield, "string" },
+    { ZParcel::filefield,   "file" },
+    { ZParcel::blobfield,   "binary" },
 };
 
 ZParcel::ZParcel() : _parser(nullptr), _version(versionunknown){

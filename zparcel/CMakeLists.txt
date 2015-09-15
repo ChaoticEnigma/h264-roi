@@ -40,3 +40,4 @@ TARGET_LINK_LIBRARIES(zparcel chaos)
 ### =================== TESTS =================== ###
 
 ADD_TEST(NAME "Create Parcel" CONFIGURATIONS zparcel COMMAND $<TARGET_FILE:zparcel> create test.parcel)
+ADD_TEST(NAME "List Parcel" CONFIGURATIONS zparcel COMMAND $<TARGET_FILE:zparcel> list test.parcel)
