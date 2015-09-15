@@ -69,17 +69,7 @@ int mainwrap(int argc, char **argv){
             }
             ZString name = args[3];
             LOG("Adding New Field to ZParcel " << args[1]);
-            ZMap<ZString, ZParcel4Parser::fieldtype> ftype = {
-                { "bool",   ZPARCEL_4_BOOL },
-                { "uint",   ZPARCEL_4_UINT },
-                { "sint",   ZPARCEL_4_SINT },
-                { "float",  ZPARCEL_4_FLOAT },
-                { "zuid",   ZPARCEL_4_ZUID },
-                { "string", ZPARCEL_4_STRING },
-                { "blob",   ZPARCEL_4_BINARY },
-                { "file",   ZPARCEL_4_FILE },
-            };
-            ZParcel4Parser::fieldtype type = ftype[name];
+            ZParcel4Parser::fieldtype type = ZParcel::typeType(name);
             ZParcel4Parser::fieldid id = parcel->addField(name, type);
             if(id){
                 LOG("Created field " << id << " - " << name << " : " << type);
@@ -127,12 +117,16 @@ int mainwrap(int argc, char **argv){
             if(pair.size() != 2)
                 ELOG("Format error in \"" << args[i] << '"');
             ZString fieldname = pair[0];
-            if(fieldname.findFirst(":") != ZString::none){
-
+            ZString fieldvalue = pair[1];
+            ArZ fpair = fieldname.split(":");
+            if(pair.size() == 2){
+                fieldname = fpair[0];
+                ZParcel::fieldtype type = ZParcel::typeType(fpair[1]);
+                // Check if field exists, create if not, check that types are the same
             } else {
+                // Check if field exists
 
             }
-            ZString fieldvalue = pair[1];
             //LOG(fieldname << "(" << ZParcel4Parser::getFieldTypeName(ftype) << ") : " << pair[1]);
             ZParcel4Parser::fieldid fid = parcel->getField(fieldname);
             if(fid){

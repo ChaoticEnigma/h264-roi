@@ -6,6 +6,7 @@
 #include "zbinary.h"
 #include "zpath.h"
 
+#include "zparcelrecord.h"
 #include "zparcel4parser.h"
 
 namespace LibChaos {
@@ -14,8 +15,6 @@ class ZParcel {
 public:
     enum parceltype {
         versionunknown = 0,
-//        version2,
-//        version3,
         version4 = 4,
     };
 
@@ -49,35 +48,27 @@ public:
     void create(ZPath path);
 
     //! Open existing parcel
+    //! \exception ZException Failed to open file
     bool open(ZPath file);
 
     //! Close file handles
     void close();
 
-    //! Add new data field to parcel
+    //! Add new field to parcel
     void addField(ZString name, fieldtype type);
 
     //! Add a record to the parcel
     //! \exception ZException Invalid field type
-    void addRecord(ZMap<ZString, ZString> fields);
+    void addRecord(ZParcelRecord record);
 
     //! Add multiple records to the parcel
     //! \exception ZException Invalid field type
-    void addRecords(ZList< ZMap<ZString, ZString> > records);
-
-    void addBoolRecord(ZString field, bool tf);
-    void addUintRecord(ZString field, zu64 num);
-    void addSintRecord(ZString field, zs64 num);
-    void addZUIDRecord(ZString field, ZUID uid);
-    void addFloatRecord(ZString field, double flt);
-    void addStringRecord(ZString field, ZString str);
-    void addBinaryRecord(ZString field, ZBinary bin);
-    void addFileRecord(ZString field, ZPath file);
+    void addRecords(ZList<ZParcelRecord> records);
 
     fieldid getFieldId(ZString name);
 
-    static fieldtype fieldType(ZString name);
-    static ZString fieldName(fieldtype type);
+    static fieldtype typeType(ZString name);
+    static ZString typeName(fieldtype type);
 
 private:
     ZFile _file;

@@ -4,7 +4,7 @@
 
 namespace LibChaos {
 
-static const ZMap<ZString, ZParcel::fieldtype> nametofield = {
+static const ZMap<ZString, ZParcel::fieldtype> nametotype = {
     { "null",       ZParcel::nullfield },
 
     { "uint",       ZParcel::uintfield },
@@ -33,7 +33,7 @@ static const ZMap<ZString, ZParcel::fieldtype> nametofield = {
     { "file",       ZParcel::filefield },
 };
 
-static const ZMap<ZParcel::fieldtype, ZString> fieldtoname = {
+static const ZMap<ZParcel::fieldtype, ZString> typetoname = {
     { ZParcel::nullfield,   "null" },
     { ZParcel::uintfield,   "unsigned int" },
     { ZParcel::sintfield,   "signed int" },
@@ -71,57 +71,25 @@ void ZParcel::close(){
     _file.close();
 }
 
-void ZParcel::addRecord(ZMap<ZString, ZString> fields){
+void ZParcel::addRecord(ZParcelRecord record){
     addRecords({ fields });
 }
 
-void ZParcel::addRecords(ZList<ZMap<ZString, ZString>> records){
+void ZParcel::addRecords(ZList<ZParcelRecord> records){
     LOG("Adding " << records.size() << " records");
 
-}
-
-void ZParcel::addBoolRecord(ZString field, bool tf){
-//    _parser->addBoolData(getFieldId(field), tf);
-}
-
-void ZParcel::addUintRecord(ZString field, zu64 num){
-//    _parser->addUintData(getFieldId(field), num);
-}
-
-void ZParcel::addSintRecord(ZString field, zs64 num){
-//    _parser->addSintData(getFieldId(field), num);
-}
-
-void ZParcel::addZUIDRecord(ZString field, ZUID uid){
-//    _parser->addZUIDData(getFieldId(field), uid);
-}
-
-void ZParcel::addFloatRecord(ZString field, double flt){
-//    _parser->addFloatData(getFieldId(field), flt);
-}
-
-void ZParcel::addStringRecord(ZString field, ZString str){
-//    _parser->addStringData(getFieldId(field), str);
-}
-
-void ZParcel::addBinaryRecord(ZString field, ZBinary bin){
-//    _parser->addBinaryData(getFieldId(field), bin);
-}
-
-void ZParcel::addFileRecord(ZString field, ZPath file){
-//    _parser->addFileData(getFieldId(field), file);
 }
 
 ZParcel::fieldid ZParcel::getFieldId(ZString name){
     return 0;
 }
 
-ZParcel::fieldtype ZParcel::fieldType(ZString name){
-    return nametofield[name];
+ZParcel::fieldtype ZParcel::typeType(ZString name){
+    return nametotype[name];
 }
 
-ZString ZParcel::fieldName(fieldtype type){
-    return fieldtoname[type];
+ZString ZParcel::typeName(fieldtype type){
+    return typetoname[type];
 }
 
 }
