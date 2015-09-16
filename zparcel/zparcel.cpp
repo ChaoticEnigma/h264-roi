@@ -72,7 +72,7 @@ void ZParcel::close(){
 }
 
 void ZParcel::addRecord(ZParcelRecord record){
-    addRecords({ fields });
+    addRecords({ record });
 }
 
 void ZParcel::addRecords(ZList<ZParcelRecord> records){
