@@ -61,8 +61,6 @@ SET(LibChaos_HEADERS
     math/znumber.h
     math/zmath.h
 
-    misc/zautobuffer.h
-    misc/zautobufferunit.h
     misc/zencrypt.h
     misc/zhash.h
     misc/zrandom.h
@@ -118,7 +116,6 @@ SET(LibChaos_SOURCES
     math/zmath.cpp
     #math/znumber-reference.cpp
 
-    misc/zautobuffer.cpp
     misc/zencrypt.cpp
     misc/zhash.cpp
     misc/zrandom.cpp

@@ -64,6 +64,5 @@ int image_test(){
     ZPNG outpng2(image2);
     LOG("PNG: " << outpng2.write("image_test16.png"));
 
-
     return 0;
 }

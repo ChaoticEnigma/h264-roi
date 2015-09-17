@@ -34,6 +34,7 @@ int main(int argc, char **argv){
 
             { "string", string_test },
             { "path", path_test },
+            { "json", json_test },
 
             { "thread", thread_test },
             { "mutex", mutex_test },
@@ -43,14 +44,14 @@ int main(int argc, char **argv){
             { "hash", hash_test },
 
             { "file", file_test },
-#ifdef TEST_ZPNG
-            { "image", image_test },
-            { "png", png_test },
-#endif
             { "pdf", pdf_test },
 
-            { "autobuffer", autobuffer_test },
-            { "json", json_test },
+#ifdef TEST_PNG
+            { "image", image_test },
+#endif
+#ifdef TEST_PNG
+            { "png", png_test },
+#endif
         };
 
         ZAssoc<ZString, test_func> tests = defaulttests;

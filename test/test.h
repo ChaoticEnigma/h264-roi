@@ -21,6 +21,7 @@ int binary_test();
 
 int string_test();
 int path_test();
+int json_test();
 
 int pointer_test();
 int allocator_test();
@@ -36,11 +37,14 @@ int uid_test();
 int hash_test();
 
 int file_test();
-int png_test();
-int image_test();
 int pdf_test();
 
-int autobuffer_test();
+#ifdef TEST_PNG
+int image_test();
+#endif
+#ifdef TEST_PNG
+int png_test();
+#endif
 
 int udp_test();
 int udpserver_test();
@@ -49,12 +53,6 @@ int tcp_test();
 int tcpserver_test();
 int tcpserver_test2();
 int tcpserver_test3();
-
-int json_test();
-
-#ifdef TEST_PNG
-int png_test();
-#endif
 
 int error_test();
 
