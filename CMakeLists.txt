@@ -51,7 +51,7 @@ SET(LibChaos_BUILD_LIST "Core")
 SET(LibChaos_INCLUDE ${LibChaos_Core_INCLUDE})
 
 # LibChaos Extern
-ADD_SUBDIRECTORY(extern)
+#ADD_SUBDIRECTORY(extern)
 IF(LIBCHAOS_EXTERN)
     SET(LibChaos_BUILD_LIST ${LibChaos_BUILD_LIST} ${EXTERN_BUILD_LIST})
 ENDIF()

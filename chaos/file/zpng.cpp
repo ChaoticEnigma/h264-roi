@@ -10,6 +10,9 @@
 #include "zlog.h"
 #include "zfile.h"
 
+#include <png.h>
+#include <zlib.h>
+
 namespace LibChaos {
 
 bool ZPNG::decode(ZBinary &pngdata_in){

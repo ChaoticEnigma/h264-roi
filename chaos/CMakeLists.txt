@@ -5,6 +5,24 @@ PROJECT(LibChaos)
 
 #SET(IBERTY_DEMANGLE ON)
 
+SET(WITH_PNG  FALSE)
+SET(WITH_JPEG FALSE)
+
+# Find libpng and zlib
+INCLUDE(FindPNG)
+IF(PNG_FOUND AND NOT DISABLE_ZPNG)
+    SET(WITH_PNG TRUE)
+ENDIF()
+
+# Find libjpeg or libjpeg-turbo
+INCLUDE(FindJPEG)
+IF(JPEG_FOUND AND NOT DISABLE_ZJPEG)
+    SET(WITH_JPEG TRUE)
+ENDIF()
+
+SET(LIBCHAOS_WITH_PNG  ${WITH_PNG}  PARENT_SCOPE)
+SET(LIBCHAOS_WITH_JPEG ${WITH_JPEG} PARENT_SCOPE)
+
 ### =================== HEADERS =================== ###
 
 SET(LibChaos_HEADERS
@@ -44,11 +62,14 @@ SET(LibChaos_HEADERS
     data/zstack.h
 
     file/database.h
+    file/yimagebackend.h
     file/zbitmap.h
     file/zbmp.h
     file/zfile.h
     file/zimage.h
+    file/zjpeg.h
     file/zoptions.h
+    file/zpng.h
     file/zpdf.h
     file/zppm.h
 
@@ -101,7 +122,9 @@ SET(LibChaos_SOURCES
     file/zbmp.cpp
     file/zfile.cpp
     file/zimage.cpp
+    file/zjpeg.cpp
     file/zoptions.cpp
+    file/zpng.cpp
     file/zpdf.cpp
     file/zppm.cpp
 
@@ -161,6 +184,18 @@ SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
 SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
 SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
 
+IF(WITH_PNG)
+    ADD_DEFINITIONS(-DLIBCHAOS_HAS_PNG ${PNG_DEFINITIONS})
+    SET(EXTERN_INCLUDES ${EXTERN_INCLUDES} ${PNG_INCLUDE_DIRS})
+    SET(EXTERN_LIBRARIES ${EXTERN_LIBRARIES} ${PNG_LIBRARIES})
+ENDIF()
+
+IF(WITH_JPEG)
+    ADD_DEFINITIONS(-DLIBCHAOS_HAS_JPEG)
+    SET(EXTERN_INCLUDES ${EXTERN_INCLUDES} ${JPEG_INCLUDE_DIR})
+    SET(EXTERN_LIBRARIES ${EXTERN_LIBRARIES} ${JPEG_LIBRARIES})
+ENDIF()
+
 GatherSources(${LibChaos_HEADERS} ${LibChaos_SOURCES})
 
 SET(LibChaos_INCLUDE
@@ -182,6 +217,7 @@ GatherIncludes(${LibChaos_INCLUDE})
 # Include Directories
 INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
+    ${EXTERN_INCLUDES}
     lib/fnv-5.0.3
 )
 
@@ -192,6 +228,8 @@ ENDIF()
 ### =================== BUILD =================== ###
 
 ADD_LIBRARY(chaos ${LIBCHAOS_LINK} ${LibChaos_HEADERS} ${LibChaos_SOURCES})
+
+TARGET_LINK_LIBRARIES(chaos ${EXTERN_LIBRARIES})
 
 IF(LIBCHAOS_PLATFORM_WINDOWS)
     IF(LIBCHAOS_COMPILER_MSVC)
