@@ -1,3 +1,8 @@
+/*******************************************************************************
+**                                  LibChaos                                  **
+**                                  zpng.cpp                                  **
+**                          See COPYRIGHT and LICENSE                         **
+*******************************************************************************/
 #include "zpng.h"
 
 #include <unistd.h>
@@ -13,36 +18,89 @@
 #include <png.h>
 #include <zlib.h>
 
+using namespace LibChaos;
+
+struct PngReadData {
+    ZBinary *filedata;
+
+    //png_image image;
+
+    png_struct *png_ptr = NULL;
+    png_info *info_ptr = NULL;
+
+    png_uint_32 width, height;
+    unsigned char channels, fchannels;
+    int bit_depth, fbit_depth, color_type;
+    unsigned char bg_red, bg_green, bg_blue;
+    double gamma;
+
+    unsigned char *image_data = nullptr;
+
+    ZString err_str;
+};
+
+struct PngWriteData {
+    ZBinary *filedata;
+
+    //png_image image;
+
+    png_struct *png_ptr = NULL;
+    png_info *info_ptr = NULL;
+
+    png_uint_32 width, height;
+    int bit_depth, color_type;
+
+    unsigned char *image_data = NULL;
+    unsigned char **row_pointers = NULL;
+
+    double gamma;
+
+    bool interlaced;
+
+    bool have_bg;
+    unsigned char bg_red, bg_green, bg_blue;
+
+    bool have_time;
+    time_t modtime;
+
+    ZString err_str;
+};
+
+int readpng_init(PngReadData *data);
+void readpng_read_fn(png_struct *png_ptr, png_byte *outbytes, png_size_t bytestoread);
+int readpng_get_bgcolor(PngReadData *data);
+int readpng_get_image(PngReadData *data, double display_exponent);
+void readpng_cleanup(PngReadData *data);
+void readpng_warning_handler(png_struct *png_ptr, png_const_charp msg);
+void readpng_error_handler(png_struct *png_ptr, png_const_charp msg);
+
+int writepng_init(PngWriteData *mainprog_ptr, const AsArZ &text);
+void writepng_write_fn(png_struct *png_ptr, png_byte *inbytes, png_size_t length);
+int writepng_encode_image(PngWriteData *mainprog_ptr);
+int writepng_encode_row(PngWriteData *mainprog_ptr, unsigned char *row);
+int writepng_encode_finish(PngWriteData *mainprog_ptr);
+void writepng_cleanup(PngWriteData *mainprog_ptr);
+void writepng_warning_handler(png_struct *png_ptr, png_const_charp msg);
+void writepng_error_handler(png_struct *png_ptr, png_const_charp msg);
+
 namespace LibChaos {
 
 bool ZPNG::decode(ZBinary &pngdata_in){
     PngReadData data;
 
     try {
-        if(!pngdata_in.size())
+        if(!pngdata_in.size()){
             throw ZException("PNG Read: empty input", PNGError::emptyinput, false);
+        }
 
         data.filedata = &pngdata_in;
 
-        int result = readpng_init(&data);
-        switch(result){
-        case 1:
-            throw ZException("PNG Read: signature read fail", PNGError::sigreadfail, false);
-        case 2:
-            throw ZException("PNG Read: signature check fail", PNGError::sigcheckfail, false);
-        case 3:
-            throw ZException("PNG Read: read struct create fail", PNGError::readstructfail, false);
-        case 4:
-            throw ZException("PNG Read: info struct create fail", PNGError::infostructfail, false);
-        case 5:
-            throw ZException(ZString("PNG Read: ") + data.err_str, PNGError::libpngerror, false);
-        default:
-            break;
-        }
+        readpng_init(&data);
 
-        for(int i = 0; i < data.info_ptr->num_text; ++i){
-            text.push(data.info_ptr->text[i].key, data.info_ptr->text[i].text);
-        }
+        // Get text sections
+        //for(int i = 0; i < data.info_ptr->num_text; ++i){
+        //    text.push(data.info_ptr->text[i].key, data.info_ptr->text[i].text);
+        //}
 
 //        data->bg_red = 0;
 //        data->bg_green = 0;
@@ -62,20 +120,7 @@ bool ZPNG::decode(ZBinary &pngdata_in){
 //        }
 
         double default_display_exponent = 1.0;
-
-        result = readpng_get_image(&data, default_display_exponent);
-        switch(result){
-        case 1:
-            throw ZException(ZString("PNG Read: ") + data.err_str, PNGError::libpngerror, false);
-        case 2:
-            throw ZException("PNG Read: invalid color type", PNGError::invalidcolortype, false);
-        case 3:
-            throw ZException("PNG Read: failed to alloc image data", PNGError::imageallocfail, false);
-        case 4:
-            throw ZException("PNG Read: failed to alloc row pointers", PNGError::rowallocfail, false);
-        default:
-            break;
-        }
+        readpng_get_image(&data, default_display_exponent);
 
         if(!data.image_data){
             throw ZException("readpng_get_image failed", PNGError::badpointer, false);
@@ -265,66 +310,78 @@ ZArray<ZPNG::PngChunk> ZPNG::parsePngAncillaryChunks(ZBinary pngdata){
 }
 
 ZString ZPNG::libpngVersionInfo(){
-#ifdef DISABLE_LIBPNG
-    return "No libpng or zlib";
-#else
     return ZString("Compiled with libpng ") << PNG_LIBPNG_VER_STRING << ", Using libpng " << png_libpng_ver << ", Compiled with zlib " << ZLIB_VERSION << ", Using zlib " << zlib_version;
-#endif
 }
 
-#ifndef DISABLE_LIBPNG
+}
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // //////// Private
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int ZPNG::readpng_init(PngReadData *data){
+int readpng_init(PngReadData *data){
+    // Initialize png image struct
+    //memset(&data->image, 0, (sizeof data->image));
+    //data->image.version = PNG_IMAGE_VERSION;
+
     // Check PNG signature
     if(png_sig_cmp(data->filedata->raw(), 0, 1)){
+        throw ZException("PNG Read: signature check fail", ZPNG::PNGError::sigcheckfail, false);
         return 2;
     }
     data->filedata->setPos(8);
 
     // Create PNG read struct
-    data->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, readpng_error_handler, readpng_warning_handler);
-    if(!data->png_ptr){
+    data->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, data, readpng_error_handler, readpng_warning_handler);
+    if(data->png_ptr == NULL){
+        throw ZException("PNG Read: read struct create fail", ZPNG::PNGError::readstructfail, false);
         return 3;
     }
 
     // Create PNG info struct
     data->info_ptr = png_create_info_struct(data->png_ptr);
-    if(!data->info_ptr){
+    if(data->info_ptr == NULL){
+        throw ZException("PNG Read: info struct create fail", ZPNG::PNGError::infostructfail, false);
         return 4;
     }
 
     // oh god somebody help
-    if(setjmp(png_jmpbuf(data->png_ptr))){
-        return 5;
-    }
+    //if(setjmp(png_jmpbuf(data->png_ptr))){
+    //    throw ZException(ZString("PNG Read: ") + data.err_str, ZPNG::PNGError::libpngerror, false);
+    //    return 5;
+    //}
 
     // Set custom reading function
-    png_set_read_fn(data->png_ptr, data->filedata, readpng_read_fn);
+    png_set_read_fn(data->png_ptr, (void *)data->filedata, readpng_read_fn);
 
-    // Read PNG info
+    // Already read the signature
     png_set_sig_bytes(data->png_ptr, 8);
-    png_read_info(data->png_ptr, data->info_ptr);
 
+#if 0
+    png_read_png(data->png_ptr, data->info_ptr, png_transforms, NULL);
+#else
+    // Read PNG info
+    png_read_info(data->png_ptr, data->info_ptr);
     // Retrieve PNG information
     png_get_IHDR(data->png_ptr, data->info_ptr, &data->width, &data->height, &data->bit_depth, &data->color_type, NULL, NULL, NULL);
+#endif
 
     return 0;
 }
 
-void ZPNG::readpng_read_fn(png_struct *png_ptr, png_byte *outbytes, png_size_t bytestoread){
-    // Ugh
-    if(!png_ptr->io_ptr)
-        longjmp(png_jmpbuf(png_ptr), 1);
+void readpng_read_fn(png_struct *png_ptr, png_byte *outbytes, png_size_t bytestoread){
+    // Check user pointer
+    void *ioptr = png_get_io_ptr(png_ptr);
+    if(ioptr == NULL){
+        throw ZException("read fn null io ptr");
+        //longjmp(png_jmpbuf(png_ptr), 1);
+    }
 
-    ZBinary *filedata = (ZBinary*)png_ptr->io_ptr;
+    ZBinary *filedata = (ZBinary*)ioptr;
     filedata->read(outbytes, bytestoread);
 }
 
-int ZPNG::readpng_get_bgcolor(PngReadData *data){
+int readpng_get_bgcolor(PngReadData *data){
     // i don't have a choice...
     if(setjmp(png_jmpbuf(data->png_ptr))){
         return 1;
@@ -363,18 +420,19 @@ int ZPNG::readpng_get_bgcolor(PngReadData *data){
     return 0;
 }
 
-int ZPNG::readpng_get_image(PngReadData *data, double display_exponent){
+int readpng_get_image(PngReadData *data, double display_exponent){
     // plz no not the face
-    if(setjmp(png_jmpbuf(data->png_ptr))){
-        return 1;
-    }
+    //if(setjmp(png_jmpbuf(data->png_ptr))){
+    //    throw ZException(ZString("PNG Read: ") + data.err_str, ZPNG::PNGError::libpngerror, false);
+    //    return 1;
+    //}
 
 //    // Transform transparency chunks to full alpha channel
 //    if(png_get_valid(data->png_ptr, data->info_ptr, PNG_INFO_tRNS)){
 //        png_set_tRNS_to_alpha(data->png_ptr);
 //    }
 
-    // Strip
+    // Strip 16-bit to 8-bit
     png_set_strip_16(data->png_ptr);
 
     bool needbg = false;
@@ -406,6 +464,7 @@ int ZPNG::readpng_get_image(PngReadData *data, double display_exponent){
         // No change
         break;
     default:
+        throw ZException("PNG Read: invalid color type", ZPNG::PNGError::invalidcolortype, false);
         return 2;
     }
 
@@ -437,12 +496,14 @@ int ZPNG::readpng_get_image(PngReadData *data, double display_exponent){
     // Alloc image data
     data->image_data = new unsigned char[rowbytes * data->height];
     if(!data->image_data){
+        throw ZException("PNG Read: failed to alloc image data", ZPNG::PNGError::imageallocfail, false);
         return 3;
     }
 
     // Alloc row pointers
     png_byte **row_pointers = new png_byte *[data->height];
     if(!row_pointers){
+        throw ZException("PNG Read: failed to alloc row pointers", ZPNG::PNGError::rowallocfail, false);
         return 4;
     }
 
@@ -462,7 +523,7 @@ int ZPNG::readpng_get_image(PngReadData *data, double display_exponent){
     return 0;
 }
 
-void ZPNG::readpng_cleanup(PngReadData *data){
+void readpng_cleanup(PngReadData *data){
     if(data->image_data){
         delete[] data->image_data;
         data->image_data = nullptr;
@@ -479,23 +540,24 @@ void ZPNG::readpng_cleanup(PngReadData *data){
     }
 }
 
-void ZPNG::readpng_warning_handler(png_struct *png_ptr, png_const_charp msg){
+void readpng_warning_handler(png_struct *png_ptr, png_const_charp msg){
     ELOG(ZLog::this_thread << "libpng read warning: " << msg);
 }
-void ZPNG::readpng_error_handler(png_struct *png_ptr, png_const_charp msg){
+void readpng_error_handler(png_struct *png_ptr, png_const_charp msg){
     //ELOG(ZLog::this_thread << "libpng read error: " << msg);
     PngReadData *data = (PngReadData *)png_get_error_ptr(png_ptr);
     if(data){
         data->err_str = ZString("libpng read error: ") + msg;
     }
-    longjmp(png_jmpbuf(png_ptr), 1);
+    throw ZException(ZString("libpng read error: ") + msg);
+    //longjmp(png_jmpbuf(png_ptr), 1);
 }
 
-// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////
+// // Write ////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////
 
-int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
+int writepng_init(PngWriteData *data, const AsArZ &texts){
     // Create write struct
     data->png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, data, writepng_error_handler, writepng_warning_handler);
     if(!data->png_ptr){
@@ -592,16 +654,19 @@ int ZPNG::writepng_init(PngWriteData *data, const AsArZ &texts){
     return 0;
 }
 
-void ZPNG::writepng_write_fn(png_struct *png_ptr, png_byte *inbytes, png_size_t length){
-    // As much as I hate it, this handles errors
-    if(!png_ptr->io_ptr)
-        longjmp(png_jmpbuf(png_ptr), 1);
+void writepng_write_fn(png_struct *png_ptr, png_byte *inbytes, png_size_t length){
+    // Check user pointer
+    void *ioptr = png_get_io_ptr(png_ptr);
+    if(ioptr == NULL){
+        throw ZException("write fn null io ptr");
+        //longjmp(png_jmpbuf(png_ptr), 1);
+    }
 
-    ZBinary *filedata = (ZBinary *)png_ptr->io_ptr;
+    ZBinary *filedata = (ZBinary *)ioptr;
     filedata->concat(ZBinary(inbytes, length));
 }
 
-int ZPNG::writepng_encode_image(PngWriteData *data){
+int writepng_encode_image(PngWriteData *data){
     // *sigh*
     if(setjmp(png_jmpbuf(data->png_ptr))){
         return 1;
@@ -616,7 +681,7 @@ int ZPNG::writepng_encode_image(PngWriteData *data){
     return 0;
 }
 
-int ZPNG::writepng_encode_row(PngWriteData *data, unsigned char *row_data){
+int writepng_encode_row(PngWriteData *data, unsigned char *row_data){
     // not again
     if(setjmp(png_jmpbuf(data->png_ptr))){
         return 1;
@@ -628,7 +693,7 @@ int ZPNG::writepng_encode_row(PngWriteData *data, unsigned char *row_data){
     return 0;
 }
 
-int ZPNG::writepng_encode_finish(PngWriteData *data){
+int writepng_encode_finish(PngWriteData *data){
     // no more please
     if(setjmp(png_jmpbuf(data->png_ptr))){
         return 1;
@@ -640,7 +705,7 @@ int ZPNG::writepng_encode_finish(PngWriteData *data){
     return 0;
 }
 
-void ZPNG::writepng_cleanup(PngWriteData *mainprog_ptr){
+void writepng_cleanup(PngWriteData *mainprog_ptr){
     if(mainprog_ptr->png_ptr){
         if(mainprog_ptr->info_ptr){
             png_destroy_write_struct(&mainprog_ptr->png_ptr, &mainprog_ptr->info_ptr);
@@ -652,18 +717,14 @@ void ZPNG::writepng_cleanup(PngWriteData *mainprog_ptr){
     }
 }
 
-void ZPNG::writepng_warning_handler(png_struct *png_ptr, png_const_charp msg){
+void writepng_warning_handler(png_struct *png_ptr, png_const_charp msg){
     ELOG(ZLog::this_thread << "libpng write warning: " << msg);
 }
-void ZPNG::writepng_error_handler(png_struct *png_ptr, png_const_charp msg){
+void writepng_error_handler(png_struct *png_ptr, png_const_charp msg){
     //ELOG(ZLog::this_thread << "libpng write error: " << msg);
     PngWriteData *data = (PngWriteData *)png_get_error_ptr(png_ptr);
     if(data){
         data->err_str = ZString("libpng write error: ") + msg;
     }
     longjmp(png_jmpbuf(png_ptr), 1);
-}
-
-#endif
-
 }
