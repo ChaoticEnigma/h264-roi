@@ -23,8 +23,6 @@ using namespace LibChaos;
 struct PngReadData {
     ZBinary *filedata;
 
-    //png_image image;
-
     png_struct *png_ptr = NULL;
     png_info *info_ptr = NULL;
 
@@ -41,8 +39,6 @@ struct PngReadData {
 
 struct PngWriteData {
     ZBinary *filedata;
-
-    //png_image image;
 
     png_struct *png_ptr = NULL;
     png_info *info_ptr = NULL;

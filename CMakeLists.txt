@@ -15,7 +15,7 @@ INCLUDE(CTest)
 # Git Describe
 EXECUTE_PROCESS(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND git describe --all --long --always --abbrev=16 --dirty=*
+    COMMAND git describe --all --long --always --dirty=*
     OUTPUT_VARIABLE LIBCHAOS_DESCRIBE
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -47,7 +47,12 @@ SET(LibChaos_OTHER_FILES
 
 # LibChaos
 ADD_SUBDIRECTORY(chaos)
-SET(LibChaos_BUILD_LIST "Core")
+IF(CORE_LIBS)
+    STRING(REPLACE ";" "," CORE_LIBS_STRING "${CORE_LIBS}")
+    SET(LibChaos_BUILD_LIST "Core(${CORE_LIBS_STRING})")
+ELSE()
+    SET(LibChaos_BUILD_LIST "Core")
+ENDIF()
 SET(LibChaos_INCLUDE ${LibChaos_Core_INCLUDE})
 
 # LibChaos Extern
@@ -110,22 +115,18 @@ IF(HAS_PARENT)
     SET(LibChaos_COMPILER_CLANG     ${LIBCHAOS_COMPILER_CLANG}      PARENT_SCOPE)
 
     GET_PROPERTY(LibChaosInclude        GLOBAL PROPERTY LibChaosInclude)
-    GET_PROPERTY(LibChaosExternInclude  GLOBAL PROPERTY LibChaosExternInclude)
     GET_PROPERTY(LibChaosUIInclude      GLOBAL PROPERTY LibChaosUIInclude)
 
     # Add to INCLUDE_DIRECTORIES() in parent scope
-    SET(LibChaos_INCLUDE        ${LibChaosInclude}          PARENT_SCOPE)
-    SET(LibChaos_Extern_INCLUDE ${LibChaosExternInclude}    PARENT_SCOPE)
-    SET(LibChaos_UI_INCLUDE     ${LibChaosUIInclude}        PARENT_SCOPE)
+    SET(LibChaos_INCLUDE    ${LibChaosInclude}    PARENT_SCOPE)
+    SET(LibChaos_UI_INCLUDE ${LibChaosUIInclude}  PARENT_SCOPE)
 
     # Add to ${CMAKE_CXX_FLAGS} in parent scope
-    SET(LibChaos_CXX_FLAGS      ${LIBCHAOS_CXX_FLAGS}       PARENT_SCOPE)
+    SET(LibChaos_CXX_FLAGS  ${LIBCHAOS_CXX_FLAGS} PARENT_SCOPE)
 
-    SET(LibChaos_With_PNG  ${LIBCHAOS_WITH_PNG}  PARENT_SCOPE)
-    SET(LibChaos_With_JPEG ${LIBCHAOS_WITH_JPEG} PARENT_SCOPE)
-    SET(LibChaos_With_H264 ${LIBCHAOS_WITH_H264} PARENT_SCOPE)
-
-    SET(LibChaos_Extern_LIBRARIES ${LIBCHAOS_EXTERN_LIBRARIES} PARENT_SCOPE)
+    SET(LibChaos_With_PNG   ${LIBCHAOS_WITH_PNG}  PARENT_SCOPE)
+    SET(LibChaos_With_JPEG  ${LIBCHAOS_WITH_JPEG} PARENT_SCOPE)
+    SET(LibChaos_With_H264  ${LIBCHAOS_WITH_H264} PARENT_SCOPE)
 ENDIF()
 
 # Doxygen

@@ -216,6 +216,7 @@ ZBinary ZUID::getMACAddress(){
 #elif PLATFORM == MACOSX
 
     // Will fall through to random MAC
+    // TODO: Get MAC on OSX
 
 #else
     struct ifreq ifr;
@@ -279,7 +280,7 @@ ZBinary ZUID::getMACAddress(){
     }
 #endif
 
-    DLOG("random");
+    DLOG("random MAC");
 
     // Otherwise, generate random 6 bytes
     ZRandom rand;

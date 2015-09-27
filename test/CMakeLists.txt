@@ -76,9 +76,6 @@ ENDIF()
 
 ADD_EXECUTABLE(testchaos ${LIBCHAOS_TEST_ALL} ${LibChaos_Test_HEADERS} ${LibChaos_Test_SOURCES})
 TARGET_LINK_LIBRARIES(testchaos chaos)
-IF(LIBCHAOS_WITH_PNG)
-    TARGET_LINK_LIBRARIES(testchaos ${LIBCHAOS_EXTERN_LIBRARIES})
-ENDIF()
 
 ### =================== TESTS =================== ###
 
