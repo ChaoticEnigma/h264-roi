@@ -21,7 +21,7 @@ ENDIF()
 
 # Find libjpeg
 FIND_PATH(LIBJPEG_INCLUDE NAMES jpeglib.h)
-FIND_LIBRARY(LIBJPEG_LIB  NAMES libjpeg.a)
+FIND_LIBRARY(LIBJPEG_LIB  NAMES libturbojpeg.a libjpeg.a)
 
 IF(LIBJPEG_LIB AND LIBJPEG_INCLUDE)
     SET(WITH_JPEG TRUE)
@@ -214,9 +214,9 @@ SET(LibChaos_INCLUDE
     data
     file
     lib
-    net
     math
     misc
+    net
     string
     thread
 )
@@ -226,7 +226,6 @@ GatherIncludes(${LibChaos_INCLUDE})
 # Include Directories
 INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
-    ${EXTERN_INCLUDES}
     lib/fnv-5.0.3
 )
 IF(WITH_PNG)
@@ -234,7 +233,7 @@ IF(WITH_PNG)
     ADD_DEFINITIONS(-DLIBCHAOS_HAS_PNG -DPNG_STATIC)
 ENDIF()
 IF(WITH_JPEG)
-    INCLUDE_DIRECTORIES(${LIBJPEG_LIB})
+    INCLUDE_DIRECTORIES(${LIBJPEG_INCLUDE})
     ADD_DEFINITIONS(-DLIBCHAOS_HAS_JPEG)
 ENDIF()
 

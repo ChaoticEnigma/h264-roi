@@ -37,8 +37,7 @@ IF(DOXYGEN_FOUND)
             COMMAND ${DOXYGEN_EXECUTABLE} "${DOXYGEN_CONFIG_HELP_OUT}"
             COMMAND ${CMAKE_COMMAND} -E copy chm/LibChaos.chm "${DOXYGEN_HELP}"
         )
-
-        ADD_CUSTOM_TARGET(doxyhelp
+        ADD_CUSTOM_TARGET(doxygen_help
             DEPENDS ${DOXYGEN_HELP}
         )
     ENDIF()
@@ -57,6 +56,9 @@ IF(DOXYGEN_FOUND)
         WORKING_DIRECTORY ${DOXYGEN_OUTPUT}
         COMMAND ${DOXYGEN_EXECUTABLE} "${DOXYGEN_CONFIG_OUT}"
     )
+    ADD_CUSTOM_TARGET(doxygen
+        DEPENDS ${DOXYGEN_HTML}
+    )
 
     # Build PDF
     IF(LATEX_FOUND)
@@ -66,13 +68,8 @@ IF(DOXYGEN_FOUND)
             COMMAND make pdf
             COMMAND ${CMAKE_COMMAND} -E copy refman.pdf "${DOXYGEN_PDF}"
         )
-
-        ADD_CUSTOM_TARGET(doxygen
+        ADD_CUSTOM_TARGET(doxygen_pdf
             DEPENDS ${DOXYGEN_PDF}
-        )
-    ELSE()
-        ADD_CUSTOM_TARGET(doxygen
-            DEPENDS ${DOXYGEN_HTML}
         )
     ENDIF()
 

@@ -1,7 +1,7 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
 **                                 zimage.cpp                                 **
-**                          (c) 2015 Charlie Waters                           **
+**                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zimage.h"
 
@@ -205,7 +205,7 @@ void ZImage::setHeight(zu64 height){
     }
 }
 
-void ZImage::strip16to8bit(){
+void ZImage::strip16to8(){
     if(isLoaded() && _depth == 16){
         ZImage temp(_width, _height, _channels, 8);
         temp.newData();
