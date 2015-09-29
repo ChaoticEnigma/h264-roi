@@ -140,7 +140,8 @@ bool ZPNG::decode(ZBinary &pngdata_in){
     return true;
 }
 
-bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
+bool ZPNG::encode(ZBinary &pngdata_out, void *options){
+    PNGWrite::pngoptions pngoptions = *(PNGWrite::pngoptions*)options;
     PngWriteData *data = new PngWriteData;
 
     try {
@@ -174,7 +175,7 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite::pngoptions options){
         else
             throw ZException("PNG Read: unsupported image channel count", PNGError::unsupportedchannelcount, false);
 
-        data->interlaced = options & PNGWrite::interlace;
+        data->interlaced = pngoptions & PNGWrite::interlace;
 
         int result = writepng_init(data, text);
         switch(result){

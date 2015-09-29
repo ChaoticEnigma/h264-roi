@@ -8,7 +8,9 @@
 
 #include "ztypes.h"
 #include "zarray.h"
+#include "zbinary.h"
 #include "zmap.h"
+#include "yimagebackend.h"
 //#include "zbitmap.h"
 //#include "zpath.h"
 
@@ -53,9 +55,16 @@ public:
     static const ZMap<imagetype, ImageType> types;
 
 public:
+    //! Default constructor.
     ZImage() : _width(0), _height(0), _channels(0), _depth(0), _buffer(nullptr){
 
     }
+
+    //! Load a formatted image (e.g. PNG, JPEG).
+    ZImage(const ZBinary &image) : ZImage(){
+
+    }
+
     //! Create an image of \a type with \a width and \a height.
     ZImage(zu64 width, zu64 height, imagetype type = rgb24) : ZImage(){
         setDimensions(width, height, types[type].channels, types[type].depth);
@@ -64,6 +73,7 @@ public:
     ZImage(zu64 width, zu64 height, zu8 channels = 3, zu8 depth = 8) : ZImage(){
         setDimensions(width, height, channels, depth);
     }
+
     /*! Create and load an imnage from \a data with \a width, \a height, \a channels and \a depth.
      *  The expected size of the image at data is \a width * \a height * (\a channels * \a depth) bytes.
      */
@@ -251,6 +261,8 @@ public:
     }
 
 private:
+    //! Image format backend.
+    YImageBackend *_backend;
     //! Image width / height in pixels
     zu64 _width, _height;
     //! Number of planes

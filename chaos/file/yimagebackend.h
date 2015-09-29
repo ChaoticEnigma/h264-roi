@@ -1,6 +1,6 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
-**                               imagebackend.h                               **
+**                               yimagebackend.h                              **
 **                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #ifndef YIMAGEBACKEND
@@ -13,8 +13,8 @@ namespace LibChaos {
 
 class YImageBackend {
 public:
-    bool decode(ZBinary &data_in);
-    bool encode(ZBinary &data_out, void *options = nullptr);
+    virtual bool decode(ZBinary &data_in) = 0;
+    virtual bool encode(ZBinary &data_out, void *options = nullptr) = 0;
 };
 
 }

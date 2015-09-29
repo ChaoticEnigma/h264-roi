@@ -8,18 +8,18 @@
 
 #include "ztypes.h"
 #include "zimage.h"
-//#include "zbitmap.h"
 #include "zstring.h"
 #include "zpath.h"
 #include "zexception.h"
 #include "zbinary.h"
+#include "yimagebackend.h"
 
-#define PNG_DEBUG 3
+//#define PNG_DEBUG 3
 #include <png.h>
 
 namespace LibChaos {
 
-class ZPNG {
+class ZPNG : public YImageBackend {
 public:
     struct PNGError {
         enum pngerrors {
@@ -75,7 +75,7 @@ public:
     }
 
     bool decode(ZBinary &pngdata_in);
-    bool encode(ZBinary &pngdata_out, PNGWrite::pngoptions options = PNGWrite::none);
+    bool encode(ZBinary &pngdata_out, void *options = nullptr);
 
     bool read(ZPath path);
     bool write(ZPath path, PNGWrite::pngoptions options = PNGWrite::none);
