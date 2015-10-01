@@ -23,7 +23,7 @@ public:
 public:
     virtual ~YImageBackend(){}
 
-    virtual bool decode(const ZBinary &data_in, ReadOptions *options = nullptr) = 0;
+    virtual bool decode(ZBinary &data_in, ReadOptions *options = nullptr) = 0;
     virtual bool encode(ZBinary &data_out, WriteOptions *options = nullptr) = 0;
 };
 

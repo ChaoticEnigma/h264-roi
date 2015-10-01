@@ -81,7 +81,7 @@ void writepng_error_handler(png_struct *png_ptr, png_const_charp msg);
 
 namespace LibChaos {
 
-bool ZPNG::decode(ZBinary &pngdata_in, PNGRead *options){
+bool ZPNG::decode(ZBinary &pngdata_in, ReadOptions *options){
     PngReadData data;
 
     try {
@@ -140,7 +140,7 @@ bool ZPNG::decode(ZBinary &pngdata_in, PNGRead *options){
     return true;
 }
 
-bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite *options){
+bool ZPNG::encode(ZBinary &pngdata_out, WriteOptions *options){
     PngWriteData *data = new PngWriteData;
 
     try {
@@ -175,7 +175,7 @@ bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite *options){
             throw ZException("PNG Read: unsupported image channel count", PNGError::unsupportedchannelcount, false);
 
         if(options){
-            data->interlaced = options->interlace & PNGWrite::adam7;
+            data->interlaced = ((PNGWrite*)options)->interlace & PNGWrite::adam7;
         }
 
         int result = writepng_init(data, text);

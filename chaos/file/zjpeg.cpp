@@ -5,35 +5,36 @@
 *******************************************************************************/
 #include "zjpeg.h"
 #include "zfile.h"
+#include "zexception.h"
 
 namespace LibChaos {
 
-bool ZJPEG::decode(ZBinary &jpegdata_in){
+bool ZJPEG::decode(ZBinary &jpegdata_in, ReadOptions *options){
 
-    return true;
+    return false;
 }
 
-bool ZJPEG::encode(ZBinary &jepgdata_out, JPEGWrite::jpegoptions options){
+bool ZJPEG::encode(ZBinary &jepgdata_out, WriteOptions *options){
 
-    return true;
+    return false;
 }
 
 bool ZJPEG::read(ZPath path){
     ZBinary data;
     ZFile::readBinary(path, data);
     if(!data.size())
-        error = ZException("JPEG Read: empty read file", JPEGError::badreadfile, false);
+        throw ZException("JPEG Read: empty read file", JPEGError::badreadfile, false);
 
     return decode(data);
 }
 
 bool ZJPEG::write(ZPath path, JPEGWrite::jpegoptions options){
     ZBinary data;
-    if(!encode(data, options))
+    if(!encode(data))
         return false;
 
     if(!ZFile::writeBinary(path, data))
-        error = ZException("JPEG Read: cannot write file", JPEGError::badwritefile, false);
+        throw ZException("JPEG Read: cannot write file", JPEGError::badwritefile, false);
 
     return true;
 }

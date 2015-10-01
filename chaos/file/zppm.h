@@ -7,25 +7,23 @@
 #define ZPPM_H
 
 #include "zimage.h"
+#include "yimagebackend.h"
 #include "zpath.h"
 
 namespace LibChaos {
 
-class ZPPM {
+class ZPPM : public YImageBackend {
 public:
-    ZPPM(){
+    ZPPM(ZImage *image) : _image(image){}
 
-    }
-    ZPPM(const ZImage &img){
-        if(img.isRGB24())
-            image = img;
-    }
+    bool decode(ZBinary &ppmdata_in, ReadOptions *options = nullptr);
+    bool encode(ZBinary &ppmdata_out, WriteOptions *options = nullptr);
 
     bool read(ZPath path);
     bool write(ZPath path);
 
 private:
-    ZImage image;
+    ZImage *_image;
 };
 
 }

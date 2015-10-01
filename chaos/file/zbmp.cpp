@@ -37,7 +37,7 @@ struct BitmapInfoHeader {
     unsigned int biClrImportant;
 };
 
-void readFileHeader(const ZBinary &bin, BitmapFileHeader *fileh){
+void readFileHeader(ZBinary &bin, BitmapFileHeader *fileh){
     fileh->bfType      = bin.readle16();
     fileh->bfSize      = bin.readle32();
     fileh->bfReserved1 = bin.readle16();
@@ -85,49 +85,51 @@ ZBinary writeInfoHeader(const BitmapInfoHeader *infoh){
     return out;
 }
 
-bool ZBMP::decode(const ZBinary &data_in, YImageBackend::ReadOptions *options){
-        BitmapFileHeader fileh;
-        readFileHeader(data_in, &fileh);
+bool ZBMP::decode(ZBinary &data_in, YImageBackend::ReadOptions *options){
+    BitmapFileHeader fileh;
+    readFileHeader(data_in, &fileh);
 
-        if(fileh.bfType != BITMAP_TYPE){
-            throw ZException("Not a BMP file", BMPError::notabmp, false);
-        }
-        if(fileh.bfSize != data_in.size()){
-            throw ZException("Incorrect file size in file header", BMPError::incorrectsize, false);
-        }
+    if(fileh.bfType != BITMAP_TYPE){
+        throw ZException("Not a BMP file", BMPError::notabmp, false);
+    }
+    if(fileh.bfSize != data_in.size()){
+        throw ZException("Incorrect file size in file header", BMPError::incorrectsize, false);
+    }
 
-        BitmapInfoHeader infoh;
-        data_in.setPos(14);
-        readInfoHeader(data_in, &infoh);
+    BitmapInfoHeader infoh;
+    data_in.setPos(14);
+    readInfoHeader(data_in, &infoh);
 
-        if(infoh.biSize != 40){
-            throw ZException("Unsupported info header length", BMPError::badinfoheader, false);
-        }
-        if(infoh.biCompression != BI_RGB){
-            throw ZException(ZString("Unsupported compression: ") << infoh.biCompression, BMPError::badcompression, false);
-        }
-        if(infoh.biBitCount != 24){
-            throw ZException(ZString("Unsupported pixel bit count: ") << infoh.biBitCount, BMPError::badbitcount, false);
-        }
+    if(infoh.biSize != 40){
+        throw ZException("Unsupported info header length", BMPError::badinfoheader, false);
+    }
+    if(infoh.biCompression != BI_RGB){
+        throw ZException(ZString("Unsupported compression: ") << infoh.biCompression, BMPError::badcompression, false);
+    }
+    if(infoh.biBitCount != 24){
+        throw ZException(ZString("Unsupported pixel bit count: ") << infoh.biBitCount, BMPError::badbitcount, false);
+    }
 
-        zu64 width = infoh.biWidth;
-        zu64 height = infoh.biHeight;
+    zu64 width = infoh.biWidth;
+    zu64 height = infoh.biHeight;
 
-        _image->setDimensions(width, height, bmp_channels, 8);
-        unsigned char *pixels = convertBMPDatatoRGB(data_in.raw() + fileh.bfOffBits, _image->width(), _image->height());
-        _image->takeData(pixels);
+    _image->setDimensions(width, height, bmp_channels, 8);
+    unsigned char *pixels = convertBMPDatatoRGB(data_in.raw() + fileh.bfOffBits, _image->width(), _image->height());
+    _image->takeData(pixels);
+
+    return true;
 }
 
 bool ZBMP::encode(ZBinary &data_out, YImageBackend::WriteOptions *options){
     if(!_image->isRGB24()){
-        error = ZException(ZString("BMP Write: Invalid channels / depth ") + _image->channels() + " " + _image->depth());
+        throw ZException(ZString("BMP Write: Invalid channels / depth ") + _image->channels() + " " + _image->depth());
         return false;
     }
 
     zu64 outsize;
     zbyte *pixdata = convertRGBtoBMPData(_image->buffer(), _image->width(), _image->height(), outsize);
     if(!pixdata){
-        error = ZException("BMP Write: error in RGB conversion");
+        throw ZException("BMP Write: error in RGB conversion");
         return false;
     }
 
@@ -161,6 +163,8 @@ bool ZBMP::encode(ZBinary &data_out, YImageBackend::WriteOptions *options){
 
     zassert(data_out.write(pixdata, outsize) == outsize);
     delete[] pixdata;
+
+    return true;
 }
 
 bool ZBMP::read(ZPath path){
@@ -173,11 +177,9 @@ bool ZBMP::read(ZPath path){
         decode(buffer);
 
     } catch(ZException e){
-        error = e;
         //ELOG("BMP Read error " << e.code() << ": " << e.what());
         return false;
     }
-
     return true;
 }
 
@@ -187,9 +189,11 @@ bool ZBMP::write(ZPath path){
         encode(out);
 
         if(!ZFile::writeBinary(path, out)){
-            error = ZException("BMP Write: bad write file");
+            throw ZException("BMP Write: bad write file");
             return false;
         }
+    } catch(ZException e){
+        return false;
     }
     return true;
 }

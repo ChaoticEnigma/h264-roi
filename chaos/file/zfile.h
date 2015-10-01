@@ -12,7 +12,6 @@
 #include "zposition.h"
 #include "zreader.h"
 #include "zwriter.h"
-#include "zexception.h"
 
 #if PLATFORM != WINDOWS
     #include <fstream>
@@ -50,9 +49,7 @@ private:
 public:
     ZFile();
     ZFile(ZPath path, zu16 mode = READ);
-    ZFile(const ZFile &){
-        throw ZException("Someone tried to copy a ZFile");
-    }
+    ZFile(const ZFile &);
     ~ZFile();
 
     bool open(ZPath path);

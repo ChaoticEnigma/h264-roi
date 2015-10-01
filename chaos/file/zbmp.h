@@ -32,26 +32,24 @@ public:
 public:
     ZBMP(ZImage *image) : _image(image){}
 
-    bool decode(const ZBinary &data_in, ReadOptions *options = nullptr);
+    bool decode(ZBinary &data_in, ReadOptions *options = nullptr);
     bool encode(ZBinary &data_out, WriteOptions *options = nullptr);
 
     bool read(ZPath path);
     bool write(ZPath path);
 
-    ZException getError(){
-        ZException err = error;
-        error = ZException();
-        return err;
-    }
-
 private:
+    /*! Converts BMP-encoded pixel data to RGB-encoded pixel data.
+     *  Allocates a buffer to hold the RGB data.
+     */
     unsigned char *convertBMPDatatoRGB(const unsigned char *bmpbuffer, zu32 width, zu32 height);
+    /*! Converts RGB-encoded pixel data to BMP-encoded pixel data.
+     *  Allocates a buffer to hold the BMP data.
+     */
     unsigned char *convertRGBtoBMPData(const unsigned char *rgbbuffer, zu32 width, zu32 height, zu64 &outsize);
 
 private:
     ZImage *_image;
-    ZException error;
-
     const zu8 bmp_channels = 3;
 };
 

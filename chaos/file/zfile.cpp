@@ -42,6 +42,10 @@ ZFile::ZFile(ZPath name, zu16 mode) : ZFile(){
     open(name, mode);
 }
 
+ZFile::ZFile(const ZFile &){
+    throw ZException("Someone tried to copy a ZFile");
+}
+
 ZFile::~ZFile(){
     close();
 }

@@ -7,13 +7,13 @@
 #define ZJPEG_H
 
 #include "zimage.h"
+#include "yimagebackend.h"
 #include "zbinary.h"
 #include "zpath.h"
-#include "zexception.h"
 
 namespace LibChaos {
 
-class ZJPEG {
+class ZJPEG : public YImageBackend {
 public:
     struct JPEGError {
         enum jpegerrors {
@@ -29,26 +29,16 @@ public:
     };
 
 public:
-    ZJPEG(){
+    ZJPEG(ZImage *image) : _image(image){}
 
-    }
-    ZJPEG(const ZImage &img) : image(img){
-
-    }
-
-    bool decode(ZBinary &jpegdata_in);
-    bool encode(ZBinary &jepgdata_out, JPEGWrite::jpegoptions options = JPEGWrite::none);
+    bool decode(ZBinary &jpegdata_in, ReadOptions *options = nullptr);
+    bool encode(ZBinary &jepgdata_out, WriteOptions *options = nullptr);
 
     bool read(ZPath path);
     bool write(ZPath path, JPEGWrite::jpegoptions options = JPEGWrite::none);
 
-    ZImage &getImage(){
-        return image;
-    }
-
 private:
-    ZImage image;
-    ZException error;
+    ZImage *_image;
 };
 
 }

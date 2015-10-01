@@ -16,10 +16,13 @@
     #include <iptypes.h>
     #include <iphlpapi.h>
 #else
+    #include <unistd.h>
     #include <sys/time.h>
     #include <sys/ioctl.h>
+    #include <sys/socket.h>
+    #include <ifaddrs.h>
     #include <net/if.h>
-    #include <unistd.h>
+    #include <net/if_dl.h>
     #include <netinet/in.h>
 #endif
 
@@ -217,6 +220,25 @@ ZBinary ZUID::getMACAddress(){
 
     // Will fall through to random MAC
     // TODO: Get MAC on OSX
+    ifaddrs *ifap = NULL;
+    int r = getifaddrs(&ifap);
+    if(r == 0){
+        // Non-zero return code means an error
+        DLOG("return code = %d" << r);
+        if(ifap == NULL){
+            DLOG("No interfaces found");
+        }
+
+        ifaddrs *current = ifap;
+        while(current != NULL){
+            if((current->ifa_addr != NULL) && (current->ifa_addr->sa_family == AF_LINK)){
+                sockaddr_dl *sdl = (struct sockaddr_dl *)current->ifa_addr;
+                uint8_t *MAC = reinterpret_cast<uint8_t*>(LLADDR(sdl));
+                ZBinary bin(MAC, 6);
+                return bin;
+            }
+        }
+    }
 
 #else
     struct ifreq ifr;

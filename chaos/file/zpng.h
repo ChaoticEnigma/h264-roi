@@ -70,12 +70,10 @@ public:
     };
 
 public:
-    ZPNG(ZImage *image){
+    ZPNG(ZImage *image) : _image(image){}
 
-    }
-
-    bool decode(ZBinary &pngdata_in, PNGRead *options = nullptr);
-    bool encode(ZBinary &pngdata_out, PNGWrite *options = nullptr);
+    bool decode(ZBinary &pngdata_in, ReadOptions *options = nullptr);
+    bool encode(ZBinary &pngdata_out, WriteOptions *options = nullptr);
 
     bool read(ZPath path);
     bool write(ZPath path, PNGWrite::png_interlace options = PNGWrite::none);
