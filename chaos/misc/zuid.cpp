@@ -218,17 +218,10 @@ ZBinary ZUID::getMACAddress(){
 
 #elif PLATFORM == MACOSX
 
-    // Will fall through to random MAC
-    // TODO: Get MAC on OSX
     ifaddrs *ifap = NULL;
     int r = getifaddrs(&ifap);
-    if(r == 0){
-        // Non-zero return code means an error
-        DLOG("return code = %d" << r);
-        if(ifap == NULL){
-            DLOG("No interfaces found");
-        }
-
+    // Non-zero return code means an error
+    if(r == 0 && ifap != NULL){
         ifaddrs *current = ifap;
         while(current != NULL){
             if((current->ifa_addr != NULL) && (current->ifa_addr->sa_family == AF_LINK)){
