@@ -5,6 +5,11 @@
 *******************************************************************************/
 #include "zimage.h"
 
+#include "zbmp.h"
+#include "zpng.h"
+#include "zjpeg.h"
+#include "zppm.h"
+
 namespace LibChaos {
 
 //const ZArray<ZImage::ImageType> ZImage::types = {
@@ -219,6 +224,21 @@ void ZImage::strip16to8(){
         }
     }
     _depth = 8;
+}
+
+void ZImage::setFormat(ZImage::imageformat format){
+    delete _backend;
+    _format = format;
+    switch(_format){
+    case PNG:
+        _backend = new ZPNG(this);
+        break;
+    case JPEG:
+        //_backend = new ZJPEG(this);
+        break;
+    default:
+        break;
+    }
 }
 
 }

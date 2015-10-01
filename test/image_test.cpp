@@ -30,14 +30,14 @@ int image_test(){
         ++o;
     }
 
-    ZPNG outpng1(image1);
-    LOG("PNG: " << outpng1.write("image_test.png"));
+//    ZPNG outpng1(image1);
+//    LOG("PNG: " << outpng1.write("image_test.png"));
 
-    ZBMP outbmp1(image1);
-    LOG("BMP: " << outbmp1.write("image_test.bmp"));
+//    ZBMP outbmp1(image1);
+//    LOG("BMP: " << outbmp1.write("image_test.bmp"));
 
-    ZPPM outppm1(image1);
-    LOG("PPM: " << outppm1.write("image_test.ppm"));
+//    ZPPM outppm1(image1);
+//    LOG("PPM: " << outppm1.write("image_test.ppm"));
 
     // 16-bit
 
@@ -61,8 +61,8 @@ int image_test(){
         ++o;
     }
 
-    ZPNG outpng2(image2);
-    LOG("PNG: " << outpng2.write("image_test16.png"));
+//    ZPNG outpng2(image2);
+//    LOG("PNG: " << outpng2.write("image_test16.png"));
 
     return 0;
 }

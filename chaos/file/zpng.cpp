@@ -81,7 +81,7 @@ void writepng_error_handler(png_struct *png_ptr, png_const_charp msg);
 
 namespace LibChaos {
 
-bool ZPNG::decode(ZBinary &pngdata_in){
+bool ZPNG::decode(ZBinary &pngdata_in, PNGRead *options){
     PngReadData data;
 
     try {
@@ -122,10 +122,10 @@ bool ZPNG::decode(ZBinary &pngdata_in){
             throw ZException("readpng_get_image failed", PNGError::badpointer, false);
         }
 
-        image.setDimensions(data.width, data.height, data.channels, data.bit_depth);
-        if(!image.validDimensions())
-            throw ZException(ZString("PNG Read: invalid dimensions ") + image.width() + "x" + image.height() + " " + image.channels() + "," + image.depth() + " " + data.color_type, PNGError::invaliddimensions, false);
-        image.takeData(data.image_data);
+        _image->setDimensions(data.width, data.height, data.channels, data.bit_depth);
+        if(!_image->validDimensions())
+            throw ZException(ZString("PNG Read: invalid dimensions ") + _image->width() + "x" + _image->height() + " " + _image->channels() + "," + _image->depth() + " " + data.color_type, PNGError::invaliddimensions, false);
+        _image->takeData(data.image_data);
         data.image_data = NULL;
 
     } catch(ZException e){
@@ -140,12 +140,11 @@ bool ZPNG::decode(ZBinary &pngdata_in){
     return true;
 }
 
-bool ZPNG::encode(ZBinary &pngdata_out, void *options){
-    PNGWrite::pngoptions pngoptions = *(PNGWrite::pngoptions*)options;
+bool ZPNG::encode(ZBinary &pngdata_out, PNGWrite *options){
     PngWriteData *data = new PngWriteData;
 
     try {
-        if(!image.isLoaded())
+        if(!_image->isLoaded())
             throw ZException("PNG Write: empty image", PNGError::emptyimage, false);
 
         data->filedata = &pngdata_out;
@@ -160,22 +159,24 @@ bool ZPNG::encode(ZBinary &pngdata_out, void *options){
         data->bg_green = 0;
         data->bg_blue = 0;
 
-        data->bit_depth = image.depth();
-        data->width = image.width();
-        data->height = image.height();
+        data->bit_depth = _image->depth();
+        data->width = _image->width();
+        data->height = _image->height();
 
-        if(image.channels() == 1)
+        if(_image->channels() == 1)
             data->color_type = PNG_COLOR_TYPE_GRAY;
-        else if(image.channels() == 2)
+        else if(_image->channels() == 2)
             data->color_type = PNG_COLOR_TYPE_GRAY_ALPHA;
-        else if(image.channels() == 3)
+        else if(_image->channels() == 3)
             data->color_type = PNG_COLOR_TYPE_RGB;
-        else if(image.channels() == 4)
+        else if(_image->channels() == 4)
             data->color_type = PNG_COLOR_TYPE_RGB_ALPHA;
         else
             throw ZException("PNG Read: unsupported image channel count", PNGError::unsupportedchannelcount, false);
 
-        data->interlaced = pngoptions & PNGWrite::interlace;
+        if(options){
+            data->interlaced = options->interlace & PNGWrite::adam7;
+        }
 
         int result = writepng_init(data, text);
         switch(result){
@@ -190,9 +191,9 @@ bool ZPNG::encode(ZBinary &pngdata_out, void *options){
         }
 
         if(data->interlaced){
-            data->row_pointers = new unsigned char*[image.height() * sizeof(unsigned char *)];
-            for(zu64 i = 0; i < image.height(); ++i){
-                data->row_pointers[i] = image.buffer() + (i * image.rowSize());
+            data->row_pointers = new unsigned char*[_image->height() * sizeof(unsigned char *)];
+            for(zu64 i = 0; i < _image->height(); ++i){
+                data->row_pointers[i] = _image->buffer() + (i * _image->rowSize());
             }
 
             result = writepng_encode_image(data);
@@ -203,8 +204,8 @@ bool ZPNG::encode(ZBinary &pngdata_out, void *options){
                 break;
             }
         } else {
-            for(zu64 i = 0; i < image.height(); ++i){
-                unsigned char *row = image.buffer() + (i * image.rowSize());
+            for(zu64 i = 0; i < _image->height(); ++i){
+                unsigned char *row = _image->buffer() + (i * _image->rowSize());
                 result = writepng_encode_row(data, row);
                 switch(result){
                 case 1:
@@ -245,9 +246,9 @@ bool ZPNG::read(ZPath path){
     return decode(data);
 }
 
-bool ZPNG::write(ZPath path, PNGWrite::pngoptions options){
+bool ZPNG::write(ZPath path, PNGWrite::png_interlace options){
     ZBinary data;
-    if(!encode(data, options))
+    if(!encode(data, nullptr))
         return false;
 
     if(!ZFile::writeBinary(path, data)){

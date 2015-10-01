@@ -47,6 +47,20 @@ public:
         ga32,
     };
 
+    enum imageformat {
+        NONE = 0,
+        //! BMP (uncompressed).
+        BMP,
+        //! PPM (uncompressed)
+        PPM,
+        //! PNG (lossless compression)
+        PNG,
+        //! JPEG (lossy compression)
+        JPEG,
+        //! WEBP (lossy & lossless compression)
+        WEBP,
+    };
+
     struct ImageType {
         zu8 channels;
         zu8 depth;
@@ -56,7 +70,7 @@ public:
 
 public:
     //! Default constructor.
-    ZImage() : _width(0), _height(0), _channels(0), _depth(0), _buffer(nullptr){
+    ZImage() : _width(0), _height(0), _channels(0), _depth(0), _type(unknown), _buffer(nullptr), _format(NONE), _backend(nullptr){
 
     }
 
@@ -184,6 +198,9 @@ public:
 
     void strip16to8();
 
+    //! Change the image file format backend.
+    void setFormat(imageformat format);
+
     //! Check that image is loaded, check this before using raw buffer access.
     inline bool isLoaded() const {
         return validDimensions() && _buffer != nullptr;
@@ -261,8 +278,6 @@ public:
     }
 
 private:
-    //! Image format backend.
-    YImageBackend *_backend;
     //! Image width / height in pixels
     zu64 _width, _height;
     //! Number of planes
@@ -275,6 +290,11 @@ private:
     imagetype _type;
     //! Image data
     unsigned char *_buffer;
+
+    //! Image file format.
+    imageformat _format;
+    //! Image format backend.
+    YImageBackend *_backend;
 };
 
 }

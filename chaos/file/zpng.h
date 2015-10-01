@@ -43,11 +43,15 @@ public:
             emptyinput = 17,
         };
     };
-    struct PNGWrite {
-        enum pngoptions {
+
+    struct PNGRead : YImageBackend::ReadOptions {
+        bool strip = false;
+    };
+    struct PNGWrite : YImageBackend::WriteOptions {
+        enum png_interlace {
             none = 0,
-            interlace = 1
-        };
+            adam7 = 1
+        } interlace = none;
     };
 
     struct PngChunk {
@@ -63,22 +67,18 @@ public:
 
         bool interlaced;
         double gamma;
-
     };
 
 public:
-    ZPNG(){
-
-    }
-    ZPNG(const ZImage &img) : image(img){
+    ZPNG(ZImage *image){
 
     }
 
-    bool decode(ZBinary &pngdata_in);
-    bool encode(ZBinary &pngdata_out, void *options = nullptr);
+    bool decode(ZBinary &pngdata_in, PNGRead *options = nullptr);
+    bool encode(ZBinary &pngdata_out, PNGWrite *options = nullptr);
 
     bool read(ZPath path);
-    bool write(ZPath path, PNGWrite::pngoptions options = PNGWrite::none);
+    bool write(ZPath path, PNGWrite::png_interlace options = PNGWrite::none);
 
     static ZArray<PngChunk> parsePngChunks(ZBinary pngdata);
     static ZArray<PngChunk> parsePngAncillaryChunks(ZBinary pngdata);
@@ -90,11 +90,11 @@ public:
     }
 
     ZImage &getImage(){
-        return image;
+        return *_image;
     }
 
 private:
-    ZImage image;
+    ZImage *_image;
     AsArZ text;
 };
 

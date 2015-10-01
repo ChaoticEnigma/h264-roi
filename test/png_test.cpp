@@ -104,6 +104,7 @@ int png_test(){
     png5.write("whois-reout.png");
 */
 
+/*
     ZArray<ZPath> files;
     //files = ZFile::listFiles("png");
     //files = { "png/f00n2c08.png" };
@@ -187,6 +188,7 @@ int png_test(){
         LOG("    " << ((tmpin.getImage() == imgin) ? "++++++++" : "--------"));
 
     }
+*/
 
     return 0;
 }
