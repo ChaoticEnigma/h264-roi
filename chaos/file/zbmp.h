@@ -6,13 +6,16 @@
 #ifndef ZBMP_H
 #define ZBMP_H
 
-#include "zimage.h"
+#include "ztypes.h"
+#include "zbinary.h"
 #include "zpath.h"
 #include "zexception.h"
+#include "zimage.h"
+#include "yimagebackend.h"
 
 namespace LibChaos {
 
-class ZBMP {
+class ZBMP : public YImageBackend {
 public:
     struct BMPError {
         enum {
@@ -27,12 +30,10 @@ public:
         };
     };
 public:
-    ZBMP(){
+    ZBMP(ZImage *image) : _image(image){}
 
-    }
-    ZBMP(const ZImage &img) : image(img){
-
-    }
+    bool decode(const ZBinary &data_in, ReadOptions *options = nullptr);
+    bool encode(ZBinary &data_out, WriteOptions *options = nullptr);
 
     bool read(ZPath path);
     bool write(ZPath path);
@@ -43,16 +44,12 @@ public:
         return err;
     }
 
-    ZImage &getImage(){
-        return image;
-    }
-
 private:
     unsigned char *convertBMPDatatoRGB(const unsigned char *bmpbuffer, zu32 width, zu32 height);
     unsigned char *convertRGBtoBMPData(const unsigned char *rgbbuffer, zu32 width, zu32 height, zu64 &outsize);
 
 private:
-    ZImage image;
+    ZImage *_image;
     ZException error;
 
     const zu8 bmp_channels = 3;

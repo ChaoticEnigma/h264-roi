@@ -37,7 +37,7 @@ struct BitmapInfoHeader {
     unsigned int biClrImportant;
 };
 
-void readFileHeader(ZBinary &bin, BitmapFileHeader *fileh){
+void readFileHeader(const ZBinary &bin, BitmapFileHeader *fileh){
     fileh->bfType      = bin.readle16();
     fileh->bfSize      = bin.readle32();
     fileh->bfReserved1 = bin.readle16();
@@ -85,26 +85,20 @@ ZBinary writeInfoHeader(const BitmapInfoHeader *infoh){
     return out;
 }
 
-bool ZBMP::read(ZPath path){
-    try {
-        ZBinary buffer;
-        if(ZFile::readBinary(path, buffer) < 54){
-            throw ZException("File too small", BMPError::badfile, false);
-        }
-
+bool ZBMP::decode(const ZBinary &data_in, YImageBackend::ReadOptions *options){
         BitmapFileHeader fileh;
-        readFileHeader(buffer, &fileh);
+        readFileHeader(data_in, &fileh);
 
         if(fileh.bfType != BITMAP_TYPE){
             throw ZException("Not a BMP file", BMPError::notabmp, false);
         }
-        if(fileh.bfSize != buffer.size()){
+        if(fileh.bfSize != data_in.size()){
             throw ZException("Incorrect file size in file header", BMPError::incorrectsize, false);
         }
 
         BitmapInfoHeader infoh;
-        buffer.setPos(14);
-        readInfoHeader(buffer, &infoh);
+        data_in.setPos(14);
+        readInfoHeader(data_in, &infoh);
 
         if(infoh.biSize != 40){
             throw ZException("Unsupported info header length", BMPError::badinfoheader, false);
@@ -119,11 +113,64 @@ bool ZBMP::read(ZPath path){
         zu64 width = infoh.biWidth;
         zu64 height = infoh.biHeight;
 
-        image.setDimensions(width, height, bmp_channels, 8);
+        _image->setDimensions(width, height, bmp_channels, 8);
+        unsigned char *pixels = convertBMPDatatoRGB(data_in.raw() + fileh.bfOffBits, _image->width(), _image->height());
+        _image->takeData(pixels);
+}
 
-        unsigned char *pixels = convertBMPDatatoRGB(buffer.raw() + fileh.bfOffBits, image.width(), image.height());
+bool ZBMP::encode(ZBinary &data_out, YImageBackend::WriteOptions *options){
+    if(!_image->isRGB24()){
+        error = ZException(ZString("BMP Write: Invalid channels / depth ") + _image->channels() + " " + _image->depth());
+        return false;
+    }
 
-        image.takeData(pixels);
+    zu64 outsize;
+    zbyte *pixdata = convertRGBtoBMPData(_image->buffer(), _image->width(), _image->height(), outsize);
+    if(!pixdata){
+        error = ZException("BMP Write: error in RGB conversion");
+        return false;
+    }
+
+    // sizes of headers in file
+    const zu32 fileheadersize = 14;
+    const zu32 infoheadersize = 40;
+
+    const zu32 filesize = fileheadersize + infoheadersize + outsize;
+
+    BitmapFileHeader fileh;
+    fileh.bfType = BITMAP_TYPE;
+    fileh.bfSize = filesize; // total size of file
+    fileh.bfReserved1 = 0;
+    fileh.bfReserved2 = 0;
+    fileh.bfOffBits = fileheadersize + infoheadersize; // offset to pixel data
+    zassert(data_out.write(writeFileHeader(&fileh)) == fileheadersize);
+
+    BitmapInfoHeader infoh;
+    infoh.biSize = infoheadersize; // size of info header
+    infoh.biWidth = (unsigned)_image->width();
+    infoh.biHeight = (unsigned)_image->height();
+    infoh.biPlanes = 1;
+    infoh.biBitCount = _image->channels() * _image->depth(); // will always be 24
+    infoh.biCompression = 0; // no compression
+    infoh.biSizeImage = 0;
+    infoh.biXPelsPerMeter = 0;
+    infoh.biYPelsPerMeter = 0;
+    infoh.biClrUsed = 0;
+    infoh.biClrImportant = 0;
+    zassert(data_out.write(writeInfoHeader(&infoh)) == infoheadersize);
+
+    zassert(data_out.write(pixdata, outsize) == outsize);
+    delete[] pixdata;
+}
+
+bool ZBMP::read(ZPath path){
+    try {
+        ZBinary buffer;
+        if(ZFile::readBinary(path, buffer) < 54){
+            throw ZException("File too small", BMPError::badfile, false);
+        }
+
+        decode(buffer);
 
     } catch(ZException e){
         error = e;
@@ -135,57 +182,15 @@ bool ZBMP::read(ZPath path){
 }
 
 bool ZBMP::write(ZPath path){
+    try {
+        ZBinary out;
+        encode(out);
 
-    if(!image.isRGB24()){
-        error = ZException(ZString("BMP Write: Invalid channels / depth ") + image.channels() + " " + image.depth());
-        return false;
+        if(!ZFile::writeBinary(path, out)){
+            error = ZException("BMP Write: bad write file");
+            return false;
+        }
     }
-
-    zu64 outsize;
-    zbyte *dataout = convertRGBtoBMPData(image.buffer(), image.width(), image.height(), outsize);
-    if(!dataout){
-        error = ZException("BMP Write: error in RGB conversion");
-        return false;
-    }
-
-    // sizes of headers in file
-    const zu32 fileheadersize = 14;
-    const zu32 infoheadersize = 40;
-
-    const zu32 filesize = fileheadersize + infoheadersize + outsize;
-
-    ZBinary out;
-
-    BitmapFileHeader fileh;
-    fileh.bfType = BITMAP_TYPE;
-    fileh.bfSize = filesize; // total size of file
-    fileh.bfReserved1 = 0;
-    fileh.bfReserved2 = 0;
-    fileh.bfOffBits = fileheadersize + infoheadersize; // offset to pixel data
-    zassert(out.write(writeFileHeader(&fileh)) == fileheadersize);
-
-    BitmapInfoHeader infoh;
-    infoh.biSize = infoheadersize; // size of info header
-    infoh.biWidth = (unsigned)image.width();
-    infoh.biHeight = (unsigned)image.height();
-    infoh.biPlanes = 1;
-    infoh.biBitCount = image.channels() * image.depth(); // will always be 24
-    infoh.biCompression = 0; // no compression
-    infoh.biSizeImage = 0;
-    infoh.biXPelsPerMeter = 0;
-    infoh.biYPelsPerMeter = 0;
-    infoh.biClrUsed = 0;
-    infoh.biClrImportant = 0;
-    zassert(out.write(writeInfoHeader(&infoh)) == infoheadersize);
-
-    zassert(out.write(dataout, outsize) == outsize);
-    delete[] dataout;
-
-    if(!ZFile::writeBinary(path, out)){
-        error = ZException("BMP Write: bad write file");
-        return false;
-    }
-
     return true;
 }
 

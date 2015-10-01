@@ -230,11 +230,17 @@ void ZImage::setFormat(ZImage::imageformat format){
     delete _backend;
     _format = format;
     switch(_format){
+    case BMP:
+        _backend = new ZBMP(this);
+        break;
+    case PPM:
+        _backend = new ZPPM(this);
+        break;
     case PNG:
         _backend = new ZPNG(this);
         break;
     case JPEG:
-        //_backend = new ZJPEG(this);
+        _backend = new ZJPEG(this);
         break;
     default:
         break;
