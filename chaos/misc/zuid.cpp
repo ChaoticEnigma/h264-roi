@@ -218,18 +218,24 @@ ZBinary ZUID::getMACAddress(){
 
 #elif PLATFORM == MACOSX
 
-    ifaddrs *ifap = NULL;
-    int r = getifaddrs(&ifap);
-    // Non-zero return code means an error
-    if(r == 0 && ifap != NULL){
-        ifaddrs *current = ifap;
+    ifaddrs *iflist = NULL;
+    // Get list of interfaces and addresses
+    int r = getifaddrs(&iflist);
+    if(r == 0 && iflist != NULL){
+        ifaddrs *current = iflist;
+        // Walk linked list
         while(current != NULL){
+            // Look for an interface with a hardware address
             if((current->ifa_addr != NULL) && (current->ifa_addr->sa_family == AF_LINK)){
-                sockaddr_dl *sdl = (struct sockaddr_dl *)current->ifa_addr;
-                uint8_t *MAC = reinterpret_cast<uint8_t*>(LLADDR(sdl));
-                ZBinary bin(MAC, 6);
-                return bin;
+                sockaddr_dl *sockdl = (sockaddr_dl *)current->ifa_addr;
+                uint8_t *mac = reinterpret_cast<uint8_t*>(LLADDR(sockdl));
+                // Get first valid MAC
+                if(validMAC(mac)){
+                    ZBinary bin(mac, 6);
+                    return bin;
+                }
             }
+            current = current->ifa_next;
         }
     }
 
@@ -263,11 +269,6 @@ ZBinary ZUID::getMACAddress(){
                             memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
 #endif
                             if(validMAC(mac_address)){
-                                //ArZ mac;
-                                //for(zu64 i = 0; i < 6; ++i)
-                                //    mac.push(ZString::ItoS(mac_address[i], 16, 2));
-                                //LOG(ZString::compound(mac, ":") << " " << ifr.ifr_name);
-
                                 ZBinary bin(mac_address, 6);
                                 return bin;
                             } else {
@@ -282,7 +283,6 @@ ZBinary ZUID::getMACAddress(){
                 } else {
                     // Try next interface
                     DLOG("failed to get if flags");
-                    continue;
                 }
             }
         } else {
@@ -295,8 +295,6 @@ ZBinary ZUID::getMACAddress(){
     }
 #endif
 
-    DLOG("random MAC");
-
     // Otherwise, generate random 6 bytes
     ZRandom rand;
     ZBinary addr = rand.generate(6);
@@ -306,7 +304,10 @@ ZBinary ZUID::getMACAddress(){
 
 bool ZUID::validMAC(const zoctet *addr){
     if(addr == NULL) return false;
-    if(addr[0] & 0x02) return false; // Locally administered address
+    // Zero address
+    if(addr[0] == 0 && addr[1] == 0 && addr[2] == 0 && addr[3] == 0 && addr[4] == 0 && addr[5] == 0) return false;
+    // Locally administered address
+    if(addr[0] & 0x02) return false;
     return true;
 }
 
