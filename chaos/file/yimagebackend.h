@@ -14,10 +14,10 @@ namespace LibChaos {
 class YImageBackend {
 public:
     struct ReadOptions {
-
+        virtual ~ReadOptions(){}
     };
     struct WriteOptions {
-
+        virtual ~WriteOptions(){}
     };
 
 public:

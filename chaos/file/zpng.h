@@ -87,10 +87,6 @@ public:
         return text[key];
     }
 
-    ZImage &getImage(){
-        return *_image;
-    }
-
 private:
     ZImage *_image;
     AsArZ text;

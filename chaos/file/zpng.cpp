@@ -18,7 +18,7 @@
 #include <png.h>
 #include <zlib.h>
 
-using namespace LibChaos;
+namespace LibChaos {
 
 struct PngReadData {
     ZBinary *filedata;
@@ -78,8 +78,6 @@ int writepng_encode_finish(PngWriteData *mainprog_ptr);
 void writepng_cleanup(PngWriteData *mainprog_ptr);
 void writepng_warning_handler(png_struct *png_ptr, png_const_charp msg);
 void writepng_error_handler(png_struct *png_ptr, png_const_charp msg);
-
-namespace LibChaos {
 
 bool ZPNG::decode(ZBinary &pngdata_in, ReadOptions *options){
     PngReadData data;
@@ -174,10 +172,13 @@ bool ZPNG::encode(ZBinary &pngdata_out, WriteOptions *options){
         else
             throw ZException("PNG Read: unsupported image channel count", PNGError::unsupportedchannelcount, false);
 
+        // Get user options
         if(options){
-            data->interlaced = ((PNGWrite*)options)->interlace & PNGWrite::adam7;
+            PNGWrite *pngopt = dynamic_cast<PNGWrite*>(options);
+            data->interlaced = pngopt->interlace & PNGWrite::adam7;
         }
 
+        // Init PNG reading
         int result = writepng_init(data, text);
         switch(result){
         case 1:
@@ -190,6 +191,7 @@ bool ZPNG::encode(ZBinary &pngdata_out, WriteOptions *options){
             break;
         }
 
+        // Encode PNG Data
         if(data->interlaced){
             data->row_pointers = new unsigned char*[_image->height() * sizeof(unsigned char *)];
             for(zu64 i = 0; i < _image->height(); ++i){
@@ -240,9 +242,9 @@ bool ZPNG::read(ZPath path){
     ZBinary data;
     ZFile::readBinary(path, data);
 
-    if(!data.size()){
+    if(!data.size())
         throw ZException("PNG Read: empty read file", PNGError::badfile, false);
-    }
+
     return decode(data);
 }
 
@@ -251,9 +253,9 @@ bool ZPNG::write(ZPath path, PNGWrite::png_interlace options){
     if(!encode(data, nullptr))
         return false;
 
-    if(!ZFile::writeBinary(path, data)){
+    if(!ZFile::writeBinary(path, data))
         throw ZException("PNG Read: cannot write file", PNGError::badwritefile, false);
-    }
+
     return true;
 }
 
@@ -309,8 +311,6 @@ ZArray<ZPNG::PngChunk> ZPNG::parsePngAncillaryChunks(ZBinary pngdata){
 
 ZString ZPNG::libpngVersionInfo(){
     return ZString("Compiled with libpng ") << PNG_LIBPNG_VER_STRING << ", Using libpng " << png_libpng_ver << ", Compiled with zlib " << ZLIB_VERSION << ", Using zlib " << zlib_version;
-}
-
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -725,4 +725,6 @@ void writepng_error_handler(png_struct *png_ptr, png_const_charp msg){
         data->err_str = ZString("libpng write error: ") + msg;
     }
     longjmp(png_jmpbuf(png_ptr), 1);
+}
+
 }
