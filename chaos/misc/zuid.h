@@ -9,6 +9,7 @@
 #include "ztypes.h"
 #include "zstring.h"
 #include "zbinary.h"
+#include "zlist.h"
 
 #define ZUID_NIL LibChaos::ZUID(LibChaos::ZUID::NIL)
 
@@ -50,6 +51,8 @@ public:
 public:
     //! Get an acceptable timestamp
     static zu64 getTimestamp();
+    //! Get all MAC addresses
+    static ZList<ZBinary> getMACAddresses();
     //! Get an acceptable MAC address
     static ZBinary getMACAddress();
 

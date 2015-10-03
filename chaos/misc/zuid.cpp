@@ -187,6 +187,111 @@ zu64 ZUID::getTimestamp(){
     return utctime;
 }
 
+ZList<ZBinary> ZUID::getMACAddresses(){
+    ZList<ZBinary> maclist;
+#if PLATFORM == WINDOWS
+    PIP_ADAPTER_INFO adapterInfo;
+    ULONG bufLen = sizeof(IP_ADAPTER_INFO);
+    adapterInfo = new IP_ADAPTER_INFO[1];
+
+    // Get number of adapters and list of adapter info
+    DWORD status = GetAdaptersInfo(adapterInfo, &bufLen);
+    if(status == ERROR_BUFFER_OVERFLOW){
+        // Make larger list for adapters
+        delete[] adapterInfo;
+        adapterInfo = new IP_ADAPTER_INFO[bufLen];
+        status = GetAdaptersInfo(adapterInfo, &bufLen);
+    }
+
+    if(status == NO_ERROR){
+        // Get first acceptable MAC from list
+        PIP_ADAPTER_INFO adapterInfoList = adapterInfo;
+        while(adapterInfoList != NULL){
+            if(validMAC(adapterInfoList->Address)){
+                maclist.push(ZBinary(adapterInfoList->Address, 6));
+                delete[] adapterInfo;
+            }
+            adapterInfoList = adapterInfoList->Next;
+        }
+    }
+    delete[] adapterInfo;
+
+#elif PLATFORM == MACOSX
+
+    ifaddrs *iflist = NULL;
+    // Get list of interfaces and addresses
+    int r = getifaddrs(&iflist);
+    if(r == 0 && iflist != NULL){
+        ifaddrs *current = iflist;
+        // Walk linked list
+        while(current != NULL){
+            // Look for an interface with a hardware address
+            if((current->ifa_addr != NULL) && (current->ifa_addr->sa_family == AF_LINK)){
+                sockaddr_dl *sockdl = (sockaddr_dl *)current->ifa_addr;
+                uint8_t *mac = reinterpret_cast<uint8_t*>(LLADDR(sockdl));
+                maclist.push(ZBinary(mac, 6));
+            }
+            current = current->ifa_next;
+        }
+    }
+
+#else
+    struct ifreq ifr;
+    struct ifconf ifc;
+    char buf[1024];
+    unsigned char mac_address[6];
+
+    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+    if(sock != -1){
+        ifc.ifc_len = sizeof(buf);
+        ifc.ifc_buf = buf;
+        if(ioctl(sock, SIOCGIFCONF, &ifc) != -1){
+            struct ifreq *it = ifc.ifc_req;
+            const struct ifreq *end = it + ((unsigned long)ifc.ifc_len / sizeof(struct ifreq));
+            for(; it != end; ++it){
+                strcpy(ifr.ifr_name, it->ifr_name);
+                DLOG(ifr.ifr_name);
+                // Get interface flags
+                if(ioctl(sock, SIOCGIFFLAGS, &ifr) == 0){
+                    // Skip loopback interface
+                    if(!(ifr.ifr_flags & IFF_LOOPBACK)){
+                        // Get hardware address
+                        // TODO: FreeBSD MAC Address
+#if PLATFORM == FREEBSD
+                        if(ioctl(sock, SIOCGIFMAC, &ifr) == 0){
+                            memcpy(mac_address, ifr.ifr_mac.sa_data, 6);
+#else
+                        if(ioctl(sock, SIOCGIFHWADDR, &ifr) == 0){
+                            memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
+#endif
+                            if(validMAC(mac_address)){
+                                maclist.push(ZBinary(mac_address, 6));
+                            } else {
+                                DLOG("in2valid mac");
+                            }
+                        } else {
+                            DLOG("failed to get mac");
+                        }
+                    } else {
+                        DLOG("skip loopback");
+                    }
+                } else {
+                    // Try next interface
+                    DLOG("failed to get if flags");
+                }
+            }
+        } else {
+            // ioctl failed
+            DLOG("failed to get if config");
+        }
+    } else {
+        // socket failed
+        DLOG("failed to open socket");
+    }
+#endif
+    return maclist;
+}
+
 ZBinary ZUID::getMACAddress(){
 #if PLATFORM == WINDOWS
     PIP_ADAPTER_INFO adapterInfo;

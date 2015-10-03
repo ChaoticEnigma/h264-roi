@@ -32,7 +32,7 @@ public:
     };
 
 public:
-    ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _talloc(new ZAllocator<T>()), _size(0), head(nullptr){}
+    ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _talloc(new ZAllocator<T>()), _size(0), _head(nullptr){}
     ZList(std::initializer_list<T> ls) : ZList(){
         for(auto item = ls.begin(); item < ls.end(); ++item)
             pushBack(*item);
@@ -44,9 +44,9 @@ public:
     }
 
     ~ZList(){
-        if(head != nullptr){
-            head->prev->next = nullptr; // Break circular link
-            Node *current = head;
+        if(_head != nullptr){
+            _head->prev->next = nullptr; // Break circular link
+            Node *current = _head;
             Node *next;
             do { // Delete all nodes
                 _talloc->destroy(&(current->data));
@@ -61,46 +61,57 @@ public:
         delete _alloc;
     }
 
+    //! Insert \a data before \a node.
+    Node *insert(const T &data, Node *node){
+        Node *newnode = newNode(data);
+        newnode->next = node;
+        newnode->prev = node->prev;
+        node->prev->next = newnode;
+        node->prev = newnode;
+        return newnode;
+    }
+
+    //! Add \a data to the front of the list.
     void pushFront(const T &data){
         Node *node = newNode(data);
-        if(head == nullptr){
-            head = node;
-            node->prev = head;
-            node->next = head;
+        if(_head == nullptr){
+            _head = node;
+            node->prev = _head;
+            node->next = _head;
         } else {
-            head->prev->next = node;
-            head->next->prev = node;
-            node->prev = head->prev;
-            node->next = head;
-            head = node;
+            _head->prev->next = node;
+            _head->next->prev = node;
+            node->prev = _head->prev;
+            node->next = _head;
+            _head = node;
         }
         ++_size;
     }
     void pushBack(const T &data){
         Node *node = newNode(data);
-        if(head == nullptr){
-            head = node;
-            node->prev = head;
-            node->next = head;
+        if(_head == nullptr){
+            _head = node;
+            node->prev = _head;
+            node->next = _head;
         } else {
-            node->prev = head->prev;
-            node->next = head;
-            head->prev->next = node;
-            head->prev = node;
+            node->prev = _head->prev;
+            node->next = _head;
+            _head->prev->next = node;
+            _head->prev = node;
         }
         ++_size;
     }
     inline void push(const T &data){ pushBack(data); }
 
     void popFront(){
-        if(head != nullptr){
-            Node *old = head;
+        if(_head != nullptr){
+            Node *old = _head;
             if(_size > 1){
-                head->prev->next = head->next;
-                head->next->prev = head->prev;
-                head = head->next;
+                _head->prev->next = _head->next;
+                _head->next->prev = _head->prev;
+                _head = _head->next;
             } else {
-                head = nullptr;
+                _head = nullptr;
             }
             --_size;
             _talloc->destroy(&(old->data));
@@ -110,13 +121,13 @@ public:
         }
     }
     void popBack(){
-        if(head != nullptr){
-            Node *old = head->prev;
+        if(_head != nullptr){
+            Node *old = _head->prev;
             if(_size > 1){
-                head->prev->prev->next = head;
-                head->prev = head->prev->prev;
+                _head->prev->prev->next = _head;
+                _head->prev = _head->prev->prev;
             } else {
-                head = nullptr;
+                _head = nullptr;
             }
             --_size;
             _talloc->destroy(&(old->data));
@@ -128,16 +139,16 @@ public:
     inline void pop(){ popFront(); }
 
     T &peekFront(){
-        return head->data;
+        return _head->data;
     }
     const T &peekFront() const {
-        return head->data;
+        return _head->data;
     }
     T &peekBack(){
-        return head->prev->data;
+        return _head->prev->data;
     }
     const T &peekBack() const {
-        return head->prev->data;
+        return _head->prev->data;
     }
 
     inline T &peek(){ return peekFront(); }
@@ -145,7 +156,7 @@ public:
 
     ZString debug() const {
         ZString str;
-        Node *current = head;
+        Node *current = _head;
         for(zu64 i = 0; i < _size; ++i){
             str += ZString::ItoS((zu64)current->prev, 16) + " ";
             str += ZString::ItoS((zu64)current, 16);
@@ -159,20 +170,20 @@ public:
     // Swap data but NOT allocators of two lists
     void swap(ZList &other){
         zu64 tmpsize = _size;
-        Node *tmphead = head;
+        Node *tmphead = _head;
         _size = other._size;
-        head = other.head;
+        _head = other._head;
         other._size = tmpsize;
-        other.head = tmphead;
+        other._head = tmphead;
     }
 
     inline T &operator[](zu64 index){ return getNode(index)->data; }
     inline const T &operator[](zu64 index) const { return getNode(index)->data; }
 
-    inline T &front(){ return head->data; }
-    inline const T &front() const { return head->data; }
-    inline T &back(){ return head->prev->data; }
-    inline const T &back() const { return head->prev->data; }
+    inline T &front(){ return _head->data; }
+    inline const T &front() const { return _head->data; }
+    inline T &back(){ return _head->prev->data; }
+    inline const T &back() const { return _head->prev->data; }
 
     inline bool isEmpty() const { return (_size == 0); }
     inline zu64 size() const { return _size; }
@@ -189,7 +200,7 @@ private:
     }
 
     Node *getNode(zu64 index) const {
-        Node *current = head;
+        Node *current = _head;
         for(zu64 i = 0; i < index; ++i){
             current = current->next;
         }
@@ -200,7 +211,7 @@ private:
     ZAllocator<Node> *_alloc;
     ZAllocator<T> *_talloc;
     zu64 _size;
-    Node *head;
+    Node *_head;
 };
 
 }

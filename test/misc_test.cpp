@@ -32,6 +32,11 @@ int uid_test(){
     ZUID uid6(ZUID::RANDOM);
     LOG("Random:\t" << uid6.str());
 
+    ZList<ZBinary> maclist = ZUID::getMACAddresses();
+    for(zu64 i = 0; i < maclist.size(); ++i){
+
+    }
+
     ZBinary mac = ZUID::getMACAddress();
     ZString macstr;
     for(zu64 i = 0 ; i < mac.size(); ++i){
