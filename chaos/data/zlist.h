@@ -20,28 +20,7 @@
 namespace LibChaos {
 
 template <typename T> class ZList;
-
-template <typename T> class ZIterator<ZList<T>> : public ZIterable<T> {
-public:
-    ZIterator(ZList<T> *list) : _list(list), _node(_list->_head){}
-
-    T &get(){
-        return _node->data;
-    }
-    void advance(){
-        _node = _node->next;
-    }
-    void recede(){
-        _node = _node->prev;
-    }
-    bool atEnd() const {
-        return (_node == _list->_head->prev);
-    }
-
-private:
-    ZList<T> *_list;
-    typename ZList<T>::Node *_node;
-};
+template <typename T> class ZIterator<ZList<T>>;
 
 /*! Linked list sequence container.
  *  Implemented as a circular doubly-linked list.
@@ -242,6 +221,28 @@ private:
     ZAllocator<T> *_talloc;
     zu64 _size;
     Node *_head;
+};
+
+template <typename T> class ZIterator<ZList<T>> : public ZIterable<T> {
+public:
+    ZIterator(ZList<T> *list) : _list(list), _node(_list->_head){}
+
+    T &get(){
+        return _node->data;
+    }
+    void advance(){
+        _node = _node->next;
+    }
+    void recede(){
+        _node = _node->prev;
+    }
+    bool atEnd() const {
+        return (_node == _list->_head->prev);
+    }
+
+private:
+    ZList<T> *_list;
+    typename ZList<T>::Node *_node;
 };
 
 }
