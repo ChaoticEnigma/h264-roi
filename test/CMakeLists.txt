@@ -22,7 +22,6 @@ SET(LibChaos_Test_SOURCES
 
     array_test.cpp
     list_test.cpp
-    iterator_test.cpp
 
     string_test.cpp
     path_test.cpp
