@@ -11,7 +11,6 @@
 #include "zallocator.h"
 #include "yindexedaccess.h"
 #include "ypushpopaccess.h"
-#include "ziterable.h"
 #include "ziterator.h"
 
 #include <initializer_list>
@@ -23,7 +22,7 @@ namespace LibChaos {
 /*! Dynamic contiguous array sequence container.
  *  ZArray push/pop paradigm is FILO
  */
-template <typename T> class ZArray : public YIndexedAccess<T>, public YPushPopAccess<T>, public ZIterable<T> {
+template <typename T> class ZArray : public YIndexedAccess<T>, public YPushPopAccess<T> {
 public:
     enum {
         none = ZU64_MAX
@@ -237,9 +236,9 @@ public:
         return none;
     }
 
-    ZIterator<T> iterator(){
-        return ZIterator<T>(new ZArrayAccessor(this));
-    }
+    //ZIterator<T> iterator(){
+    //    return ZIterator<T>(new ZArrayAccessor(this));
+    //}
 
     inline T &front(){ return _data[0]; }
     inline const T &front() const { return _data[0]; }
@@ -255,31 +254,6 @@ public:
 
     inline T *ptr() const { return _data; }
     inline T *raw() const { return ptr(); }
-
-private:
-    class ZArrayAccessor : public ZAccessor<T> {
-    public:
-        ZArrayAccessor(ZArray<T> *array) : _array(array), _pos(0){}
-
-        bool atEnd() const {
-            return _pos >= _size;
-        }
-
-        void forward(){
-            ++_pos;
-        }
-        void back(){
-            --_pos;
-        }
-
-        T &current(){
-            return _array->operator[](_pos);
-        }
-
-    private:
-        ZArray<T> *_array;
-        zu64 _pos;
-    };
 
 private:
     ZAllocator<T> *_alloc;

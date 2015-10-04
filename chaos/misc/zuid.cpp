@@ -190,6 +190,7 @@ zu64 ZUID::getTimestamp(){
 ZList<ZBinary> ZUID::getMACAddresses(){
     ZList<ZBinary> maclist;
 #if PLATFORM == WINDOWS
+
     PIP_ADAPTER_INFO adapterInfo;
     ULONG bufLen = sizeof(IP_ADAPTER_INFO);
     adapterInfo = new IP_ADAPTER_INFO[1];
@@ -236,6 +237,7 @@ ZList<ZBinary> ZUID::getMACAddresses(){
     }
 
 #else
+
     struct ifreq ifr;
     struct ifconf ifc;
     char buf[1024];
@@ -288,6 +290,7 @@ ZList<ZBinary> ZUID::getMACAddresses(){
         // socket failed
         DLOG("failed to open socket");
     }
+
 #endif
     return maclist;
 }

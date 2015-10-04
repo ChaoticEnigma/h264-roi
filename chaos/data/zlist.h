@@ -8,7 +8,7 @@
 
 #include "ztypes.h"
 #include "zallocator.h"
-
+#include "ziterator.h"
 #include "yindexedaccess.h"
 #include "ypushpopaccess.h"
 
@@ -19,11 +19,36 @@
 
 namespace LibChaos {
 
+template <typename T> class ZList;
+
+template <typename T> class ZIterator<ZList<T>> : public ZIterable<T> {
+public:
+    ZIterator(ZList<T> *list) : _list(list), _node(_list->_head){}
+
+    T &get(){
+        return _node->data;
+    }
+    void advance(){
+        _node = _node->next;
+    }
+    void recede(){
+        _node = _node->prev;
+    }
+    bool atEnd() const {
+        return (_node == _list->_head->prev);
+    }
+
+private:
+    ZList<T> *_list;
+    typename ZList<T>::Node *_node;
+};
+
 /*! Linked list sequence container.
  *  Implemented as a circular doubly-linked list.
  *  ZList push/pop paradigm is FIFO.
  */
 template <typename T> class ZList : public YIndexedAccess<T>, public YPushPopAccess<T> {
+    friend class ZIterator<ZList<T>>;
 public:
     struct Node {
         Node *prev;
@@ -154,6 +179,21 @@ public:
     inline T &peek(){ return peekFront(); }
     inline const T &peek() const { return peekFront(); }
 
+    // Swap data but NOT allocators of two lists
+    void swap(ZList &other){
+        zu64 tmpsize = _size;
+        Node *tmphead = _head;
+        _size = other._size;
+        _head = other._head;
+        other._size = tmpsize;
+        other._head = tmphead;
+    }
+
+    //! Get an iterator for the list.
+    ZIterator<ZList<T>> iterator(){
+        return ZIterator<ZList<T>>(this);
+    }
+
     ZString debug() const {
         ZString str;
         Node *current = _head;
@@ -165,16 +205,6 @@ public:
             current = current->next;
         }
         return str;
-    }
-
-    // Swap data but NOT allocators of two lists
-    void swap(ZList &other){
-        zu64 tmpsize = _size;
-        Node *tmphead = _head;
-        _size = other._size;
-        _head = other._head;
-        other._size = tmpsize;
-        other._head = tmphead;
     }
 
     inline T &operator[](zu64 index){ return getNode(index)->data; }

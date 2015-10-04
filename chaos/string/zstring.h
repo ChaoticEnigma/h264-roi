@@ -10,7 +10,6 @@
 #include "zallocator.h"
 #include "zassoc.h"
 #include "zhash.h"
-#include "ziterable.h"
 
 // Needed for std::ostream overload
 #include <iosfwd>
@@ -23,8 +22,6 @@
 namespace LibChaos {
 
 class ZString;
-typedef ZIterator<ZString> ZStringIterator;
-
 typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
@@ -34,7 +31,7 @@ typedef char zstringchartype;
  *  Wide characters are narrowed and encoded in UTF-8.
  *  Internal array is always null terminated.
  */
-class ZString : public ZIterable<zstringchartype> {
+class ZString {
 public:
     typedef zstringchartype chartype;
     enum {
@@ -315,9 +312,9 @@ public:
     zu64 length() const;
 
     // ZString Iterator
-    ZIterator<chartype> iterator(){
-        return ZIterator<chartype>(new ZStringAccessor(this));
-    }
+    //ZIterator<chartype> iterator(){
+    //    return ZIterator<chartype>(new ZStringAccessor(this));
+    //}
 
     // On empty string, will return null terminator
     inline chartype &first(){ return _data[0]; }
@@ -335,38 +332,6 @@ private:
     std::wstring toUtf16() const;
 
     static bool isUtf8(ZString str);
-
-private:
-    class ZStringAccessor : public ZAccessor<chartype> {
-    public:
-        ZStringAccessor(ZString *str, zu64 pos = 0) : _str(str), _pos(pos){}
-
-        bool atEnd() const {
-            return _pos >= _str->size();
-        }
-
-        bool atFront() const {
-            return _pos <= 0;
-        }
-
-        void forward(){
-            if(!atEnd())
-                ++_pos;
-        }
-
-        void back(){
-            if(!atFront())
-                --_pos;
-        }
-
-        ZString::chartype &current(){
-            return _str->operator[](_pos);
-        }
-
-    private:
-        ZString *_str;
-        zu64 _pos;
-    };
 
 private:
     ZAllocator<chartype> *_alloc;

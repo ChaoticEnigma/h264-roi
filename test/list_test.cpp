@@ -57,6 +57,11 @@ int list_test(){
     else
         throw (int)4;
 
+    LOG("Iterator Test: " << tst.size());
+    for(auto i = tst.iterator(); !i.atEnd(); ++i){
+        LOG("i: " << *i);
+    }
+
     return 0;
 }
 
