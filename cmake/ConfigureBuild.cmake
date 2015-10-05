@@ -118,7 +118,8 @@ IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
         SET(CXXGNU "${CXXGNU} -Wall -Wextra -Wpedantic")
         #SET(CXXGNU "${CXXGNU} -fms-extensions")
         #SET(CXXF "${CXXF} -Wbloody_everything") # Some day...
-        SET(CXXGNU "${CXXGNU} -Wcast-align -Wcast-qual -Wsign-conversion -Wsign-promo") # Casting
+        #SET(CXXGNU "${CXXGNU} -Wcast-align") # Cast alignment
+        SET(CXXGNU "${CXXGNU} -Wcast-qual -Wsign-conversion -Wsign-promo") # Casting
         SET(CXXGNU "${CXXGNU} -Wformat=2 -Wstrict-overflow=5 -Wswitch-default") # Formatting
         SET(CXXGNU "${CXXGNU} -Winit-self  -Wredundant-decls -Wundef -Woverloaded-virtual") # Declarationss
         SET(CXXGNU "${CXXGNU} -Wmissing-include-dirs -Wctor-dtor-privacy -Wdisabled-optimization")

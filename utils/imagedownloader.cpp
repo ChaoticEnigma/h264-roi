@@ -103,9 +103,9 @@ int main(int argc, char **argv){
                         ZString filename = (ZPath(rating) + (json["id"] + artist + ZPath(url).getExtension())).str();
                         ZFile::createDirsTo(filename);
                         if(!ZFile::exists(filename)){
-                            ZString command = "wget --no-check-certificate --no-cookies -O \"" + filename + "\" " + url;
-                            if(system((command + " 1> NUL 2> NUL").cc()) != 0){
-                                LOG("Failed " << i << "/" << list.size() << ": " << command);
+                            ZString cmd = "wget --no-check-certificate --no-cookies -O \"" + filename + "\" " + url;
+                            if(system((cmd + " 1> NUL 2> NUL").cc()) != 0){
+                                LOG("Failed " << i << "/" << list.size() << ": " << cmd);
                             } else {
                                 LOG("Downloaded " << i << "/" << list.size() << ": " << filename);
                             }
