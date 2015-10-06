@@ -211,12 +211,12 @@ public:
     //! Encode unsigned 8-bit integer into 1 byte
     static void enczu8(zbyte *bin, zu8 num);
 
-    //! Aliases for decoding multi-byte integers from bytes
+    // Aliases for decoding multi-byte integers from bytes
     static zu16 deczu16(const zbyte *bin){ return decbe16(bin); }
     static zu32 deczu32(const zbyte *bin){ return decbe32(bin); }
     static zu64 deczu64(const zbyte *bin){ return decbe64(bin); }
 
-    //! Aliases for encoding multi-byte integers into bytes
+    // Aliases for encoding multi-byte integers into bytes
     static void enczu16(zbyte *bin, zu16 num){ encbe16(bin, num); }
     static void enczu32(zbyte *bin, zu32 num){ encbe32(bin, num); }
     static void enczu64(zbyte *bin, zu64 num){ encbe64(bin, num); }

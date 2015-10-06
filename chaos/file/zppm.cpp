@@ -7,7 +7,13 @@
 #include "zfile.h"
 #include <stdio.h>
 
+#define PPM_SIG 0x5036
+
 namespace LibChaos {
+
+bool ZPPM::isPPM(const ZBinary &data){
+    return (ZBinary::decle16(data.raw()) == PPM_SIG);
+}
 
 bool ZPPM::decode(ZBinary &ppmdata_in, YImageBackend::ReadOptions *options){
 

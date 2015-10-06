@@ -16,6 +16,8 @@ class ZPPM : public YImageBackend {
 public:
     ZPPM(ZImage *image) : _image(image){}
 
+    static bool isPPM(const ZBinary &data);
+
     bool decode(ZBinary &ppmdata_in, ReadOptions *options = nullptr);
     bool encode(ZBinary &ppmdata_out, WriteOptions *options = nullptr);
 

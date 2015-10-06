@@ -27,27 +27,27 @@ class ZImage {
 public:
     typedef unsigned char byte;
 
-    enum imagetype {
+    enum pixelformat {
         unknown = 0,
         //! Red, Green, Blue (3 channels, 8 bits each).
-        rgb24,
+        RGB24,
         //! Red, Green, Blue (3 channels, 16 bits each).
-        rgb48,
+        RGB48,
         //! Red, Green, Blue, Alpha (4 channels, 8 bits each).
-        rgba32,
+        RGBA32,
         //! Red, Green, Blue, Alpha (4 channels, 16 bits each).
-        rgba64,
+        RGBA64,
         //! Greyscale (1 channel, 8 bits each).
-        g8,
+        G8,
         //! Greyscale (1 channel, 16 bits each).
-        g16,
+        G16,
         //! Greyscale with Alpha (2 channels, 8 bits each).
-        ga16,
+        GA16,
         //! Greyscale with Alpha (2 channels, 16 bits each).
-        ga32,
+        GA32,
     };
 
-    enum imageformat {
+    enum fileformat {
         NONE = 0,
         //! BMP (uncompressed).
         BMP,
@@ -66,44 +66,29 @@ public:
         zu8 depth;
         zu8 planes;
     };
-    static const ZMap<imagetype, ImageType> types;
+    static const ZMap<pixelformat, ImageType> types;
 
 public:
     //! Default constructor.
-    ZImage() : _width(0), _height(0), _channels(0), _depth(0), _type(unknown), _buffer(nullptr), _format(NONE), _backend(nullptr){
-
-    }
+    ZImage() : _width(0), _height(0), _channels(0), _depth(0), _type(unknown), _buffer(nullptr), _format(NONE), _backend(nullptr){}
 
     //! Load a formatted image (e.g. PNG, JPEG).
-    ZImage(const ZBinary &image) : ZImage(){
-
-    }
+    ZImage(const ZBinary &image);
 
     //! Create an image of \a type with \a width and \a height.
-    ZImage(zu64 width, zu64 height, imagetype type = rgb24) : ZImage(){
-        setDimensions(width, height, types[type].channels, types[type].depth);
-    }
+    ZImage(zu64 width, zu64 height, pixelformat type = RGB24);
     //! Create an image with \a width and \a height, with \a channels color channels and \a depth bits per color.
-    ZImage(zu64 width, zu64 height, zu8 channels = 3, zu8 depth = 8) : ZImage(){
-        setDimensions(width, height, channels, depth);
-    }
+    ZImage(zu64 width, zu64 height, zu8 channels = 3, zu8 depth = 8);
 
     /*! Create and load an imnage from \a data with \a width, \a height, \a channels and \a depth.
      *  The expected size of the image at data is \a width * \a height * (\a channels * \a depth) bytes.
      */
-    ZImage(const byte *data, zu64 width, zu64 height, zu8 channels = 3, zu8 depth = 8) : ZImage(){
-        setDimensions(width, height, channels, depth);
-        copyData(data);
-    }
+    ZImage(const byte *data, zu64 width, zu64 height, zu8 channels = 3, zu8 depth = 8);
+
     //! Copy constructor.
-    ZImage(const ZImage &other) : ZImage(other._buffer, other._width, other._height, other._channels, other._depth){
+    ZImage(const ZImage &other);
 
-    }
-
-    ~ZImage(){
-        delete[] _buffer;
-        _buffer = nullptr;
-    }
+    ~ZImage();
 
     void destroy();
 
@@ -198,8 +183,14 @@ public:
 
     void strip16to8();
 
-    //! Change the image file format backend.
-    void setFormat(imageformat format);
+    //! Change the image file format and backend.
+    void setFormat(fileformat format);
+
+    //! Get image file format.
+    fileformat getFormat() const { return _format; }
+
+    //! Generate a file-formatted image.
+    ZBinary toFileFormat();
 
     //! Check that image is loaded, check this before using raw buffer access.
     inline bool isLoaded() const {
@@ -287,12 +278,12 @@ private:
     //! Number of bits per channel
     zu8 _depth;
     //! Image type
-    imagetype _type;
+    pixelformat _type;
     //! Image data
     unsigned char *_buffer;
 
     //! Image file format.
-    imageformat _format;
+    fileformat _format;
     //! Image format backend.
     YImageBackend *_backend;
 };

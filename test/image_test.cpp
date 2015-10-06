@@ -1,8 +1,6 @@
 #include "test.h"
 #include "zimage.h"
-#include "zbmp.h"
-#include "zppm.h"
-#include "zpng.h"
+#include "zfile.h"
 
 int image_test(){
 
@@ -10,8 +8,8 @@ int image_test(){
 
     zu64 width = 1920;
     zu64 height = 1080;
-    LOG("Creating " << width << "x" << height << " image");
-    ZImage image1(width, height, ZImage::rgb24);
+    LOG("Creating " << width << "x" << height << " 8-bit color image");
+    ZImage image1(width, height, ZImage::RGB24);
     image1.newData();
 
     for(zu64 i = 0; i < image1.pixels(); ++i){
@@ -30,19 +28,28 @@ int image_test(){
         ++o;
     }
 
-//    ZPNG outpng1(image1);
-//    LOG("PNG: " << outpng1.write("image_test.png"));
+    image1.setFormat(ZImage::BMP);
+    if(!ZFile::writeBinary("image_test.bmp", image1.toFileFormat()))
+        throw __LINE__;
 
-//    ZBMP outbmp1(image1);
-//    LOG("BMP: " << outbmp1.write("image_test.bmp"));
+    image1.setFormat(ZImage::PPM);
+    if(!ZFile::writeBinary("image_test.ppm", image1.toFileFormat()))
+        throw __LINE__;
 
-//    ZPPM outppm1(image1);
-//    LOG("PPM: " << outppm1.write("image_test.ppm"));
+    image1.setFormat(ZImage::PNG);
+    if(!ZFile::writeBinary("image_test.png", image1.toFileFormat()))
+        throw __LINE__;
+
+    ZBinary in1;
+    if(!ZFile::readBinary("image_test.png", in1))
+        throw __LINE__;
+    ZImage imagein1(in1);
+    LOG("Image: " << (int)imagein1.getFormat() << " " << imagein1.width() << "x" << imagein1.height());
 
     // 16-bit
 
-    LOG("Creating " << width << "x" << height << " image");
-    ZImage image2(width, height, ZImage::rgb48);
+    LOG("Creating " << width << "x" << height << " 16-bit color image");
+    ZImage image2(width, height, ZImage::RGB48);
     image2.newData();
 
     for(zu64 i = 0; i < image2.pixels(); ++i){
@@ -61,8 +68,9 @@ int image_test(){
         ++o;
     }
 
-//    ZPNG outpng2(image2);
-//    LOG("PNG: " << outpng2.write("image_test16.png"));
+    image2.setFormat(ZImage::PNG);
+    if(!ZFile::writeBinary("image_test_16.png", image2.toFileFormat()))
+        throw __LINE__;
 
     return 0;
 }

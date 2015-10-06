@@ -23,16 +23,53 @@ namespace LibChaos {
 //    { ZImage::ga32,     2,  16  }
 //};
 
-const ZMap<ZImage::imagetype, ZImage::ImageType> ZImage::types = {
-    { ZImage::rgb24,    { 3,  8, 1 } },
-    { ZImage::rgba32,   { 4,  8, 1 } },
-    { ZImage::rgb48,    { 3, 16, 1 } },
-    { ZImage::rgba64,   { 4, 16, 1 } },
-    { ZImage::g8,       { 1,  8, 1 } },
-    { ZImage::ga16,     { 2,  8, 1 } },
-    { ZImage::g16,      { 1, 16, 1 } },
-    { ZImage::ga32,     { 2, 16, 1 } },
+const ZMap<ZImage::pixelformat, ZImage::ImageType> ZImage::types = {
+    { ZImage::RGB24,    { 3,  8, 1 } },
+    { ZImage::RGBA32,   { 4,  8, 1 } },
+    { ZImage::RGB48,    { 3, 16, 1 } },
+    { ZImage::RGBA64,   { 4, 16, 1 } },
+    { ZImage::G8,       { 1,  8, 1 } },
+    { ZImage::GA16,     { 2,  8, 1 } },
+    { ZImage::G16,      { 1, 16, 1 } },
+    { ZImage::GA32,     { 2, 16, 1 } },
 };
+
+ZImage::ZImage(const ZBinary &image) : ZImage(){
+    if(ZBMP::isBMP(image)){
+        setFormat(BMP);
+    } else if(ZPPM::isPPM(image)){
+        setFormat(PPM);
+    } else if(ZPNG::isPNG(image)){
+        setFormat(PNG);
+    }
+    // TODO: Reference-count ZBinary
+    ZBinary tmp = image;
+    if(_backend){
+        _backend->decode(tmp);
+    }
+}
+
+ZImage::ZImage(zu64 width, zu64 height, ZImage::pixelformat type) : ZImage(){
+    setDimensions(width, height, types[type].channels, types[type].depth);
+}
+
+ZImage::ZImage(zu64 width, zu64 height, zu8 channels, zu8 depth) : ZImage(){
+    setDimensions(width, height, channels, depth);
+}
+
+ZImage::ZImage(const ZImage::byte *data, zu64 width, zu64 height, zu8 channels, zu8 depth) : ZImage(){
+    setDimensions(width, height, channels, depth);
+    copyData(data);
+}
+
+ZImage::ZImage(const ZImage &other) : ZImage(other._buffer, other._width, other._height, other._channels, other._depth){
+
+}
+
+ZImage::~ZImage(){
+    delete[] _buffer;
+    _buffer = nullptr;
+}
 
 void ZImage::destroy(){
     _width = 0;
@@ -226,7 +263,7 @@ void ZImage::strip16to8(){
     _depth = 8;
 }
 
-void ZImage::setFormat(ZImage::imageformat format){
+void ZImage::setFormat(ZImage::fileformat format){
     delete _backend;
     _format = format;
     switch(_format){
@@ -243,8 +280,17 @@ void ZImage::setFormat(ZImage::imageformat format){
         _backend = new ZJPEG(this);
         break;
     default:
+        _backend = nullptr;
         break;
     }
+}
+
+ZBinary ZImage::toFileFormat(){
+    ZBinary out;
+    if(_backend){
+        _backend->encode(out);
+    }
+    return out;
 }
 
 }

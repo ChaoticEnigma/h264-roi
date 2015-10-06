@@ -32,6 +32,8 @@ public:
 public:
     ZBMP(ZImage *image) : _image(image){}
 
+    static bool isBMP(const ZBinary &data);
+
     bool decode(ZBinary &data_in, ReadOptions *options = nullptr);
     bool encode(ZBinary &data_out, WriteOptions *options = nullptr);
 

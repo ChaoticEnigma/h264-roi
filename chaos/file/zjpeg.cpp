@@ -7,7 +7,13 @@
 #include "zfile.h"
 #include "zexception.h"
 
+#define JPEG_SIG 0xFFD8FFE0
+
 namespace LibChaos {
+
+bool ZJPEG::isJPEG(const ZBinary &data){
+    return (ZBinary::decbe32(data.raw()) == JPEG_SIG);
+}
 
 bool ZJPEG::decode(ZBinary &jpegdata_in, ReadOptions *options){
 

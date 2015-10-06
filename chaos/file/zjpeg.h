@@ -31,6 +31,8 @@ public:
 public:
     ZJPEG(ZImage *image) : _image(image){}
 
+    static bool isJPEG(const ZBinary &data);
+
     bool decode(ZBinary &jpegdata_in, ReadOptions *options = nullptr);
     bool encode(ZBinary &jepgdata_out, WriteOptions *options = nullptr);
 

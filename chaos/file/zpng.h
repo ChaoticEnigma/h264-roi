@@ -72,6 +72,8 @@ public:
 public:
     ZPNG(ZImage *image) : _image(image){}
 
+    static bool isPNG(const ZBinary &data);
+
     bool decode(ZBinary &pngdata_in, ReadOptions *options = nullptr);
     bool encode(ZBinary &pngdata_out, WriteOptions *options = nullptr);
 

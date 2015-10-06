@@ -85,6 +85,10 @@ ZBinary writeInfoHeader(const BitmapInfoHeader *infoh){
     return out;
 }
 
+bool ZBMP::isBMP(const ZBinary &data){
+    return (ZBinary::decle16(data.raw()) == BITMAP_TYPE);
+}
+
 bool ZBMP::decode(ZBinary &data_in, YImageBackend::ReadOptions *options){
     BitmapFileHeader fileh;
     readFileHeader(data_in, &fileh);

@@ -79,6 +79,10 @@ void writepng_cleanup(PngWriteData *mainprog_ptr);
 void writepng_warning_handler(png_struct *png_ptr, png_const_charp msg);
 void writepng_error_handler(png_struct *png_ptr, png_const_charp msg);
 
+bool ZPNG::isPNG(const ZBinary &data){
+    return (png_sig_cmp(data.raw(), 0, 1) == 0);
+}
+
 bool ZPNG::decode(ZBinary &pngdata_in, ReadOptions *options){
     PngReadData data;
 
