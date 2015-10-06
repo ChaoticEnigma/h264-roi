@@ -37,14 +37,8 @@ int uid_test();
 int hash_test();
 
 int file_test();
-int pdf_test();
-
-#ifdef TEST_PNG
 int image_test();
-#endif
-#ifdef TEST_PNG
-int png_test();
-#endif
+int pdf_test();
 
 int udp_test();
 int udpserver_test();

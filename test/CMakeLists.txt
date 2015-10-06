@@ -31,6 +31,7 @@ SET(LibChaos_Test_SOURCES
     thread_test.cpp
 
     file_test.cpp
+    image_test.cpp
     pdf_test.cpp
 
     misc_test.cpp
@@ -41,15 +42,6 @@ SET(LibChaos_Test_SOURCES
     sandbox.cpp
     error_test.cpp
 )
-
-SET(LibChaos_Test_PNG_SOURCES
-    image_test.cpp
-    png_test.cpp
-)
-
-IF(LIBCHAOS_WITH_PNG)
-    SET(LibChaos_Test_SOURCES ${LibChaos_Test_SOURCES} ${LibChaos_Test_PNG_SOURCES})
-ENDIF()
 
 ### =================== CONFIG =================== ###
 
@@ -65,11 +57,6 @@ INCLUDE_DIRECTORIES(
     ${LibChaosExtern_Include}
     ${LibChaosUI_Include}
 )
-
-# Set preprocessor defines
-IF(LIBCHAOS_WITH_PNG)
-    ADD_DEFINITIONS(-DTEST_PNG)
-ENDIF()
 
 ### =================== BUILD =================== ###
 

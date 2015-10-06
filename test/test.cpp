@@ -44,14 +44,8 @@ int main(int argc, char **argv){
             { "hash", hash_test },
 
             { "file", file_test },
-            { "pdf", pdf_test },
-
-#ifdef TEST_PNG
             { "image", image_test },
-#endif
-#ifdef TEST_PNG
-            { "png", png_test },
-#endif
+            { "pdf", pdf_test },
         };
 
         ZAssoc<ZString, test_func> tests = defaulttests;
