@@ -3,62 +3,66 @@
 #include "zqueue.h"
 
 int list_test(){
-    ZList<int> tst;
+    ZList<int> list1;
     // push some values
-    tst.pushBack(10);
-    LOG(tst.debug());
-    tst.pushBack(20);
-    LOG(tst.debug());
-    tst.pushFront(45);
-    LOG(tst.debug());
-    tst.pushBack(567);
-    LOG(tst.debug());
+    list1.pushBack(10);
+    LOG(list1.debug());
+    list1.pushBack(20);
+    LOG(list1.debug());
+    list1.pushFront(45);
+    LOG(list1.debug());
+    list1.pushBack(567);
+    LOG(list1.debug());
 
     // push to back and pop back
-    tst.pushBack(663);
-    LOG(tst.debug());
-    tst.popBack();
-    LOG(tst.debug());
+    list1.pushBack(663);
+    LOG(list1.debug());
+    list1.popBack();
+    LOG(list1.debug());
 
     // push to front and pop front
-    tst.pushFront(336);
-    LOG(tst.debug());
-    tst.popFront();
-    LOG(tst.debug());
+    list1.pushFront(336);
+    LOG(list1.debug());
+    list1.popFront();
+    LOG(list1.debug());
 
-    if(tst.size() == 4 && tst[0] == 45 && tst[1] == 10 && tst[2] == 20 &&  tst[3] == 567)
-        LOG(tst.size() << " " << tst[0] << "." << tst[1] << "." << tst[2] << "." << tst[3] << " OK");
+    if(list1.size() == 4 && list1[0] == 45 && list1[1] == 10 && list1[2] == 20 &&  list1[3] == 567)
+        LOG(list1.size() << " " << list1[0] << "." << list1[1] << "." << list1[2] << "." << list1[3] << " OK");
     else
-        throw (int)1;
+        throw __LINE__;
 
     int myints[] = { 16, 2, 77, 29 };
-    ZList<int> tst2(myints, 4);
-    if(tst2.size() == 4 && tst2[0] == 16 && tst2[1] == 2 && tst2[2] == 77 && tst2[3] == 29)
-        LOG(tst2.size() << " " << tst2[0] << "." << tst2[1] << "." << tst2[2] << "." << tst2[3] << " OK");
+    ZList<int> list2(myints, 4);
+    if(list2.size() == 4 && list2[0] == 16 && list2[1] == 2 && list2[2] == 77 && list2[3] == 29)
+        LOG(list2.size() << " " << list2[0] << "." << list2[1] << "." << list2[2] << "." << list2[3] << " OK");
     else
-        throw (int)2;
+        throw __LINE__;
 
     char mychars[] = { 'a', 'b', 'c', 'd', 'e' };
-    ZList<char> tst3(mychars, 5);
-    if(tst3.size() == 5 && tst3[0] == 'a' && tst3[1] == 'b' && tst3[2] == 'c' && tst3[3] == 'd' && tst3[4] == 'e')
-        LOG(tst3.size() << " " << tst3[0] << "." << tst3[1] << "." << tst3[2] << "." << tst3[3] << "." << tst3[4] << " OK");
+    ZList<char> list3(mychars, 5);
+    if(list3.size() == 5 && list3[0] == 'a' && list3[1] == 'b' && list3[2] == 'c' && list3[3] == 'd' && list3[4] == 'e')
+        LOG(list3.size() << " " << list3[0] << "." << list3[1] << "." << list3[2] << "." << list3[3] << "." << list3[4] << " OK");
     else
-        throw (int)3;
+        throw __LINE__;
 
-    ZList<ZString> tst4;
-    tst4.push("three");
-    tst4.pushFront("two");
-    tst4.push("four");
-    tst4.pushFront("one");
-    tst4.push("five");
+    ZList<ZString> list4;
+    list4.push("three");
+    list4.pushFront("two");
+    list4.push("four");
+    list4.pushFront("one");
+    list4.push("five");
 
-    if(tst4.size() == 5 && tst4[0] == "one" && tst4[1] == "two" && tst4[2] == "three" && tst4[3] == "four" && tst4[4] == "five")
-        LOG(tst4.size() << " " << tst4[0] << "." << tst4[1] << "." << tst4[2] << "." << tst4[3] << "." << tst4[4] << " OK");
+    if(list4.size() == 5 && list4[0] == "one" && list4[1] == "two" && list4[2] == "three" && list4[3] == "four" && list4[4] == "five")
+        LOG(list4.size() << " " << list4[0] << "." << list4[1] << "." << list4[2] << "." << list4[3] << "." << list4[4] << " OK");
     else
-        throw (int)4;
+        throw __LINE__;
 
-    LOG("Iterator Test: " << tst4.size());
-    for(auto i = tst4.iterator(); !i.atEnd(); ++i){
+    LOG("Forward Iterator: " << list4.size());
+    for(auto i = list4.begin(); i != list4.end(); ++i){
+        LOG("i: " << *i);
+    }
+    LOG("Reverse Iterator: " << list4.size());
+    for(auto i = list4.end(); i != list4.begin(); --i){
         LOG("i: " << *i);
     }
 

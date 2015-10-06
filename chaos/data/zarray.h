@@ -70,6 +70,10 @@ public:
         _data = nullptr;
     }
 
+    //
+    // Array Assignment
+    //
+
     ZArray<T> &assign(const ZArray<T> &other){
         _alloc->destroy(_data, _size); // Destroy contents
         reserve(other.size()); // Make space
@@ -97,6 +101,10 @@ public:
         other._data = data;
     }
 
+    //
+    // Array Comparison
+    //
+
     bool equals(const ZArray<T> &other) const {
         if(size() != other.size())
             return false;
@@ -106,51 +114,30 @@ public:
         }
         return true;
     }
+
     inline bool operator==(const ZArray<T> &other) const { return equals(other); }
     inline bool operator!=(const ZArray<T> &other) const { return !equals(other); }
 
-    inline T &at(zu64 index){ return _data[index]; }
-    inline T &operator[](zu64 index){ return at(index); }
+    //
+    // Element Insertion
+    //
 
-    inline const T &at(zu64 index) const { return _data[index]; }
-    inline const T &operator[](zu64 index) const { return at(index); }
-
-    // Resize: chnage logical number of elements
-    ZArray<T> &resize(zu64 size, const T &value = T()){
-        reserve(size);
-        if(size > _size){
-            _alloc->construct(_data + _size, value, size - _size); // Construct new objects
-        } else if(size < _size){
-            _alloc->destroy(_data + size, _size - size); // Destroy extra objects
-        }
-        _size = size;
+    //! Add \a value to the back (end) of the array.
+    ZArray<T> &pushBack(const T &value){
+        reserve(_size + 1);
+        _alloc->construct(_data + _size, value);
+        ++_size;
         return *this;
     }
 
-    // Resize the real buffer (IMPORTANT: this is the only place memory is allocated)
-    // If new size is larger, adds uninitialized space for more elements (subsequent resizes may not have to reallocate)
-    // Never reallocates a smaller buffer! resize() assumes the new buffer is never smaller so it can destroy objects
-    void reserve(zu64 size){
-        if(size > _realsize){
-            zu64 newsize = MAX(_size * 2, size);
-            T *data = _alloc->alloc(newsize);
-            _alloc->rawcopy(_data, data, _size); // Copy data to new buffer
-            _alloc->dealloc(_data); // Delete old buffer without calling destructors
-            _data = data;
-            _realsize = newsize;
-        }
+    //! Add \a value to the front (begin) of the array.
+    ZArray<T> &pushFront(const T &value){
+        return insert(0, value);
     }
 
-    // Add <count> objects to array
-    ZArray<T> &extend(zu64 count){
-        return resize(_size + count);
-    }
-    // Remove <count> objects from array
-    ZArray<T> &contract(zu64 count){
-        return resize(_size - count);
-    }
+    inline void push(const T &value){ pushBack(value); }
 
-    // Insert <value> at <pos>, shifting subsequent elements
+    //! Insert \a value at \a pos, shifting subsequent elements.
     ZArray<T> &insert(zu64 pos, const T &value){
         reserve(_size + 1);
         _alloc->rawmove(_data + pos, _data + pos + 1, _size - pos);
@@ -159,29 +146,31 @@ public:
         return *this;
     }
 
-    ZArray<T> &pushBack(const T &value){
-        reserve(_size + 1);
-        _alloc->construct(_data + _size, value);
-        ++_size;
+    //! Append another array to the end of this array.
+    ZArray<T> &append(const ZArray<T> &in){
+        reserve(_size + in.size());
+        for(zu64 i = 0; i < in.size(); ++i)
+            _alloc->construct(_data + _size + i, in[i]);
+        _size += in.size();
         return *this;
     }
-    ZArray<T> &pushFront(const T &value){
-        return insert(0, value);
+
+    //! Concatenate two arrays in a new array.
+    ZArray<T> concat(const ZArray<T> &in) const {
+        ZArray<T> tmp(*this);
+        tmp.append(in);
+        return tmp;
     }
-    inline void push(const T &value){ pushBack(value); }
+
+    //
+    // Element Removal
+    //
 
     ZArray<T> &erase(zu64 index, zu64 count = 1){
         _alloc->destroy(_data + index, count);
         _alloc->rawmove(_data + index + count, _data + index, _size - index - count);
         _size -= count;
         return *this;
-    }
-
-    T &peek(){
-        return back();
-    }
-    const T &peek() const {
-        return back();
     }
 
     ZArray<T> &remove(zu64 index){
@@ -198,27 +187,26 @@ public:
     }
     inline void pop(){ popBack(); }
 
-    ZArray<T> &append(const ZArray<T> &in){
-        reserve(_size + in.size());
-        for(zu64 i = 0; i < in.size(); ++i)
-            _alloc->construct(_data + _size + i, in[i]);
-        _size += in.size();
-        return *this;
-    }
+    //
+    // Element Access
+    //
 
-    ZArray<T> concat(const ZArray<T> &in) const {
-        ZArray<T> tmp(*this);
-        tmp.append(in);
-        return tmp;
-    }
+    inline T &at(zu64 index){ return _data[index]; }
+    inline T &operator[](zu64 index){ return at(index); }
 
-    ZArray<T> &reverse(){
-        ZArray<T> tmp;
-        tmp.reserve(_size);
-        for(zu64 i = _size; i > 0; --i)
-            tmp.pushBack(operator[](i-1));
-        assign(tmp);
-        return *this;
+    inline const T &at(zu64 index) const { return _data[index]; }
+    inline const T &operator[](zu64 index) const { return at(index); }
+
+    inline T &front(){ return _data[0]; }
+    inline const T &front() const { return _data[0]; }
+    inline T &back(){ return _data[_size - 1]; }
+    inline const T &back() const { return _data[_size - 1]; }
+
+    T &peek(){
+        return back();
+    }
+    const T &peek() const {
+        return back();
     }
 
     bool contains(const T &test) const {
@@ -236,14 +224,63 @@ public:
         return none;
     }
 
+    //
+    // Array Operations
+    //
+
+    ZArray<T> &reverse(){
+        ZArray<T> tmp;
+        tmp.reserve(_size);
+        for(zu64 i = _size; i > 0; --i)
+            tmp.pushBack(operator[](i-1));
+        assign(tmp);
+        return *this;
+    }
+
+    //
+    // Size Management
+    //
+
+    //! Change logical number of elements inside real buffer.
+    ZArray<T> &resize(zu64 size, const T &value = T()){
+        reserve(size);
+        if(size > _size){
+            _alloc->construct(_data + _size, value, size - _size); // Construct new objects
+        } else if(size < _size){
+            _alloc->destroy(_data + size, _size - size); // Destroy extra objects
+        }
+        _size = size;
+        return *this;
+    }
+
+    /*! Resize the real buffer.
+     *  IMPORTANT: this is the only place memory is allocated.
+     *  If new size is larger, adds uninitialized space for more elements (subsequent resizes may not have to reallocate).
+     *  Never reallocates a smaller buffer! resize() assumes the new buffer is never smaller so it can destroy objects.
+     */
+    void reserve(zu64 size){
+        if(size > _realsize){
+            zu64 newsize = MAX(_size * 2, size);
+            T *data = _alloc->alloc(newsize);
+            _alloc->rawcopy(_data, data, _size); // Copy data to new buffer
+            _alloc->dealloc(_data); // Delete old buffer without calling destructors
+            _data = data;
+            _realsize = newsize;
+        }
+    }
+
+    //! Add \a count objects to array.
+    ZArray<T> &extend(zu64 count){
+        return resize(_size + count);
+    }
+    //! Remove \a count objects from array.
+    ZArray<T> &contract(zu64 count){
+        return resize(_size - count);
+    }
+
     //ZIterator<T> iterator(){
     //    return ZIterator<T>(new ZArrayAccessor(this));
     //}
-
-    inline T &front(){ return _data[0]; }
-    inline const T &front() const { return _data[0]; }
-    inline T &back(){ return _data[_size - 1]; }
-    inline const T &back() const { return _data[_size - 1]; }
 
     inline bool isEmpty() const { return (_size == 0); }
     inline bool empty() const { return isEmpty(); }

@@ -8,6 +8,10 @@
 
 #include "ztypes.h"
 
+#define ZITERABLE_COMPARE_OVERLOADS(T) \
+    inline bool operator==(T it) const { return compare(&it); } \
+    inline bool operator!=(T it) const { return !compare(&it); }
+
 namespace LibChaos {
 
 template <typename T> class ZIterable {

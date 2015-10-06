@@ -169,8 +169,11 @@ public:
     }
 
     //! Get an iterator for the list.
-    ZIterator<ZList<T>> iterator(){
-        return ZIterator<ZList<T>>(this);
+    ZIterator<ZList<T>> begin(){
+        return ZIterator<ZList<T>>(this, _head);
+    }
+    ZIterator<ZList<T>> end(){
+        return ZIterator<ZList<T>>(this, _head->prev);
     }
 
     ZString debug() const {
@@ -225,24 +228,39 @@ private:
 
 template <typename T> class ZIterator<ZList<T>> : public ZIterable<T> {
 public:
-    ZIterator(ZList<T> *list) : _list(list), _node(_list->_head){}
+    ZIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _end(0){}
 
     T &get(){
         return _node->data;
     }
     void advance(){
+        if(_end == 2)
+            _end = 0;
+        if(_node == _list->_head->prev)
+            _end = 1;
         _node = _node->next;
     }
     void recede(){
+        if(_end == 1)
+            _end = 0;
+        if(_node == _list->_head)
+            _end = 2;
         _node = _node->prev;
     }
     bool atEnd() const {
-        return (_node == _list->_head->prev);
+        return (_end != 0);
     }
+
+    bool compare(ZIterator<ZList<T>> *it) const {
+        return (_list == it->_list && _node == it->_node);
+    }
+
+    ZITERABLE_COMPARE_OVERLOADS(ZIterator<ZList<T>>)
 
 private:
     ZList<T> *_list;
     typename ZList<T>::Node *_node;
+    char _end;
 };
 
 }
