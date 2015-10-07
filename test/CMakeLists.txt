@@ -17,7 +17,6 @@ SET(LibChaos_Test_SOURCES
     pointer_test.cpp
     allocator_test.cpp
     storage_test.cpp
-
     binary_test.cpp
 
     array_test.cpp
@@ -30,11 +29,11 @@ SET(LibChaos_Test_SOURCES
 
     thread_test.cpp
 
+    misc_test.cpp
+
     file_test.cpp
     image_test.cpp
     pdf_test.cpp
-
-    misc_test.cpp
 
     socket_test.cpp
     socket2_test.cpp
@@ -79,17 +78,16 @@ ADD_TEST(NAME "Queue"     CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testcha
 
 ADD_TEST(NAME "String"    CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> string)
 ADD_TEST(NAME "Path"      CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> path)
+ADD_TEST(NAME "JSON"      CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> json)
+ADD_TEST(NAME "Number"    CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> number)
+
+ADD_TEST(NAME "Hash"      CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> hash)
+ADD_TEST(NAME "UID"       CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> uid)
 
 ADD_TEST(NAME "Thread"    CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> thread)
 ADD_TEST(NAME "Mutex"     CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> mutex)
 
-ADD_TEST(NAME "Number"    CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> number)
-ADD_TEST(NAME "UID"       CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> uid)
-ADD_TEST(NAME "Hash"      CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> hash)
-
 ADD_TEST(NAME "File"      CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> file)
 ADD_TEST(NAME "Image"     CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> image)
-ADD_TEST(NAME "PNG"       CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> png)
 ADD_TEST(NAME "PDF"       CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> pdf)
 
-ADD_TEST(NAME "JSON"      CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> json)

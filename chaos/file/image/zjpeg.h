@@ -9,7 +9,6 @@
 #include "zimage.h"
 #include "yimagebackend.h"
 #include "zbinary.h"
-#include "zpath.h"
 
 namespace LibChaos {
 
@@ -35,9 +34,6 @@ public:
 
     bool decode(ZBinary &jpegdata_in, ReadOptions *options = nullptr);
     bool encode(ZBinary &jepgdata_out, WriteOptions *options = nullptr);
-
-    bool read(ZPath path);
-    bool write(ZPath path, JPEGWrite::jpegoptions options = JPEGWrite::none);
 
 private:
     ZImage *_image;

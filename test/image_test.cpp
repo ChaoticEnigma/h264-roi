@@ -2,6 +2,12 @@
 #include "zimage.h"
 #include "zfile.h"
 
+#define IMAGE_TEST_BMP        "image_test.bmp"
+#define IMAGE_TEST_PPM        "image_test.ppm"
+#define IMAGE_TEST_PNG        "image_test.png"
+#define IMAGE_TEST_INVERT_PNG "image_test_invert.png"
+#define IMAGE_TEST_16_PNG     "image_test_16.png"
+
 int image_test(){
 
     // 8-bit
@@ -29,22 +35,31 @@ int image_test(){
     }
 
     image1.setFormat(ZImage::BMP);
-    if(!ZFile::writeBinary("image_test.bmp", image1.toFileFormat()))
+    if(!ZFile::writeBinary(IMAGE_TEST_BMP, image1.toFileFormat()))
         throw __LINE__;
 
     image1.setFormat(ZImage::PPM);
-    if(!ZFile::writeBinary("image_test.ppm", image1.toFileFormat()))
+    if(!ZFile::writeBinary(IMAGE_TEST_PPM, image1.toFileFormat()))
         throw __LINE__;
 
     image1.setFormat(ZImage::PNG);
-    if(!ZFile::writeBinary("image_test.png", image1.toFileFormat()))
+    if(!ZFile::writeBinary(IMAGE_TEST_PNG, image1.toFileFormat()))
         throw __LINE__;
 
     ZBinary in1;
-    if(!ZFile::readBinary("image_test.png", in1))
+    if(!ZFile::readBinary(IMAGE_TEST_PNG, in1))
         throw __LINE__;
+
     ZImage imagein1(in1);
-    LOG("Image: " << (int)imagein1.getFormat() << " " << imagein1.width() << "x" << imagein1.height());
+    LOG("Invert image: " << (int)imagein1.getFormat() << " " << imagein1.width() << "x" << imagein1.height());
+    for(zu64 i = 0; i < imagein1.pixels(); ++i){
+        imagein1.pixelAt(i)[0] = 0xFF - imagein1.pixelAt(i)[0];
+        imagein1.pixelAt(i)[1] = 0xFF - imagein1.pixelAt(i)[1];
+        imagein1.pixelAt(i)[2] = 0xFF - imagein1.pixelAt(i)[2];
+    }
+
+    if(!ZFile::writeBinary(IMAGE_TEST_INVERT_PNG, imagein1.toFileFormat()))
+        throw __LINE__;
 
     // 16-bit
 
@@ -69,7 +84,7 @@ int image_test(){
     }
 
     image2.setFormat(ZImage::PNG);
-    if(!ZFile::writeBinary("image_test_16.png", image2.toFileFormat()))
+    if(!ZFile::writeBinary(IMAGE_TEST_16_PNG, image2.toFileFormat()))
         throw __LINE__;
 
     return 0;

@@ -9,7 +9,6 @@
 #include "ztypes.h"
 #include "zimage.h"
 #include "zstring.h"
-#include "zpath.h"
 #include "zexception.h"
 #include "zbinary.h"
 #include "yimagebackend.h"
@@ -76,9 +75,6 @@ public:
 
     bool decode(ZBinary &pngdata_in, ReadOptions *options = nullptr);
     bool encode(ZBinary &pngdata_out, WriteOptions *options = nullptr);
-
-    bool read(ZPath path);
-    bool write(ZPath path, PNGWrite::png_interlace options = PNGWrite::none);
 
     static ZArray<PngChunk> parsePngChunks(ZBinary pngdata);
     static ZArray<PngChunk> parsePngAncillaryChunks(ZBinary pngdata);

@@ -126,7 +126,8 @@ bool ZPNG::decode(ZBinary &pngdata_in, ReadOptions *options){
 
         _image->setDimensions(data.width, data.height, data.channels, data.bit_depth);
         if(!_image->validDimensions())
-            throw ZException(ZString("PNG Read: invalid dimensions ") + _image->width() + "x" + _image->height() + " " + _image->channels() + "," + _image->depth() + " " + data.color_type, PNGError::invaliddimensions, false);
+            throw ZException(ZString("PNG Read: invalid dimensions ") + _image->width() + "x" + _image->height() + " " +
+                             _image->channels() + "," + _image->depth() + " " + data.color_type, PNGError::invaliddimensions, false);
         _image->takeData(data.image_data);
         data.image_data = NULL;
 
@@ -242,27 +243,6 @@ bool ZPNG::encode(ZBinary &pngdata_out, WriteOptions *options){
     return true;
 }
 
-bool ZPNG::read(ZPath path){
-    ZBinary data;
-    ZFile::readBinary(path, data);
-
-    if(!data.size())
-        throw ZException("PNG Read: empty read file", PNGError::badfile, false);
-
-    return decode(data);
-}
-
-bool ZPNG::write(ZPath path, PNGWrite::png_interlace options){
-    ZBinary data;
-    if(!encode(data, nullptr))
-        return false;
-
-    if(!ZFile::writeBinary(path, data))
-        throw ZException("PNG Read: cannot write file", PNGError::badwritefile, false);
-
-    return true;
-}
-
 ZArray<ZPNG::PngChunk> ZPNG::parsePngChunks(ZBinary pngdata){
     ZArray<PngChunk> chunks;
     zu64 size = 0;
@@ -314,7 +294,8 @@ ZArray<ZPNG::PngChunk> ZPNG::parsePngAncillaryChunks(ZBinary pngdata){
 }
 
 ZString ZPNG::libpngVersionInfo(){
-    return ZString("Compiled with libpng ") << PNG_LIBPNG_VER_STRING << ", Using libpng " << png_libpng_ver << ", Compiled with zlib " << ZLIB_VERSION << ", Using zlib " << zlib_version;
+    return ZString("Compiled with libpng ") << PNG_LIBPNG_VER_STRING << ", Using libpng " << png_libpng_ver <<
+                   ", Compiled with zlib " << ZLIB_VERSION << ", Using zlib " << zlib_version;
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -613,7 +594,8 @@ int writepng_init(PngWriteData *data, const AsArZ &texts){
     int interlace_type = data->interlaced ? PNG_INTERLACE_ADAM7 : PNG_INTERLACE_NONE;
 
     // Set header data
-    png_set_IHDR(data->png_ptr, data->info_ptr, data->width, data->height, data->bit_depth, data->color_type, interlace_type, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+    png_set_IHDR(data->png_ptr, data->info_ptr, data->width, data->height, data->bit_depth, data->color_type, interlace_type,
+                 PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
     // Set gamma
     if(data->gamma > 0.0)

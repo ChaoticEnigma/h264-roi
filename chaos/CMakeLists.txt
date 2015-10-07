@@ -32,9 +32,9 @@ SET(LIBCHAOS_WITH_PNG  ${WITH_PNG}  PARENT_SCOPE)
 SET(LIBCHAOS_WITH_JPEG ${WITH_JPEG} PARENT_SCOPE)
 SET(CORE_LIBS ${CORE_LIBS} PARENT_SCOPE)
 
-### =================== HEADERS =================== ###
+### =================== SOURCES =================== ###
 
-SET(LibChaos_HEADERS
+SET(LibChaos_SOURCES
     ztypes.h
 
     abstract/yindexedaccess.h
@@ -50,17 +50,24 @@ SET(LibChaos_HEADERS
     abstract/zwriter.h
 
     base/zclock.h
+    base/zclock.cpp
     base/zerror.h
+    base/zerror.cpp
     base/zexception.h
+    base/zexception.cpp
     base/ziterator.h
     base/zlog.h
+    base/zlog.cpp
     base/zlogworker.h
+    base/zlogworker.cpp
     base/ztime.h
+    base/ztime.cpp
 
     data/zallocator.h
     data/zarray.h
     data/zassoc.h
     data/zbinary.h
+    data/zbinary.cpp
     data/zdata.h
     data/zdefaultstorage.h
     data/zfilestorage.h
@@ -71,109 +78,90 @@ SET(LibChaos_HEADERS
     data/zstack.h
 
     file/database.h
+    #file/database.cpp
     file/yimagebackend.h
     file/zbitmap.h
-    file/zbmp.h
     file/zfile.h
-    file/zimage.h
-    file/zjpeg.h
-    file/zoptions.h
-    file/zpng.h
-    file/zpdf.h
-    file/zppm.h
-
-    lib/fnv-5.0.3/fnv.h
-    lib/sqlite3.h
-    #lib/demangle.h
-
-    math/zexpression.h
-    math/zformula.h
-    math/znumber.h
-    math/zmath.h
-
-    misc/zencrypt.h
-    misc/zhash.h
-    misc/zrandom.h
-    misc/zret.h
-    misc/zuid.h
-
-    net/zaddress.h
-    net/zconnection.h
-    net/zdatagramsocket.h
-    net/zsocket.h
-    net/zstreamsocket.h
-
-    string/zjson.h
-    string/zpath.h
-    string/zstring.h
-    string/zxml.h
-
-    thread/zcondition.h
-    thread/zlock.h
-    thread/zmutex.h
-    thread/zthread.h
-)
-
-### =================== SOURCES =================== ###
-
-SET(LibChaos_SOURCES
-
-    base/zclock.cpp
-    base/zerror.cpp
-    base/zexception.cpp
-    base/zlog.cpp
-    base/zlogworker.cpp
-    base/ztime.cpp
-
-    data/zbinary.cpp
-
-    #file/database.cpp
-    file/zbmp.cpp
     file/zfile.cpp
+    file/zimage.h
     file/zimage.cpp
+    file/zoptions.h
     file/zoptions.cpp
+    file/zpdf.h
     file/zpdf.cpp
-    file/zppm.cpp
+    file/image/zbmp.h
+    file/image/zbmp.cpp
+    file/image/zjpeg.h
+    #file/image/zjpeg.cpp
+    file/image/zpng.h
+    #file/image/zpng.cpp
+    file/image/zppm.h
+    file/image/zppm.cpp
 
+    #lib/demangle.h
+    lib/fnv-5.0.3/fnv.h
     lib/fnv-5.0.3/hash_64a.c
+    #lib/nowide_standalone/src/iostream.cpp
+    lib/sqlite3.h
     #lib/sqlite3.c
     lib/xxhash.c
-    #lib/nowide_standalone/src/iostream.cpp
 
+    math/zexpression.h
     math/zexpression.cpp
+    math/zformula.h
     math/zformula.cpp
+    math/znumber.h
     math/znumber.cpp
-    math/zmath.cpp
     #math/znumber-reference.cpp
+    math/zmath.h
+    math/zmath.cpp
 
+    misc/zencrypt.h
     misc/zencrypt.cpp
+    misc/zhash.h
     misc/zhash.cpp
+    misc/zrandom.h
     misc/zrandom.cpp
+    misc/zret.h
+    misc/zuid.h
     misc/zuid.cpp
 
+    net/zaddress.h
     net/zaddress.cpp
+    net/zconnection.h
     net/zconnection.cpp
+    net/zdatagramsocket.h
     net/zdatagramsocket.cpp
+    net/zsocket.h
     net/zsocket.cpp
+    net/zstreamsocket.h
     net/zstreamsocket.cpp
 
+    string/zjson.h
     string/zjson.cpp
+    string/zpath.h
     string/zpath.cpp
+    string/zstring.h
     string/zstring.cpp
     string/zstring-encode.cpp
+    string/zxml.h
     string/zxml.cpp
 
+    thread/zcondition.h
     thread/zcondition.cpp
+    thread/zlock.h
     #thread/zlock.cpp
+    thread/zmutex.h
     thread/zmutex.cpp
+    thread/zthread.h
     thread/zthread.cpp
 )
 
 SET(LibChaos_PNG_SOURCES
-    file/zpng.cpp
+    file/image/zpng.cpp
 )
 SET(LibChaos_JPEG_SOURCES
-    file/zjpeg.cpp
+    file/image/zjpeg.cpp
 )
 
 IF(WITH_PNG)
@@ -213,6 +201,7 @@ SET(LibChaos_INCLUDE
     base
     data
     file
+    file/image
     lib
     math
     misc
