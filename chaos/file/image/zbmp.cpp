@@ -15,6 +15,7 @@
 
 namespace LibChaos {
 
+//! \internal
 struct BitmapFileHeader {
     unsigned short bfType;
     unsigned int bfSize;
@@ -23,6 +24,7 @@ struct BitmapFileHeader {
     unsigned int bfOffBits;
 };
 
+//! \internal
 struct BitmapInfoHeader {
     unsigned int biSize;
     unsigned int biWidth;

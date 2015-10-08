@@ -39,7 +39,9 @@ public:
     };
 
 public:
+    //! Default constructor with optional user-allocator argument.
     ZString(ZAllocator<chartype> *alloc = new ZAllocator<chartype>);
+
     ~ZString();
 
 //    ZString(ZStorage *stor) : ZString(){
@@ -334,9 +336,13 @@ private:
     static bool isUtf8(ZString str);
 
 private:
+    //! Allocator.
     ZAllocator<chartype> *_alloc;
+    //! Length of string in bytes.
     zu64 _size;
+    //! Size of real buffer.
     zu64 _realsize;
+    //! String buffer.
     chartype *_data;
 };
 

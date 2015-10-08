@@ -25,6 +25,7 @@ LibChaos is a general-purpose C++ utilities library.
     - Hashing               (\ref LibChaos::ZHash               "ZHash")
     - UUID Generation       (\ref LibChaos::ZUID                "ZUID")
     - Image Format Support:
+        - Images            (\ref LibChaos::ZImage              "ZImage")
         - PNG Images        (\ref LibChaos::ZPNG                "ZPNG")
         - BMP Images        (\ref LibChaos::ZBMP                "ZBMP")
         - PPM Images        (\ref LibChaos::ZPPM                "ZPPM")
@@ -35,10 +36,9 @@ LibChaos is a general-purpose C++ utilities library.
                              \ref LibChaos::ZDatagramSocket     "ZDatagramSocket",
                              \ref LibChaos::ZStreamSocket       "ZStreamSocket",
                              \ref LibChaos::ZConnection         "ZConnection")
-    - H264 Video            (\ref LibChaos::ZH264Encoder        "ZH264Encoder",
-                             \ref LibChaos::ZH264Decoder        "ZH264Decoder")
 
 - WIP:
+    - JPEG Images           (\ref LibChaos::ZJPEG                "ZJPEG")
     - Math                  (\ref LibChaos::ZNumber             "ZNumber",
                              \ref LibChaos::ZExpression         "ZExpression",
                              \ref LibChaos::ZFormula            "ZFormula")
