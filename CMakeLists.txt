@@ -5,6 +5,8 @@ PROJECT(LibChaos)
 
 # Options
 INCLUDE(cmake/Options.cmake)
+# Find External Libraries
+INCLUDE(cmake/FindLibs.cmake)
 # Build Settings
 INCLUDE(cmake/ConfigureBuild.cmake)
 # CMake Utils
@@ -126,7 +128,7 @@ IF(HAS_PARENT)
 
     SET(LibChaos_With_PNG   ${LIBCHAOS_WITH_PNG}  PARENT_SCOPE)
     SET(LibChaos_With_JPEG  ${LIBCHAOS_WITH_JPEG} PARENT_SCOPE)
-    SET(LibChaos_With_H264  ${LIBCHAOS_WITH_H264} PARENT_SCOPE)
+    SET(LibChaos_With_WebP  ${LIBCHAOS_WITH_WEBP} PARENT_SCOPE)
 ENDIF()
 
 # Doxygen

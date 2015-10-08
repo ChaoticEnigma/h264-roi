@@ -15,7 +15,8 @@
 
 namespace LibChaos {
 
-//! \internal
+//! \cond INTERNALS
+
 struct BitmapFileHeader {
     unsigned short bfType;
     unsigned int bfSize;
@@ -24,7 +25,6 @@ struct BitmapFileHeader {
     unsigned int bfOffBits;
 };
 
-//! \internal
 struct BitmapInfoHeader {
     unsigned int biSize;
     unsigned int biWidth;
@@ -38,6 +38,8 @@ struct BitmapInfoHeader {
     unsigned int biClrUsed;
     unsigned int biClrImportant;
 };
+
+//! \endcond
 
 void readFileHeader(ZBinary &bin, BitmapFileHeader *fileh){
     fileh->bfType      = bin.readle16();

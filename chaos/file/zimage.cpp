@@ -39,8 +39,10 @@ ZImage::ZImage(const ZBinary &image) : ZImage(){
         setFormat(BMP);
     } else if(ZPPM::isPPM(image)){
         setFormat(PPM);
+#ifdef LIBCHAOS_HAS_PNG
     } else if(ZPNG::isPNG(image)){
         setFormat(PNG);
+#endif
     }
     // TODO: Reference-count ZBinary
     ZBinary tmp = image;
@@ -273,12 +275,16 @@ void ZImage::setFormat(ZImage::fileformat format){
     case PPM:
         _backend = new ZPPM(this);
         break;
+#ifdef LIBCHAOS_HAS_PNG
     case PNG:
         _backend = new ZPNG(this);
         break;
+#endif
+#ifdef LIBCHAOS_HAS_JPEG
     case JPEG:
         _backend = new ZJPEG(this);
         break;
+#endif
     default:
         _backend = nullptr;
         break;

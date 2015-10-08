@@ -5,33 +5,6 @@ PROJECT(LibChaos)
 
 #SET(IBERTY_DEMANGLE ON)
 
-SET(WITH_PNG  FALSE)
-SET(WITH_JPEG FALSE)
-
-# Find zlib and libpng
-FIND_PATH(ZLIB_INCLUDE   NAMES zlib.h)
-FIND_LIBRARY(ZLIB_LIB    NAMES libzlibstatic.a libz.a)
-FIND_PATH(LIBPNG_INCLUDE NAMES png.h)
-FIND_LIBRARY(LIBPNG_LIB  NAMES libpng.a)
-
-IF(ZLIB_LIB AND ZLIB_INCLUDE AND LIBPNG_LIB AND LIBPNG_INCLUDE)
-    SET(WITH_PNG TRUE)
-    SET(CORE_LIBS ${CORE_LIBS} "PNG")
-ENDIF()
-
-# Find libjpeg
-FIND_PATH(LIBJPEG_INCLUDE NAMES jpeglib.h)
-FIND_LIBRARY(LIBJPEG_LIB  NAMES libturbojpeg.a libjpeg.a)
-
-IF(LIBJPEG_LIB AND LIBJPEG_INCLUDE)
-    SET(WITH_JPEG TRUE)
-    SET(CORE_LIBS ${CORE_LIBS} "JPEG")
-ENDIF()
-
-SET(LIBCHAOS_WITH_PNG  ${WITH_PNG}  PARENT_SCOPE)
-SET(LIBCHAOS_WITH_JPEG ${WITH_JPEG} PARENT_SCOPE)
-SET(CORE_LIBS ${CORE_LIBS} PARENT_SCOPE)
-
 ### =================== SOURCES =================== ###
 
 SET(LibChaos_SOURCES
@@ -97,6 +70,7 @@ SET(LibChaos_SOURCES
     #file/image/zpng.cpp
     file/image/zppm.h
     file/image/zppm.cpp
+    file/image/zwebp.h
 
     #lib/demangle.h
     lib/fnv-5.0.3/fnv.h
@@ -163,19 +137,26 @@ SET(LibChaos_PNG_SOURCES
 SET(LibChaos_JPEG_SOURCES
     file/image/zjpeg.cpp
 )
+SET(LibChaos_WEBP_SOURCES
+    file/image/zwebp.cpp
+)
 
-IF(WITH_PNG)
+SET(LibChaos_WIN32_SOURCES
+    lib/StackWalker.cpp
+)
+
+IF(LIBCHAOS_WITH_PNG)
     SET(LibChaos_SOURCES ${LibChaos_SOURCES} ${LibChaos_PNG_SOURCES})
 ENDIF()
-IF(WITH_JPEG)
+IF(LIBCHAOS_WITH_JPEG)
     SET(LibChaos_SOURCES ${LibChaos_SOURCES} ${LibChaos_JPEG_SOURCES})
+ENDIF()
+IF(LIBCHAOS_WITH_WEBP)
+    SET(LibChaos_SOURCES ${LibChaos_SOURCES} ${LibChaos_WEBP_SOURCES})
 ENDIF()
 
 IF(LIBCHAOS_PLATFORM_WINDOWS)
-    SET(LibChaos_SOURCES
-        ${LibChaos_SOURCES}
-        #lib/StackWalker.cpp
-    )
+    #SET(LibChaos_SOURCES ${LibChaos_SOURCES} ${LibChaos_WIN32_SOURCES})
 ENDIF()
 
 ### =================== CONFIG =================== ###
@@ -193,7 +174,14 @@ SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
 SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
 SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
 
-GatherSources(${LibChaos_HEADERS} ${LibChaos_SOURCES} ${LibChaos_PNG_SOURCES} ${LibChaos_JPEG_SOURCES})
+GatherSources(
+    ${LibChaos_HEADERS}
+    ${LibChaos_SOURCES}
+    ${LibChaos_PNG_SOURCES}
+    ${LibChaos_JPEG_SOURCES}
+    ${LibChaos_WEBP_SOURCES}
+    ${LibChaos_WIN32_SOURCES}
+)
 
 SET(LibChaos_INCLUDE
     .
@@ -217,13 +205,12 @@ INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
     lib/fnv-5.0.3
 )
-IF(WITH_PNG)
+IF(LIBCHAOS_WITH_PNG)
     INCLUDE_DIRECTORIES(${ZLIB_INCLUDE} ${LIBPNG_INCLUDE})
-    ADD_DEFINITIONS(-DLIBCHAOS_HAS_PNG -DPNG_STATIC)
+    ADD_DEFINITIONS(-DPNG_STATIC)
 ENDIF()
-IF(WITH_JPEG)
+IF(LIBCHAOS_WITH_JPEG)
     INCLUDE_DIRECTORIES(${LIBJPEG_INCLUDE})
-    ADD_DEFINITIONS(-DLIBCHAOS_HAS_JPEG)
 ENDIF()
 
 IF(IBERTY_DEMANGLE)
@@ -234,10 +221,10 @@ ENDIF()
 
 ADD_LIBRARY(chaos ${LIBCHAOS_LINK} ${LibChaos_HEADERS} ${LibChaos_SOURCES})
 TARGET_LINK_LIBRARIES(chaos ${EXTERN_LIBRARIES})
-IF(WITH_PNG)
+IF(LIBCHAOS_WITH_PNG)
     TARGET_LINK_LIBRARIES(chaos ${LIBPNG_LIB} ${ZLIB_LIB})
 ENDIF()
-IF(WITH_JPEG)
+IF(LIBCHAOS_WITH_JPEG)
     TARGET_LINK_LIBRARIES(chaos ${LIBJPEG_LIB})
 ENDIF()
 
