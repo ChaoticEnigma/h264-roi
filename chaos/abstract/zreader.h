@@ -23,7 +23,7 @@ public:
         read(&tmp, 1);
         return tmp;
     }
-    zu8 reads8(){
+    zs8 reads8(){
         zs8 tmp = 0;
         read((zu8*)&tmp, 1);
         return tmp;

@@ -1,5 +1,10 @@
 ## Options
 
+# Build Modes
+OPTION(RELEASE                              "Build with Release Optimizations"          OFF )
+OPTION(DEBUG                                "Build with Debugging Support"              OFF )
+OPTION(EXTRA_WARNINGS                       "Produce Extra Compiler Warnings"           OFF )
+
 # General Options
 OPTION(LIBCHAOS_SHARED                      "Build LibChaos as a shared library"        OFF )
 OPTION(IBERTY_DEMANGLE                      "Use libiberty to demangle symbols"         OFF )
