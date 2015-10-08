@@ -115,29 +115,35 @@ IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
     ENDIF()
 
     IF(DEBUG) # Enable gratuitous warnings on debug build
-        SET(CXXGNU "${CXXGNU} -Wall -Wextra -Wpedantic")
-        #SET(CXXGNU "${CXXGNU} -fms-extensions")
-        #SET(CXXF "${CXXF} -Wbloody_everything") # Some day...
-        #SET(CXXGNU "${CXXGNU} -Wcast-align") # Cast alignment
-        SET(CXXGNU "${CXXGNU} -Wcast-qual -Wsign-conversion -Wsign-promo") # Casting
-        SET(CXXGNU "${CXXGNU} -Wformat=2 -Wstrict-overflow=5 -Wswitch-default") # Formatting
-        SET(CXXGNU "${CXXGNU} -Winit-self  -Wredundant-decls -Wundef -Woverloaded-virtual") # Declarationss
-        SET(CXXGNU "${CXXGNU} -Wmissing-include-dirs -Wctor-dtor-privacy -Wdisabled-optimization")
-
-        IF(${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_CLANG})
-            # Clang options
+        IF(LIBCHAOS_COMPILER_CLANG)
+            SET(CXXGNU "${CXXGNU} -Weverything") # Enable all diagnostics
+            SET(CXXGNU "${CXXGNU} -Wno-c++98-compat -Wno-c++98-compat-pedantic") # Disable C++98 compatibility
         ELSE()
-            SET(CXXGNU "${CXXGNU} -Wlogical-op -Wnoexcept -Wstrict-null-sentinel")
-        ENDIF()
+            SET(CXXGNU "${CXXGNU} -Wall -Wextra -Wpedantic")
+            #SET(CXXGNU "${CXXGNU} -fms-extensions")
+            #SET(CXXF "${CXXF} -Wbloody_everything") # Some day...
+            #SET(CXXGNU "${CXXGNU} -Wcast-align") # Cast alignment
+            SET(CXXGNU "${CXXGNU} -Wcast-qual -Wsign-conversion -Wsign-promo") # Casting
+            SET(CXXGNU "${CXXGNU} -Wformat=2 -Wstrict-overflow=5 -Wswitch-default") # Formatting
+            SET(CXXGNU "${CXXGNU} -Winit-self  -Wredundant-decls -Wundef -Woverloaded-virtual") # Declarationss
+            SET(CXXGNU "${CXXGNU} -Wmissing-include-dirs -Wctor-dtor-privacy -Wdisabled-optimization")
 
-        SET(CXXGNU "${CXXGNU} -Werror=return-type") # Should be errors
-        SET(CXXF "${CXXF} -Wshadow ") # Some warnings are too verbose to be useful
-        #SET(CXXF "${CXXF} -Wmissing-declarations -Wold-style-cast") # Not actually errors
-        SET(CXXGNU "${CXXGNU} -Wno-unused-parameter -Wno-unused") # Disabled Warnings
-        IF(NOT COMPILER_MINGW)
-            SET(CXXGNU "${CXXGNU} -Wno-comment") # Not recognized on MinGW
+            IF(${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_CLANG})
+                # Clang options
+            ELSE()
+                SET(CXXGNU "${CXXGNU} -Wlogical-op -Wnoexcept -Wstrict-null-sentinel")
+            ENDIF()
+
+            SET(CXXF "${CXXF} -Wshadow ") # Some warnings are too verbose to be useful
+            #SET(CXXF "${CXXF} -Wmissing-declarations -Wold-style-cast") # Not actually errors
+            SET(CXXGNU "${CXXGNU} -Wno-unused-parameter -Wno-unused") # Disabled Warnings
+            IF(NOT COMPILER_MINGW)
+                SET(CXXGNU "${CXXGNU} -Wno-comment") # Not recognized on MinGW
+            ENDIF()
         ENDIF()
     ENDIF()
+
+    SET(CXXGNU "${CXXGNU} -Werror=return-type") # Should be errors
 
     IF(LIBCHAOS_COMPILER_CLANG)
         SET(CXXGNU "${CXXGNU} -Wno-nested-anon-types") # Clang warns about nested anonymous types
