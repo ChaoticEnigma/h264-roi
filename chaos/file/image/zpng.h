@@ -73,6 +73,9 @@ public:
 
     static bool isPNG(const ZBinary &data);
 
+    /*! Decode a PNG image.
+     *  \throws ZException On decoding errors.
+     */
     bool decode(ZBinary &pngdata_in, ReadOptions *options = nullptr);
     bool encode(ZBinary &pngdata_out, WriteOptions *options = nullptr);
 

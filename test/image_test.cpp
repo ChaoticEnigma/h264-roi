@@ -87,5 +87,12 @@ int image_test(){
     if(!ZFile::writeBinary(IMAGE_TEST_16_PNG, image2.toFileFormat()))
         throw __LINE__;
 
+    ZBinary bin3i;
+    ZFile::readBinary("dice.webp", bin3i);
+    ZImage image3(bin3i);
+    image3.setFormat(ZImage::PNG);
+    ZBinary bin3o = image3.toFileFormat();
+    ZFile::writeBinary("dice.png", bin3o);
+
     return 0;
 }

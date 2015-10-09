@@ -20,6 +20,8 @@
 
 namespace LibChaos {
 
+//! \cond INTERNALS
+
 struct PngReadData {
     ZBinary *filedata;
 
@@ -78,6 +80,8 @@ int writepng_encode_finish(PngWriteData *mainprog_ptr);
 void writepng_cleanup(PngWriteData *mainprog_ptr);
 void writepng_warning_handler(png_struct *png_ptr, png_const_charp msg);
 void writepng_error_handler(png_struct *png_ptr, png_const_charp msg);
+
+//! \endcond
 
 bool ZPNG::isPNG(const ZBinary &data){
     return (png_sig_cmp(data.raw(), 0, 1) == 0);

@@ -4,24 +4,13 @@
 **                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zimage.h"
-
 #include "zbmp.h"
+#include "zppm.h"
 #include "zpng.h"
 #include "zjpeg.h"
-#include "zppm.h"
+#include "zwebp.h"
 
 namespace LibChaos {
-
-//const ZArray<ZImage::ImageType> ZImage::types = {
-//    { ZImage::rgb24,    3,  8   },
-//    { ZImage::rgba32,   4,  8   },
-//    { ZImage::rgb48,    3,  16  },
-//    { ZImage::rgba64,   4,  16  },
-//    { ZImage::g8,       1,  8   },
-//    { ZImage::ga16,     2,  8   },
-//    { ZImage::g16,      1,  16  },
-//    { ZImage::ga32,     2,  16  }
-//};
 
 const ZMap<ZImage::pixelformat, ZImage::ImageType> ZImage::types = {
     { ZImage::RGB24,    { 3,  8, 1 } },
@@ -42,6 +31,14 @@ ZImage::ZImage(const ZBinary &image) : ZImage(){
 #ifdef LIBCHAOS_HAS_PNG
     } else if(ZPNG::isPNG(image)){
         setFormat(PNG);
+#endif
+#ifdef LIBCHAOS_HAS_JPEG
+    } else if(ZJPEG::isJPEG(image)){
+        setFormat(JPEG);
+#endif
+#ifdef LIBCHAOS_HAS_WEBP
+    } else if(ZWebP::isWebP(image)){
+        setFormat(WEBP);
 #endif
     }
     // TODO: Reference-count ZBinary
@@ -283,6 +280,11 @@ void ZImage::setFormat(ZImage::fileformat format){
 #ifdef LIBCHAOS_HAS_JPEG
     case JPEG:
         _backend = new ZJPEG(this);
+        break;
+#endif
+#ifdef LIBCHAOS_HAS_WEBP
+    case WEBP:
+        _backend = new ZWebP(this);
         break;
 #endif
     default:

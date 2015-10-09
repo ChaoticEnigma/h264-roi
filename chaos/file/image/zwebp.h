@@ -8,10 +8,19 @@ namespace LibChaos {
 
 class ZWebP : public YImageBackend {
 public:
-    ZWebP();
+    ZWebP(ZImage *image) : _image(image){}
 
-    bool decode(ZBinary &data_in, ReadOptions *options);
-    bool encode(ZBinary &data_out, WriteOptions *options);
+    static bool isWebP(const ZBinary &data);
+
+    /*! Decode a WebP image.
+     *  Can decode 8-bit RGB and RGBA WebP images.
+     *  \throws ZException On decoding errors.
+     */
+    bool decode(ZBinary &data, ReadOptions *options);
+    bool encode(ZBinary &data, WriteOptions *options);
+
+private:
+    ZImage *_image;
 };
 
 }
