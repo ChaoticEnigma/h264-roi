@@ -4,11 +4,14 @@
 #include "zimage.h"
 #include "yimagebackend.h"
 
+#include <webp/decode.h>
+#include <webp/encode.h>
+
 namespace LibChaos {
 
 class ZWebP : public YImageBackend {
 public:
-    ZWebP(ZImage *image) : _image(image){}
+    ZWebP(ZImage *image);
 
     static bool isWebP(const ZBinary &data);
 
@@ -21,6 +24,13 @@ public:
 
 private:
     ZImage *_image;
+
+    // Decoding
+    WebPDecoderConfig decode_config;
+
+    // Encoding
+    WebPConfig encode_config;
+    WebPPicture picture;
 };
 
 }

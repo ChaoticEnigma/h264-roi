@@ -13,6 +13,7 @@
 namespace LibChaos {
 
 const ZMap<ZImage::pixelformat, ZImage::ImageType> ZImage::types = {
+    // { type, { channels, depth, planes } }
     { ZImage::RGB24,    { 3,  8, 1 } },
     { ZImage::RGBA32,   { 4,  8, 1 } },
     { ZImage::RGB48,    { 3, 16, 1 } },
@@ -23,29 +24,12 @@ const ZMap<ZImage::pixelformat, ZImage::ImageType> ZImage::types = {
     { ZImage::GA32,     { 2, 16, 1 } },
 };
 
+ZImage::ZImage() : _width(0), _height(0), _channels(0), _depth(0), _type(UNKNOWN), _buffer(nullptr), _format(NONE), _backend(nullptr){
+
+}
+
 ZImage::ZImage(const ZBinary &image) : ZImage(){
-    if(ZBMP::isBMP(image)){
-        setFormat(BMP);
-    } else if(ZPPM::isPPM(image)){
-        setFormat(PPM);
-#ifdef LIBCHAOS_HAS_PNG
-    } else if(ZPNG::isPNG(image)){
-        setFormat(PNG);
-#endif
-#ifdef LIBCHAOS_HAS_JPEG
-    } else if(ZJPEG::isJPEG(image)){
-        setFormat(JPEG);
-#endif
-#ifdef LIBCHAOS_HAS_WEBP
-    } else if(ZWebP::isWebP(image)){
-        setFormat(WEBP);
-#endif
-    }
-    // TODO: Reference-count ZBinary
-    ZBinary tmp = image;
-    if(_backend){
-        _backend->decode(tmp);
-    }
+    decodeFormat(image);
 }
 
 ZImage::ZImage(zu64 width, zu64 height, ZImage::pixelformat type) : ZImage(){
@@ -262,43 +246,75 @@ void ZImage::strip16to8(){
     _depth = 8;
 }
 
-void ZImage::setFormat(ZImage::fileformat format){
-    delete _backend;
-    _format = format;
-    switch(_format){
-    case BMP:
-        _backend = new ZBMP(this);
-        break;
-    case PPM:
-        _backend = new ZPPM(this);
-        break;
+ZImage::fileformat ZImage::checkImageFormat(const ZBinary &data){
+    if(ZBMP::isBMP(data)){
+        return BMP;
+    } else if(ZPPM::isPPM(data)){
+        return PPM;
 #ifdef LIBCHAOS_HAS_PNG
-    case PNG:
-        _backend = new ZPNG(this);
-        break;
+    } else if(ZPNG::isPNG(data)){
+        return PNG;
 #endif
 #ifdef LIBCHAOS_HAS_JPEG
-    case JPEG:
-        _backend = new ZJPEG(this);
-        break;
+    } else if(ZJPEG::isJPEG(data)){
+        return JPEG;
 #endif
 #ifdef LIBCHAOS_HAS_WEBP
-    case WEBP:
-        _backend = new ZWebP(this);
-        break;
+    } else if(ZWebP::isWebP(data)){
+        return WEBP;
 #endif
-    default:
-        _backend = nullptr;
-        break;
+    } else {
+        return NONE;
     }
 }
 
-ZBinary ZImage::toFileFormat(){
-    ZBinary out;
-    if(_backend){
-        _backend->encode(out);
+void ZImage::setFormat(fileformat format){
+    if(format != _format){
+        delete _backend;
+        _format = format;
+        switch(_format){
+        case BMP:
+            _backend = new ZBMP(this);
+            break;
+        case PPM:
+            _backend = new ZPPM(this);
+            break;
+#ifdef LIBCHAOS_HAS_PNG
+        case PNG:
+            _backend = new ZPNG(this);
+            break;
+#endif
+#ifdef LIBCHAOS_HAS_JPEG
+        case JPEG:
+            _backend = new ZJPEG(this);
+            break;
+#endif
+#ifdef LIBCHAOS_HAS_WEBP
+        case WEBP:
+            _backend = new ZWebP(this);
+            break;
+#endif
+        default:
+            _backend = nullptr;
+            break;
+        }
     }
-    return out;
+}
+
+void ZImage::decodeFormat(const ZBinary &data){
+    fileformat format = checkImageFormat(data);
+    setFormat(format);
+
+    // TODO: Reference-count ZBinary
+    ZBinary tmp = data;
+    if(_backend){
+        _backend->decode(tmp);
+    }
+}
+
+void ZImage::encodeFormat(ZBinary &data){
+    if(_backend)
+        _backend->encode(data);
 }
 
 }

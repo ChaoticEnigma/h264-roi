@@ -28,7 +28,7 @@ public:
     typedef unsigned char byte;
 
     enum pixelformat {
-        unknown = 0,
+        UNKNOWN = 0,
         //! Red, Green, Blue (3 channels, 8 bits each).
         RGB24,
         //! Red, Green, Blue (3 channels, 16 bits each).
@@ -51,13 +51,13 @@ public:
         NONE = 0,
         //! BMP (uncompressed).
         BMP,
-        //! PPM (uncompressed)
+        //! PPM (uncompressed).
         PPM,
-        //! PNG (lossless compression)
+        //! PNG (lossless compression).
         PNG,
-        //! JPEG (lossy compression)
+        //! JPEG (lossy compression).
         JPEG,
-        //! WEBP (lossy & lossless compression)
+        //! WEBP (lossy & lossless compression).
         WEBP,
     };
 
@@ -70,9 +70,9 @@ public:
 
 public:
     //! Default constructor.
-    ZImage() : _width(0), _height(0), _channels(0), _depth(0), _type(unknown), _buffer(nullptr), _format(NONE), _backend(nullptr){}
+    ZImage();
 
-    //! Load a formatted image (e.g. PNG, JPEG).
+    //! Load a formatted image.
     ZImage(const ZBinary &image);
 
     //! Create an image of \a type with \a width and \a height.
@@ -81,7 +81,7 @@ public:
     ZImage(zu64 width, zu64 height, zu8 channels = 3, zu8 depth = 8);
 
     /*! Create and load an imnage from \a data with \a width, \a height, \a channels and \a depth.
-     *  The expected size of the image at data is \a width * \a height * (\a channels * \a depth) bytes.
+     *  The expected size of the image at \a data is \a width * \a height * (\a channels * \a depth) bytes.
      */
     ZImage(const byte *data, zu64 width, zu64 height, zu8 channels = 3, zu8 depth = 8);
 
@@ -171,26 +171,36 @@ public:
     //! Set the height of the image.
     void setHeight(zu64 height);
 
-    //! Set the number of channels in the image. Resizes buffer.
-    //! If channels is increased, expandmask will be copied to each pixel before original channels are copied.
-    //! Expandmask must be at least the new pixel size.
+    /*! Set the number of channels in the image. Resizes buffer.
+     *  If channels is increased, expandmask will be copied to each pixel before original channels are copied.
+     *  Expandmask must be at least the new pixel size.
+     */
     void setChannels(zu8 channels, const unsigned char *expandmask = nullptr);
 
-    //! Set the depth of the channels in the image. Resizes buffer.
-    //! For now, can only deal with depths aligned to bytes (multiples of 8).
-    //! \warning This is dangerous / doesn't work (maybe).
+    /*! Set the depth of the channels in the image. Resizes buffer.
+     *  For now, can only deal with depths aligned to bytes (multiples of 8).
+     *  \warning This is dangerous / doesn't work (maybe).
+     */
     void setDepth(zu8 depth);
 
     void strip16to8();
 
-    //! Change the image file format and backend.
+    //! Get the format of a formatted image.
+    static fileformat checkImageFormat(const ZBinary &data);
+
+    //! Get the image file format.
+    fileformat getFormat() const { return _format; }
+    /*! Set the image file format and backend.
+     *  Creates a YImageBackend subclass instance.
+     *  Only reconstructs the backend instance if the format changes.
+     *  The same backend instance can be used to decode / encode multiple images.
+     */
     void setFormat(fileformat format);
 
-    //! Get image file format.
-    fileformat getFormat() const { return _format; }
-
-    //! Generate a file-formatted image.
-    ZBinary toFileFormat();
+    //! Decoce an image from formatted \a data.
+    void decodeFormat(const ZBinary &data);
+    //! Encode a formatted image.
+    void encodeFormat(ZBinary &data);
 
     //! Check that image is loaded, check this before using raw buffer access.
     inline bool isLoaded() const {
@@ -231,6 +241,11 @@ public:
         return _depth;
     }
 
+    //! Get row stride in bytes.
+    inline zu64 stride() const {
+        return _width * pixelSize();
+    }
+
     //! Get number of pixels.
     inline zu64 pixels() const {
         return _width * _height;
@@ -269,17 +284,17 @@ public:
     }
 
 private:
-    //! Image width / height in pixels
+    //! Image width / height in pixels.
     zu64 _width, _height;
-    //! Number of planes
+    //! Number of planes.
     zu8 _planes;
-    //! Number of channels per pixel
+    //! Number of channels per pixel.
     zu8 _channels;
-    //! Number of bits per channel
+    //! Number of bits per channel.
     zu8 _depth;
-    //! Image type
+    //! Image type.
     pixelformat _type;
-    //! Image data
+    //! Image data.
     unsigned char *_buffer;
 
     //! Image file format.
