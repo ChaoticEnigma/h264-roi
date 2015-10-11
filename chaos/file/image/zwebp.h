@@ -19,8 +19,8 @@ public:
      *  Can decode 8-bit RGB and RGBA WebP images.
      *  \throws ZException On decoding errors.
      */
-    bool decode(ZBinary &data, ReadOptions *options);
-    bool encode(ZBinary &data, WriteOptions *options);
+    bool decode(const ZAccessor *input);
+    bool encode(ZWriter *output);
 
 private:
     ZImage *_image;

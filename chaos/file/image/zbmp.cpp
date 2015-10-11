@@ -93,7 +93,7 @@ bool ZBMP::isBMP(const ZBinary &data){
     return (ZBinary::decle16(data.raw()) == BITMAP_TYPE);
 }
 
-bool ZBMP::decode(ZBinary &data_in, YImageBackend::ReadOptions *options){
+bool ZBMP::decode(const ZAccessor *data_in){
     BitmapFileHeader fileh;
     readFileHeader(data_in, &fileh);
 
@@ -128,7 +128,7 @@ bool ZBMP::decode(ZBinary &data_in, YImageBackend::ReadOptions *options){
     return true;
 }
 
-bool ZBMP::encode(ZBinary &data_out, YImageBackend::WriteOptions *options){
+bool ZBMP::encode(ZWriter *output){
     if(!_image->isRGB24()){
         throw ZException(ZString("BMP Write: Invalid channels / depth ") + _image->channels() + " " + _image->depth());
         return false;
@@ -153,7 +153,8 @@ bool ZBMP::encode(ZBinary &data_out, YImageBackend::WriteOptions *options){
     fileh.bfReserved1 = 0;
     fileh.bfReserved2 = 0;
     fileh.bfOffBits = fileheadersize + infoheadersize; // offset to pixel data
-    zassert(data_out.write(writeFileHeader(&fileh)) == fileheadersize);
+    ZBinary fhbin = writeFileHeader(&fileh);
+    zassert(output->write(fhbin.raw(), fhbin.size()) == fileheadersize);
 
     BitmapInfoHeader infoh;
     infoh.biSize = infoheadersize; // size of info header
@@ -167,9 +168,10 @@ bool ZBMP::encode(ZBinary &data_out, YImageBackend::WriteOptions *options){
     infoh.biYPelsPerMeter = 0;
     infoh.biClrUsed = 0;
     infoh.biClrImportant = 0;
-    zassert(data_out.write(writeInfoHeader(&infoh)) == infoheadersize);
+    ZBinary ihbin = writeInfoHeader(&infoh);
+    zassert(output->write(ihbin.raw(), ihbin.size()) == infoheadersize);
 
-    zassert(data_out.write(pixdata, outsize) == outsize);
+    zassert(output->write(pixdata, outsize) == outsize);
     delete[] pixdata;
 
     return true;

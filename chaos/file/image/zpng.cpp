@@ -83,11 +83,15 @@ void writepng_error_handler(png_struct *png_ptr, png_const_charp msg);
 
 //! \endcond
 
+ZPNG::ZPNG(ZImage *image) : _image(image){
+
+}
+
 bool ZPNG::isPNG(const ZBinary &data){
     return (png_sig_cmp(data.raw(), 0, 1) == 0);
 }
 
-bool ZPNG::decode(ZBinary &pngdata_in, ReadOptions *options){
+bool ZPNG::decode(ZBinary &pngdata_in, DecodeOptions *options){
     PngReadData data;
 
     try {
@@ -147,7 +151,7 @@ bool ZPNG::decode(ZBinary &pngdata_in, ReadOptions *options){
     return true;
 }
 
-bool ZPNG::encode(ZBinary &pngdata_out, WriteOptions *options){
+bool ZPNG::encode(ZBinary &pngdata_out, EncodeOptions *options){
     PngWriteData *data = new PngWriteData;
 
     try {

@@ -28,12 +28,15 @@ public:
     };
 
 public:
-    ZJPEG(ZImage *image) : _image(image){}
+    ZJPEG(ZImage *image);
 
     static bool isJPEG(const ZBinary &data);
 
-    bool decode(ZBinary &jpegdata_in, ReadOptions *options = nullptr);
-    bool encode(ZBinary &jepgdata_out, WriteOptions *options = nullptr);
+    bool decode(const ZAccessor *input);
+    bool encode(ZWriter *output);
+
+public:
+    int quality;
 
 private:
     ZImage *_image;

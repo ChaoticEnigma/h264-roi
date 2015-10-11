@@ -43,10 +43,10 @@ public:
         };
     };
 
-    struct PNGRead : YImageBackend::ReadOptions {
+    struct PNGRead : YImageBackend::DecodeOptions {
         bool strip = false;
     };
-    struct PNGWrite : YImageBackend::WriteOptions {
+    struct PNGWrite : YImageBackend::EncodeOptions {
         enum png_interlace {
             none = 0,
             adam7 = 1
@@ -69,15 +69,15 @@ public:
     };
 
 public:
-    ZPNG(ZImage *image) : _image(image){}
+    ZPNG(ZImage *image);
 
     static bool isPNG(const ZBinary &data);
 
     /*! Decode a PNG image.
      *  \throws ZException On decoding errors.
      */
-    bool decode(ZBinary &pngdata_in, ReadOptions *options = nullptr);
-    bool encode(ZBinary &pngdata_out, WriteOptions *options = nullptr);
+    bool decode(const ZAccessor *input);
+    bool encode(ZWriter *output);
 
     static ZArray<PngChunk> parsePngChunks(ZBinary pngdata);
     static ZArray<PngChunk> parsePngAncillaryChunks(ZBinary pngdata);
@@ -88,9 +88,11 @@ public:
         return text[key];
     }
 
+public:
+    AsArZ text;
+
 private:
     ZImage *_image;
-    AsArZ text;
 };
 
 }

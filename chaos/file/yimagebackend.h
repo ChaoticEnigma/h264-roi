@@ -13,18 +13,10 @@ namespace LibChaos {
 
 class YImageBackend {
 public:
-    struct ReadOptions {
-        virtual ~ReadOptions(){}
-    };
-    struct WriteOptions {
-        virtual ~WriteOptions(){}
-    };
-
-public:
     virtual ~YImageBackend(){}
 
-    virtual bool decode(ZBinary &data_in, ReadOptions *options = nullptr) = 0;
-    virtual bool encode(ZBinary &data_out, WriteOptions *options = nullptr) = 0;
+    virtual bool decode(const ZAccessor *input) = 0;
+    virtual bool encode(ZWriter *output) = 0;
 };
 
 }

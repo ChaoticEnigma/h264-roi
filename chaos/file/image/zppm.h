@@ -18,8 +18,8 @@ public:
 
     static bool isPPM(const ZBinary &data);
 
-    bool decode(ZBinary &ppmdata_in, ReadOptions *options = nullptr);
-    bool encode(ZBinary &ppmdata_out, WriteOptions *options = nullptr);
+    bool decode(const ZAccessor *input);
+    bool encode(ZWriter *output);
 
     bool read(ZPath path);
     bool write(ZPath path);

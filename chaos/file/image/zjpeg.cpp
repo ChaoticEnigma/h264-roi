@@ -16,16 +16,20 @@ namespace LibChaos {
 
 int readjpeg(ZBinary &in, ZImage *out);
 
+ZJPEG::ZJPEG(ZImage *image) : _image(image){
+    quality = 100;
+}
+
 bool ZJPEG::isJPEG(const ZBinary &data){
     return (ZBinary::decbe32(data.raw()) == JPEG_SIG);
 }
 
-bool ZJPEG::decode(ZBinary &jpegdata_in, ReadOptions *options){
+bool ZJPEG::decode(ZBinary &jpegdata_in, DecodeOptions *options){
 
     return false;
 }
 
-bool ZJPEG::encode(ZBinary &jepgdata_out, WriteOptions *options){
+bool ZJPEG::encode(ZBinary &jepgdata_out, EncodeOptions *options){
 
     return false;
 }
