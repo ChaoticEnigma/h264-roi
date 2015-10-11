@@ -7,6 +7,7 @@
 #define ZSTRING_H
 
 #include "ztypes.h"
+#include "zaccessor.h"
 #include "zallocator.h"
 #include "zassoc.h"
 #include "zhash.h"
@@ -25,15 +26,15 @@ class ZString;
 typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
-typedef char zstringchartype;
+typedef char zstring_chartype;
 
 /*! UTF-8 contiguous string container.
  *  Wide characters are narrowed and encoded in UTF-8.
  *  Internal array is always null terminated.
  */
-class ZString {
+class ZString : public ZAccessor<zstring_chartype> {
 public:
-    typedef zstringchartype chartype;
+    typedef zstring_chartype chartype;
     enum {
         none = ZU64_MAX
     };
@@ -75,8 +76,8 @@ public:
     std::wstring wstr() const;
 
     // Pointer to data
-    inline const chartype *cc() const { return _data; }
     inline chartype *c() const { return _data; }
+    inline const chartype *cc() const { return _data; }
 
     // Fill constructor
     ZString(chartype ch, zu64 len = 1);
@@ -137,11 +138,6 @@ public:
 
     //! Prepend \a str to string.
     ZString &prepend(const ZString &str);
-
-    //! Get reference to character at \a i.
-    inline char &operator[](zu64 i){ return _data[i]; }
-    //! Get constant reference to character at \a i.
-    inline const char &operator[](zu64 i) const { return _data[i]; }
 
     //! Count occurrences of \a test.
     zu64 count(ZString test) const;
@@ -305,7 +301,6 @@ public:
     inline bool isEmpty() const { return (size() == 0); }
 
     // Number of bytes (code units)
-    inline zu64 size() const { return _size; }
     inline zu64 realSize() const { return _realsize; }
 
     inline const zbyte *bytes() const { return reinterpret_cast<zbyte*>(_data); }
@@ -323,6 +318,15 @@ public:
     inline const chartype &first() const { return _data[0]; }
     inline chartype &last(){ return _data[size() - 1]; }
     inline const chartype &last() const { return _data[size() - 1]; }
+
+    // ZAccessor interface
+    //! Get reference to character at \a i.
+    char &at(zu64 i){ return _data[i]; }
+    //! Get constant reference to character at \a i.
+    const char &at(zu64 i) const { return _data[i]; }
+    char *raw(){ return c(); }
+    const char *raw() const { return cc(); }
+    inline zu64 size() const { return _size; }
 
 private:
     void resize(zu64 len);

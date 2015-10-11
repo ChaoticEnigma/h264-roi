@@ -22,7 +22,7 @@ IF(LIBJPEG_LIB AND LIBJPEG_INCLUDE)
 ENDIF()
 
 # Find libwebp
-FIND_PATH(LIBWEBP_INCLUDE NAMES webp/decode.h webp/encode.h webp/types.h)
+FIND_PATH(LIBWEBP_INCLUDE NAMES webp/decode.h webp/encode.h)
 FIND_LIBRARY(LIBWEBP_LIB NAMES libwebp.a)
 
 IF(LIBWEBP_INCLUDE AND LIBWEBP_LIB)

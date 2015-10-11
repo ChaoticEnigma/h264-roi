@@ -2,7 +2,7 @@
 
 namespace LibChaos {
 
-ZBinary &ZBinary::fill(ZBinary::zbinary_type dat, zu64 size){
+ZBinary &ZBinary::fill(ZBinary::bytetype dat, zu64 size){
     reserve(size);
     _size = size;
     memset(_data, dat, _size);
@@ -16,14 +16,14 @@ ZBinary &ZBinary::concat(const ZBinary &other){
     return *this;
 }
 
-ZBinary &ZBinary::append(ZBinary::zbinary_type byte){
+ZBinary &ZBinary::append(ZBinary::bytetype byte){
     reserve(_size + 1);
     operator[](_size - 1) = byte;
     return *this;
 }
 
 void ZBinary::reverse(){
-    zbinary_type *buffer = _alloc->alloc(_realsize);
+    bytetype *buffer = _alloc->alloc(_realsize);
     for(zu64 i = 0; i < _size; ++i){
         buffer[i] = _data[_size - i - 1];
     }
