@@ -23,7 +23,7 @@ namespace LibChaos {
 //! \cond INTERNALS
 
 struct PngReadData {
-    ZBinary *filedata;
+    ZReader *input;
 
     png_struct *png_ptr = NULL;
     png_info *info_ptr = NULL;
@@ -40,7 +40,7 @@ struct PngReadData {
 };
 
 struct PngWriteData {
-    ZBinary *filedata;
+    ZWriter *output;
 
     png_struct *png_ptr = NULL;
     png_info *info_ptr = NULL;
@@ -91,15 +91,15 @@ bool ZPNG::isPNG(const ZBinary &data){
     return (png_sig_cmp(data.raw(), 0, 1) == 0);
 }
 
-bool ZPNG::decode(ZBinary &pngdata_in, DecodeOptions *options){
+bool ZPNG::decode(ZReader *input){
     PngReadData data;
 
     try {
-        if(!pngdata_in.size()){
+        if(!input->available()){
             throw ZException("PNG Read: empty input", PNGError::emptyinput, false);
         }
 
-        data.filedata = &pngdata_in;
+        data.input = input;
 
         readpng_init(&data);
 
@@ -141,24 +141,24 @@ bool ZPNG::decode(ZBinary &pngdata_in, DecodeOptions *options){
 
     } catch(ZException e){
         //ELOG("ZPNG Read error " << e.code() << ": " << e.what());
-        pngdata_in.rewind();
+        //input->rewind();
         readpng_cleanup(&data);
         throw e;
     }
 
-    pngdata_in.rewind();
+    //input->rewind();
     readpng_cleanup(&data);
     return true;
 }
 
-bool ZPNG::encode(ZBinary &pngdata_out, EncodeOptions *options){
+bool ZPNG::encode(ZWriter *output){
     PngWriteData *data = new PngWriteData;
 
     try {
         if(!_image->isLoaded())
             throw ZException("PNG Write: empty image", PNGError::emptyimage, false);
 
-        data->filedata = &pngdata_out;
+        data->output = output;
 
         data->image_data = NULL;
         data->row_pointers = NULL;
@@ -186,10 +186,7 @@ bool ZPNG::encode(ZBinary &pngdata_out, EncodeOptions *options){
             throw ZException("PNG Read: unsupported image channel count", PNGError::unsupportedchannelcount, false);
 
         // Get user options
-        if(options){
-            PNGWrite *pngopt = dynamic_cast<PNGWrite*>(options);
-            data->interlaced = pngopt->interlace & PNGWrite::adam7;
-        }
+        data->interlaced = interlace;
 
         // Init PNG reading
         int result = writepng_init(data, text);
@@ -262,7 +259,7 @@ ZArray<ZPNG::PngChunk> ZPNG::parsePngChunks(ZBinary pngdata){
         PngChunk chunk;
 
         // Size (big-endian in PNG chunks)
-        chunk.size = pngdata.readzu32();
+        chunk.size = pngdata.readbeu32();
 
         // Name
         size = 4;
@@ -279,7 +276,7 @@ ZArray<ZPNG::PngChunk> ZPNG::parsePngChunks(ZBinary pngdata){
         delete[] buffer;
 
         // CRC
-        chunk.crc = pngdata.readzu32();
+        chunk.crc = pngdata.readbeu32();
         chunk.crc_ok = (chunk.crc == ZHash32Base::crcHash32_hash(chunk.data.raw(), chunk.size));
 
         chunks.push(chunk);
@@ -316,11 +313,12 @@ int readpng_init(PngReadData *data){
     //data->image.version = PNG_IMAGE_VERSION;
 
     // Check PNG signature
-    if(png_sig_cmp(data->filedata->raw(), 0, 1)){
+    zbyte sig[8];
+    data->input->read(sig, 8);
+    if(png_sig_cmp(sig, 0, 1)){
         throw ZException("PNG Read: signature check fail", ZPNG::PNGError::sigcheckfail, false);
         return 2;
     }
-    data->filedata->setPos(8);
 
     // Create PNG read struct
     data->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, data, readpng_error_handler, readpng_warning_handler);
@@ -343,7 +341,7 @@ int readpng_init(PngReadData *data){
     //}
 
     // Set custom reading function
-    png_set_read_fn(data->png_ptr, (void *)data->filedata, readpng_read_fn);
+    png_set_read_fn(data->png_ptr, data->input, readpng_read_fn);
 
     // Already read the signature
     png_set_sig_bytes(data->png_ptr, 8);
@@ -362,14 +360,12 @@ int readpng_init(PngReadData *data){
 
 void readpng_read_fn(png_struct *png_ptr, png_byte *outbytes, png_size_t bytestoread){
     // Check user pointer
-    void *ioptr = png_get_io_ptr(png_ptr);
-    if(ioptr == NULL){
+    ZReader *input = (ZReader *)png_get_io_ptr(png_ptr);
+    if(input == NULL){
         throw ZException("read fn null io ptr");
         //longjmp(png_jmpbuf(png_ptr), 1);
     }
-
-    ZBinary *filedata = (ZBinary*)ioptr;
-    filedata->read(outbytes, bytestoread);
+    input->read(outbytes, bytestoread);
 }
 
 int readpng_get_bgcolor(PngReadData *data){
@@ -567,7 +563,7 @@ int writepng_init(PngWriteData *data, const AsArZ &texts){
     }
 
     // Set custom write function
-    png_set_write_fn(data->png_ptr, data->filedata, writepng_write_fn, NULL);
+    png_set_write_fn(data->png_ptr, data->output, writepng_write_fn, NULL);
 
     // Set filter heuristics
     //png_set_filter_heuristics(data->png_ptr, PNG_FILTER_HEURISTIC_UNWEIGHTED, 0, NULL, NULL);
@@ -648,14 +644,12 @@ int writepng_init(PngWriteData *data, const AsArZ &texts){
 
 void writepng_write_fn(png_struct *png_ptr, png_byte *inbytes, png_size_t length){
     // Check user pointer
-    void *ioptr = png_get_io_ptr(png_ptr);
-    if(ioptr == NULL){
+    ZWriter *output = (ZWriter *)png_get_io_ptr(png_ptr);
+    if(output == NULL){
         throw ZException("write fn null io ptr");
         //longjmp(png_jmpbuf(png_ptr), 1);
     }
-
-    ZBinary *filedata = (ZBinary *)ioptr;
-    filedata->concat(ZBinary(inbytes, length));
+    output->write(inbytes, length);
 }
 
 int writepng_encode_image(PngWriteData *data){

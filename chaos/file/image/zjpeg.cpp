@@ -24,12 +24,12 @@ bool ZJPEG::isJPEG(const ZBinary &data){
     return (ZBinary::decbe32(data.raw()) == JPEG_SIG);
 }
 
-bool ZJPEG::decode(ZBinary &jpegdata_in, DecodeOptions *options){
+bool ZJPEG::decode(ZReader *input){
 
     return false;
 }
 
-bool ZJPEG::encode(ZBinary &jepgdata_out, EncodeOptions *options){
+bool ZJPEG::encode(ZWriter *output){
 
     return false;
 }

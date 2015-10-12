@@ -54,9 +54,9 @@ void ZParcel4Parser::open(){
     ZBinary sig;
     if(_file->read(sig, 9) != 9)
         throw ZException(NAME "open: failed to read signature");
-    if(sig.readzu64() != VERSION_4_MASK)
+    if(sig.readbeu64() != VERSION_4_MASK)
         throw ZException(NAME "open: invalid file signature");
-    zu8 pagepower = sig.readzu8();
+    zu8 pagepower = sig.readu8();
     if(pagepower < 5 || pagepower > 32)
         throw ZException(NAME "open: invalid page power");
     _pagesize = (zu32)1 << pagepower;
@@ -186,7 +186,7 @@ ZBinary ZParcel4Parser::formatFile(ZPath file){
 }
 
 void ZParcel4Parser::readPage(pageid page, ZBinary &data){
-    _file->setPos(page * _pagesize);
+    _file->seek(page * _pagesize);
     data.resize(_pagesize);
     zu64 length = _file->read(data, _pagesize);
     if(!length)
@@ -201,7 +201,7 @@ void ZParcel4Parser::writePage(ZParcel4Parser::pageid page, const ZBinary &data)
     tmp.resize(_pagesize);
     for(zu64 i = length; i < _pagesize; ++i)
         tmp[i] = 0;
-    _file->setPos(page * _pagesize);
+    _file->seek(page * _pagesize);
     length = _file->write(tmp);
     if(length != _pagesize)
         throw ZException(NAME "writePage: failed to write page");
@@ -213,15 +213,15 @@ ZParcel4Parser::pageid ZParcel4Parser::insertPage(){
     // Find a free page
     // TODO: Fix this sick filth
     for(zu64 i = 1; i < _pagecount; ++i){
-        _file->setPos(i * _pagesize);
+        _file->seek(i * _pagesize);
         length = _file->read(buffer, _pagesize);
         if(length != _pagesize)
             throw ZException(NAME "insertPage: read unaligned page from file");
         buffer.rewind();
-        if(buffer.readzu8() == FREEPAGE){
+        if(buffer.readu8() == FREEPAGE){
             buffer.rewind();
-            buffer.writezu8(RESERVEDPAGE);
-            _file->setPos(i * _pagesize);
+            buffer.writeu8(RESERVEDPAGE);
+            _file->seek(i * _pagesize);
             _file->write(buffer);
             return i;
         }
@@ -229,15 +229,15 @@ ZParcel4Parser::pageid ZParcel4Parser::insertPage(){
     // Write a new page at the end of the file
     buffer.resize(_pagesize);
     buffer.rewind();
-    buffer.writezu8(RESERVEDPAGE);
-    _file->setPos(_pagecount * _pagesize);
+    buffer.writeu8(RESERVEDPAGE);
+    _file->seek(_pagecount * _pagesize);
     _file->write(buffer);
     return _pagecount++;
 }
 
 bool ZParcel4Parser::zeroPad(){
     zu64 pad = _file->fileSize() % _pagesize;
-    _file->setPos(_file->fileSize());
+    _file->seek(_file->fileSize());
     if(pad){
         ZBinary zero;
         zero.fill(0, 1024);
@@ -249,7 +249,7 @@ bool ZParcel4Parser::zeroPad(){
 }
 
 bool ZParcel4Parser::freePage(pageid page){
-    _file->setPos(page * _pagesize);
+    _file->seek(page * _pagesize);
     if(_file->write(ZBinary::fromzu8(0)) != 1)
         throw ZException(NAME "freePage: failed to change page type");
     if(addToFreelist(page))

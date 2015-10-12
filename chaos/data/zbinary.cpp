@@ -130,9 +130,8 @@ ZBinary ZBinary::printable() const {
 }
 
 zu64 ZBinary::read(zbyte *dest, zu64 length){
-    if(_rwpos + length > size())
-        length = _rwpos + length - size();
-    if(dest && length)
+    length = MIN(length, _size - _rwpos);
+    if(dest != nullptr && length != 0)
         memcpy(dest, _data + _rwpos, length);
     _rwpos += length;
     return length;
@@ -144,87 +143,6 @@ zu64 ZBinary::write(const zbyte *data, zu64 size){
     memcpy(_data + _rwpos, data, size);
     _rwpos += size;
     return size;
-}
-
-zu8 ZBinary::readzu8(){
-    zassert((_size - _rwpos) >= 1);
-    zu8 num = deczu8(_data + _rwpos);
-    _rwpos += 1;
-    return num;
-}
-zu16 ZBinary::readzu16(){
-    zassert((_size - _rwpos) >= 2);
-    zu16 num = deczu16(_data + _rwpos);
-    _rwpos += 2;
-    return num;
-}
-zu32 ZBinary::readzu32(){
-    zassert((_size - _rwpos) >= 4);
-    zu32 num = deczu32(_data + _rwpos);
-    _rwpos += 4;
-    return num;
-}
-zu64 ZBinary::readzu64(){
-    zassert((_size - _rwpos) >= 8);
-    zu64 num = deczu64(_data + _rwpos);
-    _rwpos += 8;
-    return num;
-}
-
-void ZBinary::writezu8(zu8 num){
-    resize(_size + 1);
-    enczu8(_data + _rwpos, num);
-    _rwpos += 1;
-}
-void ZBinary::writezu16(zu16 num){
-    resize(_size + 2);
-    enczu16(_data + _rwpos, num);
-    _rwpos += 2;
-}
-void ZBinary::writezu32(zu32 num){
-    resize(_size + 4);
-    enczu32(_data + _rwpos, num);
-    _rwpos += 4;
-}
-void ZBinary::writezu64(zu64 num){
-    resize(_size + 8);
-    enczu64(_data + _rwpos, num);
-    _rwpos += 8;
-}
-
-zu16 ZBinary::readle16(){
-    zassert((_size - _rwpos) >= 2);
-    zu16 num = decle16(_data + _rwpos);
-    _rwpos += 2;
-    return num;
-}
-zu32 ZBinary::readle32(){
-    zassert((_size - _rwpos) >= 4);
-    zu32 num = decle32(_data + _rwpos);
-    _rwpos += 4;
-    return num;
-}
-zu64 ZBinary::readle64(){
-    zassert((_size - _rwpos) >= 8);
-    zu64 num = decle64(_data + _rwpos);
-    _rwpos += 8;
-    return num;
-}
-
-void ZBinary::writele16(zu16 num){
-    resize(_size + 2);
-    encle16(_data + _rwpos, num);
-    _rwpos += 2;
-}
-void ZBinary::writele32(zu32 num){
-    resize(_size + 4);
-    encle32(_data + _rwpos, num);
-    _rwpos += 4;
-}
-void ZBinary::writele64(zu64 num){
-    resize(_size + 8);
-    encle64(_data + _rwpos, num);
-    _rwpos += 8;
 }
 
 zu8 ZBinary::deczu8(const zbyte *bin){

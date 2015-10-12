@@ -28,7 +28,9 @@ bool ZWebP::isWebP(const ZBinary &data){
 
 bool ZWebP::decode(ZReader *input){
     // Get webp file features
-    VP8StatusCode status = WebPGetFeatures(input.raw(), input.size(), &decode_config.input);
+    ZBinary data(input->available());
+    input->read(data.raw(), data.size());
+    VP8StatusCode status = WebPGetFeatures(data.raw(), data.size(), &decode_config.input);
     if(status != VP8_STATUS_OK)
         throw ZException("GetFeatures VP8 Status Error");
 
@@ -46,7 +48,7 @@ bool ZWebP::decode(ZReader *input){
     decode_config.output.u.RGBA.size = _image->size();
 
     // Decode image
-    status = WebPDecode(input.raw(), input.size(), &decode_config);
+    status = WebPDecode(data.raw(), data.size(), &decode_config);
     if(status != VP8_STATUS_OK)
         throw ZException("Decode VP8 Status Error");
 

@@ -58,11 +58,14 @@ public:
     bool close();
 
     // ZPosition
-    zu64 getPos() const;
-    zu64 setPos(zu64 pos);
+    zu64 position() const;
+    zu64 seek(zu64 pos);
     bool atEnd() const;
+
     // ZReader
+    zu64 available();
     zu64 read(zbyte *dest, zu64 size);
+
     // ZWriter
     zu64 write(const zbyte *data, zu64 size);
 

@@ -43,16 +43,6 @@ public:
         };
     };
 
-    struct PNGRead : YImageBackend::DecodeOptions {
-        bool strip = false;
-    };
-    struct PNGWrite : YImageBackend::EncodeOptions {
-        enum png_interlace {
-            none = 0,
-            adam7 = 1
-        } interlace = none;
-    };
-
     struct PngChunk {
         zu32 size;
         ZString name;
@@ -76,7 +66,7 @@ public:
     /*! Decode a PNG image.
      *  \throws ZException On decoding errors.
      */
-    bool decode(const ZAccessor *input);
+    bool decode(ZReader *input);
     bool encode(ZWriter *output);
 
     static ZArray<PngChunk> parsePngChunks(ZBinary pngdata);
@@ -89,6 +79,11 @@ public:
     }
 
 public:
+    //! Strip 16-bit colors to 8-bit colors on decoding.
+    bool strip = false;
+    //! Interlace PNG on encoding.
+    bool interlace = false;
+    //! Text Chunks to write on encoding.
     AsArZ text;
 
 private:

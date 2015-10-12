@@ -37,9 +37,6 @@ public:
     bool decode(ZReader *input);
     bool encode(ZWriter *output);
 
-    bool read(ZPath path);
-    bool write(ZPath path);
-
 private:
     /*! Converts BMP-encoded pixel data to RGB-encoded pixel data.
      *  Allocates a buffer to hold the RGB data.

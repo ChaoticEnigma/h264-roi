@@ -14,7 +14,15 @@ class ZReader {
 public:
     virtual ~ZReader(){}
 
-    // Read <size> bytes from object at current position into <dest>
+    /*! Get number of available bytes.
+     *  Returns ZU64_MAX for infinity.
+     */
+    virtual zu64 available() = 0;
+
+    /*! Read \a size bytes from object at current position into \a dest.
+     *  If \a dest is null, call must "read" \a size, but not copy to \a dest.
+     *  If \a size if zero, call must have no effect.
+     */
     virtual zu64 read(zbyte *dest, zu64 size) = 0;
 
     // Single Byte

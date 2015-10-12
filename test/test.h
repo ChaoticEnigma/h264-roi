@@ -3,7 +3,9 @@
 
 #include "zlog.h"
 
+// Fail Current Test
 #define FAILTEST throw __LINE__
+// Assert for Tests
 #define TASSERT(X) if(!(X)) throw __LINE__;
 
 using namespace LibChaos;

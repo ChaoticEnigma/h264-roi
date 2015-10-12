@@ -164,7 +164,7 @@ bool ZFile::close(){
 }
 
 // ZPosition
-zu64 ZFile::getPos() const {
+zu64 ZFile::position() const {
 #if PLATFORM == WINDOWS
     // Move pointer by 0 to get current pos
     LARGE_INTEGER distance;
@@ -179,7 +179,7 @@ zu64 ZFile::getPos() const {
 #endif
 }
 
-zu64 ZFile::setPos(zu64 pos){
+zu64 ZFile::seek(zu64 pos){
 #if PLATFORM == WINDOWS
     LARGE_INTEGER distance;
     distance.QuadPart = (long long)pos;
@@ -195,7 +195,7 @@ zu64 ZFile::setPos(zu64 pos){
 bool ZFile::atEnd() const {
 #if PLATFORM == WINDOWS
     // Hack
-    return getPos() >= fileSize();
+    return position() >= fileSize();
 #else
     // Check if file pointer is at end of file
     return feof(_file);
@@ -203,6 +203,10 @@ bool ZFile::atEnd() const {
 }
 
 // ZReader
+zu64 ZFile::available(){
+    return fileSize() - position();
+}
+
 zu64 ZFile::read(zbyte *dest, zu64 size){
     // Check file is open and has read bit set
     if(!isOpen() || !(_options & readbit))

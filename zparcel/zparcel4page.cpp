@@ -24,14 +24,14 @@ void HeadPage::load(pageid page){
     _page = page;
     ZBinary buffer;
     _parser->readPage(_page, buffer);
-    if(buffer.readzu64() != VERSION_4_MASK)
+    if(buffer.readbeu64() != VERSION_4_MASK)
         throw ZException("HeadPage load: incorrect head page signature");
-    _pagepower = buffer.readzu8();
-    _maxpages = buffer.readzu32();
-    _nextbackup = buffer.readzu32();
-    _pagetablepage = buffer.readzu32();
-    _freelistpage = buffer.readzu32();
-    _fieldpage = buffer.readzu32();
+    _pagepower = buffer.readu8();
+    _maxpages = buffer.readbeu32();
+    _nextbackup = buffer.readbeu32();
+    _pagetablepage = buffer.readbeu32();
+    _freelistpage = buffer.readbeu32();
+    _fieldpage = buffer.readbeu32();
 }
 
 void HeadPage::init(){
@@ -46,13 +46,13 @@ void HeadPage::init(){
 
 void HeadPage::save(){
     ZBinary buffer;
-    buffer.writezu64(VERSION_4_MASK);
-    buffer.writezu8(_pagepower);
-    buffer.writezu32(_maxpages);
-    buffer.writezu32(_nextbackup);
-    buffer.writezu32(_pagetablepage);
-    buffer.writezu32(_freelistpage);
-    buffer.writezu32(_fieldpage);
+    buffer.writebeu64(VERSION_4_MASK);
+    buffer.writeu8(_pagepower);
+    buffer.writebeu32(_maxpages);
+    buffer.writebeu32(_nextbackup);
+    buffer.writebeu32(_pagetablepage);
+    buffer.writebeu32(_freelistpage);
+    buffer.writebeu32(_fieldpage);
     _parser->writePage(_page, buffer);
 }
 
@@ -96,13 +96,13 @@ void FreeListPage::load(ZParcel4Page::pageid page){
     _page = page;
     ZBinary buffer;
     _parser->readPage(_page, buffer);
-    _nextpage = buffer.readzu32();
-    _prevpage = buffer.readzu32();
-    zu64 pages = buffer.readzu32();
+    _nextpage = buffer.readbeu32();
+    _prevpage = buffer.readbeu32();
+    zu64 pages = buffer.readbeu32();
     if(pages * 4 > (_parser->_pagesize - 12))
         throw ZException("FreeListPage load: Invalid number of pages in page");
     for(zu64 i = 0 ; i < pages; ++i){
-        zu64 pid = buffer.readzu32();
+        zu64 pid = buffer.readbeu32();
         if(pid != 0){
             _pages.push(pid);
         }
@@ -117,11 +117,11 @@ void FreeListPage::init(){
 
 void FreeListPage::save(){
     ZBinary buffer;
-    buffer.writezu32(_nextpage);
-    buffer.writezu32(_prevpage);
-    buffer.writezu32(_pages.size());
+    buffer.writebeu32(_nextpage);
+    buffer.writebeu32(_prevpage);
+    buffer.writebeu32(_pages.size());
     for(zu64 i = 0; i < _pages.size(); ++i){
-        buffer.writezu32(_pages[i]);
+        buffer.writebeu32(_pages[i]);
     }
     _parser->writePage(_page, buffer);
 }

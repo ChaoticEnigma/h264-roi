@@ -20,11 +20,11 @@ int binary_test(){
     bin3.reserve(16);
     zu64 num1 = 0x056379084560;
     zu64 num2 = 0x890345890326;
-    bin3.writezu64(num1);
-    bin3.writezu64(num2);
+    bin3.writeleu64(num1);
+    bin3.writebeu64(num2);
     bin3.rewind();
-    zu64 num1o = bin3.readzu64();
-    zu64 num2o = bin3.readzu64();
+    zu64 num1o = bin3.readleu64();
+    zu64 num2o = bin3.readbeu64();
     LOG(num1 << " " << num1o);
     LOG(num2 << " " << num2o);
     TASSERT(num1 == num1o);

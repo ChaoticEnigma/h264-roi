@@ -12,6 +12,8 @@
 
 #define BI_RGB 0x0000
 #define BITMAP_TYPE 0x4D42
+#define FILEHEADER_SIZE 14
+#define INFOHEADER_SIZE 40
 
 namespace LibChaos {
 
@@ -96,14 +98,14 @@ bool ZBMP::decode(ZReader *input){
     if(fileh.bfType != BITMAP_TYPE){
         throw ZException("Not a BMP file", BMPError::notabmp, false);
     }
-    if(fileh.bfSize != input.size()){
+    if(fileh.bfSize - FILEHEADER_SIZE != input->available()){
         throw ZException("Incorrect file size in file header", BMPError::incorrectsize, false);
     }
 
     BitmapInfoHeader infoh;
     readInfoHeader(input, &infoh);
 
-    if(infoh.biSize != 40){
+    if(infoh.biSize != INFOHEADER_SIZE){
         throw ZException("Unsupported info header length", BMPError::badinfoheader, false);
     }
     if(infoh.biCompression != BI_RGB){
@@ -117,7 +119,7 @@ bool ZBMP::decode(ZReader *input){
     zu64 height = infoh.biHeight;
 
     _image->setDimensions(width, height, bmp_channels, 8);
-    ZBinary data(fileh.bfSize - 40 - 14);
+    ZBinary data(fileh.bfSize - FILEHEADER_SIZE - INFOHEADER_SIZE);
     input->read(data.raw(), data.size());
     _image->takeData(convertBMPDatatoRGB(data.raw(), _image->width(), _image->height()));
 
@@ -167,37 +169,6 @@ bool ZBMP::encode(ZWriter *output){
     zassert(output->write(pixeldata, outsize) == outsize);
     delete[] pixeldata;
 
-    return true;
-}
-
-bool ZBMP::read(ZPath path){
-    try {
-        ZBinary buffer;
-        if(ZFile::readBinary(path, buffer) < 54){
-            throw ZException("File too small", BMPError::badfile, false);
-        }
-
-        decode(buffer);
-
-    } catch(ZException e){
-        //ELOG("BMP Read error " << e.code() << ": " << e.what());
-        return false;
-    }
-    return true;
-}
-
-bool ZBMP::write(ZPath path){
-    try {
-        ZBinary out;
-        encode(out);
-
-        if(!ZFile::writeBinary(path, out)){
-            throw ZException("BMP Write: bad write file");
-            return false;
-        }
-    } catch(ZException e){
-        return false;
-    }
     return true;
 }
 
