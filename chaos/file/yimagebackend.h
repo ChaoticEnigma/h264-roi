@@ -15,11 +15,10 @@ class YImageBackend {
 public:
     virtual ~YImageBackend(){}
 
-    virtual bool decode(const ZAccessor *input) = 0;
+    virtual bool decode(ZReader *input) = 0;
     virtual bool encode(ZWriter *output) = 0;
 };
 
 }
 
 #endif // YIMAGEBACKEND
-

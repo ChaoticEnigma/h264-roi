@@ -18,11 +18,8 @@ public:
 
     static bool isPPM(const ZBinary &data);
 
-    bool decode(const ZAccessor *input);
+    bool decode(ZReader *input);
     bool encode(ZWriter *output);
-
-    bool read(ZPath path);
-    bool write(ZPath path);
 
 private:
     ZImage *_image;

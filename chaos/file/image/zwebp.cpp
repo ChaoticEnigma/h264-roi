@@ -26,9 +26,9 @@ bool ZWebP::isWebP(const ZBinary &data){
     //return (ZBinary::decbe32(data.raw()) == 0x52494646 && ZBinary::decbe32(data.raw() + 8) == 0x57454250);
 }
 
-bool ZWebP::decode(LibChaos::ZBinary &data, YImageBackend::ReadOptions *options){
+bool ZWebP::decode(ZReader *input){
     // Get webp file features
-    VP8StatusCode status = WebPGetFeatures(data.raw(), data.size(), &decode_config.input);
+    VP8StatusCode status = WebPGetFeatures(input.raw(), input.size(), &decode_config.input);
     if(status != VP8_STATUS_OK)
         throw ZException("GetFeatures VP8 Status Error");
 
@@ -46,7 +46,7 @@ bool ZWebP::decode(LibChaos::ZBinary &data, YImageBackend::ReadOptions *options)
     decode_config.output.u.RGBA.size = _image->size();
 
     // Decode image
-    status = WebPDecode(data.raw(), data.size(), &decode_config);
+    status = WebPDecode(input.raw(), input.size(), &decode_config);
     if(status != VP8_STATUS_OK)
         throw ZException("Decode VP8 Status Error");
 
@@ -56,12 +56,12 @@ bool ZWebP::decode(LibChaos::ZBinary &data, YImageBackend::ReadOptions *options)
 }
 
 int MemoryWrite(const uint8_t* data, size_t data_size, const WebPPicture* picture){
-    ZBinary *ptr = (ZBinary *)picture->custom_ptr;
+    ZWriter *ptr = (ZWriter *)picture->custom_ptr;
     ptr->write(data, data_size);
     return 1;
 }
 
-bool ZWebP::encode(ZBinary &data, WriteOptions *options){
+bool ZWebP::encode(ZWriter *output){
     // Encode config
     int conf_err = WebPValidateConfig(&encode_config);
     if(!conf_err)
@@ -74,13 +74,8 @@ bool ZWebP::encode(ZBinary &data, WriteOptions *options){
         throw ZException("Failed to alloc picture");
 
     // Setup writer
-//    WebPMemoryWriter writer;
-//    if(!WebPMemoryWriterInit(&writer))
-//        throw ZException("Memory write init failed");
-//    picture.writer = WebPMemoryWrite;
-//    picture.custom_ptr = &writer;
     picture.writer = MemoryWrite;
-    picture.custom_ptr = &data;
+    picture.custom_ptr = output;
 
     // Encode image
     int ok = WebPEncode(&encode_config, &picture);

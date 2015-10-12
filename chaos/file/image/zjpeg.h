@@ -32,7 +32,7 @@ public:
 
     static bool isJPEG(const ZBinary &data);
 
-    bool decode(const ZAccessor *input);
+    bool decode(ZReader *input);
     bool encode(ZWriter *output);
 
 public:

@@ -41,72 +41,67 @@ struct BitmapInfoHeader {
 
 //! \endcond
 
-void readFileHeader(ZBinary &bin, BitmapFileHeader *fileh){
-    fileh->bfType      = bin.readle16();
-    fileh->bfSize      = bin.readle32();
-    fileh->bfReserved1 = bin.readle16();
-    fileh->bfReserved2 = bin.readle16();
-    fileh->bfOffBits   = bin.readle32();
+void readFileHeader(ZReader *bin, BitmapFileHeader *fileh){
+    fileh->bfType      = bin->readleu16();
+    fileh->bfSize      = bin->readleu32();
+    fileh->bfReserved1 = bin->readleu16();
+    fileh->bfReserved2 = bin->readleu16();
+    fileh->bfOffBits   = bin->readleu32();
 }
-void readInfoHeader(ZBinary &bin, BitmapInfoHeader *infoh){
-    infoh->biSize          = bin.readle32();
-    infoh->biWidth         = bin.readle32();
-    infoh->biHeight        = bin.readle32();
-    infoh->biPlanes        = bin.readle16();
-    infoh->biBitCount      = bin.readle16();
-    infoh->biCompression   = bin.readle32();
-    infoh->biSizeImage     = bin.readle32();
-    infoh->biXPelsPerMeter = bin.readle32();
-    infoh->biYPelsPerMeter = bin.readle32();
-    infoh->biClrUsed       = bin.readle32();
-    infoh->biClrImportant  = bin.readle32();
+void readInfoHeader(ZReader *bin, BitmapInfoHeader *infoh){
+    infoh->biSize          = bin->readleu32();
+    infoh->biWidth         = bin->readleu32();
+    infoh->biHeight        = bin->readleu32();
+    infoh->biPlanes        = bin->readleu16();
+    infoh->biBitCount      = bin->readleu16();
+    infoh->biCompression   = bin->readleu32();
+    infoh->biSizeImage     = bin->readleu32();
+    infoh->biXPelsPerMeter = bin->readleu32();
+    infoh->biYPelsPerMeter = bin->readleu32();
+    infoh->biClrUsed       = bin->readleu32();
+    infoh->biClrImportant  = bin->readleu32();
 }
 
-ZBinary writeFileHeader(const BitmapFileHeader *fileh){
+void writeFileHeader(ZWriter *out, const BitmapFileHeader *fileh){
     // 14 byte file header
-    ZBinary out;
-    out.writele16(fileh->bfType);
-    out.writele32(fileh->bfSize);
-    out.writele16(fileh->bfReserved1);
-    out.writele16(fileh->bfReserved2);
-    out.writele32(fileh->bfOffBits);
-    return out;
+    out->writeleu16(fileh->bfType);
+    out->writeleu32(fileh->bfSize);
+    out->writeleu16(fileh->bfReserved1);
+    out->writeleu16(fileh->bfReserved2);
+    out->writeleu32(fileh->bfOffBits);
 }
-ZBinary writeInfoHeader(const BitmapInfoHeader *infoh){
+void writeInfoHeader(ZWriter *out, const BitmapInfoHeader *infoh){
     // 40 byte bitmap info header
-    ZBinary out;
-    out.writele32(infoh->biSize);
-    out.writele32(infoh->biWidth);
-    out.writele32(infoh->biHeight);
-    out.writele16(infoh->biPlanes);
-    out.writele16(infoh->biBitCount);
-    out.writele32(infoh->biCompression);
-    out.writele32(infoh->biSizeImage);
-    out.writele32(infoh->biXPelsPerMeter);
-    out.writele32(infoh->biYPelsPerMeter);
-    out.writele32(infoh->biClrUsed);
-    out.writele32(infoh->biClrImportant);
-    return out;
+    out->writeleu32(infoh->biSize);
+    out->writeleu32(infoh->biWidth);
+    out->writeleu32(infoh->biHeight);
+    out->writeleu16(infoh->biPlanes);
+    out->writeleu16(infoh->biBitCount);
+    out->writeleu32(infoh->biCompression);
+    out->writeleu32(infoh->biSizeImage);
+    out->writeleu32(infoh->biXPelsPerMeter);
+    out->writeleu32(infoh->biYPelsPerMeter);
+    out->writeleu32(infoh->biClrUsed);
+    out->writeleu32(infoh->biClrImportant);
 }
 
 bool ZBMP::isBMP(const ZBinary &data){
     return (ZBinary::decle16(data.raw()) == BITMAP_TYPE);
 }
 
-bool ZBMP::decode(const ZAccessor *data_in){
+bool ZBMP::decode(ZReader *input){
     BitmapFileHeader fileh;
-    readFileHeader(data_in, &fileh);
+    readFileHeader(input, &fileh);
 
     if(fileh.bfType != BITMAP_TYPE){
         throw ZException("Not a BMP file", BMPError::notabmp, false);
     }
-    if(fileh.bfSize != data_in.size()){
+    if(fileh.bfSize != input.size()){
         throw ZException("Incorrect file size in file header", BMPError::incorrectsize, false);
     }
 
     BitmapInfoHeader infoh;
-    data_in.setPos(14);
-    readInfoHeader(data_in, &infoh);
+    readInfoHeader(input, &infoh);
 
     if(infoh.biSize != 40){
         throw ZException("Unsupported info header length", BMPError::badinfoheader, false);
@@ -122,8 +117,9 @@ bool ZBMP::decode(const ZAccessor *data_in){
     zu64 height = infoh.biHeight;
 
     _image->setDimensions(width, height, bmp_channels, 8);
-    unsigned char *pixels = convertBMPDatatoRGB(data_in.raw() + fileh.bfOffBits, _image->width(), _image->height());
-    _image->takeData(pixels);
+    ZBinary data(fileh.bfSize - 40 - 14);
+    input->read(data.raw(), data.size());
+    _image->takeData(convertBMPDatatoRGB(data.raw(), _image->width(), _image->height()));
 
     return true;
 }
@@ -135,8 +131,8 @@ bool ZBMP::encode(ZWriter *output){
     }
 
     zu64 outsize;
-    zbyte *pixdata = convertRGBtoBMPData(_image->buffer(), _image->width(), _image->height(), outsize);
-    if(!pixdata){
+    zbyte *pixeldata = convertRGBtoBMPData(_image->buffer(), _image->width(), _image->height(), outsize);
+    if(!pixeldata){
         throw ZException("BMP Write: error in RGB conversion");
         return false;
     }
@@ -144,7 +140,6 @@ bool ZBMP::encode(ZWriter *output){
     // sizes of headers in file
     const zu32 fileheadersize = 14;
     const zu32 infoheadersize = 40;
-
     const zu32 filesize = fileheadersize + infoheadersize + outsize;
 
     BitmapFileHeader fileh;
@@ -153,8 +148,7 @@ bool ZBMP::encode(ZWriter *output){
     fileh.bfReserved1 = 0;
     fileh.bfReserved2 = 0;
     fileh.bfOffBits = fileheadersize + infoheadersize; // offset to pixel data
-    ZBinary fhbin = writeFileHeader(&fileh);
-    zassert(output->write(fhbin.raw(), fhbin.size()) == fileheadersize);
+    writeFileHeader(output, &fileh);
 
     BitmapInfoHeader infoh;
     infoh.biSize = infoheadersize; // size of info header
@@ -168,11 +162,10 @@ bool ZBMP::encode(ZWriter *output){
     infoh.biYPelsPerMeter = 0;
     infoh.biClrUsed = 0;
     infoh.biClrImportant = 0;
-    ZBinary ihbin = writeInfoHeader(&infoh);
-    zassert(output->write(ihbin.raw(), ihbin.size()) == infoheadersize);
+    writeInfoHeader(output, &infoh);
 
-    zassert(output->write(pixdata, outsize) == outsize);
-    delete[] pixdata;
+    zassert(output->write(pixeldata, outsize) == outsize);
+    delete[] pixeldata;
 
     return true;
 }

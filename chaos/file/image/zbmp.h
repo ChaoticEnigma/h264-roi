@@ -34,7 +34,7 @@ public:
 
     static bool isBMP(const ZBinary &data);
 
-    bool decode(const ZAccessor *input);
+    bool decode(ZReader *input);
     bool encode(ZWriter *output);
 
     bool read(ZPath path);
