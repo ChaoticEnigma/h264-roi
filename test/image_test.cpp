@@ -101,5 +101,15 @@ int image_test(){
     image3.encodeFormat(bin3o);
     ZFile::writeBinary("dice.png", bin3o);
 
+    // Convert JPEG to PNG
+
+    ZBinary bin4i;
+    ZFile::readBinary("cute.jpg", bin4i);
+    ZImage image4(bin4i);
+    image4.setFormat(ZImage::PNG);
+    ZBinary bin4o;
+    image4.encodeFormat(bin4o);
+    ZFile::writeBinary("cute.png", bin4o);
+
     return 0;
 }

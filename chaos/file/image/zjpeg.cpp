@@ -25,7 +25,7 @@ bool ZJPEG::isJPEG(const ZBinary &data){
 }
 
 bool ZJPEG::decode(ZReader *input){
-
+    readjpeg(input, _image);
     return false;
 }
 
@@ -74,8 +74,6 @@ int readjpeg(ZReader *in, ZImage *out){
     struct my_error_mgr jerr;
 
     /* More stuff */
-    JSAMPARRAY buffer;  /* Output row buffer */
-    int row_stride;     /* physical row width in output buffer */
 
     /* Step 1: allocate and initialize JPEG decompression object */
 
@@ -134,6 +132,7 @@ int readjpeg(ZReader *in, ZImage *out){
     //out->setHeight(cinfo.output_width);
     //out->setChannels(cinfo.out_color_components);
     out->setDimensions(cinfo.output_width, cinfo.output_height, cinfo.output_components, 8);
+    out->newData();
 
     /* We may need to do some setup of our own at this point before reading
      * the data.  After jpeg_start_decompress() we have the correct scaled
@@ -142,9 +141,12 @@ int readjpeg(ZReader *in, ZImage *out){
      * In this example, we need to make an output work buffer of the right size.
      */
     /* JSAMPLEs per row in output buffer */
-    row_stride = cinfo.output_width * cinfo.output_components;
+    //int row_stride = cinfo.output_width * cinfo.output_components; /* physical row width in output buffer */
     /* Make a one-row-high sample array that will go away when done with image */
-    buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
+    //JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1); /* Output row buffer */
+    const unsigned int buffer_count = 1;
+    JSAMPARRAY buffer = new JSAMPROW[buffer_count];
+    buffer[0] = new JSAMPLE[out->stride()];
 
     /* Step 6: while (scan lines remain to be read) */
     /*           jpeg_read_scanlines(...); */
@@ -157,12 +159,13 @@ int readjpeg(ZReader *in, ZImage *out){
          * Here the array is only one element long, but you could ask for
          * more than one scanline at a time if that's more convenient.
          */
-        jpeg_read_scanlines(&cinfo, buffer, 1);
+        jpeg_read_scanlines(&cinfo, buffer, buffer_count);
 
         /* Assume put_scanline_someplace wants a pointer and sample count. */
-        //put_scanline_someplace(buffer[0], row_stride);
-        memcpy(out->buffer(), buffer, cinfo.output_scanline * out->stride());
+        memcpy(out->buffer() + ((cinfo.output_scanline - 1) * out->stride()), buffer[0], out->stride());
     }
+    delete[] buffer[0];
+    delete[] buffer;
 
     /* Step 7: Finish decompression */
 
