@@ -91,6 +91,8 @@ int image_test(){
     image2.encodeFormat(out2);
     TASSERT(ZFile::writeBinary(IMAGE_TEST_16_PNG, out2));
 
+    // Convert Transparent WebP to PNG
+
     ZBinary bin3i;
     ZFile::readBinary("dice.webp", bin3i);
     ZImage image3(bin3i);

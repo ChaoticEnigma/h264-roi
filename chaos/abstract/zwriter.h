@@ -17,7 +17,7 @@ class ZWriter {
 public:
     virtual ~ZWriter(){}
 
-    // Write <size> bytes from <src> to object at current position
+    //! Write \a size bytes from \a src to object at current position.
     virtual zu64 write(const zbyte *src, zu64 size) = 0;
 
     // Read <size> bytes from <reader> and write to <this> in blocks of <blocksize>

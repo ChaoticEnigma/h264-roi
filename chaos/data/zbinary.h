@@ -67,6 +67,7 @@ public:
     void clear(){
         _size = 0;
         _realsize = 0;
+        _rwpos = 0;
         _alloc->dealloc(_data);
         _data = nullptr;
     }

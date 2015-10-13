@@ -57,6 +57,9 @@ INCLUDE_DIRECTORIES(
     ${LibChaosUI_Include}
 )
 
+# Download test images
+FILE(DOWNLOAD "https://www.gstatic.com/webp/gallery3/3_webp_ll.webp" ${CMAKE_CURRENT_BINARY_DIR}/dice.webp)
+
 ### =================== BUILD =================== ###
 
 ADD_EXECUTABLE(testchaos ${LIBCHAOS_TEST_ALL} ${LibChaos_Test_HEADERS} ${LibChaos_Test_SOURCES})
