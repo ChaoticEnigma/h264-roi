@@ -93,18 +93,20 @@ int readjpeg(ZReader *in, ZImage *out){
     // The buffer is an array of pointers to sample rows
     JSAMPARRAY buffer = new JSAMPROW[buffer_count];
     // Each row is an array of samples
-    buffer[0] = new JSAMPLE[out->stride()];
+    //buffer[0] = new JSAMPLE[out->stride()];
 
     // Read image scanlines
     while(cinfo.output_scanline < cinfo.output_height){
+        // Set pointer to next output row
+        buffer[0] = out->buffer() + ((cinfo.output_scanline - 1) * out->stride());
         // Decode scanline(s) into buffer
         jpeg_read_scanlines(&cinfo, buffer, buffer_count);
         // Copy scanline to buffer
-        memcpy(out->buffer() + ((cinfo.output_scanline - 1) * out->stride()), buffer[0], out->stride());
+        //memcpy(out->buffer() + ((cinfo.output_scanline - 1) * out->stride()), buffer[0], out->stride());
     }
 
     // Cleanup
-    delete[] buffer[0];
+    //delete[] buffer[0];
     delete[] buffer;
 
     status = jpeg_finish_decompress(&cinfo);
