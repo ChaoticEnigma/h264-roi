@@ -74,8 +74,8 @@ public:
         tmp[3] = (num >> 24) & 0xFF;
         tmp[4] = (num >> 32) & 0xFF;
         tmp[5] = (num >> 40) & 0xFF;
-        tmp[7] = (num >> 48) & 0xFF;
-        tmp[8] = (num >> 56) & 0xFF;
+        tmp[6] = (num >> 48) & 0xFF;
+        tmp[7] = (num >> 56) & 0xFF;
         write(tmp, 8);
     }
 
@@ -102,8 +102,8 @@ public:
         tmp[3] = (num >> 24) & 0xFF;
         tmp[4] = (num >> 32) & 0xFF;
         tmp[5] = (num >> 40) & 0xFF;
-        tmp[7] = (num >> 48) & 0xFF;
-        tmp[8] = (num >> 56) & 0xFF;
+        tmp[6] = (num >> 48) & 0xFF;
+        tmp[7] = (num >> 56) & 0xFF;
         write(tmp, 8);
     }
 
