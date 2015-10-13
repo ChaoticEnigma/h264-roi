@@ -8,13 +8,13 @@ int runTests(ZAssoc<ZString, test_func> tests);
 int main(int argc, char **argv){
     try {
         //ZLog::init(); // BUG: threaded zlog sometimes crashes
-        ZLog::formatStdout(ZLogSource::normal, "%clock% %thread% - %log%");
-        ZLog::formatStdout(ZLogSource::debug, "%clock% %thread% - %log%");
-        ZLog::formatStderr(ZLogSource::error, "%clock% %thread% %function% (%file%:%line%) - %log%");
+        ZLog::formatStdout(ZLogSource::NORMAL, "%clock% %thread% - %log%");
+        ZLog::formatStdout(ZLogSource::DEBUG, "%clock% %thread% - %log%");
+        ZLog::formatStderr(ZLogSource::ERRORS, "%clock% %thread% %function% (%file%:%line%) - %log%");
         ZPath lgf = ZPath("logs") + ZLog::genLogFileName("testchaos_");
-        ZLog::addLogFile(lgf, ZLogSource::normal, "%time% %thread% - %log%");
-        ZLog::addLogFile(lgf, ZLogSource::debug, "%time% %thread% %function% (%file%:%line%) - %log%");
-        ZLog::addLogFile(lgf, ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
+        ZLog::addLogFile(lgf, ZLogSource::NORMAL, "%time% %thread% - %log%");
+        ZLog::addLogFile(lgf, ZLogSource::DEBUG, "%time% %thread% %function% (%file%:%line%) - %log%");
+        ZLog::addLogFile(lgf, ZLogSource::ERRORS, "%time% %thread% %function% (%file%:%line%) - %log%");
 
         LOG("Testing LibChaos: " << LibChaosDescribe());
 

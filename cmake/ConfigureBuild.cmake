@@ -85,7 +85,7 @@ ENDIF()
 IF(LIBCHAOS_COMPILER_GCC)
     SET(CXXGNU "${CXXGNU} -rdynamic")
 ELSEIF(LIBCHAOS_COMPILER_MINGW)
-    SET(CXXGNU "${CXXGNU} -mwin32 -mwindows")
+    SET(CXXGNU "${CXXGNU} -mwin32 -mwindows -static-libgcc -static-libstdc++")
 ENDIF()
 
 # Set variables for build type

@@ -12,20 +12,17 @@ int path_test(){
 
     path1.sanitize();
     LOG(path1);
-    if(path1.data() != ArZ({ "some","complic","path" }) || !path1.absolute())
-        throw 1;
+    TASSERT(path1.data() == ArZ({ "some","complic","path" }) && path1.absolute());
 
     ZPath path2 = "../../another/path";
     path2.sanitize();
     LOG(path2);
-    if(path2.data() != ArZ({ "..","..","another","path" }) || path2.absolute())
-        throw 2;
+    TASSERT(path2.data() == ArZ({ "..","..","another","path" }) && !path2.absolute());
 
     ZPath path3 = "/some/../../../path";
     path3.sanitize();
     LOG(path3);
-    if(path3.data() != ArZ({ "..","..","path" }) || !path3.absolute())
-        throw 3;
+    TASSERT(path3.data() == ArZ({ "..","..","path" }) && path3.absolute());
 
     LOG("-- Relative To:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,8 +32,7 @@ int path_test(){
     LOG(path5);
     path4.relativeTo(path5);
     LOG(path4);
-    if(path4.data() != ArZ({ "some","complic","path" }) || path4.absolute())
-        throw 4;
+    TASSERT(path4.data() == ArZ({ "some","complic","path" }) && !path4.absolute());
 
     ZPath path6 = "/another/long/interesting/path/to/nowhere";
     ZPath path7 = "/another/short/boring/path";
@@ -44,8 +40,7 @@ int path_test(){
     LOG(path7);
     path6.relativeTo(path7);
     LOG(path6);
-    if(path6.data() != ArZ({ "..","..","..","long","interesting","path","to","nowhere" }) || path6.absolute())
-        throw 5;
+    TASSERT(path6.data() == ArZ({ "..","..","..","long","interesting","path","to","nowhere" }) && !path6.absolute());
 
     // /a/path/here/test.txt
     // /this/path/to/another/place
@@ -57,8 +52,7 @@ int path_test(){
     LOG(path9);
     path8.relativeTo(path9);
     LOG(path8);
-    if(path8.data() != ArZ({ "..","..","..","..","..","a","path","here","test.txt" }) || path8.absolute())
-        throw 6;
+    TASSERT(path8.data() == ArZ({ "..","..","..","..","..","a","path","here","test.txt" }) && !path8.absolute());
 
     // /some/short/thing.obj
     // /some/short/other/path
@@ -70,8 +64,7 @@ int path_test(){
     LOG(path11);
     path10.relativeTo(path11);
     LOG(path10);
-    if(path10.data() != ArZ({ "..","..","thing.obj" }) || path10.absolute())
-        throw 7;
+    TASSERT(path10.data() == ArZ({ "..","..","thing.obj" }) && !path10.absolute());
 
     return 0;
 }

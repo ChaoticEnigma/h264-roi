@@ -32,35 +32,39 @@ public:
 public:
     //! Generate new UUID of \a type.
     ZUID(uuidtype type = TIME);
-    //! Parse existing UUID
+    /*! Parse existing UUID string.
+     *  String must contain 32 hexadecimal characters,
+     *  ignoring any number of '-' or ':' characters in string.
+     */
     ZUID(ZString str);
 
-    //! Compare UUIDs
+    //! Compare UUIDs.
     bool operator==(const ZUID &uid);
 
-    //! Get the type of the UUID
+    //! Get the type of the UUID.
     uuidtype getType() const;
 
-    //! Get hexadecimal UUID string
+    //! Get hexadecimal UUID string.
     ZString str() const;
-    //! Get binary container object
+    //! Get binary container object.
     ZBinary bin() const;
-    //! Get pointer to raw 16-octet UUID
+    //! Get pointer to raw 16-octet UUID.
     const zoctet *raw() const { return _id_octets; }
 
 public:
-    //! Get an acceptable timestamp
+    //! Get an acceptable timestamp.
     static zu64 getTimestamp();
-    //! Get all MAC addresses
+    //! Get all MAC addresses.
     static ZList<ZBinary> getMACAddresses();
-    //! Get an acceptable MAC address
+    //! Get an acceptable MAC address.
     static ZBinary getMACAddress();
 
 private:
-    //! Check if MAC address is acceptable
+    //! Check if MAC address is acceptable.
     static bool validMAC(const zoctet *addr);
 
 private:
+    //! UUID octets.
     zoctet _id_octets[16];
 };
 

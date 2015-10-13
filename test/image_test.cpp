@@ -37,24 +37,20 @@ int image_test(){
     ZBinary out1;
     image1.setFormat(ZImage::BMP);
     image1.encodeFormat(out1);
-    if(!ZFile::writeBinary(IMAGE_TEST_BMP, out1))
-        throw __LINE__;
+    TASSERT(ZFile::writeBinary(IMAGE_TEST_BMP, out1));
 
     out1.clear();
     image1.setFormat(ZImage::PPM);
     image1.encodeFormat(out1);
-    if(!ZFile::writeBinary(IMAGE_TEST_PPM, out1))
-        throw __LINE__;
+    TASSERT(ZFile::writeBinary(IMAGE_TEST_PPM, out1));
 
     out1.clear();
     image1.setFormat(ZImage::PNG);
     image1.encodeFormat(out1);
-    if(!ZFile::writeBinary(IMAGE_TEST_PNG, out1))
-        throw __LINE__;
+    TASSERT(ZFile::writeBinary(IMAGE_TEST_PNG, out1));
 
     ZBinary in1;
-    if(!ZFile::readBinary(IMAGE_TEST_PNG, in1))
-        throw __LINE__;
+    TASSERT(ZFile::readBinary(IMAGE_TEST_PNG, in1));
 
     ZImage imagein1(in1);
     LOG("Invert image: " << (int)imagein1.getFormat() << " " << imagein1.width() << "x" << imagein1.height());
@@ -66,8 +62,7 @@ int image_test(){
 
     out1.clear();
     image1.encodeFormat(out1);
-    if(!ZFile::writeBinary(IMAGE_TEST_INVERT_PNG, out1))
-        throw __LINE__;
+    TASSERT(ZFile::writeBinary(IMAGE_TEST_INVERT_PNG, out1));
 
     // 16-bit
 
@@ -94,8 +89,7 @@ int image_test(){
     ZBinary out2;
     image2.setFormat(ZImage::PNG);
     image2.encodeFormat(out2);
-    if(!ZFile::writeBinary(IMAGE_TEST_16_PNG, out2))
-        throw __LINE__;
+    TASSERT(ZFile::writeBinary(IMAGE_TEST_16_PNG, out2));
 
     ZBinary bin3i;
     ZFile::readBinary("dice.webp", bin3i);

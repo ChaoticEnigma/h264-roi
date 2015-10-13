@@ -14,33 +14,25 @@ int file_test(){
     LOG("-- Create Directories:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     LOG("makeDir: " << near);
-    if(!ZFile::makeDir(near))
-        throw __LINE__;
+    TASSERT(ZFile::makeDir(near));
 
     LOG("createDirsTo: " << farfile);
-    if(!ZFile::createDirsTo(farfile))
-        throw __LINE__;
+    TASSERT(ZFile::createDirsTo(farfile));
 
     LOG("-- Write Files:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     {
         ZFile farfl(farfile, ZFile::READWRITE);
         LOG(farfl.isOpen());
-        if(farfl.isOpen()){
-            LOG(farfl.write("this file is far away"));
-            farfl.close();
-        } else {
-            throw __LINE__;
-        }
+        TASSERT(farfl.isOpen());
+        LOG(farfl.write("this file is far away"));
+        farfl.close();
 
         ZFile nearfl(nearfile, ZFile::READWRITE);
         LOG(nearfl.isOpen());
-        if(nearfl.isOpen()){
-            LOG(nearfl.write("this file is nearby"));
-            nearfl.close();
-        } else {
-            throw __LINE__;
-        }
+        TASSERT(nearfl.isOpen());
+        LOG(nearfl.write("this file is nearby"));
+        nearfl.close();
     }
 
     LOG("-- List Files:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,23 +41,18 @@ int file_test(){
     for(zu64 i = 0; i < nearfiles.size(); ++i)
         LOG(nearfiles[i]);
 
-    if(nearfiles.size() != 1)
-        throw __LINE__;
-    if(nearfiles.front().data() != ArZ({ "testdir","near.dat" }))
-        throw __LINE__;
+    TASSERT(nearfiles.size() == 1);
+    TASSERT(nearfiles.front().data() == ArZ({ "testdir", "near.dat" }))
 
     ZArray<ZPath> farfiles = ZFile::listFiles(near, true);
     for(zu64 i = 0; i < farfiles.size(); ++i)
         LOG(farfiles[i]);
 
-    if(farfiles.size() != 2)
-        throw __LINE__;
+    TASSERT(farfiles.size() == 2);
     zu64 findf = farfiles.find(ZPath("testdir/a/b/c/d/e/f.dat"));
-    if(findf == ZArray<ZPath>::none)
-        throw __LINE__;
+    TASSERT(findf != ZArray<ZPath>::none);
     zu64 finds = farfiles.find(ZPath("testdir/near.dat"));
-    if(finds == ZArray<ZPath>::none)
-        throw __LINE__;
+    TASSERT(finds != ZArray<ZPath>::none);
 
     LOG("-- Read Files:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -74,17 +61,14 @@ int file_test(){
             LOG(nearfiles[i] << " - " << ZFile::readString(nearfiles[i]));
         }
 
-        if(ZFile::readString(nearfiles.front()) != "this file is nearby")
-            throw __LINE__;
+        TASSERT(ZFile::readString(nearfiles.front()) == "this file is nearby");
 
         for(zu64 i = 0; i < farfiles.size(); ++i){
             LOG(farfiles[i] << " - " << ZFile::readString(farfiles[i]));
         }
 
-        if(ZFile::readString(farfiles[findf]) != "this file is far away")
-            throw __LINE__;
-        if(ZFile::readString(farfiles[finds]) != "this file is nearby")
-            throw __LINE__;
+        TASSERT(ZFile::readString(farfiles[findf]) == "this file is far away");
+        TASSERT(ZFile::readString(farfiles[finds]) == "this file is nearby");
     }
 
     LOG("-- List Directories:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,17 +96,13 @@ int file_test(){
         rfile.rewind();
         ZBinary randi;
         rfile.read(randi, 0x100);
-        if(ZHash<ZBinary>(randi).hash() != ZHash<ZBinary>(rand1).hash())
-            throw __LINE__;
+        TASSERT(ZHash<ZBinary>(randi).hash() == ZHash<ZBinary>(rand1).hash());
         rfile.read(randi, 0x100);
-        if(ZHash<ZBinary>(randi).hash() != ZHash<ZBinary>(rand2).hash())
-            throw __LINE__;
+        TASSERT(ZHash<ZBinary>(randi).hash() == ZHash<ZBinary>(rand2).hash());
         rfile.read(randi, 0x100);
-        if(ZHash<ZBinary>(randi).hash() != ZHash<ZBinary>(rand3).hash())
-            throw __LINE__;
+        TASSERT(ZHash<ZBinary>(randi).hash() == ZHash<ZBinary>(rand3).hash());
         rfile.read(randi, 0x100);
-        if(ZHash<ZBinary>(randi).hash() != ZHash<ZBinary>(rand4).hash())
-            throw __LINE__;
+        TASSERT(ZHash<ZBinary>(randi).hash() == ZHash<ZBinary>(rand4).hash());
     }
 
     return 0;

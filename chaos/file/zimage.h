@@ -11,8 +11,6 @@
 #include "zbinary.h"
 #include "zmap.h"
 #include "yimagebackend.h"
-//#include "zbitmap.h"
-//#include "zpath.h"
 
 #include <cstring>
 
