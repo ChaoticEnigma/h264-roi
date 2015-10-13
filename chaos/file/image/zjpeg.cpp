@@ -14,7 +14,7 @@
 
 namespace LibChaos {
 
-int readjpeg(ZBinary &in, ZImage *out);
+int readjpeg(ZReader *in, ZImage *out);
 
 ZJPEG::ZJPEG(ZImage *image) : _image(image){
     quality = 100;
@@ -61,7 +61,7 @@ METHODDEF(void) my_error_exit(j_common_ptr cinfo){
 
 // JPEG Interface from libjpeg's example.c
 
-int readjpeg(ZBinary &in, ZImage *out){
+int readjpeg(ZReader *in, ZImage *out){
     /* This struct contains the JPEG decompression parameters and pointers to
      * working space (which is allocated as needed by the JPEG library).
      */
@@ -99,7 +99,10 @@ int readjpeg(ZBinary &in, ZImage *out){
     /* Step 2: specify data source (eg, a file) */
 
     //jpeg_stdio_src(&cinfo, infile);
-    jpeg_mem_src(&cinfo, in.raw(), in.size());
+    ZBinary data(in->available());
+    if(in->read(data.raw(), data.size()) != data.size())
+        throw ZException("Failed to read expected data");
+    jpeg_mem_src(&cinfo, data.raw(), data.size());
 
     /* Step 3: read file parameters with jpeg_read_header() */
 
@@ -123,14 +126,14 @@ int readjpeg(ZBinary &in, ZImage *out){
      * with the stdio data source.
      */
 
-    out->setWidth(cinfo.output_width);
-    out->setHeight(cinfo.output_width);
-    out->setChannels(cinfo.out_color_components);
-    //out->setDimensions(cinfo.output_width, cinfo.output_height, cinfo.output_components);
-
     if(cinfo.out_color_space != JCS_RGB){
         throw ZException("JPEG not RGB");
     }
+
+    //out->setWidth(cinfo.output_width);
+    //out->setHeight(cinfo.output_width);
+    //out->setChannels(cinfo.out_color_components);
+    out->setDimensions(cinfo.output_width, cinfo.output_height, cinfo.output_components, 8);
 
     /* We may need to do some setup of our own at this point before reading
      * the data.  After jpeg_start_decompress() we have the correct scaled
@@ -158,6 +161,7 @@ int readjpeg(ZBinary &in, ZImage *out){
 
         /* Assume put_scanline_someplace wants a pointer and sample count. */
         //put_scanline_someplace(buffer[0], row_stride);
+        memcpy(out->buffer(), buffer, cinfo.output_scanline * out->stride());
     }
 
     /* Step 7: Finish decompression */

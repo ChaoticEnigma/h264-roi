@@ -22,15 +22,16 @@ public:
     bool decode(ZReader *input);
     bool encode(ZWriter *output);
 
-private:
-    ZImage *_image;
-
+public:
     // Decoding
     WebPDecoderConfig decode_config;
 
     // Encoding
     WebPConfig encode_config;
     WebPPicture picture;
+
+private:
+    ZImage *_image;
 };
 
 }
