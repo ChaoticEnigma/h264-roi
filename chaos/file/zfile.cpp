@@ -189,7 +189,7 @@ zu64 ZFile::seek(zu64 pos){
 #else
     // Seek file pointer to position
     fseek(_file, (long)pos, SEEK_SET);
-    return getPos();
+    return position();
  #endif
 }
 bool ZFile::atEnd() const {
