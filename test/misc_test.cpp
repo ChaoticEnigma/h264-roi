@@ -38,9 +38,8 @@ int uid_test(){
 
     ZBinary mac = ZUID::getMACAddress();
     ZString macstr;
-    for(zu64 i = 0 ; i < mac.size(); ++i){
+    for(zu64 i = 0 ; i < mac.size(); ++i)
         macstr += ZString::ItoS(mac[i], 16, 2) += ":";
-    }
     macstr.substr(0, macstr.size()-1);
     LOG(ZString("MAC:").pad(' ', PADLEN) << macstr << " " << mac.size() << " " << mac);
 
