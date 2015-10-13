@@ -14,25 +14,21 @@ int string_test(){
 
     LOG("-- Assign / Compare:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    if(!(str1 != str2))
-        throw __LINE__;
+    TASSERT(str1 != str2);
 
     str1 = str2;
     LOG(str1);
-    if(!(str1 == str2))
-        throw __LINE__;
+    TASSERT(str1 == str2);
 
     LOG("-- Concat / Append:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ZString str6 = str3.concat(str4);
     LOG(str6);
-    if(str6 != str5)
-        throw __LINE__;
+    TASSERT(str6 == str5);
 
     str3.append(str4);
     LOG(str3);
-    if(str3 != str5)
-        throw __LINE__;
+    TASSERT(str3 == str5);
 
 //    ZString(const char *);
 //    const char *cc() const;
@@ -53,12 +49,10 @@ int string_test(){
 
     ZString itos1 = ZString::ItoS((zu64)4565464, 10);
     LOG(itos1);
-    if(itos1 != "4565464")
-        throw __LINE__;
+    TASSERT(itos1 == "4565464");
     ZString itos2 = ZString::ItoS((zs64)-980948, 16);
     LOG(itos2);
-    if(itos2 != "-ef7d4")
-        throw __LINE__;
+    TASSERT(itos2 == "-ef7d4");
 
 //    int tint() const;
 
@@ -92,8 +86,7 @@ int string_test(){
     ZString ins1 = ZString::insert(insert1, 9, "Complete");
     ZString ins1_1 = insert1.insert(9, "Complete");
     LOG(ins1);
-    if(ins1 != "youShouldCompleteThisSentence" || ins1 != ins1_1)
-        throw __LINE__;
+    TASSERT(ins1 == "youShouldCompleteThisSentence" && ins1 == ins1_1);
 
     LOG("-- Substr:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -101,15 +94,13 @@ int string_test(){
     ZString sub1 = ZString::substr(substr1, 16);
     ZString sub1_1 = substr1.substr(16);
     LOG(sub1);
-    if(sub1 != "RestOfThisString" || sub1 != sub1_1)
-        throw __LINE__;
+    TASSERT(sub1 == "RestOfThisString" && sub1 == sub1_1);
 
     ZString substr2 = "youShouldTakeME!InThisString";
     ZString sub2 = ZString::substr(substr2, 13, 3);
     ZString sub2_1 = substr2.substr(13, 3);
     LOG(sub2);
-    if(sub2 != "ME!" || sub2 != sub2_1)
-        throw __LINE__;
+    TASSERT(sub2 == "ME!" && sub2 == sub2_1);
 
     LOG("-- Find:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -117,14 +108,12 @@ int string_test(){
     zu64 pos1 = find1.findFirst("est");
     zu64 pos1_1 = ZString::findFirst(find1, "est");
     LOG(pos1);
-    if(pos1 != 9 || pos1 != pos1_1)
-        throw __LINE__;
+    TASSERT(pos1 == 9 && pos1 == pos1_1);
 
     ZString find2 = "someInterestingStringIsInteresting";
     zu64 pos2 = ZString::findFirst(find2, "Int", 20);
     LOG(pos2);
-    if(pos2 != 23)
-        throw __LINE__;
+    TASSERT(pos2 == 23);
 
     ZString find3 = "anotherInterestingStringWithInterestingThings";
     ZArray<zu64> pos3 = find3.findAll("est");
@@ -133,8 +122,7 @@ int string_test(){
         RLOG(pos3[i] << " ");
     }
     RLOG(ZLog::newln);
-    if(pos3.size() != 2 || pos3[0] != 12 || pos3[1] != 33)
-        throw __LINE__;
+    TASSERT(pos3.size() == 2 && pos3[0] == 12 && pos3[1] == 33);
 
     ZString find4 = "anotherInterestesteingStringWithInterestesteingThings";
     ZArray<zu64> pos4 = ZString::findAll(find4, "este");
@@ -143,50 +131,42 @@ int string_test(){
         RLOG(pos4[i] << " ");
     }
     RLOG(ZLog::newln);
-    if(pos4.size() != 2 || pos4[0] != 12 || pos4[1] != 37)
-        throw __LINE__;
+    TASSERT(pos4.size() == 2 && pos4[0] == 12 && pos4[1] == 37);
 
     LOG("-- Replace:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ZString replace1 = "anotherInterestingStringWithInterestingThings";
     ZString rep1 = ZString::replacePos(replace1, 5, 20, "!!!!!");
     LOG(rep1);
-    if(rep1 != "anoth!!!!!ithInterestingThings")
-        throw __LINE__;
+    TASSERT(rep1 == "anoth!!!!!ithInterestingThings");
 
     replace1.replacePos(0, 15, "!!!");
     LOG(replace1);
-    if(replace1 != "!!!ingStringWithInterestingThings")
-        throw __LINE__;
+    TASSERT(replace1 == "!!!ingStringWithInterestingThings");
 
     ZString replace2 = "strposposposposdddddddd";
     ZString rep2 = ZString::replaceRecursive(replace2, "strpos", "bbbstr");
     LOG(rep2);
-    if(rep2 != "bbbbbbbbbbbbstrdddddddd")
-        throw __LINE__;
+    TASSERT(rep2 == "bbbbbbbbbbbbstrdddddddd");
 
     ZString replace3 = "a";
     ZString rep3 = ZString::replaceRecursive(replace3, "a", "bad", 5);
     LOG(rep3);
-    if(rep3 != "bbbbbaddddd")
-        throw __LINE__;
+    TASSERT(rep3 == "bbbbbaddddd");
 
     replace2.replaceRecursive("strpos", "posstr", 3);
     LOG(replace2);
-    if(replace2 != "posposposstrposdddddddd")
-        throw __LINE__;
+    TASSERT(replace2 == "posposposstrposdddddddd");
 
     ZString repalce4 = "strstrsstrstrsstrs";
     ZString rep4 = ZString::replace(repalce4, "strs", "aaaa");
     LOG(rep4);
-    if(rep4 != "aaaatrsaaaatrsaaaa")
-        throw __LINE__;
+    TASSERT(rep4 == "aaaatrsaaaatrsaaaa");
 
     ZString replace5 = "ssssssssssssss";
     ZString rep5 = replace5.replace("ss", "t", 4);
     LOG(rep5);
-    if(rep5 != "ttttssssss")
-        throw __LINE__;
+    TASSERT(rep5 == "ttttssssss");
 
 //    // Get sub-string of <str> before first occurence of <find> in <str>
 //    static ZString getUntil(ZString str, ZString find);
@@ -222,46 +202,36 @@ int string_test(){
     ArZ arr1 = strarr.explode('!');
     ZString cmp1 = ZString::compound(arr1, "-");
     LOG(cmp1);
-    if(!(arr1.size() == 3 && arr1[0] == "this" && arr1[1] == "will" && arr1[2] == "explode"))
-        throw __LINE__;
-    if(cmp1 != "this-will-explode")
-        throw __LINE__;
+    TASSERT(arr1.size() == 3 && arr1[0] == "this" && arr1[1] == "will" && arr1[2] == "explode");
+    TASSERT(cmp1 == "this-will-explode");
 
     ZString strarr2 = "this!will!\"sort!of\"!explode\"strstr\"!";
     ArZ arr2 = strarr2.quotedExplode('!');
     ZString cmp2 = ZString::compound(arr2, "-");
     LOG(cmp2);
-    if(!(arr2.size() == 5 && arr2[0] == "this" && arr2[1] == "will" && arr2[2] == "sort!of" && arr2[3] == "explode" && arr2[4] == "strstr"))
-        throw __LINE__;
-    if(cmp2 != "this-will-sort!of-explode-strstr")
-        throw __LINE__;
+    TASSERT(arr2.size() == 5 && arr2[0] == "this" && arr2[1] == "will" && arr2[2] == "sort!of" && arr2[3] == "explode" && arr2[4] == "strstr");
+    TASSERT(cmp2 == "this-will-sort!of-explode-strstr");
 
     ZString strarr3 = "\\!\\!!!this!will\\!also!!explode\"strstr\"!";
     ArZ arr3 = strarr3.escapedExplode('!');
     ZString cmp3 = ZString::compound(arr3, "-");
     LOG(cmp3);
-    if(!(arr3.size() == 4 && arr3[0] == "\\!\\!" && arr3[1] == "this" && arr3[2] == "will\\!also" && arr3[3] == "explode\"strstr\""))
-        throw __LINE__;
-    if(cmp3 != "\\!\\!-this-will\\!also-explode\"strstr\"")
-        throw __LINE__;
+    TASSERT(arr3.size() == 4 && arr3[0] == "\\!\\!" && arr3[1] == "this" && arr3[2] == "will\\!also" && arr3[3] == "explode\"strstr\"");
+    TASSERT(cmp3 == "\\!\\!-this-will\\!also-explode\"strstr\"");
 
     ZString strarr4 = "this!.!will!.!explode!.!!.!differently\"strstr\"!.!";
     ArZ arr4 = strarr4.strExplode("!.!");
     ZString cmp4 = ZString::compound(arr4, "---");
     LOG(cmp4);
-    if(!(arr4.size() == 4 && arr4[0] == "this" && arr4[1] == "will" && arr4[2] == "explode" && arr4[3] == "differently\"strstr\""))
-        throw __LINE__;
-    if(cmp4 != "this---will---explode---differently\"strstr\"")
-        throw __LINE__;
+    TASSERT(arr4.size() == 4 && arr4[0] == "this" && arr4[1] == "will" && arr4[2] == "explode" && arr4[3] == "differently\"strstr\"");
+    TASSERT(cmp4 == "this---will---explode---differently\"strstr\"");
 
     ZString strarr5 = "these!will.all!explode!";
     ArZ arr5 = strarr5.explodeList(2, '!', '.');
     ZString cmp5 = ZString::compound(arr5, "-");
     LOG(cmp5);
-    if(!(arr5.size() == 4 && arr5[0] == "these" && arr5[1] == "will" && arr5[2] == "all" && arr5[3] == "explode"))
-        throw __LINE__;
-    if(cmp5 != "these-will-all-explode")
-        throw __LINE__;
+    TASSERT(arr5.size() == 4 && arr5[0] == "these" && arr5[1] == "will" && arr5[2] == "all" && arr5[3] == "explode");
+    TASSERT(cmp5 == "these-will-all-explode");
 
 //    ArZ explodeList(unsigned nargs, ...);
 
@@ -287,26 +257,22 @@ int string_test(){
     ZString numstr1 = "3345";
     zu64 num1 = numstr1.tozu64();
     LOG(numstr1 << " " << num1);
-    if(num1 != 3345)
-        throw __LINE__;
+    TASSERT(num1 == 3345);
 
     ZString numstr2 = "546567867864512";
     zu64 num2 = numstr2.tozu64();
     LOG(numstr2 << " " << num2);
-    if(num2 != 546567867864512)
-        throw __LINE__;
+    TASSERT(num2 == 546567867864512);
 
     ZString numstr3 = "FF";
     zu64 num3 = numstr3.tozu64(16);
     LOG(numstr3 << " " << num3);
-    if(num3 != 0xFF)
-        throw __LINE__;
+    TASSERT(num3 == 0xFF);
 
     ZString numstr4 = "ad562f";
     zu64 num4 = numstr4.tozu64(16);
     LOG(numstr4 << " " << num4);
-    if(num4 != 0xAD562F)
-        throw __LINE__;
+    TASSERT(num4 == 0xAD562F);
 
     ZString floatstr3 = "45.223";
     float float3 = floatstr3.toFloat();

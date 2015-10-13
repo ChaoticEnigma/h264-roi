@@ -579,6 +579,57 @@ ZString &ZString::label(const AsArZ &values){
     return *this;
 }
 
+ZString &ZString::pad(chartype ch, zu64 len){
+    if(len > size())
+        append(ZString(ch, len - size()));
+    return *this;
+}
+
+ZString &ZString::stripFront(ZString::chartype target){
+    zu64 clen = 0;
+    for(zu64 i = 0; i < size(); ++i){
+        if(_data[i] == target)
+            ++clen;
+        else
+            break;
+    }
+    if(clen > 0)
+        substr(clen, size());
+    return *this;
+}
+
+ZString ZString::stripFront(ZString str, ZString::chartype target){
+    return str.stripFront(target);
+}
+
+ZString &ZString::stripBack(ZString::chartype target){
+    zu64 clen = 0;
+    for(zu64 i = 0; i < size(); ++i){
+        zu64 curr = size() - 1 - i;
+        if(_data[curr] == target)
+            ++clen;
+        else
+            break;
+    }
+    if(clen > 0)
+        substr(0, size() - clen);
+    return *this;
+}
+
+ZString ZString::stripBack(ZString str, ZString::chartype target){
+    return str.stripBack(target);
+}
+
+ZString &ZString::strip(chartype target){
+    stripFront(target);
+    stripBack(target);
+    return *this;
+}
+
+ZString ZString::strip(ZString str, chartype target){
+    return str.strip(target);
+}
+
 ArZ ZString::split(ZString delim) const {
     ArZ out;
     zu64 pos = findFirst(*this, delim);
@@ -715,51 +766,6 @@ ZString ZString::compound(ArZ parts, ZString delim){
             name += delim;
     }
     return name;
-}
-
-ZString &ZString::stripFront(ZString::chartype target){
-    zu64 clen = 0;
-    for(zu64 i = 0; i < size(); ++i){
-        if(_data[i] == target)
-            ++clen;
-        else
-            break;
-    }
-    if(clen > 0)
-        substr(clen, size());
-    return *this;
-}
-
-ZString ZString::stripFront(ZString str, ZString::chartype target){
-    return str.stripFront(target);
-}
-
-ZString &ZString::stripBack(ZString::chartype target){
-    zu64 clen = 0;
-    for(zu64 i = 0; i < size(); ++i){
-        zu64 curr = size() - 1 - i;
-        if(_data[curr] == target)
-            ++clen;
-        else
-            break;
-    }
-    if(clen > 0)
-        substr(0, size() - clen);
-    return *this;
-}
-
-ZString ZString::stripBack(ZString str, ZString::chartype target){
-    return str.stripBack(target);
-}
-
-ZString &ZString::strip(chartype target){
-    stripFront(target);
-    stripBack(target);
-    return *this;
-}
-
-ZString ZString::strip(ZString str, chartype target){
-    return str.strip(target);
 }
 
 ZString ZString::removeWhitespace(){

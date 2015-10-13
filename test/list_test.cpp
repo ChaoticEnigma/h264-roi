@@ -26,24 +26,18 @@ int list_test(){
     list1.popFront();
     LOG(list1.debug());
 
-    if(list1.size() == 4 && list1[0] == 45 && list1[1] == 10 && list1[2] == 20 &&  list1[3] == 567)
-        LOG(list1.size() << " " << list1[0] << "." << list1[1] << "." << list1[2] << "." << list1[3] << " OK");
-    else
-        throw __LINE__;
+    TASSERT(list1.size() == 4 && list1[0] == 45 && list1[1] == 10 && list1[2] == 20 &&  list1[3] == 567);
+    LOG(list1.size() << " " << list1[0] << "." << list1[1] << "." << list1[2] << "." << list1[3] << " OK");
 
     int myints[] = { 16, 2, 77, 29 };
     ZList<int> list2(myints, 4);
-    if(list2.size() == 4 && list2[0] == 16 && list2[1] == 2 && list2[2] == 77 && list2[3] == 29)
-        LOG(list2.size() << " " << list2[0] << "." << list2[1] << "." << list2[2] << "." << list2[3] << " OK");
-    else
-        throw __LINE__;
+    TASSERT(list2.size() == 4 && list2[0] == 16 && list2[1] == 2 && list2[2] == 77 && list2[3] == 29);
+    LOG(list2.size() << " " << list2[0] << "." << list2[1] << "." << list2[2] << "." << list2[3] << " OK");
 
     char mychars[] = { 'a', 'b', 'c', 'd', 'e' };
     ZList<char> list3(mychars, 5);
-    if(list3.size() == 5 && list3[0] == 'a' && list3[1] == 'b' && list3[2] == 'c' && list3[3] == 'd' && list3[4] == 'e')
-        LOG(list3.size() << " " << list3[0] << "." << list3[1] << "." << list3[2] << "." << list3[3] << "." << list3[4] << " OK");
-    else
-        throw __LINE__;
+    TASSERT(list3.size() == 5 && list3[0] == 'a' && list3[1] == 'b' && list3[2] == 'c' && list3[3] == 'd' && list3[4] == 'e');
+    LOG(list3.size() << " " << list3[0] << "." << list3[1] << "." << list3[2] << "." << list3[3] << "." << list3[4] << " OK");
 
     ZList<ZString> list4;
     list4.push("three");
@@ -52,10 +46,8 @@ int list_test(){
     list4.pushFront("one");
     list4.push("five");
 
-    if(list4.size() == 5 && list4[0] == "one" && list4[1] == "two" && list4[2] == "three" && list4[3] == "four" && list4[4] == "five")
-        LOG(list4.size() << " " << list4[0] << "." << list4[1] << "." << list4[2] << "." << list4[3] << "." << list4[4] << " OK");
-    else
-        throw __LINE__;
+    TASSERT(list4.size() == 5 && list4[0] == "one" && list4[1] == "two" && list4[2] == "three" && list4[3] == "four" && list4[4] == "five");
+    LOG(list4.size() << " " << list4[0] << "." << list4[1] << "." << list4[2] << "." << list4[3] << "." << list4[4] << " OK");
 
     LOG("Forward Iterator: " << list4.size());
     for(auto i = list4.begin(); i != list4.end(); ++i){

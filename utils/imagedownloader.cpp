@@ -12,7 +12,7 @@ bool pixivDownload(ZString user_id, ZString session);
 bool pixivBookmarksDownload(ZString user_id, ZString session);
 
 int main(int argc, char **argv){
-    ZLog::formatStdout(ZLogSource::all, "%log%");
+    ZLog::formatStdout(ZLogSource::ALL, "%log%");
 
     if(argc > 1){
         ZString command = argv[1];

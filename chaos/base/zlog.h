@@ -16,27 +16,20 @@
 #define ZLOG_PRELINE LibChaos::ZString(__LINE__)
 #define ZLOG_PREFUNC LibChaos::ZString(__FUNCTION__)
 
-#define ZLOG_FILE_PREPROC LibChaos::ZLogInfo(LibChaos::ZLogInfo::file, ZLOG_PREFILE)
-#define ZLOG_LINE_PREPROC LibChaos::ZLogInfo(LibChaos::ZLogInfo::line, ZLOG_PRELINE)
-#define ZLOG_FUNC_PREPROC LibChaos::ZLogInfo(LibChaos::ZLogInfo::function, ZLOG_PREFUNC)
-
-#define PREPROCR ZLOG_FILE_PREPROC << ZLOG_LINE_PREPROC
-//#define PREPROCD ZLOG_FILE_PREPROC << ZLOG_LINE_PREPROC << ZLOG_FUNC_PREPROC
-
 #if LIBCHAOS_BUILD == LIBCHAOS_RELEASE
-    #define LOG(A)  LibChaos::ZLog() << A
-    #define DLOG(A)
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error) << PREPROCR << A
-    #define RLOG(A) LibChaos::ZLog() << LibChaos::ZLog::raw << A
-    #define TLOG(A) LibChaos::ZLog() << LibChaos::ZLog::this_thread << A
-    #define OLOG(A) LibChaos::ZLog() << LibChaos::ZLog::stdio << A
+    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLogSource::NORMAL) << A
+    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::DEBUG) << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::ERRORS) << A
+    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL) << LibChaos::ZLog::raw << A
+    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL) << LibChaos::ZLog::this_thread << A
+    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL) << LibChaos::ZLog::stdio << A
 #else
-    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLogSource::normal, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
-    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::debug, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::error, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
-    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::normal, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::raw << A
-    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::normal, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::this_thread << A
-    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::normal, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::stdio << A
+    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLogSource::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::DEBUG, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::ERRORS, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::raw << A
+    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::this_thread << A
+    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::stdio << A
 #endif
 #define ORLOG(A) OLOG(LibChaos::ZLog::raw << A)
 
@@ -85,7 +78,7 @@ public:
         this_thread = 12    // Log immediately from this thread, block until done
     };
 
-    ZLog(zlog_source source = ZLogSource::normal);
+    ZLog(zlog_source source = ZLogSource::NORMAL);
     ZLog(zlog_source source, ZString prefile, ZString preline, ZString prefunc);
 
     ~ZLog();

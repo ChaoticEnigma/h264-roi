@@ -2,9 +2,9 @@
 #include "zexception.h"
 
 int mainwrap(int argc, char **argv){
-    ZLog::formatStdout(ZLogSource::normal, "%log%");
-    ZLog::formatStdout(ZLogSource::debug, "%time% (%file%:%line%) - %log%");
-    ZLog::formatStderr(ZLogSource::error, "%time% (%file%:%line%) - %log%");
+    ZLog::formatStdout(ZLogSource::NORMAL, "%log%");
+    ZLog::formatStdout(ZLogSource::DEBUG, "%time% (%file%:%line%) - %log%");
+    ZLog::formatStderr(ZLogSource::ERRORS, "%time% (%file%:%line%) - %log%");
 
     // Arguments
     ZString cmdstr;

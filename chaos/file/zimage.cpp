@@ -6,9 +6,16 @@
 #include "zimage.h"
 #include "zbmp.h"
 #include "zppm.h"
-#include "zpng.h"
-#include "zjpeg.h"
-#include "zwebp.h"
+
+#ifdef LIBCHAOS_HAS_PNG
+    #include "zpng.h"
+#endif
+#ifdef LIBCHAOS_HAS_JPEG
+    #include "zjpeg.h"
+#endif
+#ifdef LIBCHAOS_HAS_WEBP
+    #include "zwebp.h"
+#endif
 
 namespace LibChaos {
 

@@ -7,7 +7,7 @@ using namespace LibChaos;
 // Find duplicate files
 
 int main(int argc, char **argv){
-    ZLog::formatStdout(ZLogSource::all, "%log%");
+    ZLog::formatStdout(ZLogSource::ALL, "%log%");
 
     ArZ param_args;
     for(int i = 0; i < argc; ++i){

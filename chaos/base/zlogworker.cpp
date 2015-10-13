@@ -141,9 +141,9 @@ ZString ZLogWorker::makeLog(const LogJob *job, ZString fmt){
 void ZLogWorker::doLog(LogJob *job){
     formatmutex.lock();
     ZString stdoutfmt = stdoutlog[job->source];
-    ZString stdoutfmtall = stdoutlog[ZLogSource::all];
+    ZString stdoutfmtall = stdoutlog[ZLogSource::ALL];
     ZString stderrfmt = stderrlog[job->source];
-    ZString stderrfmtall = stderrlog[ZLogSource::all];
+    ZString stderrfmtall = stderrlog[ZLogSource::ALL];
     formatmutex.unlock();
 
     // Do any stdout logging
@@ -171,7 +171,7 @@ void ZLogWorker::doLog(LogJob *job){
             formatmutex.lock();
             ZPath filename = logfilelist[i];
             ZString filefmt = logfiles[filename][job->source];
-            ZString filefmtall = logfiles[filename][ZLogSource::all];
+            ZString filefmtall = logfiles[filename][ZLogSource::ALL];
             formatmutex.unlock();
 
             if(!filefmt.isEmpty()){

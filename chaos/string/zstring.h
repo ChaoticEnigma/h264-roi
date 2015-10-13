@@ -18,6 +18,7 @@
 #if PLATFORM == WINDOWS
     #define UNICODE
     #define _UNICODE
+    #include <string>
 #endif
 
 namespace LibChaos {
@@ -244,6 +245,9 @@ public:
 
     ZString &label(const ZString &label, const ZString &value);
     ZString &label(const AsArZ &values);
+
+    //! Pad string to minimum \a length with \a ch.
+    ZString &pad(chartype ch, zu64 length);
 
     //! Strip occurences of \a target from beginning of string.
     ZString &stripFront(chartype target);

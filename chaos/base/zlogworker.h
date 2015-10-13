@@ -27,10 +27,10 @@ namespace LibChaos {
 
 namespace ZLogSource {
     enum zlog_source {
-        normal = 1,
-        debug = 2,
-        error = 3,
-        all = 4
+        NORMAL = 1,
+        DEBUG = 2,
+        ERRORS = 3,
+        ALL = 4
     };
 }
 
