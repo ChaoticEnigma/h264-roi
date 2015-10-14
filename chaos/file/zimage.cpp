@@ -4,6 +4,7 @@
 **                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zimage.h"
+#include "zlog.h"
 #include "zbmp.h"
 #include "zppm.h"
 
@@ -310,12 +311,19 @@ void ZImage::setFormat(fileformat format){
 
 void ZImage::decodeFormat(const ZBinary &data){
     fileformat format = checkImageFormat(data);
-    setFormat(format);
+    if(format == NONE){
+        LOG("Unknown / Invalid Image Format");
+    } else {
+        setFormat(format);
+    }
 
     // TODO: Reference-count ZBinary
     ZBinary tmp = data;
     if(_backend){
-        _backend->decode(&tmp);
+        bool ok = _backend->decode(&tmp);
+        if(!ok){
+            destroy();
+        }
     }
 }
 

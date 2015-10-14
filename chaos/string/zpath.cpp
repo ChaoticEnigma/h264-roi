@@ -37,14 +37,14 @@ ZPath::ZPath() : _absolute(false){
     // Other platforms have default empty prefix
 }
 
-ZPath::ZPath(ZString path) : ZPath(){
-    fromStr(path);
+ZPath::ZPath(ZString str) : ZPath(){
+    fromStr(str);
 }
 //ZPath::ZPath(std::string path) : ZPath(){
 //    fromStr(path);
 //}
-ZPath::ZPath(const char *path) : ZPath(){
-    fromStr(path);
+ZPath::ZPath(const char *str) : ZPath(){
+    fromStr(str);
 }
 
 ZPath::ZPath(ArZ arr) : ZPath(){
@@ -182,6 +182,7 @@ ZPath ZPath::parent(ZPath path){
     return path.parent();
 }
 
+// NOTE: Needs REWRITE
 bool ZPath::childTo(ZPath path) const {
     // Get absolute and clean paths
     ZPath base = *this;

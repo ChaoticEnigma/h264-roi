@@ -103,13 +103,31 @@ int image_test(){
 
     // Convert JPEG to PNG
 
-    ZBinary bin4i;
-    ZFile::readBinary("cute.jpg", bin4i);
-    ZImage image4(bin4i);
-    image4.setFormat(ZImage::PNG);
-    ZBinary bin4o;
-    image4.encodeFormat(bin4o);
-    ZFile::writeBinary("cute.png", bin4o);
+//    ZBinary bin4i;
+//    ZFile::readBinary("cute.jpg", bin4i);
+//    ZImage image4(bin4i);
+//    image4.setFormat(ZImage::PNG);
+//    ZBinary bin4o;
+//    image4.encodeFormat(bin4o);
+//    ZFile::writeBinary("cute.png", bin4o);
+
+    // JPEG Decode Test
+    ZArray<ZPath> list1 = ZFile::listFiles("imagetestsuite/jpg");
+    for(zu64 i = 0; i < list1.size(); ++i){
+        ZPath jfile = list1[i];
+        LOG(i+1 << ": Decode " << jfile);
+        ZBinary jin;
+        ZFile::readBinary(jfile, jin);
+        ZImage jimage(jin);
+        LOG("Image Size: " << jimage.size());
+        if(jimage.size()){
+            jimage.setFormat(ZImage::BMP);
+            ZBinary jout;
+            jimage.encodeFormat(jout);
+            jfile.last().append(".bmp");
+            ZFile::writeBinary(jfile, jout);
+        }
+    }
 
     return 0;
 }

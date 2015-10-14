@@ -25,9 +25,8 @@ typedef ZArray<ZPath> ArP;
 class ZPath {
 public:
     ZPath();
-    ZPath(ZString);
-//    ZPath(std::string);
-    ZPath(const char *);
+    ZPath(ZString str);
+    ZPath(const char *str);
     ZPath(ArZ arr);
 
     bool operator==(ZPath);
@@ -45,22 +44,35 @@ public:
     ZString &last(){ return _data.back(); }
     const ZString &last() const { return _data.back(); }
 
-    static ZPath pwd(); // Get a ZPath that represents the present working directory of the program
+    //! Get the present working directory of the program.
+    static ZPath pwd();
 
-    ZPath &relativeTo(ZPath absolute); // Get a relative C to A (<this>) from B (<absolute>) such that B + C = A
+    //! Get a path to this, relative to \a absolute.
+    ZPath &relativeTo(ZPath absolute);
+    //! Get a path to \a path, relative to \a absolute.
     static ZPath relativeTo(ZPath path, ZPath absolute);
 
-    ZPath &parent(); // Get the path to the next directory up
+    //! Get a path to parent directoy of this.
+    ZPath &parent();
+    //! Get a path to parent directoy of \a path.
     static ZPath parent(ZPath path);
 
-    // Determines if <path> is a child to <this>
-    bool childTo(ZPath path) const; // Needs REWRITE
+    //! Determines if \a path is a child of this.
+    bool childTo(ZPath path) const;
 
-    ZPath &sanitize(); // Gets most direct path (resolves .. in path, as best as possible), removes unnecessary tokens
+    /*! Get most direct canonical path to this.
+     *  Resolves .. in path, removes unnecessary tokens.
+     */
+    ZPath &sanitize();
+    /*! Get most direct canonical path to \a path.
+     *  Resolves .. in path, removes unnecessary tokens.
+     */
     static ZPath sanitize(ZPath path);
 
-    static ZPath getAbsolute(ZPath path); // Get absolute representation of path, based on present working directory
-    ZPath &getAbsolute(); // Operates on object
+    //! Get absolute representation of \a path, based on present working directory.
+    static ZPath getAbsolute(ZPath path);
+    //! Get absolute representation of this, based on present working directory.
+    ZPath &getAbsolute();
 
     ZString getExtension() const;
 
@@ -68,6 +80,7 @@ public:
     bool valid();
     ZPath &fix();
 
+    //! Convert path to string with \a delim between directories.
     ZString str(ZString delim = ZPATH_DEFAULT_DELIM) const;
 
     // Data Accessors
@@ -89,11 +102,9 @@ private:
 
 private:
 //    const ArZ delimlist = { "/", "\\\\", "\\" };
-
     ArZ _data;
     bool _absolute;
     ZString _prefix;
-    //ZString delim;
 };
 
 //ZHASH_USER_SPECIALIAZATION(ZPath, (const ZPath &path), (), {

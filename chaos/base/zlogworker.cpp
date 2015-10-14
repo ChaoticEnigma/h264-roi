@@ -120,7 +120,7 @@ ZString ZLogWorker::makeLog(const LogJob *job, ZString fmt){
     if(!job->raw){
         fmt.replace("%log%", job->log);
 
-        fmt.replace("%clock%", job->clock.getClock());
+        fmt.replace("%clock%", job->clock.str());
         fmt.replace("%date%", job->time.dateStr());
         fmt.replace("%time%", job->time.timeStr());
         fmt.replace("%datetime%", job->time.dateStr() + " " + job->time.timeStr());

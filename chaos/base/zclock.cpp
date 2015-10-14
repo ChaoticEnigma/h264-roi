@@ -7,7 +7,7 @@
 
 namespace LibChaos {
 
-ZString ZClock::getClock() const {
+ZString ZClock::str() const {
     float rawsecs = getSecs();
     int secs = rawsecs;
     int msecs = (rawsecs - (float)secs) * 1000;

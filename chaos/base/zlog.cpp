@@ -44,6 +44,7 @@ void ZLog::flushLog(bool final){
     job->raw = rawlog;
     //job->log = buffer;
 
+    // Transfer job ownership
     LogJob *jobptr = job;
     job = nullptr;
     if(!final){

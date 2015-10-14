@@ -18,11 +18,13 @@ public:
         rawclock = clock();
     }
 
+    //! Get clock in seconds.
     double getSecs() const {
         return (double)rawclock / (double)CLOCKS_PER_SEC;
     }
 
-    ZString getClock() const;
+    //! Get clock string.
+    ZString str() const;
 
 private:
     clock_t rawclock;

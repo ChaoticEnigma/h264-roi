@@ -10,6 +10,8 @@
 #include "yimagebackend.h"
 #include "zbinary.h"
 
+#include <jpeglib.h>
+
 namespace LibChaos {
 
 class ZJPEG : public YImageBackend {
@@ -29,6 +31,7 @@ public:
 
 public:
     ZJPEG(ZImage *image);
+    ~ZJPEG();
 
     static bool isJPEG(const ZBinary &data);
 
@@ -37,6 +40,9 @@ public:
 
 public:
     int quality;
+
+    struct jpeg_decompress_struct cinfo;
+    struct jpeg_error_mgr jpeg_error;
 
 private:
     ZImage *_image;

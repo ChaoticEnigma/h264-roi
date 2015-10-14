@@ -60,6 +60,21 @@ INCLUDE_DIRECTORIES(
 # Download test images
 FILE(DOWNLOAD "https://www.gstatic.com/webp/gallery3/3_webp_ll.webp" ${CMAKE_CURRENT_BINARY_DIR}/dice.webp)
 
+SET(TESTPNG ${CMAKE_CURRENT_BINARY_DIR}/testpng.tar.gz)
+SET(TESTJPEG ${CMAKE_CURRENT_BINARY_DIR}/testjpeg.tar.gz)
+
+FILE(DOWNLOAD "https://imagetestsuite.googlecode.com/files/imagetestsuite-png-1.01.tar.gz" ${TESTPNG})
+FILE(DOWNLOAD "https://imagetestsuite.googlecode.com/files/imagetestsuite-jpg-1.00.tar.gz" ${TESTJPEG})
+
+EXECUTE_PROCESS(
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND} -E tar xzf "${TESTPNG}"
+)
+EXECUTE_PROCESS(
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND} -E tar xzf "${TESTJPEG}"
+)
+
 ### =================== BUILD =================== ###
 
 ADD_EXECUTABLE(testchaos ${LIBCHAOS_TEST_ALL} ${LibChaos_Test_HEADERS} ${LibChaos_Test_SOURCES})
