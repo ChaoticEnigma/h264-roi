@@ -37,7 +37,7 @@ bool ZJPEG::isJPEG(const ZBinary &data){
         cinfo.err = jpeg_std_error(&jerr);
         jerr.error_exit = error_exit;
         jpeg_create_decompress(&cinfo);
-        jpeg_mem_src(&cinfo, data.raw(), data.size());
+        jpeg_mem_src(&cinfo, (zbyte *)data.raw(), data.size());
         int status = jpeg_read_header(&cinfo, TRUE);
         jpeg_destroy_decompress(&cinfo);
         return (status == JPEG_HEADER_OK);
@@ -85,15 +85,17 @@ bool ZJPEG::decode(ZReader *input){
         JSAMPARRAY buffer = new JSAMPROW[buffer_count];
         // Each row is an array of samples
         buffer[0] = new JSAMPLE[_image->stride()];
+        JSAMPROW row;
 
         // Read image scanlines
         while(cinfo.output_scanline < cinfo.output_height){
             // Set pointer to next output row
-            //buffer[0] = _image->buffer() + ((cinfo.output_scanline - 1) * _image->stride());
+            row = _image->buffer() + ((cinfo.output_scanline - 1) * _image->stride());
             // Decode scanline(s) into buffer
-            jpeg_read_scanlines(&cinfo, buffer, buffer_count);
+            //jpeg_read_scanlines(&cinfo, buffer, buffer_count);
+            jpeg_read_scanlines(&cinfo, &row, 1);
             // Copy scanline to buffer
-            memcpy(_image->buffer() + ((cinfo.output_scanline - 1) * _image->stride()), buffer[0], _image->stride());
+            //memcpy(_image->buffer() + ((cinfo.output_scanline - 1) * _image->stride()), buffer[0], _image->stride());
         }
 
         // Cleanup
@@ -108,6 +110,7 @@ bool ZJPEG::decode(ZReader *input){
         }
 
     } catch(ZException e){
+        jpeg_abort_decompress(&cinfo);
         ELOG("ZJPEG::decode(): " << e.what());
         return false;
     }
