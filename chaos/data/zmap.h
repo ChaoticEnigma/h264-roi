@@ -23,8 +23,10 @@
 
 namespace LibChaos {
 
-/*! Hash map unsequenced container.
- *  For the purposes of this class, keys that evaluate equal must have the same hashes, and vice-versa.
+/*! Hash Map container.
+ *  Unsequenced.
+ *  Keys must be hashable and comparable.
+ *  Keys that evaluate equal must have the same hashes, and vice-versa.
  */
 template <typename K, typename T> class ZMap {
 public:
@@ -83,7 +85,7 @@ public:
         delete _talloc;
     }
 
-    // Add entry with <key> and <value> to map, or change value of existing entry with <key>
+    //! Add entry with \a key and \a value to map, or change value of existing entry with \a key.
     T &add(const K &key, const T &value){
         // Ensure enough space
         resize(_size + 1);
@@ -118,7 +120,7 @@ public:
     }
     inline T &push(const K &key, const T &value){ return add(key, value); }
 
-    // Remove entry with <key> from map, if it exists
+    //! Remove entry with \a key from map, if it exists.
     void remove(const K &key){
         zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
@@ -145,7 +147,7 @@ public:
         }
     }
 
-    // Get a reference to the entry with <key>, create entry if it doesn't exitst
+    //! Get a reference to the entry with \a key, create entry if it doesn't exitst.
     T &get(const K &key){
         zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
@@ -171,8 +173,9 @@ public:
     }
     inline T &operator[](const K &key){ return get(key); }
 
-    // Get a reference to the entry with <key>
-    // Throws an exception if the entry doesn't exist
+    /*! Get a reference to the entry with \a key.
+     *  \throws Throws an exception if the entry doesn't exist
+     */
     const T &get(const K &key) const {
         zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
@@ -201,9 +204,10 @@ public:
         return 0;
     }
 
-    // Resize the buffer (this is the only place buffer memory is allocated)
-    // Buffer is resized to the next power of two that will hold <size> elements
-    // The buffer is never made smaller
+    /*! Resize the buffer (this is the only place buffer memory is allocated)
+     *  Buffer is resized to the next power of two that will hold <size> elements
+     *  The buffer is never made smaller
+     */
     void resize(zu64 size){
         if(size > _realsize || ((float)size / (float)_realsize) >= _factor){
             zu64 newsize = 1;
@@ -234,7 +238,7 @@ public:
                             // Find first empty entry
                             if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                                 _data[pos].hash = olddata[i].hash;
-                                // Copy without copy constructors
+                                // Move elements without copy constructors
                                 _kalloc->rawmove(_kalloc->addressOf(olddata[i].key), _kalloc->addressOf(_data[pos].key));
                                 _talloc->rawmove(_talloc->addressOf(olddata[i].value), _talloc->addressOf(_data[pos].value));
                                 _data[pos].flags |= ZMAP_ENTRY_VALID;
@@ -289,16 +293,25 @@ private:
     }
 
 private:
-    ZPointer<ZAllocator<MapData> > _alloc; // Memory allocator
-    ZAllocator<K> *_kalloc; // Used to construct and destroy keys
-    ZAllocator<T> *_talloc; // Used to construct and destroy values
+    //! Memory allocator
+    ZPointer<ZAllocator<MapData>> _alloc;
+    //! Used to construct and destroy keys
+    ZAllocator<K> *_kalloc;
+    //! Used to construct and destroy values
+    ZAllocator<T> *_talloc;
 
-    MapData *_data; // Actual data buffer
-    //MapData *_head; // Pointer to first inserted element
-    //MapData *_tail; // Pointer to last inserted element
-    zu64 _size;     // Number of entries
-    zu64 _realsize; // Size of buffer
-    float _factor;  // Max load factor (size / realsize ratio)
+    //! Actual data buffer
+    MapData *_data;
+    // Pointer to first inserted element
+    //MapData *_head;
+    // Pointer to last inserted element
+    //MapData *_tail;
+    //! Number of entries
+    zu64 _size;
+    //! Size of buffer
+    zu64 _realsize;
+    //! Max load factor (size / realsize ratio)
+    float _factor;
 };
 
 }
