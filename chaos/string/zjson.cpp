@@ -19,7 +19,8 @@ ZJSON::ZJSON(AsArZ arr){
 }
 
 ZJSON &ZJSON::operator=(ZString str){
-    return decode(str);
+    decode(str);
+    return *this;
 }
 
 bool isWhitespace(char wsp){
@@ -119,27 +120,38 @@ bool ZJSON::isValid(){
     return validJSON(json);
 }
 
-ZJSON ZJSON::fromJSON(ZString s){
-    if(!validJSON(s))
-        return ZJSON();
-    enum Locat {
+bool ZJSON::decode(ZString s, zu64 *start){
+//    if(!validJSON(s))
+//        return false;
+
+    // Current location
+    enum location {
+        // Beginning of JSON string
         firstc,
-        key_,
+        // Inside key
+        key,
+        // At end of key
         ekey,
+        // Inside value
         value,
+        // At end of value
         evalue
     } loc = firstc;
-    ZJSON final;
+
+    //
     ZString kbuff;
+    //
     ZString vbuff;
-    for(zu64 i = 0; i < s.size(); ++i){
+
+    // Start decoding. If start is not null, start at given position
+    for(zu64 i = (start != nullptr ? *start : 0); i < s.size(); ++i){
         char c = s[i];
         switch(loc){
         case firstc:
             if(c == '"')
-                loc = key_;
+                loc = key;
             break;
-        case key_:
+        case key:
             if(c == '"' && s[i-1] != '\\')
                 loc = ekey;
             else
@@ -157,8 +169,8 @@ ZJSON ZJSON::fromJSON(ZString s){
             break;
         case evalue:
             if(c == ',' || c == '}'){
-                final.push(ZString(vbuff).replace("\\\"", "\""));
-                final.key(final.size()-1) = ZString(kbuff).replace("\\\"", "\"").str();
+                push(ZString(vbuff).replace("\\\"", "\""));
+                key(size()-1) = ZString(kbuff).replace("\\\"", "\"").str();
                 kbuff.clear();
                 vbuff.clear();
                 if(c == ','){
@@ -171,16 +183,11 @@ ZJSON ZJSON::fromJSON(ZString s){
         default:
             // Not Good.
             assert(false);
+            return false;
             break;
         }
     }
-    return final;
-}
-
-ZJSON &ZJSON::decode(ZString str){
-    json = str;
-    data() = fromJSON(str).data();
-    return *this;
+    return true;
 }
 
 ZString ZJSON::encode(){
