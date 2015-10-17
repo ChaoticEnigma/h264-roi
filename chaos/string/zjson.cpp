@@ -10,7 +10,7 @@
 
 namespace LibChaos {
 
-ZJSON::ZJSON() : type(UNDEF){
+ZJSON::ZJSON() : _type(UNDEF){
 
 }
 
@@ -18,22 +18,25 @@ ZJSON::ZJSON(ZString str){
     decode(str);
 }
 
-ZJSON::ZJSON(const ZJSON &other) : type(other.type){
-    switch(type){
+ZJSON::ZJSON(const ZJSON &other){
+    initType(other._type);
+    switch(other._type){
     case OBJECT:
-        data.object = other.data.object;
+        _data.object = other._data.object;
         break;
     case ARRAY:
-        data.array = other.data.array;
+        _data.array = other._data.array;
         break;
     case STRING:
-        data.string = other.data.string;
+        _data.string = other._data.string;
         break;
     case NUMBER:
-        data.number = other.data.number;
+        _data.number = other._data.number;
         break;
     case BOOLEAN:
-        data.boolean = other.data.boolean;
+        _data.boolean = other._data.boolean;
+        break;
+    default:
         break;
     }
 }
@@ -138,7 +141,7 @@ bool ZJSON::validJSON(ZString s){
 }
 
 bool ZJSON::isValid(){
-    return (type != UNDEF);
+    return (_type != UNDEF);
 }
 
 bool ZJSON::decode(ZString s, zu64 *position){
@@ -150,15 +153,15 @@ bool ZJSON::decode(ZString s, zu64 *position){
     // Check if JSON is true/false boolean or null
     ZString tstr = s.substr(pos);
     if(tstr.beginsWith("true", true)){
-        type = BOOLEAN;
-        data.boolean = true;
+        initType(BOOLEAN);
+        _data.boolean = true;
         return true;
     } else if(tstr.beginsWith("false", true)){
-        type = BOOLEAN;
-        data.boolean = false;
+        initType(BOOLEAN);
+        _data.boolean = false;
         return true;
     } else if(tstr.beginsWith("null", true)){
-        type = NULLVAL;
+        initType(NULLVAL);
         return true;
     }
     // Otherwise, parse
@@ -197,16 +200,16 @@ bool ZJSON::decode(ZString s, zu64 *position){
         // Before JSON
         case start:
             if(c == '{'){
-                type = OBJECT;
+                initType(OBJECT);
                 loc = bkey;
             } else if(c == '['){
-                type = ARRAY;
+                initType(ARRAY);
                 loc = bval;
             } else if(c == '"'){
-                type = STRING;
+                initType(STRING);
                 loc = str;
             } else if(isDigit(c)){
-                type = NUMBER;
+                initType(NUMBER);
                 loc = num;
                 vbuff += c;
             } else if(!isWhitespace(c)){
@@ -242,25 +245,26 @@ bool ZJSON::decode(ZString s, zu64 *position){
             break;
 
         // Before Value
-        case bval:
+        case bval: {
             ZJSON json;
             if(!json.decode(s, &i)){
                 return false;
             }
             --i;
-            if(type == OBJECT){
-                data.object.add(kbuff, json);
+            if(_type == OBJECT){
+                _data.object.add(kbuff, json);
                 kbuff.clear();
-            } else if(type == ARRAY){
-                data.array.push(json);
+            } else if(_type == ARRAY){
+                _data.array.push(json);
             }
-            type = aval;
+            loc = aval;
             break;
+        }
 
         // String
         case str:
             if(c == '"' && s[i-1] != '\\'){
-                data.string = vbuff;
+                _data.string = vbuff;
                 ++i;
                 if(position != nullptr){
                     *position = i;
@@ -274,7 +278,7 @@ bool ZJSON::decode(ZString s, zu64 *position){
         // Number
         case num:
             if(isWhitespace(c) || c == ',' || c == '}'){
-                data.number = vbuff;
+                _data.number = vbuff;
                 if(position != nullptr){
                     *position = i;
                 }
@@ -314,8 +318,55 @@ ZString ZJSON::encode(){
     return tmp;
 }
 
+void ZJSON::initType(ZJSON::jsontype type){
+    // Deconstruct existing value
+    switch(_type){
+    case OBJECT:
+        _data.object.~ZMap();
+        break;
+    case ARRAY:
+        _data.array.~ZArray();
+        break;
+    case STRING:
+        _data.string.~ZString();
+        break;
+    case NUMBER:
+        _data.number.~ZString();
+        break;
+    default:
+        break;
+    }
+
+    _type = type;
+
+    // Construct new value
+    switch(_type){
+    case OBJECT:
+        new (&_data.object) ZMap<ZString, ZJSON>;
+        break;
+    case ARRAY:
+        new (&_data.array) ZArray<ZJSON>;
+        break;
+    case STRING:
+        new (&_data.string) ZString;
+        break;
+    case NUMBER:
+        new (&_data.number) ZString;
+        break;
+    case BOOLEAN:
+        _data.boolean = false;
+        break;
+    default:
+        break;
+    }
+}
+
 ZJSON::JSONValue::JSONValue(){
-    memset(this, 0, sizeof(JSONValue));
+
+}
+
+ZJSON::JSONValue::~JSONValue(){
+
 }
 
 }

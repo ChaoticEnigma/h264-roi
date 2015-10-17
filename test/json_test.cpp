@@ -1,19 +1,39 @@
 #include "test.h"
 #include "zjson.h"
 
-int json_test(){
-    ZString str = "{   \"text\" \n :  \"and text\"  ,   \"3453\"   :   \"456456\"   }";
-    //str = "{  }";
-    str = "{\"txt\":{\"more\":\"here\"}}";
-    if(ZJSON::validJSON(str)){
-        LOG("Valid JSON");
-        ZJSON json(str);
-        for(zu64 i = 0; i < json.size(); ++i){
-            LOG("\"" << json.key(i) << "\" : \"" << json[i] << "\"");
-        }
-        LOG(json.encode());
-    } else {
-        LOG("Invalid JSON");
+void checkType(ZJSON &json){
+    switch(json.type()){
+    case ZJSON::OBJECT:
+        LOG("Object");
+        break;
+    case ZJSON::ARRAY:
+        LOG("Array");
+        break;
+    case ZJSON::STRING:
+        LOG("String");
+        break;
+    case ZJSON::NUMBER:
+        LOG("Number");
+        break;
+    case ZJSON::BOOLEAN:
+        LOG("Boolean");
+        break;
+    case ZJSON::NULLVAL:
+        LOG("NULL");
+        break;
+    case ZJSON::UNDEF:
+        LOG("Undefined");
+        break;
+    default:
+        LOG("Other");
+        break;
     }
+}
+
+int json_test(){
+    ZString str1 = "{ \"object\" : { \"str\" : \"strval\" , \"num\" : 12345 } , \"string\" : \"stringval\" , \"number\" : 54321 }";
+    ZJSON json1;
+    json1.decode(str1);
+    checkType(json1);
     return 0;
 }

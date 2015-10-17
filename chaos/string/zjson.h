@@ -11,7 +11,7 @@
 
 namespace LibChaos {
 
-//! JSON (JavaScript Object Notation)
+//! JSON (JavaScript Object Notation) container, decoder and encoder.
 class ZJSON {
 public:
     enum jsontype {
@@ -39,23 +39,30 @@ public:
     //! Decode JSON string.
     bool decode(ZString str, zu64 *position = nullptr);
 
+    //! Get type of this JSON object.
+    jsontype type() const { return _type; }
+
     //! Encode JSON string.
     ZString encode();
 
 private:
+    void initType(jsontype type);
+
+private:
     //! JSON type.
-    jsontype type;
+    jsontype _type;
 
     //! Decoded JSON data.
     union JSONValue {
         JSONValue();
+        ~JSONValue();
 
         ZMap<ZString, ZJSON> object;
         ZArray<ZJSON> array;
         ZString string;
         ZString number;
         bool boolean;
-    } data;
+    } _data;
 };
 
 }
