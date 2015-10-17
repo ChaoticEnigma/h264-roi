@@ -144,12 +144,9 @@ public:
     zu64 count(ZString test) const;
 
     //! Tests if \a str begins with \a test. Ignores whitespace at beginning of string if \a ignore_whitespace.
-    bool startsWith(const ZString &test, bool ignore_whitespace = true) const;
+    bool beginsWith(const ZString &test, bool ignorewhitespace = false) const;
     //! Tests if string begins with \a test. Ignores whitespace at beginning of string if \a ignore_whitespace.
-    static bool startsWith(const ZString &str, const ZString &test, bool ignore_whitespace = true);
-
-    //! Alias for startsWith, always ignores whitespace
-    inline bool beginsWith(ZString test) const { return startsWith(test, false); }
+    static bool beginsWith(const ZString &str, const ZString &test, bool ignorewhitespace = false);
 
     //! Tests if string ends with \a test.
     bool endsWith(ZString test) const;

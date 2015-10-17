@@ -15,34 +15,46 @@ namespace LibChaos {
 class ZJSON {
 public:
     enum jsontype {
-        UNDEFINED = 0,
+        UNDEF = 0,
         OBJECT,
         ARRAY,
         STRING,
         NUMBER,
+        BOOLEAN,
+        NULLVAL,
     };
 public:
     ZJSON();
     ZJSON(ZString str);
-    ZJSON(AsArZ assoc);
 
+    //! Copy constructor.
+    ZJSON(const ZJSON &other);
+
+    //! String assignment overload.
     ZJSON &operator=(ZString str);
 
     static bool validJSON(ZString str);
     bool isValid();
 
+    //! Decode JSON string.
     bool decode(ZString str, zu64 *position = nullptr);
 
+    //! Encode JSON string.
     ZString encode();
 
-    AsArZ toZAssoc();
 private:
-    ZString json;
+    //! JSON type.
+    jsontype type;
+
+    //! Decoded JSON data.
     union JSONValue {
-        ZJSON object;
+        JSONValue();
+
+        ZMap<ZString, ZJSON> object;
         ZArray<ZJSON> array;
         ZString string;
         ZString number;
+        bool boolean;
     } data;
 };
 

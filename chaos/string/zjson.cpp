@@ -10,12 +10,32 @@
 
 namespace LibChaos {
 
-ZJSON::ZJSON(){}
+ZJSON::ZJSON() : type(UNDEF){
+
+}
+
 ZJSON::ZJSON(ZString str){
     decode(str);
 }
-ZJSON::ZJSON(AsArZ arr){
-    data() = arr.data();
+
+ZJSON::ZJSON(const ZJSON &other) : type(other.type){
+    switch(type){
+    case OBJECT:
+        data.object = other.data.object;
+        break;
+    case ARRAY:
+        data.array = other.data.array;
+        break;
+    case STRING:
+        data.string = other.data.string;
+        break;
+    case NUMBER:
+        data.number = other.data.number;
+        break;
+    case BOOLEAN:
+        data.boolean = other.data.boolean;
+        break;
+    }
 }
 
 ZJSON &ZJSON::operator=(ZString str){
@@ -23,11 +43,12 @@ ZJSON &ZJSON::operator=(ZString str){
     return *this;
 }
 
-bool isWhitespace(char wsp){
-    if(wsp == ' ' || wsp == '\n' || wsp == '\t'){
-        return true;
-    }
-    return false;
+bool isWhitespace(char ch){
+    return (ch == ' ' || ch == '\n' || ch == '\t');
+}
+
+bool isDigit(char ch){
+    return (ch >= '0' && ch <= '9');
 }
 
 bool ZJSON::validJSON(ZString s){
@@ -42,7 +63,7 @@ bool ZJSON::validJSON(ZString s){
         firstc, // {
         skey, // "
         key, // any char but "
-        ekey, // "
+        akey, // "
         colon, // :
         svalue, // "
         value, // any char but "
@@ -74,9 +95,9 @@ bool ZJSON::validJSON(ZString s){
             break;
         case key:
             if(c == '"' && s[i-1] != '\\')
-                loc = ekey;
+                loc = akey;
             break;
-        case ekey:
+        case akey:
             if(c == ':')
                 loc = colon;
             else if(!isWhitespace(c))
@@ -117,69 +138,166 @@ bool ZJSON::validJSON(ZString s){
 }
 
 bool ZJSON::isValid(){
-    return validJSON(json);
+    return (type != UNDEF);
 }
 
-bool ZJSON::decode(ZString s, zu64 *start){
+bool ZJSON::decode(ZString s, zu64 *position){
 //    if(!validJSON(s))
 //        return false;
 
-    // Current location
+    zu64 pos = (position != nullptr ? *position : 0);
+
+    // Check if JSON is true/false boolean or null
+    ZString tstr = s.substr(pos);
+    if(tstr.beginsWith("true", true)){
+        type = BOOLEAN;
+        data.boolean = true;
+        return true;
+    } else if(tstr.beginsWith("false", true)){
+        type = BOOLEAN;
+        data.boolean = false;
+        return true;
+    } else if(tstr.beginsWith("null", true)){
+        type = NULLVAL;
+        return true;
+    }
+    // Otherwise, parse
+
+    // Location indicates what is expected at current character
     enum location {
         // Beginning of JSON string
-        firstc,
+        start,
+        // Beginning of key
+        bkey,
         // Inside key
         key,
         // At end of key
-        ekey,
+        akey,
+        // Beginning of value
+        bval,
         // Inside value
-        value,
+        //val,
         // At end of value
-        evalue
-    } loc = firstc;
+        aval,
+        // Inside String Value
+        str,
+        // Inside Number Value
+        num,
+    } loc = start;
 
-    //
+    // Key string buffer
     ZString kbuff;
-    //
+    // Value buffer
     ZString vbuff;
 
     // Start decoding. If start is not null, start at given position
-    for(zu64 i = (start != nullptr ? *start : 0); i < s.size(); ++i){
+    for(zu64 i = pos; i < s.size(); ++i){
         char c = s[i];
         switch(loc){
-        case firstc:
-            if(c == '"')
-                loc = key;
-            break;
-        case key:
-            if(c == '"' && s[i-1] != '\\')
-                loc = ekey;
-            else
-                kbuff << c;
-            break;
-        case ekey:
-            if(c == '"')
-                loc = value;
-            break;
-        case value:
-            if(c == '"' && s[i-1] != '\\')
-                loc = evalue;
-            else
-                vbuff << c;
-            break;
-        case evalue:
-            if(c == ',' || c == '}'){
-                push(ZString(vbuff).replace("\\\"", "\""));
-                key(size()-1) = ZString(kbuff).replace("\\\"", "\"").str();
-                kbuff.clear();
-                vbuff.clear();
-                if(c == ','){
-                    loc = firstc;
-                } /*else if(c == '}'){
-                    dat() = final.dat();
-                }*/
+        // Before JSON
+        case start:
+            if(c == '{'){
+                type = OBJECT;
+                loc = bkey;
+            } else if(c == '['){
+                type = ARRAY;
+                loc = bval;
+            } else if(c == '"'){
+                type = STRING;
+                loc = str;
+            } else if(isDigit(c)){
+                type = NUMBER;
+                loc = num;
+                vbuff += c;
+            } else if(!isWhitespace(c)){
+                return false;
             }
             break;
+
+        // Before Key
+        case bkey:
+            if(c == '"'){
+                loc = key;
+            } else if(!isWhitespace(c)){
+                return false;
+            }
+            break;
+
+        // In Key
+        case key:
+            if(c == '"' && s[i-1] != '\\'){
+                loc = akey;
+            } else {
+                kbuff += c;
+            }
+            break;
+
+        // After Key
+        case akey:
+            if(c == ':'){
+                loc = bval;
+            } else if(!isWhitespace(c)){
+                return false;
+            }
+            break;
+
+        // Before Value
+        case bval:
+            ZJSON json;
+            if(!json.decode(s, &i)){
+                return false;
+            }
+            --i;
+            if(type == OBJECT){
+                data.object.add(kbuff, json);
+                kbuff.clear();
+            } else if(type == ARRAY){
+                data.array.push(json);
+            }
+            type = aval;
+            break;
+
+        // String
+        case str:
+            if(c == '"' && s[i-1] != '\\'){
+                data.string = vbuff;
+                ++i;
+                if(position != nullptr){
+                    *position = i;
+                }
+                return true;
+            } else {
+                vbuff += c;
+            }
+            break;
+
+        // Number
+        case num:
+            if(isWhitespace(c) || c == ',' || c == '}'){
+                data.number = vbuff;
+                if(position != nullptr){
+                    *position = i;
+                }
+                return true;
+            } else {
+                vbuff += c;
+            }
+            break;
+
+        // After Value
+        case aval:
+            if(c == ','){
+                loc = bkey;
+            } else if(c == '}'){
+                if(position != nullptr){
+                    *position = i;
+                }
+                return true;
+            } else if(!isWhitespace(c)){
+                return false;
+            }
+            break;
+
         default:
             // Not Good.
             assert(false);
@@ -192,21 +310,12 @@ bool ZJSON::decode(ZString s, zu64 *start){
 
 ZString ZJSON::encode(){
     ZString tmp;
-    tmp << "{";
-    //tmp << "\"" << ZString(key(0)).replace("\"", "\\\"").str() << "\":\"" << at(0).replace("\"", "\\\"") << "\"";
-    for(unsigned i = 0; i < size(); ++i){
-        if(i != 0)
-            tmp << ",";
-        tmp << "\"" << ZString(key(i)).replace("\"", "\\\"").str() << "\":\"" << at(i).replace("\"", "\\\"") << "\"";
-    }
-    tmp << "}";
+
     return tmp;
 }
 
-AsArZ ZJSON::toZAssoc(){
-    AsArZ tmp;
-    tmp.data() = data();
-    return tmp;
+ZJSON::JSONValue::JSONValue(){
+    memset(this, 0, sizeof(JSONValue));
 }
 
 }
