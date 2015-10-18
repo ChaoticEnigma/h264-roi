@@ -2,11 +2,21 @@
 #include "zimage.h"
 #include "zfile.h"
 
-#define IMAGE_TEST_BMP        "image_test.bmp"
-#define IMAGE_TEST_PPM        "image_test.ppm"
-#define IMAGE_TEST_PNG        "image_test.png"
-#define IMAGE_TEST_INVERT_PNG "image_test_invert.png"
-#define IMAGE_TEST_16_PNG     "image_test_16.png"
+#define GEN_BMP         "gen.bmp"
+#define GEN_PPM         "gen.ppm"
+#define GEN_PNG         "gen.png"
+#define GEN_INVERT_PNG  "gen_invert.png"
+#define GEN_16_PNG      "gen_16.png"
+
+#define DICE_WEBP       "dice.webp"
+#define DICE_PNG        "dice.png"
+
+#define TREE_JPEG       "tree.jpg"
+#define TREE_PNG        "tree.png"
+
+#define TESTPNG_DIR     "testpng/png"
+#define PNGSUITE_DIR    "pngsuite"
+#define TESTJPEG_DIR    "testjpeg/imagetestsuite/jpg"
 
 int image_test(){
 
@@ -37,20 +47,20 @@ int image_test(){
     ZBinary out1;
     image1.setFormat(ZImage::BMP);
     image1.encodeFormat(out1);
-    TASSERT(ZFile::writeBinary(IMAGE_TEST_BMP, out1));
+    TASSERT(ZFile::writeBinary(GEN_BMP, out1));
 
     out1.clear();
     image1.setFormat(ZImage::PPM);
     image1.encodeFormat(out1);
-    TASSERT(ZFile::writeBinary(IMAGE_TEST_PPM, out1));
+    TASSERT(ZFile::writeBinary(GEN_PPM, out1));
 
     out1.clear();
     image1.setFormat(ZImage::PNG);
     image1.encodeFormat(out1);
-    TASSERT(ZFile::writeBinary(IMAGE_TEST_PNG, out1));
+    TASSERT(ZFile::writeBinary(GEN_PNG, out1));
 
     ZBinary in1;
-    TASSERT(ZFile::readBinary(IMAGE_TEST_PNG, in1));
+    TASSERT(ZFile::readBinary(GEN_PNG, in1));
 
     ZImage imagein1(in1);
     LOG("Invert image: " << (int)imagein1.getFormat() << " " << imagein1.width() << "x" << imagein1.height());
@@ -62,7 +72,7 @@ int image_test(){
 
     out1.clear();
     image1.encodeFormat(out1);
-    TASSERT(ZFile::writeBinary(IMAGE_TEST_INVERT_PNG, out1));
+    TASSERT(ZFile::writeBinary(GEN_INVERT_PNG, out1));
 
     // 16-bit
 
@@ -89,30 +99,29 @@ int image_test(){
     ZBinary out2;
     image2.setFormat(ZImage::PNG);
     image2.encodeFormat(out2);
-    TASSERT(ZFile::writeBinary(IMAGE_TEST_16_PNG, out2));
+    TASSERT(ZFile::writeBinary(GEN_16_PNG, out2));
 
     // Convert Transparent WebP to PNG
 
     ZBinary bin3i;
-    ZFile::readBinary("dice.webp", bin3i);
+    ZFile::readBinary(DICE_WEBP, bin3i);
     ZImage image3(bin3i);
     image3.setFormat(ZImage::PNG);
     ZBinary bin3o;
     image3.encodeFormat(bin3o);
-    ZFile::writeBinary("dice.png", bin3o);
+    ZFile::writeBinary(DICE_PNG, bin3o);
 
     // Convert JPEG to PNG
-
-//    ZBinary bin4i;
-//    ZFile::readBinary("cute.jpg", bin4i);
-//    ZImage image4(bin4i);
-//    image4.setFormat(ZImage::PNG);
-//    ZBinary bin4o;
-//    image4.encodeFormat(bin4o);
-//    ZFile::writeBinary("cute.png", bin4o);
+    ZBinary bin4i;
+    ZFile::readBinary(TREE_JPEG, bin4i);
+    ZImage image4(bin4i);
+    image4.setFormat(ZImage::PNG);
+    ZBinary bin4o;
+    image4.encodeFormat(bin4o);
+    ZFile::writeBinary(TREE_PNG, bin4o);
 
     // JPEG Decode Test
-    ZArray<ZPath> list1 = ZFile::listFiles("imagetestsuite/jpg");
+    ZArray<ZPath> list1 = ZFile::listFiles(TESTJPEG_DIR);
     for(zu64 i = 0; i < list1.size(); ++i){
         ZPath jfile = list1[i];
         LOG(i+1 << ": Decode " << jfile);
@@ -126,6 +135,24 @@ int image_test(){
             jimage.encodeFormat(jout);
             jfile.last().append(".bmp");
             ZFile::writeBinary(jfile, jout);
+        }
+    }
+
+    // PNG Decode Test
+    ZArray<ZPath> list2 = ZFile::listFiles(TESTPNG_DIR);
+    for(zu64 i = 0; i < list2.size(); ++i){
+        ZPath pfile = list2[i];
+        LOG(i+1 << ": Decode " << pfile);
+        ZBinary pin;
+        ZFile::readBinary(pfile, pin);
+        ZImage pimage(pin);
+        LOG("Image Size: " << pimage.size());
+        if(pimage.size()){
+            pimage.setFormat(ZImage::BMP);
+            ZBinary pout;
+            pimage.encodeFormat(pout);
+            pfile.last().append(".bmp");
+            ZFile::writeBinary(pfile, pout);
         }
     }
 

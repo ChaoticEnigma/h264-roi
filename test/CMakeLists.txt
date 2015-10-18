@@ -58,22 +58,11 @@ INCLUDE_DIRECTORIES(
 )
 
 # Download test images
-FILE(DOWNLOAD "https://www.gstatic.com/webp/gallery3/3_webp_ll.webp" ${CMAKE_CURRENT_BINARY_DIR}/dice.webp)
-
-SET(TESTPNG ${CMAKE_CURRENT_BINARY_DIR}/testpng.tar.gz)
-SET(TESTJPEG ${CMAKE_CURRENT_BINARY_DIR}/testjpeg.tar.gz)
-
-FILE(DOWNLOAD "https://imagetestsuite.googlecode.com/files/imagetestsuite-png-1.01.tar.gz" ${TESTPNG})
-FILE(DOWNLOAD "https://imagetestsuite.googlecode.com/files/imagetestsuite-jpg-1.00.tar.gz" ${TESTJPEG})
-
-EXECUTE_PROCESS(
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E tar xzf "${TESTPNG}"
-)
-EXECUTE_PROCESS(
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E tar xzf "${TESTJPEG}"
-)
+DownloadFile("https://www.gstatic.com/webp/gallery3/3_webp_ll.webp" dice.webp)
+DownloadFile("http://www.gstatic.com/webp/gallery/4.jpg" tree.jpg)
+DownloadArchive("https://imagetestsuite.googlecode.com/files/imagetestsuite-png-1.01.tar.gz" testpng.tar.gz)
+DownloadArchive("https://imagetestsuite.googlecode.com/files/imagetestsuite-jpg-1.00.tar.gz" testjpeg.tar.gz)
+DownloadArchive("http://www.schaik.com/pngsuite/PngSuite-2013jan13.tgz" pngsuite.tar.gz)
 
 ### =================== BUILD =================== ###
 
