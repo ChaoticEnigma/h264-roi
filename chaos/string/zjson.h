@@ -42,6 +42,13 @@ public:
     //! Get type of this JSON object.
     jsontype type() const { return _type; }
 
+    // Data accessors
+    ZMap<ZString, ZJSON> &object();
+    ZArray<ZJSON> &array();
+    ZString &string();
+    ZString &number();
+    bool &boolean();
+
     //! Encode JSON string.
     ZString encode();
 

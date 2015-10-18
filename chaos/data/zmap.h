@@ -13,7 +13,8 @@
 #include "zarray.h"
 #include "zpointer.h"
 
-#define ZMAP_INITIAL_CAPACITY 16
+#define ZMAP_DEFAULT_LOAD_FACTOR    0.5
+#define ZMAP_INITIAL_CAPACITY       16
 
 // MapData flags:
 //#define ENTRY_EMPTY     0x00 // empty entry
@@ -43,7 +44,7 @@ public:
         //MapData *next;
     };
 public:
-    ZMap(float loadfactor = 0.5, ZAllocator<MapData> *alloc = new ZAllocator<MapData>) :
+    ZMap(float loadfactor = ZMAP_DEFAULT_LOAD_FACTOR, ZAllocator<MapData> *alloc = new ZAllocator<MapData>) :
         _alloc(alloc), _kalloc(new ZAllocator<K>), _talloc(new ZAllocator<T>),
         _data(nullptr), _size(0), _realsize(0), _factor(loadfactor){
         resize(ZMAP_INITIAL_CAPACITY);
@@ -250,6 +251,7 @@ public:
         }
     }
 
+    // TODO: ZMap erase
     void erase(K test){
 
     }

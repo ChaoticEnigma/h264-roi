@@ -151,7 +151,7 @@ bool ZJSON::decode(ZString s, zu64 *position){
     zu64 pos = (position != nullptr ? *position : 0);
 
     // Check if JSON is true/false boolean or null
-    ZString tstr = s.substr(pos);
+    ZString tstr = ZString::substr(s, pos);
     if(tstr.beginsWith("true", true)){
         initType(BOOLEAN);
         _data.boolean = true;
@@ -256,6 +256,8 @@ bool ZJSON::decode(ZString s, zu64 *position){
                 kbuff.clear();
             } else if(_type == ARRAY){
                 _data.array.push(json);
+            } else {
+                assert(false);
             }
             loc = aval;
             break;
@@ -310,6 +312,36 @@ bool ZJSON::decode(ZString s, zu64 *position){
         }
     }
     return true;
+}
+
+ZMap<ZString, ZJSON> &ZJSON::object(){
+    if(_type != OBJECT)
+        throw ZException("ZJSON object is not Object");
+    return _data.object;
+}
+
+ZArray<ZJSON> &ZJSON::array(){
+    if(_type != ARRAY)
+        throw ZException("ZJSON object is not Array");
+    return _data.array;
+}
+
+ZString &ZJSON::string(){
+    if(_type != STRING)
+        throw ZException("ZJSON object is not String");
+    return _data.string;
+}
+
+ZString &ZJSON::number(){
+    if(_type != NUMBER)
+        throw ZException("ZJSON object is not Number");
+    return _data.number;
+}
+
+bool &ZJSON::boolean(){
+    if(_type != BOOLEAN)
+        throw ZException("ZJSON object is not Boolean");
+    return _data.boolean;
 }
 
 ZString ZJSON::encode(){
