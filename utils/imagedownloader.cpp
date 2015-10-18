@@ -221,7 +221,7 @@ bool pixivDownload(ZString user_id, ZString session){
         for(zu64 j = 0; j < list.size(); ++j){
             ZString item = list[j];
             ZString test = "<a href=\"/member_illust.php?mode=medium&amp;illust_id=";
-            if(item.startsWith(test)){
+            if(item.beginsWith(test, true)){
                 item.substr(test.size());
                 item = ZString::getUntil(item, "\"");
                 if(item.isInteger()){

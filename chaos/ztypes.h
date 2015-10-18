@@ -115,11 +115,11 @@
 #define LIBCHAOS_BIG_ENDIAN (*(const zu16 *)"\0\xff" < 0x100) /* pure evil */
 
 // Constants
-#ifdef NULL
-    #undef NULL
-#endif
+//#ifdef NULL
+//    #undef NULL
+//#endif
 //#define NULL (void *)0
-#define NULL nullptr
+//#define NULL nullptr
 
 // Macros
 #define FOREACH(A) for(zu64 i = 0; i < A; ++i)
