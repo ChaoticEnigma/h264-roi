@@ -49,6 +49,8 @@ int list_test(){
     TASSERT(list4.size() == 5 && list4[0] == "one" && list4[1] == "two" && list4[2] == "three" && list4[3] == "four" && list4[4] == "five");
     LOG(list4.size() << " " << list4[0] << "." << list4[1] << "." << list4[2] << "." << list4[3] << "." << list4[4] << " OK");
 
+    // Iterators
+
     LOG("Forward Iterator: " << list4.size());
     for(auto i = list4.begin(); i != list4.end(); ++i){
         LOG("i: " << *i);

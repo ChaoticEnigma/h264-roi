@@ -47,8 +47,8 @@ public:
     };
 public:
     ZMap(float loadfactor = ZMAP_DEFAULT_LOAD_FACTOR, ZAllocator<MapData> *alloc = new ZAllocator<MapData>) :
-        _alloc(alloc), _kalloc(new ZAllocator<K>), _talloc(new ZAllocator<T>),
-        _data(nullptr), _size(0), _realsize(0), _factor(loadfactor){
+            _alloc(alloc), _kalloc(new ZAllocator<K>), _talloc(new ZAllocator<T>),
+            _data(nullptr), _size(0), _realsize(0), _factor(loadfactor){
         resize(ZMAP_INITIAL_CAPACITY);
     }
 
@@ -206,7 +206,7 @@ public:
     }
 
     /*! Resize the buffer (this is the only place buffer memory is allocated)
-     *  Buffer is resized to the next power of two that will hold <size> elements
+     *  Buffer is resized to the next power of two that will hold \a size elements
      *  The buffer is never made smaller
      */
     void resize(zu64 size){
