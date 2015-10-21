@@ -14,7 +14,19 @@
 
 namespace LibChaos {
 
-template <typename T> class ZIterable {
+class ZIteratorBase {
+public:
+    enum iterator_type {
+        //! Unidirectional iterator.
+        SIMPLEX,
+        //! Bidirectional iterator.
+        DUPLEX,
+        //! Random access iterator.
+        RANDOM,
+    };
+};
+
+template <typename T, ZIteratorBase::iterator_type U = ZIteratorBase::SIMPLEX> class ZIterable {
 public:
     virtual ~ZIterable(){}
 

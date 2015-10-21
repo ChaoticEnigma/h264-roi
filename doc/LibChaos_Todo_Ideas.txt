@@ -138,3 +138,14 @@ ZParcel
         - sensitive : always zero blocks
     
     ? compression
+
+ZIterator 1
+    class ZIterable<T, type>
+    class ZIterator<T>
+    class ZIterator<ZList> : ZIterable<T, DUPLEX>
+    ZIterator<ZList<T>> ZList<T>::begin()
+
+ZIterator 2
+    class ZIterator<T, type>
+    class ZList<T>::ZListIterator : ZIterator<T, DUPLEX>
+    ZList<T>::ZListIterator ZList<T>::begin()

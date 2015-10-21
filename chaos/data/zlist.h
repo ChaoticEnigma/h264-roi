@@ -231,6 +231,10 @@ public:
     ZIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _end(0){}
 
     T &get(){
+        if(!_used){
+            _used = true;
+            advance();
+        }
         return _node->data;
     }
     void advance(){
@@ -260,6 +264,7 @@ public:
 private:
     ZList<T> *_list;
     typename ZList<T>::Node *_node;
+    bool _used;
     char _end;
 };
 
