@@ -14,8 +14,11 @@ namespace LibChaos {
 template <class T> class ZIterator : public ZIterable<T> {
 public:
     T &get() = delete;
+    //! Placeholder advance method.
     void advance() = delete;
+    //! Placeholder recede method.
     void recede() = delete;
+    //! Placeholder atEnd method.
     bool atEnd() = delete;
 };
 
