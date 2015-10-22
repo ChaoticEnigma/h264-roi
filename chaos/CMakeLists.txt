@@ -15,7 +15,7 @@ SET(LibChaos_SOURCES
     abstract/zaccessor.h
     abstract/zbase.h
     abstract/zhashable.h
-    abstract/ziterable.h
+    abstract/ziterator.h
     abstract/zposition.h
     abstract/zreader.h
     abstract/zserializer.h
@@ -28,7 +28,6 @@ SET(LibChaos_SOURCES
     base/zerror.cpp
     base/zexception.h
     base/zexception.cpp
-    base/ziterator.h
     base/zlog.h
     base/zlog.cpp
     base/zlogworker.h

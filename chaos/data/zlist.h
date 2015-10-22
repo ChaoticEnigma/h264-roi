@@ -226,7 +226,7 @@ private:
     Node *_head;
 };
 
-template <typename T> class ZIterator<ZList<T>> : public ZIterable<T> {
+template <typename T> class ZListIterator<ZList<T>> : public ZIterator<T, ZIteratorBase::DUPLEX> {
 public:
     ZIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _end(0){}
 
@@ -259,7 +259,7 @@ public:
         return (_list == it->_list && _node == it->_node);
     }
 
-    ZITERABLE_COMPARE_OVERLOADS(ZIterator<ZList<T>>)
+    ZITERATOR_COMPARE_OVERLOADS(ZIterator<ZList<T>>)
 
 private:
     ZList<T> *_list;

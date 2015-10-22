@@ -1,14 +1,14 @@
 /*******************************************************************************
 **                                  LibChaos                                  **
-**                                 yiterable.h                                **
+**                                 ziterator.h                                **
 **                          (c) 2015 Charlie Waters                           **
 *******************************************************************************/
-#ifndef ITERABLE_H
-#define ITERABLE_H
+#ifndef ZITERATOR_H
+#define ZITERATOR_H
 
 #include "ztypes.h"
 
-#define ZITERABLE_COMPARE_OVERLOADS(T) \
+#define ZITERATOR_COMPARE_OVERLOADS(T) \
     inline bool operator==(T it) const { return compare(&it); } \
     inline bool operator!=(T it) const { return !compare(&it); }
 
@@ -26,9 +26,9 @@ public:
     };
 };
 
-template <typename T, ZIteratorBase::iterator_type U = ZIteratorBase::SIMPLEX> class ZIterable {
+template <typename T, ZIteratorBase::iterator_type U = ZIteratorBase::SIMPLEX> class ZIterator {
 public:
-    virtual ~ZIterable(){}
+    virtual ~ZIterator(){}
 
     //! Get the current element.
     virtual T &get() = 0;
@@ -40,16 +40,21 @@ public:
     //! Postfix increment.
     inline T &operator++(int){ T &ref = get(); advance(); return ref; }
 
+    //! Check if iterator is currently at the last element.
+    virtual bool atEnd() const = 0;
+};
+
+template <typename T, ZIteratorBase::DUPLEX> class ZIterator<T, ZIteratorBase::SIMPLEX> {
+public:
+    virtual ~ZIterator(){}
+
     virtual void recede() = 0;
     //! Prefix decrement.
     inline T &operator--(){ recede(); return get(); }
     //! Postfix decrement.
     inline T &operator--(int){ T &ref = get(); recede(); return ref; }
-
-    //! Check if iterator is currently at the last element.
-    virtual bool atEnd() const = 0;
 };
 
 }
 
-#endif // ITERABLE_H
+#endif // ZITERATOR_H
