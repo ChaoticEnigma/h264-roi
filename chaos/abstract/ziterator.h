@@ -26,7 +26,11 @@ public:
     };
 };
 
-template <typename T, ZIteratorBase::iterator_type U = ZIteratorBase::SIMPLEX> class ZIterator {
+template <typename T, ZIteratorBase::iterator_type U> class ZIterator {
+    ZIterator() = delete;
+};
+
+template <typename T, ZIteratorBase::SIMPLEX> class ZIterator {
 public:
     virtual ~ZIterator(){}
 
@@ -44,7 +48,7 @@ public:
     virtual bool atEnd() const = 0;
 };
 
-template <typename T, ZIteratorBase::DUPLEX> class ZIterator<T, ZIteratorBase::SIMPLEX> {
+template <typename T, ZIteratorBase::DUPLEX> class ZIterator : public ZIterator<T, ZIteratorBase::SIMPLEX> {
 public:
     virtual ~ZIterator(){}
 
