@@ -19,9 +19,6 @@
 
 namespace LibChaos {
 
-template <typename T> class ZList;
-template <typename T> class ZIterator<ZList<T>>;
-
 /*! Linked list sequence container.
  *  Implemented as a circular doubly-linked list.
  *  ZList push/pop paradigm is FIFO.
@@ -34,6 +31,8 @@ public:
         Node *next;
         T data;
     };
+
+    class ZListIterator;
 
 public:
     ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _talloc(new ZAllocator<T>()), _size(0), _head(nullptr){}
@@ -169,11 +168,11 @@ public:
     }
 
     //! Get an iterator for the list.
-    ZIterator<ZList<T>> begin(){
-        return ZIterator<ZList<T>>(this, _head);
+    ZListIterator begin(){
+        return ZListIterator(this, _head);
     }
-    ZIterator<ZList<T>> end(){
-        return ZIterator<ZList<T>>(this, _head->prev);
+    ZListIterator end(){
+        return ZListIterator(this, _head);
     }
 
     ZString debug() const {
@@ -219,53 +218,43 @@ private:
         return current;
     }
 
+public:
+    class ZListIterator : public ZDuplexIterator<T> {
+    public:
+        ZListIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _end(0){}
+
+        T &get(){
+            return _node->data;
+        }
+        void advance(){
+            _node = _node->next;
+        }
+        void recede(){
+            _node = _node->prev;
+        }
+        bool atEnd() const {
+            return (_end != 0);
+        }
+
+        bool compare(ZListIterator it) const {
+            return (_list == it._list && _node == it._node);
+        }
+
+        ZITERATOR_COMPARE_OVERLOADS(ZListIterator)
+
+    private:
+        ZList<T> *_list;
+        typename ZList<T>::Node *_node;
+        bool _used;
+        char _end;
+    };
+
+
 private:
     ZAllocator<Node> *_alloc;
     ZAllocator<T> *_talloc;
     zu64 _size;
     Node *_head;
-};
-
-template <typename T> class ZListIterator<ZList<T>> : public ZIterator<T, ZIteratorBase::DUPLEX> {
-public:
-    ZIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _end(0){}
-
-    T &get(){
-        if(!_used){
-            _used = true;
-            advance();
-        }
-        return _node->data;
-    }
-    void advance(){
-        if(_end == 2)
-            _end = 0;
-        if(_node == _list->_head->prev)
-            _end = 1;
-        _node = _node->next;
-    }
-    void recede(){
-        if(_end == 1)
-            _end = 0;
-        if(_node == _list->_head)
-            _end = 2;
-        _node = _node->prev;
-    }
-    bool atEnd() const {
-        return (_end != 0);
-    }
-
-    bool compare(ZIterator<ZList<T>> *it) const {
-        return (_list == it->_list && _node == it->_node);
-    }
-
-    ZITERATOR_COMPARE_OVERLOADS(ZIterator<ZList<T>>)
-
-private:
-    ZList<T> *_list;
-    typename ZList<T>::Node *_node;
-    bool _used;
-    char _end;
 };
 
 }
