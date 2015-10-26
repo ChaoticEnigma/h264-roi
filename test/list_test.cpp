@@ -6,25 +6,25 @@ int list_test(){
     ZList<int> list1;
     // push some values
     list1.pushBack(10);
-    LOG(list1.debug());
+    //LOG(list1.debug());
     list1.pushBack(20);
-    LOG(list1.debug());
+    //LOG(list1.debug());
     list1.pushFront(45);
-    LOG(list1.debug());
+    //LOG(list1.debug());
     list1.pushBack(567);
-    LOG(list1.debug());
+    //LOG(list1.debug());
 
     // push to back and pop back
     list1.pushBack(663);
-    LOG(list1.debug());
+    //LOG(list1.debug());
     list1.popBack();
-    LOG(list1.debug());
+    //LOG(list1.debug());
 
     // push to front and pop front
     list1.pushFront(336);
-    LOG(list1.debug());
+    //LOG(list1.debug());
     list1.popFront();
-    LOG(list1.debug());
+    //LOG(list1.debug());
 
     TASSERT(list1.size() == 4 && list1[0] == 45 && list1[1] == 10 && list1[2] == 20 &&  list1[3] == 567);
     LOG(list1.size() << " " << list1[0] << "." << list1[1] << "." << list1[2] << "." << list1[3] << " OK");
