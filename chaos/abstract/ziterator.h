@@ -80,6 +80,7 @@ public:
 };
 
 template <typename T> class ZRandomIterator  : public ZDuplexIterator<T> {
+public:
     virtual ~ZRandomIterator(){}
 
     typename ZIterator<T>::iterator_type iteratorType() const { return ZIterator<T>::RANDOM; }
