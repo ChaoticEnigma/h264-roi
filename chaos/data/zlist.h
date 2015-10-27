@@ -16,6 +16,7 @@
 
 // For debug()
 #include "zstring.h"
+#include "zlog.h"
 
 namespace LibChaos {
 
@@ -172,7 +173,7 @@ public:
         return ZListIterator(this, _head);
     }
     ZListIterator end(){
-        return ZListIterator(this, _head);
+        return ZListIterator(this, _head->prev);
     }
 
     ZString debug() const {
@@ -221,32 +222,38 @@ private:
 public:
     class ZListIterator : public ZDuplexIterator<T> {
     public:
-        ZListIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _end(0){}
+        ZListIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node){}
 
         T &get(){
+            LOG("get");
             return _node->data;
         }
+
+        bool more() const {
+            bool m = (_node->next != _list->_head);
+            LOG("more " << m);
+            return m;
+        }
         void advance(){
+            LOG("advance");
             _node = _node->next;
+        }
+
+        bool less() const {
+            return (_node->prev != _list->_head->prev);
         }
         void recede(){
             _node = _node->prev;
         }
-        bool atEnd() const {
-            return (_end != 0);
-        }
 
-        bool compare(ZListIterator it) const {
-            return (_list == it._list && _node == it._node);
-        }
-
-        ZITERATOR_COMPARE_OVERLOADS(ZListIterator)
+        //bool compare(ZListIterator it) const {
+        //    return (_list == it._list && _node == it._node);
+        //}
+        //ZITERATOR_COMPARE_OVERLOADS(ZListIterator)
 
     private:
         ZList<T> *_list;
         typename ZList<T>::Node *_node;
-        bool _used;
-        char _end;
     };
 
 

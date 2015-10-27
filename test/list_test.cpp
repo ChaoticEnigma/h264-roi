@@ -52,11 +52,11 @@ int list_test(){
     // Iterators
 
     LOG("Forward Iterator: " << list4.size());
-    for(auto i = list4.begin(); i != list4.end(); ++i){
+    for(auto i = list4.begin(); i.more(); ++i){
         LOG("i: " << *i);
     }
     LOG("Reverse Iterator: " << list4.size());
-    for(auto i = list4.end(); i != list4.begin(); --i){
+    for(auto i = list4.end(); i.less(); --i){
         LOG("i: " << *i);
     }
 

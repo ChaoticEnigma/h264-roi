@@ -48,25 +48,30 @@ public:
     //! Get the current element.
     virtual T &get() = 0;
 
+    //! Check if there is another element after the current element.
+    virtual bool more() const = 0;
+
+    //! Move the iterator to the next element.
     virtual void advance() = 0;
     //! Prefix increment.
     inline T &operator++(){ advance(); return get(); }
     //! Postfix increment.
     inline T &operator++(int){ T &ref = get(); advance(); return ref; }
-
-    //! Check if iterator is currently at the last element.
-    virtual bool atEnd() const = 0;
 };
 
 template <typename T> class ZDuplexIterator  : public ZSimplexIterator<T> {
 public:
     virtual ~ZDuplexIterator(){}
 
+    typename ZIterator<T>::iterator_type iteratorType() const { return ZIterator<T>::DUPLEX; }
+
     //! Get the current element.
     virtual T &get() = 0;
 
-    typename ZIterator<T>::iterator_type iteratorType() const { return ZIterator<T>::DUPLEX; }
+    //! Check if there is another element before the current element.
+    virtual bool less() const = 0;
 
+    //! Move the iterator to the previous element.
     virtual void recede() = 0;
     //! Prefix decrement.
     inline T &operator--(){ recede(); return get(); }
