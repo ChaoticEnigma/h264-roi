@@ -261,7 +261,7 @@ zu64 ZString::count(ZString test) const {
     return cnt;
 }
 
-bool ZString::startsWith(const ZString &test, bool ignorews) const {
+bool ZString::beginsWith(const ZString &test, bool ignorews) const {
     bool started;
     if(ignorews)
         started = false;
@@ -284,8 +284,8 @@ bool ZString::startsWith(const ZString &test, bool ignorews) const {
     return true;
 }
 
-bool ZString::startsWith(const ZString &str, const ZString &test, bool ignorews){
-    return str.startsWith(test, ignorews);
+bool ZString::beginsWith(const ZString &str, const ZString &test, bool ignorews){
+    return str.beginsWith(test, ignorews);
 }
 
 bool ZString::endsWith(ZString test) const {
