@@ -5,8 +5,6 @@ PROJECT(LibChaos)
 
 # Options
 INCLUDE(cmake/Options.cmake)
-# Setup Packaged Thrid Party Libraries
-INCLUDE(cmake/ThirdPartyLibs.cmake)
 # Find External Third Party Libraries
 INCLUDE(cmake/FindLibs.cmake)
 # Build Settings
