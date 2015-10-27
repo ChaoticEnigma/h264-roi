@@ -1,0 +1,12 @@
+[submodule "thirdparty/libpng"]
+	path = thirdparty/libpng
+	url = git://git.code.sf.net/p/libpng/code
+[submodule "thirdparty/zlib"]
+	path = thirdparty/zlib
+	url = https://github.com/madler/zlib.git
+[submodule "thirdparty/libjpeg-turbo"]
+	path = thirdparty/libjpeg-turbo
+	url = https://github.com/libjpeg-turbo/libjpeg-turbo.git
+[submodule "thirdparty/libwebp"]
+	path = thirdparty/libwebp
+	url = https://chromium.googlesource.com/webm/libwebp
