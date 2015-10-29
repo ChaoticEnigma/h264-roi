@@ -330,6 +330,10 @@ public:
             --_index;
         }
 
+        zu64 size() const {
+            return _array->size();
+        }
+
         T &at(zu64 i){
             return _array->at(i);
         }

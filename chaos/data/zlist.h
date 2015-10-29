@@ -218,19 +218,14 @@ public:
         }
 
         bool more() const {
-            //bool m = (_node->next != _list->_head);
-            bool m = (_prev == nullptr || _node != _list->_head);
-            //LOG("more " << m);
-            return m;
+            return (_prev == nullptr || _node != _list->_head);
         }
         void advance(){
-            //LOG("advance");
             _prev = _node;
             _node = _node->next;
         }
 
         bool less() const {
-            //return (_node->prev != _list->_head->prev);
             return (_prev == nullptr || _node != _list->_head->prev);
         }
         void recede(){

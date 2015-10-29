@@ -49,6 +49,10 @@ int array_test(){
     auto i4d = tst4.begin();
     test_duplex_iterator(&i4d, tst4.size());
 
+    LOG("Random Iterator:");
+    auto i4n = tst4.begin();
+    test_random_iterator(&i4n, tst4.size());
+
     return 0;
 }
 

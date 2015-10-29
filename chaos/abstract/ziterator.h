@@ -85,6 +85,9 @@ public:
 
     typename ZIterator<T>::iterator_type iteratorType() const { return ZIterator<T>::RANDOM; }
 
+    //! Get number of elements.
+    virtual zu64 size() const = 0;
+
     //! Get element at index.
     virtual T &at(zu64 i) = 0;
     inline T &operator[](zu64 i){ return at(i); }

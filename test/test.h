@@ -22,6 +22,7 @@ int queue_test();
 int test_forward_iterator(ZSimplexIterator<ZString> *it, zu64 size);
 int test_reverse_iterator(ZDuplexIterator<ZString> *it, zu64 size);
 int test_duplex_iterator(ZDuplexIterator<ZString> *it, zu64 size);
+int test_random_iterator(ZRandomIterator<ZString> *it, zu64 size);
 
 int binary_test();
 

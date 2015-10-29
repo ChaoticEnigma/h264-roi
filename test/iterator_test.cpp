@@ -3,7 +3,7 @@
 int test_forward_iterator(ZSimplexIterator<ZString> *it, zu64 size){
     zu64 cf = 0;
     for(auto i = it; i->more(); i->advance()){
-        LOG("i: " << i->get());
+        LOG("f: " << i->get());
         ++cf;
     }
     TASSERT(cf == size);
@@ -13,7 +13,7 @@ int test_forward_iterator(ZSimplexIterator<ZString> *it, zu64 size){
 int test_reverse_iterator(ZDuplexIterator<ZString> *it, zu64 size){
     zu64 cr = 0;
     for(auto i = it; i->less(); i->recede()){
-        LOG("i: " << i->get());
+        LOG("r: " << i->get());
         ++cr;
     }
     TASSERT(cr == size);
@@ -23,17 +23,25 @@ int test_reverse_iterator(ZDuplexIterator<ZString> *it, zu64 size){
 int test_duplex_iterator(ZDuplexIterator<ZString> *it, zu64 size){
     zu64 cd = 0;
     while(it->more()){
-        LOG("i4: " << it->get());
+        LOG("f: " << it->get());
         it->advance();
         ++cd;
     }
     it->recede();
     it->recede();
     while(it->less()){
-        LOG("i4: " << it->get());
+        LOG("r: " << it->get());
         it->recede();
         ++cd;
     }
     TASSERT(cd == size * 2 - 1);
+    return 0;
+}
+
+int test_random_iterator(ZRandomIterator<ZString> *it, zu64 size){
+    TASSERT(it->size() == size);
+    for(zu64 i = 0; i < it->size(); ++i){
+        LOG("i: " << it->at(i));
+    }
     return 0;
 }
