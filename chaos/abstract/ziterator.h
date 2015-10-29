@@ -54,9 +54,9 @@ public:
     //! Move the iterator to the next element.
     virtual void advance() = 0;
     //! Prefix increment.
-    inline T &operator++(){ advance(); return get(); }
+    inline void operator++(){ advance(); }
     //! Postfix increment.
-    inline T &operator++(int){ T &ref = get(); advance(); return ref; }
+    inline void operator++(int){ advance(); }
 };
 
 template <typename T> class ZDuplexIterator  : public ZSimplexIterator<T> {
@@ -74,9 +74,9 @@ public:
     //! Move the iterator to the previous element.
     virtual void recede() = 0;
     //! Prefix decrement.
-    inline T &operator--(){ recede(); return get(); }
+    inline void operator--(){ recede(); }
     //! Postfix decrement.
-    inline T &operator--(int){ T &ref = get(); recede(); return ref; }
+    inline void operator--(int){ recede(); }
 };
 
 template <typename T> class ZRandomIterator  : public ZDuplexIterator<T> {

@@ -324,7 +324,7 @@ public:
         }
 
         bool less() const {
-            return (_index >= 0);
+            return (_index >= 0 && _index < _array->size());
         }
         void recede(){
             --_index;

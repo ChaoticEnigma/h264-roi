@@ -52,14 +52,16 @@ int list_test(){
     // Iterators
 
     LOG("Forward Iterator: " << list4.size());
-    for(auto i = list4.begin(); i.more(); ++i){
-        LOG("i: " << *i);
-    }
+    auto i4f = list4.begin();
+    test_forward_iterator(&i4f, list4.size());
 
     LOG("Reverse Iterator: " << list4.size());
-    for(auto i = list4.end(); i.less(); --i){
-        LOG("i: " << *i);
-    }
+    auto i4r = list4.end();
+    test_reverse_iterator(&i4r, list4.size());
+
+    LOG("Duplex Iterator:");
+    auto i4d = list4.begin();
+    test_duplex_iterator(&i4d, list4.size());
 
     return 0;
 }
