@@ -36,7 +36,7 @@ public:
     class ZListIterator;
 
 public:
-    ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _talloc(new ZAllocator<T>()), _size(0), _head(nullptr){}
+    ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _size(0), _head(nullptr){}
     ZList(std::initializer_list<T> ls) : ZList(){
         for(auto item = ls.begin(); item < ls.end(); ++item)
             pushBack(*item);
@@ -53,19 +53,18 @@ public:
             Node *current = _head;
             Node *next;
             do { // Delete all nodes
-                _talloc->destroy(&(current->data));
-//                _talloc->dealloc(&(current->data));
+                _talloc.destroy(&(current->data));
                 next = current->next;
-//                _alloc->destroy(current);
                 _alloc->dealloc(current);
                 current = next;
             } while(current != nullptr);
         }
-        delete _talloc;
         delete _alloc;
     }
 
-    //! Insert \a data before \a node.
+    /*! Insert \a data before \a node.
+     *  Will not update head.
+     */
     Node *insert(const T &data, Node *node){
         Node *newnode = newNode(data);
         newnode->next = node;
@@ -118,9 +117,7 @@ public:
                 _head = nullptr;
             }
             --_size;
-            _talloc->destroy(&(old->data));
-//            _talloc->dealloc(old->data);
-//            _alloc->destroy(old);
+            _talloc.destroy(&(old->data));
             _alloc->dealloc(old);
         }
     }
@@ -134,13 +131,16 @@ public:
                 _head = nullptr;
             }
             --_size;
-            _talloc->destroy(&(old->data));
-//            _talloc->dealloc(old->data);
-//            _alloc->destroy(old);
+            _talloc.destroy(&(old->data));
             _alloc->dealloc(old);
         }
     }
     inline void pop(){ popFront(); }
+
+    //! Move the head of the list to the next element.
+    void rotate(){
+        _head = _head->next;
+    }
 
     T &peekFront(){
         return _head->data;
@@ -158,7 +158,7 @@ public:
     inline T &peek(){ return peekFront(); }
     inline const T &peek() const { return peekFront(); }
 
-    // Swap data but NOT allocators of two lists
+    //! Swap data but not allocators of two lists.
     void swap(ZList &other){
         zu64 tmpsize = _size;
         Node *tmphead = _head;
@@ -203,11 +203,9 @@ public:
 private:
     Node *newNode(const T &data){
        Node *node = _alloc->alloc();
-//       _alloc->construct(node);
-//       node->data = _talloc->alloc();
        node->prev = nullptr;
        node->next = nullptr;
-       _talloc->construct(&(node->data), data);
+       _talloc.construct(&(node->data), data);
        return node;
     }
 
@@ -225,12 +223,12 @@ public:
         ZListIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node){}
 
         T &get(){
-            LOG("get");
             return _node->data;
         }
 
         bool more() const {
-            bool m = (_node->next != _list->_head);
+            //bool m = (_node->next != _list->_head);
+            bool m = (_node != _list->_head->prev);
             LOG("more " << m);
             return m;
         }
@@ -240,7 +238,8 @@ public:
         }
 
         bool less() const {
-            return (_node->prev != _list->_head->prev);
+            //return (_node->prev != _list->_head->prev);
+            return (_node != _list->_head);
         }
         void recede(){
             _node = _node->prev;
@@ -258,9 +257,13 @@ public:
 
 
 private:
+    //! Node memory allocator.
     ZAllocator<Node> *_alloc;
-    ZAllocator<T> *_talloc;
+    //! Allocator only for constructing T inside nodes.
+    ZAllocator<T> _talloc;
+    //! Number of nodes in list.
     zu64 _size;
+    //! Pointer to first node in list.
     Node *_head;
 };
 
