@@ -13,6 +13,8 @@
 #include "zarray.h"
 #include "zpointer.h"
 
+#include <initializer_list>
+
 #define ZMAP_DEFAULT_LOAD_FACTOR    0.5
 #define ZMAP_INITIAL_CAPACITY       16
 
@@ -34,25 +36,28 @@ public:
     enum { none = ZU64_MAX };
 public:
     typedef zu64 maphash;
-    struct MapSet {
+
+    struct MapPair {
         K key;
         T value;
     };
-    struct MapData {
+
+    struct MapElement {
         zbyte flags;    // Some flags for unset and deleted
         zu64 hash;
         K key;
         T value;
         //MapData *next;
     };
+
 public:
-    ZMap(float loadfactor = ZMAP_DEFAULT_LOAD_FACTOR, ZAllocator<MapData> *alloc = new ZAllocator<MapData>) :
+    ZMap(float loadfactor = ZMAP_DEFAULT_LOAD_FACTOR, ZAllocator<MapElement> *alloc = new ZAllocator<MapElement>) :
             _alloc(alloc), _kalloc(new ZAllocator<K>), _talloc(new ZAllocator<T>),
             _data(nullptr), _size(0), _realsize(0), _factor(loadfactor){
         resize(ZMAP_INITIAL_CAPACITY);
     }
 
-    ZMap(std::initializer_list<MapSet> list) : ZMap(){
+    ZMap(std::initializer_list<MapPair> list) : ZMap(){
         resize(list.size());
         for(auto item = list.begin(); item < list.end(); ++item){
             add(item->key, item->value);
@@ -216,7 +221,7 @@ public:
             while(newsize < size || ((float)size / (float)newsize) >= _factor)
                 newsize <<= 1;
 
-            MapData *olddata = _data;
+            MapElement *olddata = _data;
             zu64 oldsize = _realsize;
 
             _realsize = newsize;
@@ -282,7 +287,7 @@ public:
     }
 
     // For debugging
-    MapData &position(zu64 i){
+    MapElement &position(zu64 i){
         return _data[i];
     }
 
@@ -296,14 +301,14 @@ private:
 
 private:
     //! Memory allocator
-    ZPointer<ZAllocator<MapData>> _alloc;
+    ZPointer<ZAllocator<MapElement>> _alloc;
     //! Used to construct and destroy keys
     ZAllocator<K> *_kalloc;
     //! Used to construct and destroy values
     ZAllocator<T> *_talloc;
 
     //! Actual data buffer
-    MapData *_data;
+    MapElement *_data;
     // Pointer to first inserted element
     //MapData *_head;
     // Pointer to last inserted element

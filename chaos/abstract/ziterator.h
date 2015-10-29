@@ -34,6 +34,10 @@ public:
     virtual T &get() = 0;
     inline T &operator*(){ return get(); }
 
+    //! Get the current const element.
+    virtual const T &get() const = 0;
+    inline const T &operator*() const { return get(); }
+
     //virtual bool compare(const ZIterator<T> *it) const = 0;
     //inline bool operator==(const ZIterator<T> *it) const { return compare(); }
     //inline bool operator!=(const ZIterator<T> *it) const { return !compare(); }

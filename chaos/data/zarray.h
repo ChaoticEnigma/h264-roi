@@ -352,6 +352,7 @@ public:
     };
 
 private:
+    //! Buffer memory allocator.
     ZAllocator<T> *_alloc;
     T *_data;
     zu64 _size;
