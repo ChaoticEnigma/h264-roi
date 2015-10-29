@@ -35,6 +35,18 @@ int array_test(){
     TASSERT(tst5.size() == 5 && tst5[0] == "five" && tst5[1] == "four" && tst5[2] == "three" && tst5[3] == "two" && tst5[4] == "one");
     LOG(tst5.size() << " " << tst5[0] << "." << tst5[1] << "." << tst5[2] << "." << tst5[3] << "." << tst5[4] << " OK");
 
+    // Iterators
+
+    LOG("Forward Iterator: " << tst4.size());
+    for(auto i = tst4.begin(); i.more(); ++i){
+        LOG("i: " << *i);
+    }
+
+    LOG("Reverse Iterator: " << tst4.size());
+    for(auto i = tst4.end(); i.less(); --i){
+        LOG("i: " << *i);
+    }
+
     return 0;
 }
 

@@ -71,68 +71,59 @@ public:
         newnode->prev = node->prev;
         node->prev->next = newnode;
         node->prev = newnode;
+        ++_size;
         return newnode;
     }
 
     //! Add \a data to the front of the list.
     void pushFront(const T &data){
-        Node *node = newNode(data);
         if(_head == nullptr){
-            _head = node;
-            node->prev = _head;
-            node->next = _head;
+            _head = newNode(data);
+            _head->prev = _head;
+            _head->next = _head;
+            ++_size;
         } else {
-            _head->prev->next = node;
-            _head->next->prev = node;
-            node->prev = _head->prev;
-            node->next = _head;
-            _head = node;
+            _head = insert(data, _head);
         }
-        ++_size;
     }
+    //! Add \a data to the back of the list.
     void pushBack(const T &data){
-        Node *node = newNode(data);
         if(_head == nullptr){
-            _head = node;
-            node->prev = _head;
-            node->next = _head;
+            _head = newNode(data);
+            _head->prev = _head;
+            _head->next = _head;
+            ++_size;
         } else {
-            node->prev = _head->prev;
-            node->next = _head;
-            _head->prev->next = node;
-            _head->prev = node;
+            insert(data, _head);
         }
-        ++_size;
     }
     inline void push(const T &data){ pushBack(data); }
 
+    /*! Remove \a node from the list.
+     *  Will not update head.
+     */
+    void remove(Node *node){
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
+        --_size;
+        _talloc.destroy(&(node->data));
+        _alloc->dealloc(node);
+    }
+
+    //! Remove an element from the front of the list.
     void popFront(){
         if(_head != nullptr){
-            Node *old = _head;
-            if(_size > 1){
-                _head->prev->next = _head->next;
-                _head->next->prev = _head->prev;
-                _head = _head->next;
-            } else {
-                _head = nullptr;
-            }
-            --_size;
-            _talloc.destroy(&(old->data));
-            _alloc->dealloc(old);
+            Node *next = _head->next;
+            remove(_head);
+            _head = (_size ? next : nullptr);
         }
     }
+    //! Remove an element from the back of the list.
     void popBack(){
         if(_head != nullptr){
-            Node *old = _head->prev;
-            if(_size > 1){
-                _head->prev->prev->next = _head;
-                _head->prev = _head->prev->prev;
-            } else {
+            remove(_head->prev);
+            if(!_size)
                 _head = nullptr;
-            }
-            --_size;
-            _talloc.destroy(&(old->data));
-            _alloc->dealloc(old);
         }
     }
     inline void pop(){ popFront(); }
@@ -154,7 +145,6 @@ public:
     const T &peekBack() const {
         return _head->prev->data;
     }
-
     inline T &peek(){ return peekFront(); }
     inline const T &peek() const { return peekFront(); }
 
@@ -168,10 +158,11 @@ public:
         other._head = tmphead;
     }
 
-    //! Get an iterator for the list.
+    //! Get an iterator starting at the beginning of the list.
     ZListIterator begin(){
         return ZListIterator(this, _head);
     }
+    //! Get an iterator starting at the end of the list.
     ZListIterator end(){
         return ZListIterator(this, _head->prev);
     }
@@ -220,7 +211,7 @@ private:
 public:
     class ZListIterator : public ZDuplexIterator<T> {
     public:
-        ZListIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node){}
+        ZListIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _prev(nullptr){}
 
         T &get(){
             return _node->data;
@@ -228,20 +219,22 @@ public:
 
         bool more() const {
             //bool m = (_node->next != _list->_head);
-            bool m = (_node != _list->_head->prev);
-            LOG("more " << m);
+            bool m = (_prev == nullptr || _node != _list->_head);
+            //LOG("more " << m);
             return m;
         }
         void advance(){
-            LOG("advance");
+            //LOG("advance");
+            _prev = _node;
             _node = _node->next;
         }
 
         bool less() const {
             //return (_node->prev != _list->_head->prev);
-            return (_node != _list->_head);
+            return (_prev == nullptr || _node != _list->_head->prev);
         }
         void recede(){
+            _prev = _node;
             _node = _node->prev;
         }
 
@@ -253,8 +246,8 @@ public:
     private:
         ZList<T> *_list;
         typename ZList<T>::Node *_node;
+        typename ZList<T>::Node *_prev;
     };
-
 
 private:
     //! Node memory allocator.

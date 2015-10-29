@@ -55,6 +55,7 @@ int list_test(){
     for(auto i = list4.begin(); i.more(); ++i){
         LOG("i: " << *i);
     }
+
     LOG("Reverse Iterator: " << list4.size());
     for(auto i = list4.end(); i.less(); --i){
         LOG("i: " << *i);
