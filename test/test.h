@@ -12,17 +12,20 @@ using namespace LibChaos;
 
 int sandbox();
 
-int array_test();
-int assoc_test();
-int stack_test();
-int map_test();
-int list_test();
-int queue_test();
-
 int test_forward_iterator(ZSimplexIterator<ZString> *it, zu64 size);
 int test_reverse_iterator(ZDuplexIterator<ZString> *it, zu64 size);
 int test_duplex_iterator(ZDuplexIterator<ZString> *it, zu64 size);
 int test_random_iterator(ZRandomIterator<ZString> *it, zu64 size);
+
+int array_test();
+int assoc_test();
+int stack_test();
+int list_test();
+int queue_test();
+
+int hash_test();
+int set_test();
+int map_test();
 
 int binary_test();
 
@@ -41,7 +44,6 @@ int number_test();
 
 int random_test();
 int uid_test();
-int hash_test();
 
 int file_test();
 int image_test();

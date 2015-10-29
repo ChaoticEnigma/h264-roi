@@ -315,6 +315,9 @@ public:
         T &get(){
             return _array->at(_index);
         }
+        const T &get() const {
+            return _array->at(_index);
+        }
 
         bool more() const {
             return (_index < _array->size());

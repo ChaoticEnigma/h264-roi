@@ -31,6 +31,7 @@ SET(LibChaos_Test_SOURCES
     thread_test.cpp
 
     misc_test.cpp
+    hash_test.cpp
 
     file_test.cpp
     image_test.cpp

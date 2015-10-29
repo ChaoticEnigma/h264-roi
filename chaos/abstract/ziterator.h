@@ -49,9 +49,6 @@ public:
 
     typename ZIterator<T>::iterator_type iteratorType() const { return ZIterator<T>::SIMPLEX; }
 
-    //! Get the current element.
-    virtual T &get() = 0;
-
     //! Check if there is another element after the current element.
     virtual bool more() const = 0;
 
@@ -68,9 +65,6 @@ public:
     virtual ~ZDuplexIterator(){}
 
     typename ZIterator<T>::iterator_type iteratorType() const { return ZIterator<T>::DUPLEX; }
-
-    //! Get the current element.
-    virtual T &get() = 0;
 
     //! Check if there is another element before the current element.
     virtual bool less() const = 0;

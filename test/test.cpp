@@ -28,9 +28,12 @@ int main(int argc, char **argv){
             { "array", array_test },
             { "assoc", assoc_test },
             { "stack", stack_test },
-            { "map", map_test },
             { "list", list_test },
             { "queue", queue_test },
+
+            { "hash", hash_test },
+            { "set", set_test },
+            { "map", map_test },
 
             { "string", string_test },
             { "path", path_test },
@@ -41,7 +44,6 @@ int main(int argc, char **argv){
 
             { "number", number_test },
             { "uid", uid_test },
-            { "hash", hash_test },
 
             { "file", file_test },
             { "image", image_test },

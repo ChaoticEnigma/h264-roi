@@ -6,113 +6,98 @@
 #include "zpointer.h"
 #include "ziterator.h"
 
-#define ZSET_DEFAULT_LOAD_FACTOR    0.5
-#define ZSET_INITIAL_CAPACITY       16
+#define ZSET_DEFAULT_LOAD_FACTOR  0.5
+#define ZSET_INITIAL_CAPACITY     16
+#define ZSET_ENTRY_VALID          0x01 // valid data in entry
+#define ZSET_ENTRY_DELETED        0x02 // previously deleted entry
 
 namespace LibChaos {
 
 template <typename T> class ZSet {
 public:
     enum { none = ZU64_MAX };
-public:
-    typedef zu64 maphash;
 
     struct SetElement {
-        zbyte flags;    // Some flags for unset and deleted
         zu64 hash;
+        zbyte flags; // Some flags for unset and deleted
+        SetElement *next;
         T value;
-        //SetElement *next;
     };
+
+    typedef zu64 maphash;
+
 public:
     ZSet(float loadfactor = ZSET_DEFAULT_LOAD_FACTOR, ZAllocator<SetElement> *alloc = new ZAllocator<SetElement>) :
-            _alloc(alloc),_data(nullptr), _size(0), _realsize(0), _factor(loadfactor){
+            _alloc(alloc), _data(nullptr), _head(nullptr), _tail(nullptr), _size(0), _realsize(0), _factor(loadfactor){
         resize(ZSET_INITIAL_CAPACITY);
     }
 
     ZSet(std::initializer_list<T> list) : ZSet(){
         resize(list.size());
         for(auto item = list.begin(); item < list.end(); ++item){
-            add(item->key, item->value);
+            add(item);
         }
     }
 
-    ZSet(const ZSet &other) : _alloc(other._alloc), _kalloc(new ZAllocator<K>), _talloc(new ZAllocator<T>),
-                              _data(nullptr), _size(0), _realsize(0), _factor(other._factor){
+    ZSet(const ZSet &other) :
+            _alloc(other._alloc), _data(nullptr), _head(nullptr), _tail(nullptr), _size(0), _realsize(0), _factor(other._factor){
         if(other._data != nullptr && other._size > 0){
             resize(other._size);
-            for(zu64 i = 0; i < other._size; ++i){
-                if(other._data[i].flags & ZMAP_ENTRY_VALID){
-                    add(other._data[i].key, other._data[i].value);
-                }
+            for(auto it = other.begin(); it.more(); ++it){
+                add(*it);
             }
         }
     }
 
-    ~ZMap(){
-        if(_data != nullptr){
-            for(zu64 i = 0; i < _realsize; ++i){
-                if(_data[i].flags & ZMAP_ENTRY_VALID){
-                    _kalloc->destroy(_kalloc->addressOf(_data[i].key));
-                    _talloc->destroy(_talloc->addressOf(_data[i].value));
-                }
-            }
-            _alloc->dealloc(_data);
-//            _data = nullptr;
+    ~ZSet(){
+        SetElement *current = _head;
+        while(current != nullptr){
+            _talloc.destroy(_talloc.addressOf(current->value));
+            current = current->next;
         }
-        delete _kalloc;
-        delete _talloc;
+        _alloc->dealloc(_data);
     }
 
     //! Add entry with \a key and \a value to map, or change value of existing entry with \a key.
-    T &add(const K &key, const T &value){
+    T &add(const T &value){
         // Ensure enough space
         resize(_size + 1);
 
-        zu64 hash = _getHash(key);
+        zu64 hash = _getHash(value);
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
-            // Look for the key
-            if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
+            if(!(_data[pos].flags & ZSET_ENTRY_VALID)){
                 // Entry is unset or deleted, insert new entry
                 _data[pos].hash = hash;
-                _kalloc->construct(_kalloc->addressOf(_data[pos].key), key);
                 _talloc->construct(_talloc->addressOf(_data[pos].value), value);
-                _data[pos].flags |= ZMAP_ENTRY_VALID; // Set valid bit
-                _data[pos].flags &= ~ZMAP_ENTRY_DELETED; // Unset deleted bit
+                _data[pos].flags |= ZSET_ENTRY_VALID; // Set valid bit
+                _data[pos].flags &= ~ZSET_ENTRY_DELETED; // Unset deleted bit
+                _data[pos].next = nullptr;
+                if(_tail) _tail->next = _data + pos; // Point prev element to this element
+                _tail = _data + pos;
                 ++_size;
                 return _data[pos].value;
-            } else if(_data[pos].hash == hash){
-                // Compare the actual key - may be non-trivial
-                if(_data[pos].key == key){
-                    // Reassign key and value in existing entry
-                    _kalloc->destroy(_kalloc->addressOf(_data[pos].key));
-                    _kalloc->construct(_kalloc->addressOf(_data[pos].key), key);
-                    _talloc->destroy(_talloc->addressOf(_data[pos].value));
-                    _talloc->construct(_talloc->addressOf(_data[pos].value), value);
-                    return _data[pos].value;
-                }
             }
         }
         // Should only ever fail if resize failed and the map is full
-        throw ZException(ZString("ZMap: Unable to add element to map ") + hash);
+        throw ZException(ZString("ZSet: Unable to add element to set: ") + hash);
     }
-    inline T &push(const K &key, const T &value){ return add(key, value); }
+    inline T &push(const T &value){ return add(value); }
 
     //! Remove entry with \a key from map, if it exists.
-    void remove(const K &key){
-        zu64 hash = _getHash(key);
+    void remove(const T &value){
+        zu64 hash = _getHash(value);
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
-            if(_data[pos].flags & ZMAP_ENTRY_VALID){
+            if(_data[pos].flags & ZSET_ENTRY_VALID){
                 // Valid data, compare hash
                 if(_data[pos].hash == hash){
                     // Compare the actual key - may be non-trivial
-                    if(_data[pos].key == key){
+                    if(_data[pos].value == value){
                         // Found it, delete it
-                        _kalloc->destroy(_kalloc->addressOf(_data[pos].key));
                         _talloc->destroy(_talloc->addressOf(_data[pos].value));
-                        _data[pos].flags &= ~ZMAP_ENTRY_VALID; // Unset valid bit
-                        _data[pos].flags |= ZMAP_ENTRY_DELETED; // Set deleted bit
+                        _data[pos].flags &= ~ZSET_ENTRY_VALID; // Unset valid bit
+                        _data[pos].flags |= ZSET_ENTRY_DELETED; // Set deleted bit
                         --_size;
                     }
                 }
@@ -126,7 +111,7 @@ public:
     }
 
     //! Get a reference to the entry with \a key, create entry if it doesn't exitst.
-    T &get(const K &key){
+    T &get(const T &key){
         zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
@@ -178,10 +163,6 @@ public:
     }
     inline const T &operator[](const K &key) const { return get(key); }
 
-    zu64 getPosition(const K &key){
-        return 0;
-    }
-
     /*! Resize the buffer (this is the only place buffer memory is allocated)
      *  Buffer is resized to the next power of two that will hold \a size elements
      *  The buffer is never made smaller
@@ -232,14 +213,6 @@ public:
         }
     }
 
-    // TODO: ZMap erase
-    void erase(K test){
-
-    }
-
-    bool exists(K test){
-        return false;
-    }
     bool contains(T test){
         return false;
     }
@@ -254,8 +227,12 @@ public:
     float factor() const { return _factor; }
     void setFactor(float factor){
         if(factor > 1.0f)
-            throw ZException("Invalid ZMap load factor");
+            throw ZException("Invalid ZSet load factor");
         _factor = factor;
+    }
+
+    ZSetIterator begin(){
+        return ZSetIterator(this, _head);
     }
 
     // For debugging
@@ -264,8 +241,8 @@ public:
     }
 
 private:
-    static zu64 _getHash(const K &key){
-        return ZHash<K>(key).hash();
+    static zu64 _getHash(const T &key){
+        return ZHash<T>(key).hash();
     }
     zu64 _getPos(zu64 hash, zu64 i) const {
         return ((hash % _realsize) + i) % _realsize;
@@ -276,16 +253,16 @@ public:
     public:
         ZSetIterator(ZSet<T> *set, typename ZSet<T>::SetElement *start_elem) : _set(set), _elem(start_elem){}
 
-        T &get(){
+        T &get() = delete;
+        const T &get() const {
             return _elem->value;
         }
 
         bool more() const {
-            return (_prev == nullptr || _node != _list->_head);
+            return (_elem != nullptr);
         }
         void advance(){
-            _prev = _node;
-            _node = _node->next;
+            _elem = _elem->next;
         }
     private:
         ZSet<T> *_set;
@@ -298,17 +275,17 @@ private:
     //! Allocator only for constructing T inside nodes.
     ZAllocator<T> _talloc;
 
-    //! Actual data buffer
+    //! Actual data buffer.
     SetElement *_data;
-    // Pointer to first inserted element
-    //MapData *_head;
-    // Pointer to last inserted element
-    //MapData *_tail;
-    //! Number of entries
+    //! Pointer to first inserted element.
+    SetElement *_head;
+    //! Pointer to last inserted element.
+    SetElement *_tail;
+    //! Number of entries.
     zu64 _size;
-    //! Size of buffer
+    //! Size of buffer.
     zu64 _realsize;
-    //! Max load factor (size / realsize ratio)
+    //! Max load factor (size / realsize ratio).
     float _factor;
 };
 

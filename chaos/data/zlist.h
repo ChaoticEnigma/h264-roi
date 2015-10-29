@@ -216,6 +216,9 @@ public:
         T &get(){
             return _node->data;
         }
+        const T &get() const {
+            return _node->data;
+        }
 
         bool more() const {
             return (_prev == nullptr || _node != _list->_head);
