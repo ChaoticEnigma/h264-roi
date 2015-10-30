@@ -31,6 +31,8 @@ int main(int argc, char **argv){
             { "list", list_test },
             { "queue", queue_test },
 
+            { "graph", graph_test },
+
             { "hash", hash_test },
             { "set", set_test },
             { "map", map_test },

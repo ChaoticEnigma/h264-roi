@@ -26,6 +26,8 @@ public:
 
     typedef zu64 maphash;
 
+    class ZSetIterator;
+
 public:
     ZSet(float loadfactor = ZSET_DEFAULT_LOAD_FACTOR, ZAllocator<SetElement> *alloc = new ZAllocator<SetElement>) :
             _alloc(alloc), _data(nullptr), _head(nullptr), _tail(nullptr), _size(0), _realsize(0), _factor(loadfactor){
@@ -110,58 +112,23 @@ public:
         }
     }
 
-    //! Get a reference to the entry with \a key, create entry if it doesn't exitst.
-    T &get(const T &key){
-        zu64 hash = _getHash(key);
+    //! Check if set contains \a value.
+    bool contains(const T &value) const {
+        zu64 hash = _getHash(value);
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
-            if(_data[pos].flags & ZMAP_ENTRY_VALID){
-                // Look for the key
+            if(_data[pos].flags & ZSET_ENTRY_VALID){
+                // Valid data, compare hash
                 if(_data[pos].hash == hash){
                     // Compare the actual key - may be non-trivial
-                    if(_data[pos].key == key){
-                        // Found it
-                        return _data[pos].value;
+                    if(_data[pos].value == value){
+                        return true;
                     }
-                }
-            } else {
-                if(!(_data[pos].flags & ZMAP_ENTRY_DELETED)){
-                    // If this is not a deleted entry, it is the end of the chain
-                    break;
                 }
             }
         }
-        // Create a new, default constructed object
-        return add(key, T());
+        return false;
     }
-    inline T &operator[](const K &key){ return get(key); }
-
-    /*! Get a reference to the entry with \a key.
-     *  \throws Throws an exception if the entry doesn't exist
-     */
-    const T &get(const K &key) const {
-        zu64 hash = _getHash(key);
-        for(zu64 i = 0; i < _realsize; ++i){
-            zu64 pos = _getPos(hash, i);
-            if(_data[pos].flags & ZMAP_ENTRY_VALID){
-                // Look for the key
-                if(_data[pos].hash == hash){
-                    // Compare the actual key - may be non-trivial
-                    if(_data[pos].key == key){
-                        // Found it
-                        return _data[pos].value;
-                    }
-                }
-            } else {
-                if(!(_data[pos].flags & ZMAP_ENTRY_DELETED)){
-                    // If this is not a deleted entry, it is the end of the chain
-                    break;
-                }
-            }
-        }
-        throw ZException("ZMap: Key does not exist", __LINE__);
-    }
-    inline const T &operator[](const K &key) const { return get(key); }
 
     /*! Resize the buffer (this is the only place buffer memory is allocated)
      *  Buffer is resized to the next power of two that will hold \a size elements
@@ -191,16 +158,15 @@ public:
                 // Re-map old entries
                 for(zu64 i = 0; i < oldsize; ++i){
                     // Map only non-empty entries
-                    if(olddata[i].flags & ZMAP_ENTRY_VALID){
+                    if(olddata[i].flags & ZSET_ENTRY_VALID){
                         for(zu64 j = 0; j < _realsize; ++j){
                             zu64 pos = _getPos(olddata[i].hash, j);
                             // Find first empty entry
-                            if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
+                            if(!(_data[pos].flags & ZSET_ENTRY_VALID)){
                                 _data[pos].hash = olddata[i].hash;
                                 // Move elements without copy constructors
-                                _kalloc->rawmove(_kalloc->addressOf(olddata[i].key), _kalloc->addressOf(_data[pos].key));
                                 _talloc->rawmove(_talloc->addressOf(olddata[i].value), _talloc->addressOf(_data[pos].value));
-                                _data[pos].flags |= ZMAP_ENTRY_VALID;
+                                _data[pos].flags |= ZSET_ENTRY_VALID;
                                 break;
                             }
                         }
@@ -211,10 +177,6 @@ public:
 //                olddata = nullptr;
             }
         }
-    }
-
-    bool contains(T test){
-        return false;
     }
 
     bool isEmpty() const {

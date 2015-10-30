@@ -23,6 +23,8 @@ SET(LibChaos_Test_SOURCES
     list_test.cpp
     iterator_test.cpp
 
+    graph_test.cpp
+
     string_test.cpp
     path_test.cpp
     json_test.cpp

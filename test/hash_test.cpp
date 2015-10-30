@@ -1,5 +1,6 @@
 #include "test.h"
 #include "zmap.h"
+#include "zset.h"
 
 int hash_test(){
     int data1 = -34563;
@@ -103,6 +104,6 @@ int map_test(){
 }
 
 int set_test(){
-
+    ZSet<ZString> set1;
     return 0;
 }

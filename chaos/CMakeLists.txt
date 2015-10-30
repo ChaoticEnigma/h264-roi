@@ -43,6 +43,7 @@ SET(LibChaos_SOURCES
     data/zdata.h
     data/zdefaultstorage.h
     data/zfilestorage.h
+    data/zgraph.h
     data/zlist.h
     data/zmap.h
     data/zpointer.h

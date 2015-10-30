@@ -27,6 +27,8 @@ int hash_test();
 int set_test();
 int map_test();
 
+int graph_test();
+
 int binary_test();
 
 int string_test();
