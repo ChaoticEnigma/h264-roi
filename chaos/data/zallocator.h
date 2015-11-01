@@ -98,14 +98,17 @@ public:
     }
 
 public:
+    //! Copy block of memory with \a size from \a src to \a dest.
     static void memcopy(const void *src, void *dest, zu64 size){
         memcpy(dest, src, size);
     }
 
+    //! Get address from reference.
     static inline T *addressOf(T &ref){
         //return reinterpret_cast<T*>(&const_cast<char&>(reinterpret_cast<const volatile char&>(ref)));
         return (T*)&(char &)ref;
     }
+    //! Get const address from const reference.
     static inline const T *addressOf(const T &ref){
         return (const T*)&(const char &)ref;
     }

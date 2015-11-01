@@ -60,8 +60,8 @@ public:
         _alloc->dealloc(_data);
     }
 
-    //! Add entry with \a key and \a value to map, or change value of existing entry with \a key.
-    T &add(const T &value){
+    //! Add \a value to set. Does nothing if set contains \a value.
+    void add(const T &value){
         // Ensure enough space
         resize(_size + 1);
 
@@ -78,15 +78,18 @@ public:
                 if(_tail) _tail->next = _data + pos; // Point prev element to this element
                 _tail = _data + pos;
                 ++_size;
-                return _data[pos].value;
+                return;
+            } else if(_data[pos].hash == hash && _data[pos].value == value){
+                // Value already in set
+                return;
             }
         }
-        // Should only ever fail if resize failed and the map is full
-        throw ZException(ZString("ZSet: Unable to add element to set: ") + hash);
+        // Should only ever fail if resize failed and the set is full
+        throw ZException(ZString("ZSet: Unable to add value to set: ") + hash);
     }
     inline T &push(const T &value){ return add(value); }
 
-    //! Remove entry with \a key from map, if it exists.
+    //! Remove \a value from set. Does nothing if set does not contain \a value.
     void remove(const T &value){
         zu64 hash = _getHash(value);
         for(zu64 i = 0; i < _realsize; ++i){
@@ -94,20 +97,19 @@ public:
             if(_data[pos].flags & ZSET_ENTRY_VALID){
                 // Valid data, compare hash
                 if(_data[pos].hash == hash){
-                    // Compare the actual key - may be non-trivial
+                    // Compare the actual value - may be non-trivial
                     if(_data[pos].value == value){
-                        // Found it, delete it
+                        // Found value, delete element
                         _talloc->destroy(_talloc->addressOf(_data[pos].value));
                         _data[pos].flags &= ~ZSET_ENTRY_VALID; // Unset valid bit
                         _data[pos].flags |= ZSET_ENTRY_DELETED; // Set deleted bit
                         --_size;
+                        break;
                     }
                 }
-           } else {
-                if(!(_data[pos].flags & ZMAP_ENTRY_DELETED)){
-                    // If this is not a deleted entry, it is the end of the chain
-                    break;
-                }
+            } else if(!(_data[pos].flags & ZSET_ENTRY_DELETED)){
+                // If this is not a deleted entry, it is the end of the chain
+                break;
             }
         }
     }
@@ -120,13 +122,18 @@ public:
             if(_data[pos].flags & ZSET_ENTRY_VALID){
                 // Valid data, compare hash
                 if(_data[pos].hash == hash){
-                    // Compare the actual key - may be non-trivial
+                    // Compare the actual value - may be non-trivial
                     if(_data[pos].value == value){
+                        // Found value
                         return true;
                     }
                 }
+            } else if(!(_data[pos].flags & ZSET_ENTRY_DELETED)){
+                // If this is not a deleted entry, it is the end of the chain
+                break;
             }
         }
+        // Did not find value
         return false;
     }
 
