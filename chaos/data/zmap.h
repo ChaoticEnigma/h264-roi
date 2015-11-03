@@ -207,6 +207,29 @@ public:
     }
     inline const T &operator[](const K &key) const { return get(key); }
 
+    //! Check if map contains \a key.
+    bool contains(const k &key) const {
+        zu64 hash = _getHash(key);
+        for(zu64 i = 0; i < _realsize; ++i){
+            zu64 pos = _getPos(hash, i);
+            if(_data[pos].flags & ZMAP_ENTRY_VALID){
+                // Valid data, compare hash
+                if(_data[pos].hash == hash){
+                    // Compare the actual key - may be non-trivial
+                    if(_data[pos].key == key){
+                        // Found key
+                        return true;
+                    }
+                }
+            } else if(!(_data[pos].flags & ZMAP_ENTRY_DELETED)){
+                // If this is not a deleted entry, it is the end of the chain
+                break;
+            }
+        }
+        // Did not find key
+        return false;
+    }
+
     zu64 getPosition(const K &key){
         return 0;
     }
@@ -266,13 +289,6 @@ public:
     // TODO: ZMap erase
     void erase(K test){
 
-    }
-
-    bool exists(K test){
-        return false;
-    }
-    bool contains(T test){
-        return false;
     }
 
     bool isEmpty() const {
