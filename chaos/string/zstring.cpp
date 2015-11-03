@@ -27,6 +27,7 @@ ZString::ZString(ZAllocator<chartype> *alloc) : _alloc(alloc), _size(0), _realsi
 ZString::~ZString(){
     if(_data != nullptr)
         _alloc->dealloc(_data);
+    delete _alloc;
 }
 
 ZString::ZString(const ZString &other) : ZString(){

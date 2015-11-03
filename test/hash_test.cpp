@@ -101,8 +101,13 @@ int map_test(){
     }
 
     LOG("Forward Iterator: " << map1.size());
-    auto itf = map1.begin();
-    test_forward_iterator(&itf, map1.size());
+    auto i1f = map1.begin();
+    test_forward_iterator(&i1f, map1.size());
+
+    ZMap<ZString, zu64> map2 = map1;
+    LOG("Forward Iterator: " << map2.size());
+    auto i2f = map2.begin();
+    test_forward_iterator(&i2f, map2.size());
 
     return 0;
 }
@@ -128,8 +133,13 @@ int set_test(){
     TASSERT(set1.contains(str5));
 
     LOG("Forward Iterator: " << set1.size());
-    auto itf = set1.begin();
-    test_forward_iterator(&itf, set1.size());
+    auto i1f = set1.begin();
+    test_forward_iterator(&i1f, set1.size());
+
+    ZSet<ZString> set2 = set1;
+    LOG("Forward Iterator: " << set2.size());
+    auto i2f = set1.begin();
+    test_forward_iterator(&i2f, set2.size());
 
     return 0;
 }

@@ -79,8 +79,8 @@ public:
     ~ZMap(){
         MapElement *current = _head;
         while(current != nullptr){
-            _kalloc.destroy(&current->key);
-            _talloc.destroy(&current->value);
+            _kalloc.destroy(&(current->key));
+            _talloc.destroy(&(current->value));
             current = current->next;
         }
         _alloc->dealloc(_data);
@@ -98,8 +98,8 @@ public:
             if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                 // Entry is unset or deleted, insert new entry
                 _data[pos].hash = hash;
-                _kalloc.construct(&_data[pos].key, key);
-                _talloc.construct(&_data[pos].value, value);
+                _kalloc.construct(&(_data[pos].key), key);
+                _talloc.construct(&(_data[pos].value), value);
                 _data[pos].flags |= ZMAP_ENTRY_VALID; // Set valid bit
                 _data[pos].flags &= ~ZMAP_ENTRY_DELETED; // Unset deleted bit
                 _data[pos].prev = _tail;
@@ -113,10 +113,10 @@ public:
                 // Compare the actual key - may be non-trivial
                 if(_data[pos].key == key){
                     // Reassign key and value in existing entry
-                    _kalloc.destroy(&_data[pos].key);
-                    _kalloc.construct(&_data[pos].key, key);
-                    _talloc.destroy(&_data[pos].value);
-                    _talloc.construct(&_data[pos].value, value);
+                    _kalloc.destroy(&(_data[pos].key));
+                    _kalloc.construct(&(_data[pos].key), key);
+                    _talloc.destroy(&(_data[pos].value));
+                    _talloc.construct(&(_data[pos].value), value);
                     return _data[pos].value;
                 }
             }
@@ -137,8 +137,8 @@ public:
                     // Compare the actual key - may be non-trivial
                     if(_data[pos].key == key){
                         // Found it, delete it
-                        _kalloc.destroy(&_data[pos].key);
-                        _talloc.destroy(&_data[pos].value);
+                        _kalloc.destroy(&(_data[pos].key));
+                        _talloc.destroy(&(_data[pos].value));
                         _data[pos].flags &= ~ZMAP_ENTRY_VALID; // Unset valid bit
                         _data[pos].flags |= ZMAP_ENTRY_DELETED; // Set deleted bit
                         if(_data[pos].prev) _data[pos].prev->next = _data[pos].next; // Point prev element to next
@@ -216,6 +216,7 @@ public:
      *  The buffer is never made smaller
      */
     void resize(zu64 size){
+        // Check if resize needed
         if(size > _realsize || ((float)size / (float)_realsize) >= _factor){
             zu64 newsize = 1;
             // Get a new buffer size that can hold <size> entries, staying under the load factor
@@ -223,41 +224,42 @@ public:
                 newsize <<= 1;
 
             MapElement *olddata = _data;
-            zu64 oldsize = _realsize;
-
+            // Create new table
             _realsize = newsize;
             _data = _alloc->alloc(_realsize);
 
             // Clear new entries
             for(zu64 i = 0; i < _realsize; ++i){
                 _data[i].flags = 0; // Clean flags
-                //_data[i].next = nullptr;
             }
 
-            if(olddata != nullptr){
-                //MapData *last = nullptr;
-                // Re-map old entries
-                for(zu64 i = 0; i < oldsize; ++i){
-                    // Map only non-empty entries
-                    if(olddata[i].flags & ZMAP_ENTRY_VALID){
-                        for(zu64 j = 0; j < _realsize; ++j){
-                            zu64 pos = _getPos(olddata[i].hash, j);
-                            // Find first empty entry
-                            if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
-                                _data[pos].hash = olddata[i].hash;
-                                // Move elements without copy constructors
-                                _kalloc.rawmove(&olddata[i].key, &_data[pos].key);
-                                _talloc.rawmove(&olddata[i].value, &_data[pos].value);
-                                _data[pos].flags |= ZMAP_ENTRY_VALID;
-                                break;
-                            }
-                        }
-                        //throw ZException("Fatal Error in addHashEntry");
+            MapElement *current = _head;
+            _head = nullptr;
+            _tail = nullptr;
+            // Re-map old entries
+            while(current != nullptr){
+                // Find first empty slot
+                for(zu64 j = 0; j < _realsize; ++j){
+                    zu64 pos = _getPos(current->hash, j);
+                    if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
+                        _data[pos].flags |= ZMAP_ENTRY_VALID;
+                        _data[pos].hash = current->hash;
+                        _data[pos].next = nullptr;
+                        _data[pos].prev = _tail;
+                        if(_tail) _tail->next = _data + pos;
+                        if(!_head) _head = _data + pos;
+                        _tail = _data + pos;
+                        // Move elements without copy constructors
+                        _kalloc.rawmove(&(current->key), &(_data[pos].key));
+                        _talloc.rawmove(&(current->value), &(_data[pos].value));
+                        current = current->next;
+                        break;
                     }
+                    throw ZException("Could not add entry in hash table resize");
                 }
-                _alloc->dealloc(olddata);
-//                olddata = nullptr;
             }
+            // Destroy old table
+            _alloc->dealloc(olddata);
         }
     }
 
