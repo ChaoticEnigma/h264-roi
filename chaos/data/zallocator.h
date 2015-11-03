@@ -62,8 +62,8 @@ public:
     // Does not dealloc()ate memory
     virtual void destroy(T *ptr, zu64 count = 1){
         for(zu64 i = 0; i < count; ++i){
-//            (ptr++)->~T();
-//            (&(ptr[i]))->~T();
+            //(ptr++)->~T();
+            //(&(ptr[i]))->~T();
             (ptr + i)->~T();
         }
     }

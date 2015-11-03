@@ -35,12 +35,11 @@ ZString::ZString(const ZString &other) : ZString(){
         _alloc->rawcopy(other._data, _data, other._size);
 }
 
-ZString::ZString(const ZString::chartype *str) : ZString(){
+ZString::ZString(const chartype *str) : ZString(){
     if(str != nullptr){
         zu64 i = 0;
-        while(str[i] != 0){
+        while(str[i] != 0)
             ++i;
-        }
         ZString filled(str, i);
         swap(filled);
     }

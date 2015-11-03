@@ -100,6 +100,10 @@ int map_test(){
             LOG(i << " " << map1.position(i).key << " " << map1.position(i).value << " " << map1.position(i).hash);
     }
 
+    LOG("Forward Iterator: " << map1.size());
+    auto itf = map1.begin();
+    test_forward_iterator(&itf, map1.size());
+
     return 0;
 }
 

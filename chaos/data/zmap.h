@@ -55,7 +55,7 @@ public:
 
 public:
     ZMap(float loadfactor = ZMAP_DEFAULT_LOAD_FACTOR, ZAllocator<MapElement> *alloc = new ZAllocator<MapElement>) :
-            _alloc(alloc), _data(nullptr), _size(0), _realsize(0), _factor(loadfactor){
+            _alloc(alloc), _data(nullptr), _head(nullptr), _tail(nullptr), _size(0), _realsize(0), _factor(loadfactor){
         resize(ZMAP_INITIAL_CAPACITY);
     }
 
@@ -66,8 +66,8 @@ public:
         }
     }
 
-    ZMap(const ZMap &other) : _alloc(other._alloc), _data(nullptr), _head(nullptr), _tail(nullptr),
-            _size(0), _realsize(0), _factor(other._factor){
+    ZMap(const ZMap &other) :
+            _alloc(other._alloc), _data(nullptr), _head(nullptr), _tail(nullptr), _size(0), _realsize(0), _factor(other._factor){
         if(other._data != nullptr && other._size > 0){
             resize(other._size);
             for(auto it = other.begin(); it.more(); ++it){

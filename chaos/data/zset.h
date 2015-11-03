@@ -42,8 +42,8 @@ public:
         }
     }
 
-    ZSet(const ZSet &other) : _alloc(other._alloc), _data(nullptr), _head(nullptr), _tail(nullptr),
-            _size(0), _realsize(0), _factor(other._factor){
+    ZSet(const ZSet &other) :
+            _alloc(other._alloc), _data(nullptr), _head(nullptr), _tail(nullptr), _size(0), _realsize(0), _factor(other._factor){
         if(other._data != nullptr && other._size > 0){
             resize(other._size);
             for(auto it = other.begin(); it.more(); ++it){
