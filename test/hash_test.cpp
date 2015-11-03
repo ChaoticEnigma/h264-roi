@@ -104,6 +104,28 @@ int map_test(){
 }
 
 int set_test(){
+    ZString str1 = "one";
+    ZString str2 = "two";
+    ZString str3 = "three";
+    ZString str4 = "four";
+    ZString str5 = "five";
+
     ZSet<ZString> set1;
+    set1.add(str1);
+    set1.add(str2);
+    set1.add(str3);
+    set1.add(str4);
+    set1.add(str5);
+    set1.remove(str3);
+    TASSERT(set1.contains(str1));
+    TASSERT(set1.contains(str2));
+    TASSERT(!set1.contains(str3));
+    TASSERT(set1.contains(str4));
+    TASSERT(set1.contains(str5));
+
+    LOG("Forward Iterator: " << set1.size());
+    auto itf = set1.begin();
+    test_forward_iterator(&itf, set1.size());
+
     return 0;
 }

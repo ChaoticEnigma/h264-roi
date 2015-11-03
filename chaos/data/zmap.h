@@ -44,16 +44,18 @@ public:
 
     struct MapElement {
         zbyte flags;    // Some flags for unset and deleted
+        MapElement *next;
+        MapElement *prev;
         zu64 hash;
         K key;
         T value;
-        //MapData *next;
     };
+
+    class ZMapIterator;
 
 public:
     ZMap(float loadfactor = ZMAP_DEFAULT_LOAD_FACTOR, ZAllocator<MapElement> *alloc = new ZAllocator<MapElement>) :
-            _alloc(alloc), _kalloc(new ZAllocator<K>), _talloc(new ZAllocator<T>),
-            _data(nullptr), _size(0), _realsize(0), _factor(loadfactor){
+            _alloc(alloc), _data(nullptr), _size(0), _realsize(0), _factor(loadfactor){
         resize(ZMAP_INITIAL_CAPACITY);
     }
 
@@ -64,31 +66,24 @@ public:
         }
     }
 
-    ZMap(const ZMap &other) : _alloc(other._alloc), _kalloc(new ZAllocator<K>), _talloc(new ZAllocator<T>),
-                              _data(nullptr), _size(0), _realsize(0), _factor(other._factor){
+    ZMap(const ZMap &other) : _alloc(other._alloc), _data(nullptr), _head(nullptr), _tail(nullptr),
+            _size(0), _realsize(0), _factor(other._factor){
         if(other._data != nullptr && other._size > 0){
             resize(other._size);
-            for(zu64 i = 0; i < other._size; ++i){
-                if(other._data[i].flags & ZMAP_ENTRY_VALID){
-                    add(other._data[i].key, other._data[i].value);
-                }
+            for(auto it = other.begin(); it.more(); ++it){
+                add(*it, other.get(*it));
             }
         }
     }
 
     ~ZMap(){
-        if(_data != nullptr){
-            for(zu64 i = 0; i < _realsize; ++i){
-                if(_data[i].flags & ZMAP_ENTRY_VALID){
-                    _kalloc->destroy(_kalloc->addressOf(_data[i].key));
-                    _talloc->destroy(_talloc->addressOf(_data[i].value));
-                }
-            }
-            _alloc->dealloc(_data);
-//            _data = nullptr;
+        MapElement *current = _head;
+        while(current != nullptr){
+            _kalloc.destroy(&current->key);
+            _talloc.destroy(&current->value);
+            current = current->next;
         }
-        delete _kalloc;
-        delete _talloc;
+        _alloc->dealloc(_data);
     }
 
     //! Add entry with \a key and \a value to map, or change value of existing entry with \a key.
@@ -103,20 +98,25 @@ public:
             if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                 // Entry is unset or deleted, insert new entry
                 _data[pos].hash = hash;
-                _kalloc->construct(_kalloc->addressOf(_data[pos].key), key);
-                _talloc->construct(_talloc->addressOf(_data[pos].value), value);
+                _kalloc.construct(&_data[pos].key, key);
+                _talloc.construct(&_data[pos].value, value);
                 _data[pos].flags |= ZMAP_ENTRY_VALID; // Set valid bit
                 _data[pos].flags &= ~ZMAP_ENTRY_DELETED; // Unset deleted bit
+                _data[pos].prev = _tail;
+                _data[pos].next = nullptr;
+                if(!_head) _head = _data + pos; // Set head if unset
+                if(_tail) _tail->next = _data + pos; // Point prev element to this element
+                _tail = _data + pos; // Update tail
                 ++_size;
                 return _data[pos].value;
             } else if(_data[pos].hash == hash){
                 // Compare the actual key - may be non-trivial
                 if(_data[pos].key == key){
                     // Reassign key and value in existing entry
-                    _kalloc->destroy(_kalloc->addressOf(_data[pos].key));
-                    _kalloc->construct(_kalloc->addressOf(_data[pos].key), key);
-                    _talloc->destroy(_talloc->addressOf(_data[pos].value));
-                    _talloc->construct(_talloc->addressOf(_data[pos].value), value);
+                    _kalloc.destroy(&_data[pos].key);
+                    _kalloc.construct(&_data[pos].key, key);
+                    _talloc.destroy(&_data[pos].value);
+                    _talloc.construct(&_data[pos].value, value);
                     return _data[pos].value;
                 }
             }
@@ -137,18 +137,21 @@ public:
                     // Compare the actual key - may be non-trivial
                     if(_data[pos].key == key){
                         // Found it, delete it
-                        _kalloc->destroy(_kalloc->addressOf(_data[pos].key));
-                        _talloc->destroy(_talloc->addressOf(_data[pos].value));
+                        _kalloc.destroy(&_data[pos].key);
+                        _talloc.destroy(&_data[pos].value);
                         _data[pos].flags &= ~ZMAP_ENTRY_VALID; // Unset valid bit
                         _data[pos].flags |= ZMAP_ENTRY_DELETED; // Set deleted bit
+                        if(_data[pos].prev) _data[pos].prev->next = _data[pos].next; // Point prev element to next
+                        if(_data[pos].next) _data[pos].next->prev = _data[pos].prev; // Point next element to prev
+                        if(_head == _data + pos) _head = _data[pos].next; // Move head if necessary
+                        if(_tail == _data + pos) _tail = _data[pos].prev; // Move tail if necessary
                         --_size;
+                        break;
                     }
                 }
-           } else {
-                if(!(_data[pos].flags & ZMAP_ENTRY_DELETED)){
-                    // If this is not a deleted entry, it is the end of the chain
-                    break;
-                }
+            } else if(!(_data[pos].flags & ZMAP_ENTRY_DELETED)){
+                // If this is not a deleted entry, it is the end of the chain
+                break;
             }
         }
     }
@@ -167,11 +170,9 @@ public:
                         return _data[pos].value;
                     }
                 }
-            } else {
-                if(!(_data[pos].flags & ZMAP_ENTRY_DELETED)){
-                    // If this is not a deleted entry, it is the end of the chain
-                    break;
-                }
+            } else if(!(_data[pos].flags & ZMAP_ENTRY_DELETED)){
+                // If this is not a deleted entry, it is the end of the chain
+                break;
             }
         }
         // Create a new, default constructed object
@@ -245,8 +246,8 @@ public:
                             if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                                 _data[pos].hash = olddata[i].hash;
                                 // Move elements without copy constructors
-                                _kalloc->rawmove(_kalloc->addressOf(olddata[i].key), _kalloc->addressOf(_data[pos].key));
-                                _talloc->rawmove(_talloc->addressOf(olddata[i].value), _talloc->addressOf(_data[pos].value));
+                                _kalloc.rawmove(&olddata[i].key, &_data[pos].key);
+                                _talloc.rawmove(&olddata[i].value, &_data[pos].value);
                                 _data[pos].flags |= ZMAP_ENTRY_VALID;
                                 break;
                             }
@@ -286,6 +287,10 @@ public:
         _factor = factor;
     }
 
+    ZMapIterator begin() const {
+        return ZMapIterator(this, _head);
+    }
+
     // For debugging
     MapElement &position(zu64 i){
         return _data[i];
@@ -299,20 +304,41 @@ private:
         return ((hash % _realsize) + i) % _realsize;
     }
 
+public:
+    class ZMapIterator : public ZConstSimplexIterator<K> {
+    public:
+        ZMapIterator(const ZMap<K,T> *map, MapElement *start_elem) : _map(map), _elem(start_elem){}
+
+        const K &get() const {
+            return _elem->key;
+        }
+
+        bool more() const {
+            return (_elem != nullptr);
+        }
+        void advance(){
+            _elem = _elem->next;
+        }
+
+    private:
+        const ZMap<K,T> *_map;
+        ZMap<K,T>::MapElement *_elem;
+    };
+
 private:
     //! Memory allocator
     ZPointer<ZAllocator<MapElement>> _alloc;
     //! Used to construct and destroy keys
-    ZAllocator<K> *_kalloc;
+    ZAllocator<K> _kalloc;
     //! Used to construct and destroy values
-    ZAllocator<T> *_talloc;
+    ZAllocator<T> _talloc;
 
-    //! Actual data buffer
+    //! Actual data buffer.
     MapElement *_data;
-    // Pointer to first inserted element
-    //MapData *_head;
-    // Pointer to last inserted element
-    //MapData *_tail;
+    //! Pointer to first inserted element.
+    MapElement *_head;
+    //! Pointer to last inserted element.
+    MapElement *_tail;
     //! Number of entries
     zu64 _size;
     //! Size of buffer

@@ -14,7 +14,7 @@
 
 namespace LibChaos {
 
-template <typename T> class ZIterator {
+class ZIteratorBase {
 public:
     enum iterator_type {
         //! Unidirectional iterator.
@@ -26,9 +26,26 @@ public:
     };
 
 public:
-    virtual ~ZIterator(){}
-
+    virtual ~ZIteratorBase(){}
     virtual iterator_type iteratorType() const = 0;
+};
+
+// ////////////////////////////////////////
+// ITERATOR
+// ////////////////////////////////////////
+
+template <typename T> class ZConstIterator : public virtual ZIteratorBase {
+public:
+    virtual ~ZConstIterator(){}
+
+    //! Get the current const element.
+    virtual const T &get() const = 0;
+    inline const T &operator*() const { return get(); }
+};
+
+template <typename T> class ZIterator : public virtual ZConstIterator<T> {
+public:
+    virtual ~ZIterator(){}
 
     //! Get the current element.
     virtual T &get() = 0;
@@ -37,17 +54,16 @@ public:
     //! Get the current const element.
     virtual const T &get() const = 0;
     inline const T &operator*() const { return get(); }
-
-    //virtual bool compare(const ZIterator<T> *it) const = 0;
-    //inline bool operator==(const ZIterator<T> *it) const { return compare(); }
-    //inline bool operator!=(const ZIterator<T> *it) const { return !compare(); }
 };
 
-template <typename T> class ZSimplexIterator : public ZIterator<T> {
-public:
-    virtual ~ZSimplexIterator(){}
+// ////////////////////////////////////////
+// SIMPLEX ITERATOR
+// ////////////////////////////////////////
 
-    typename ZIterator<T>::iterator_type iteratorType() const { return ZIterator<T>::SIMPLEX; }
+template <typename T> class ZConstSimplexIterator : public virtual ZConstIterator<T> {
+public:
+    virtual ~ZConstSimplexIterator(){}
+    ZIteratorBase::iterator_type iteratorType() const override { return ZIteratorBase::SIMPLEX; }
 
     //! Check if there is another element after the current element.
     virtual bool more() const = 0;
@@ -60,11 +76,19 @@ public:
     inline void operator++(int){ advance(); }
 };
 
-template <typename T> class ZDuplexIterator  : public ZSimplexIterator<T> {
+template <typename T> class ZSimplexIterator : public virtual ZIterator<T>, public virtual ZConstSimplexIterator<T> {
 public:
-    virtual ~ZDuplexIterator(){}
+    virtual ~ZSimplexIterator(){}
+};
 
-    typename ZIterator<T>::iterator_type iteratorType() const { return ZIterator<T>::DUPLEX; }
+// ////////////////////////////////////////
+// DUPLEX ITERATOR
+// ////////////////////////////////////////
+
+template <typename T> class ZConstDuplexIterator  : public virtual ZConstSimplexIterator<T> {
+public:
+    virtual ~ZConstDuplexIterator(){}
+    ZIteratorBase::iterator_type iteratorType() const override { return ZIteratorBase::DUPLEX; }
 
     //! Check if there is another element before the current element.
     virtual bool less() const = 0;
@@ -77,11 +101,20 @@ public:
     inline void operator--(int){ recede(); }
 };
 
-template <typename T> class ZRandomIterator  : public ZDuplexIterator<T> {
+template <typename T> class ZDuplexIterator  : public virtual ZSimplexIterator<T>, public virtual ZConstDuplexIterator<T> {
 public:
-    virtual ~ZRandomIterator(){}
+    virtual ~ZDuplexIterator(){}
+    ZIteratorBase::iterator_type iteratorType() const override { return ZIteratorBase::DUPLEX; }
+};
 
-    typename ZIterator<T>::iterator_type iteratorType() const { return ZIterator<T>::RANDOM; }
+// ////////////////////////////////////////
+// RANDOM ITERATOR
+// ////////////////////////////////////////
+
+template <typename T> class ZConstRandomIterator  : public virtual ZConstDuplexIterator<T> {
+public:
+    virtual ~ZConstRandomIterator(){}
+    ZIteratorBase::iterator_type iteratorType() const override { return ZIteratorBase::RANDOM; }
 
     //! Get number of elements.
     virtual zu64 size() const = 0;
@@ -93,6 +126,12 @@ public:
     //! Get const element at index.
     virtual const T &at(zu64 i) const  = 0;
     inline const T &operator[](zu64 i) const { return at(i); }
+};
+
+template <typename T> class ZRandomIterator  : public virtual ZDuplexIterator<T>, public virtual ZConstRandomIterator<T> {
+public:
+    virtual ~ZRandomIterator(){}
+    ZIteratorBase::iterator_type iteratorType() const override { return ZIteratorBase::RANDOM; }
 };
 
 }

@@ -2,7 +2,7 @@
 #include "zgraph.h"
 
 int graph_test(){
-    ZGraph graph1;
+    ZGraph<ZString> graph1;
 
     return 0;
 }

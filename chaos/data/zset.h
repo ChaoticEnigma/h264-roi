@@ -18,9 +18,10 @@ public:
     enum { none = ZU64_MAX };
 
     struct SetElement {
-        zu64 hash;
         zbyte flags; // Some flags for unset and deleted
         SetElement *next;
+        SetElement *prev;
+        zu64 hash;
         T value;
     };
 
@@ -41,8 +42,8 @@ public:
         }
     }
 
-    ZSet(const ZSet &other) :
-            _alloc(other._alloc), _data(nullptr), _head(nullptr), _tail(nullptr), _size(0), _realsize(0), _factor(other._factor){
+    ZSet(const ZSet &other) : _alloc(other._alloc), _data(nullptr), _head(nullptr), _tail(nullptr),
+            _size(0), _realsize(0), _factor(other._factor){
         if(other._data != nullptr && other._size > 0){
             resize(other._size);
             for(auto it = other.begin(); it.more(); ++it){
@@ -54,7 +55,7 @@ public:
     ~ZSet(){
         SetElement *current = _head;
         while(current != nullptr){
-            _talloc.destroy(_talloc.addressOf(current->value));
+            _talloc.destroy(&current->value);
             current = current->next;
         }
         _alloc->dealloc(_data);
@@ -71,17 +72,22 @@ public:
             if(!(_data[pos].flags & ZSET_ENTRY_VALID)){
                 // Entry is unset or deleted, insert new entry
                 _data[pos].hash = hash;
-                _talloc->construct(_talloc->addressOf(_data[pos].value), value);
+                _talloc.construct(&_data[pos].value, value);
                 _data[pos].flags |= ZSET_ENTRY_VALID; // Set valid bit
                 _data[pos].flags &= ~ZSET_ENTRY_DELETED; // Unset deleted bit
+                _data[pos].prev = _tail;
                 _data[pos].next = nullptr;
+                if(!_head) _head = _data + pos; // Set head if unset
                 if(_tail) _tail->next = _data + pos; // Point prev element to this element
-                _tail = _data + pos;
+                _tail = _data + pos; // Update tail
                 ++_size;
                 return;
-            } else if(_data[pos].hash == hash && _data[pos].value == value){
-                // Value already in set
-                return;
+            } else if(_data[pos].hash == hash){
+                // Compare the actual value - may be non-trivial
+                if(_data[pos].value == value){
+                    // Value already in set
+                    return;
+                }
             }
         }
         // Should only ever fail if resize failed and the set is full
@@ -100,9 +106,13 @@ public:
                     // Compare the actual value - may be non-trivial
                     if(_data[pos].value == value){
                         // Found value, delete element
-                        _talloc->destroy(_talloc->addressOf(_data[pos].value));
+                        _talloc.destroy(&_data[pos].value);
                         _data[pos].flags &= ~ZSET_ENTRY_VALID; // Unset valid bit
                         _data[pos].flags |= ZSET_ENTRY_DELETED; // Set deleted bit
+                        if(_data[pos].prev) _data[pos].prev->next = _data[pos].next; // Point prev element to next
+                        if(_data[pos].next) _data[pos].next->prev = _data[pos].prev; // Point next element to prev
+                        if(_head == _data + pos) _head = _data[pos].next; // Move head if necessary
+                        if(_tail == _data + pos) _tail = _data[pos].prev; // Move tail if necessary
                         --_size;
                         break;
                     }
@@ -172,7 +182,7 @@ public:
                             if(!(_data[pos].flags & ZSET_ENTRY_VALID)){
                                 _data[pos].hash = olddata[i].hash;
                                 // Move elements without copy constructors
-                                _talloc->rawmove(_talloc->addressOf(olddata[i].value), _talloc->addressOf(_data[pos].value));
+                                _talloc.rawmove(&olddata[i].value, &_data[pos].value);
                                 _data[pos].flags |= ZSET_ENTRY_VALID;
                                 break;
                             }
@@ -200,7 +210,7 @@ public:
         _factor = factor;
     }
 
-    ZSetIterator begin(){
+    ZSetIterator begin() const {
         return ZSetIterator(this, _head);
     }
 
@@ -218,11 +228,10 @@ private:
     }
 
 public:
-    class ZSetIterator : public ZSimplexIterator<T> {
+    class ZSetIterator : public ZConstSimplexIterator<T> {
     public:
-        ZSetIterator(ZSet<T> *set, typename ZSet<T>::SetElement *start_elem) : _set(set), _elem(start_elem){}
+        ZSetIterator(const ZSet<T> *set, ZSet<T>::SetElement *start_elem) : _set(set), _elem(start_elem){}
 
-        T &get() = delete;
         const T &get() const {
             return _elem->value;
         }
@@ -233,8 +242,9 @@ public:
         void advance(){
             _elem = _elem->next;
         }
+
     private:
-        ZSet<T> *_set;
+        const ZSet<T> *_set;
         ZSet<T>::SetElement *_elem;
     };
 

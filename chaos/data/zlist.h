@@ -213,25 +213,25 @@ public:
     public:
         ZListIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _prev(nullptr){}
 
-        T &get(){
+        T &get() override {
             return _node->data;
         }
-        const T &get() const {
+        const T &get() const override {
             return _node->data;
         }
 
-        bool more() const {
+        bool more() const override {
             return (_prev == nullptr || _node != _list->_head);
         }
-        void advance(){
+        void advance() override {
             _prev = _node;
             _node = _node->next;
         }
 
-        bool less() const {
+        bool less() const override {
             return (_prev == nullptr || _node != _list->_head->prev);
         }
-        void recede(){
+        void recede() override {
             _prev = _node;
             _node = _node->prev;
         }
