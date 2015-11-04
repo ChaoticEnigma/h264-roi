@@ -104,9 +104,8 @@ void *ZLogWorker::zlogWorker(void *arg){
 
 ZString ZLogWorker::getThread(ztid thread){
     zu16 id;
-
     threadidmutex.lock();
-    if(threadids.exists(thread)){
+    if(threadids.contains(thread)){
         id = threadids[thread];
     } else {
         id = threadids.size();
