@@ -32,6 +32,7 @@
 #define MSVC        0x13
 #define CLANG       0x14
 
+/*
 // Detection
 #if defined(__MINGW32__)
     #define COMPILER MINGW
@@ -49,6 +50,9 @@
 #if COMPILER != _LIBCHAOS_COMPILER
     #warning Different detected and specified compilers!
 #endif
+*/
+
+#define COMPILER _LIBCHAOS_COMPILER
 
 // Disable some MSVC warnings
 #if COMPILER == MSVC
@@ -67,10 +71,7 @@
 #define WINDOWS     0x23
 #define MACOSX      0x24
 
-// Platforms are Tested as such:
-// Windows and Mac OS X are tested first, and treated as exceptions
-// POSIX platforms (Linux, FreeBSD) are the default (preferred) case
-
+/*
 // Detection
 #if defined(__linux__)
     #define PLATFORM LINUX
@@ -88,6 +89,9 @@
 #if PLATFORM != _LIBCHAOS_PLATFORM
     #warning Different detected and specified platforms!
 #endif
+*/
+
+#define PLATFORM _LIBCHAOS_PLATFORM
 
 //
 // Build
