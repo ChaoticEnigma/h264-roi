@@ -51,13 +51,11 @@ public:
         if(_head != nullptr){
             _head->prev->next = nullptr; // Break circular link
             Node *current = _head;
-            Node *next;
-            do { // Delete all nodes
+            while(current != nullptr){
                 _talloc.destroy(&(current->data));
-                next = current->next;
                 _alloc->dealloc(current);
-                current = next;
-            } while(current != nullptr);
+                current = current->next;
+            }
         }
         delete _alloc;
     }

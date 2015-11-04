@@ -208,7 +208,7 @@ public:
     inline const T &operator[](const K &key) const { return get(key); }
 
     //! Check if map contains \a key.
-    bool contains(const k &key) const {
+    bool contains(const K &key) const {
         zu64 hash = _getHash(key);
         for(zu64 i = 0; i < _realsize; ++i){
             zu64 pos = _getPos(hash, i);
