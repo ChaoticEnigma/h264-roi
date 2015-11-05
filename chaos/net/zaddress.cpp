@@ -7,7 +7,7 @@
 #include "zlog.h"
 #include "zerror.h"
 
-#if PLATFORM == WINDOWS
+#ifdef ZSOCKET_WINAPI
     #include <winsock2.h>
     #include <ws2tcpip.h>
 #else
@@ -29,7 +29,7 @@ ZAddressData::ZAddressData(const ZAddressData &other) : _family(other._family), 
 // ZADDRESS
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if COMPILER == MINGW
+#if COMPILER == MINGW || PLATFORM == CYGWIN
 const char *inet_ntop(int af, const void *src, char *dest, int cnt){
     sockaddr_storage srcaddr;
     memset(&srcaddr, 0, sizeof(sockaddr_storage));

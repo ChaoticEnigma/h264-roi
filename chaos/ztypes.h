@@ -70,6 +70,7 @@
 #define FREEBSD     0x22
 #define WINDOWS     0x23
 #define MACOSX      0x24
+#define CYGWIN      0x25
 
 /*
 // Detection

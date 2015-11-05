@@ -9,7 +9,11 @@
 #include "ztypes.h"
 #include "zstring.h"
 
-#if PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+    #define ZSOCKET_WINAPI
+#endif
+
+#ifdef ZSOCKET_WINAPI
     #include <winsock2.h>
     #define IPV4_MAX 16
     #define IPV6_MAX 46

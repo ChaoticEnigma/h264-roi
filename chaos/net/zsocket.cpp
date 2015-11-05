@@ -8,7 +8,7 @@
 #include "zexception.h"
 #include "zerror.h"
 
-#if PLATFORM == WINDOWS
+#ifdef ZSOCKET_WINAPI
     #include <winsock2.h>
     #include <windows.h>
     typedef int socklen_t;
@@ -92,7 +92,7 @@ bool ZSocket::open(ZAddress addr){
 void ZSocket::close(){
     if(isOpen()){
         LOG("Closing socket " << _socket);
-#if PLATFORM == WINDOWS
+#ifdef ZSOCKET_WINAPI
         ::closesocket(_socket);
 #else
         ::close(_socket);
@@ -145,7 +145,7 @@ zu64 ZSocket::receive(ZAddress &sender, ZBinary &str){
     //memset(buffer, 0, ZSOCKET_BUFFER);
     sockaddr_storage from;
     socklen_t fromLength = sizeof(from);
-#if PLATFORM == WINDOWS
+#ifdef ZSOCKET_WINAPI
     long received = ::recvfrom(_socket, (char *)buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromLength);
 #else
     long received = ::recvfrom(_socket, buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromLength);
@@ -278,7 +278,7 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
     switch(option){
     case SocketOptions::reuseaddr: {
         sockoption = SO_REUSEADDR;
-#if PLATFORM == WINDOWS
+#ifdef ZSOCKET_WINAPI
         optptr = (char *)!!(value);
         optptrsize = sizeof(BOOL);
 #else
@@ -293,7 +293,7 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
         timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = value;
-#if PLATFORM == WINDOWS
+#ifdef ZSOCKET_WINAPI
         throw ZException("FIX ME ON WINDOWS");
 #else
         optptr = &tv;
@@ -306,7 +306,7 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
         return false;
     }
 
-#if PLATFORM == WINDOWS
+#ifdef ZSOCKET_WINAPI
     if(optptr != nullptr && setsockopt(_socket, SOL_SOCKET, sockoption, (char *)optptr, optptrsize) != 0){
 #else
     if(optptr != nullptr && setsockopt(_socket, SOL_SOCKET, sockoption, optptr, optptrsize) != 0){
@@ -320,16 +320,13 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
 bool ZSocket::setBlocking(bool set){
     if(!isOpen())
         return false;
-#if PLATFORM == WINDOWS
-
+#ifdef ZSOCKET_WINAPI
     DWORD opt = set ? 0 : 1;
     if(ioctlsocket(_socket, (long)FIONBIO, &opt) != 0){
         error = ZException("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
         return false;
     }
-
 #else
-
     int flags = fcntl(_socket, F_GETFL, 0);
     if(flags < 0){
         error = ZException("ZSocket: failed to get socket flags error: " + ZError::getSystemError());
@@ -340,7 +337,6 @@ bool ZSocket::setBlocking(bool set){
         error = ZException("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
         return false;
     }
-
 #endif
     return true;
 }
@@ -357,7 +353,7 @@ void ZSocket::setBufferSize(zu32 size){
 }
 
 bool ZSocket::InitializeSockets(){
-#if PLATFORM == WINDOWS
+#ifdef ZSOCKET_WINAPI
     WSADATA WsaData;
     if(WSAStartup(MAKEWORD(2,2), &WsaData) != 0){
         ELOG("ZSocket: WSAStartup Failed to Initialize Sockets");
@@ -368,7 +364,7 @@ bool ZSocket::InitializeSockets(){
 }
 
 void ZSocket::ShutdownSockets(){
-#if PLATFORM == WINDOWS
+#ifdef ZSOCKET_WINAPI
     WSACleanup();
 #endif
 }

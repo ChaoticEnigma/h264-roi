@@ -15,7 +15,7 @@
 // Needed for std::ostream overload
 #include <iosfwd>
 
-#if PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
     #define UNICODE
     #define _UNICODE
     #include <string>

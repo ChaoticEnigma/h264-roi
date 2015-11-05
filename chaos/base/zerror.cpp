@@ -11,7 +11,7 @@
 
 #define FUCK_WINDOWS 1
 
-#if PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
     #include <stdlib.h>
     #include <windows.h>
 
@@ -63,7 +63,7 @@ void zassert(bool condition, ZString message){
         throw ZException(message);
 }
 
-#if PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
 
 #ifndef FUCK_WINDOWS
 struct module_data {
@@ -690,7 +690,7 @@ void registerSigSegv(){
 #endif
 }
 
-#if PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
 
 BOOL WINAPI ConsoleHandler(DWORD dwType){
     LOG("Console Exit Handler " << dwType);
@@ -711,7 +711,7 @@ BOOL WINAPI ConsoleHandler(DWORD dwType){
 #else
 
 void sigHandle(int sig){
-    if(sigmap.exists(sig) && sigmap[sig].handler != NULL)
+    if(sigmap.contains(sig) && sigmap[sig].handler != NULL)
         (sigmap[sig].handler)(sigmap[sig].sigtype);
 }
 
@@ -719,7 +719,7 @@ void sigHandle(int sig){
 
 bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
-#if PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
 
     if(!SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE)){
         return false;

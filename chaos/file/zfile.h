@@ -13,7 +13,11 @@
 #include "zreader.h"
 #include "zwriter.h"
 
-#if PLATFORM != WINDOWS
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+    #define ZFILE_WINAPI
+#endif
+
+#ifndef ZFILE_WINAPI
     #include <fstream>
 #endif
 
@@ -82,7 +86,7 @@ public:
     zu64 fileSize() const;
     static zu64 fileSize(ZPath path);
 
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     bool isOpen() const { return (_handle != NULL); }
 #else
     bool isOpen() const { return (_file != NULL); }
@@ -90,7 +94,7 @@ public:
     zu16 &bits(){ return _options; }
     ZPath path() const { return _path; }
 
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     HANDLE handle(){ return _handle; }
 #else
     FILE *fp(){ return _file; }
@@ -130,7 +134,7 @@ public:
 private:
     zu16 _options;
     ZPath _path;
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     HANDLE _handle;
 #else
     FILE *_file;

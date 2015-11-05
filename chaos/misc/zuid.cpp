@@ -10,7 +10,11 @@
 
 #include <time.h>
 
-#if PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+    #define ZUID_WINAPI
+#endif
+
+#ifdef ZUID_WINAPI
     #include <winsock2.h>
     #include <windows.h>
     #include <iptypes.h>
@@ -164,7 +168,7 @@ ZBinary ZUID::bin() const {
 }
 
 zu64 ZUID::getTimestamp(){
-#if PLATFORM == WINDOWS
+#ifdef ZUID_WINAPI
     SYSTEMTIME systime;
     GetSystemTime(&systime);
     FILETIME filetime;
@@ -190,8 +194,7 @@ zu64 ZUID::getTimestamp(){
 
 ZList<ZBinary> ZUID::getMACAddresses(){
     ZList<ZBinary> maclist;
-#if PLATFORM == WINDOWS
-
+#ifdef ZUID_WINAPI
     ULONG addrslen = sizeof(IP_ADAPTER_ADDRESSES);
     IP_ADAPTER_ADDRESSES *addrs = (IP_ADAPTER_ADDRESSES *)new zbyte[addrslen];
     ULONG flags = GAA_FLAG_INCLUDE_ALL_INTERFACES;
@@ -325,7 +328,7 @@ ZList<ZBinary> ZUID::getMACAddresses(){
 }
 
 ZBinary ZUID::getMACAddress(){
-#if PLATFORM == WINDOWS
+#ifdef ZUID_WINAPI
     PIP_ADAPTER_INFO adapterInfo;
     ULONG bufLen = sizeof(IP_ADAPTER_INFO);
     adapterInfo = new IP_ADAPTER_INFO[1];

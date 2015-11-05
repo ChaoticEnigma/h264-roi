@@ -5,7 +5,7 @@
 *******************************************************************************/
 #include "zthread.h"
 
-#if COMPILER == MSVC
+#ifdef ZTHREAD_WINTHREADS
     #include <windows.h>
 #else
     #if PLATFORM == MACOSX
@@ -46,13 +46,20 @@ ZThread::~ZThread(){
 }
 
 #ifdef ZTHREAD_WINTHREADS
+
+#if COMPILER == MSVC
 DWORD _stdcall ZThread::entry_win(LPVOID ptr){
+#else
+DWORD ZThread::entry_win(LPVOID ptr){
+#endif
     ZThread *thr = (ZThread *)ptr;
     thr->_param.funcptr(&thr->_param.zarg); // Run function
     thr->_alive = false;
     return 0;
 }
+
 #else
+
 void *ZThread::entry_posix(void *ptr){
     ZThread *thr = (ZThread*)ptr;
     void *ret = thr->_param.funcptr(&thr->_param.zarg);
@@ -60,6 +67,7 @@ void *ZThread::entry_posix(void *ptr){
     thr->_alive = false;
     return ret;
 }
+
 #endif
 
 bool ZThread::run(funcType func){

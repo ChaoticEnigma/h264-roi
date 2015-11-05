@@ -21,7 +21,7 @@
 
 #include "xxhash.h"
 
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     #define V 1
     #include <windows.h>
 #else
@@ -32,7 +32,7 @@
 
 namespace LibChaos {
 
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
 ZFile::ZFile() : _options(0 | readbit), _handle(NULL){}
 #else
 ZFile::ZFile() : _options(0 | readbit), _file(NULL){}
@@ -68,7 +68,7 @@ bool ZFile::open(ZPath path){
         }
     }
 
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     DWORD access = 0;
     if(_options & readbit)
         access |= GENERIC_READ;
@@ -153,7 +153,7 @@ void ZFile::setMode(zu16 mode){
 bool ZFile::close(){
     if(!isOpen())
         return true;
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     bool ret = CloseHandle(_handle) != 0;
     _handle = NULL;
 #else
@@ -165,7 +165,7 @@ bool ZFile::close(){
 
 // ZPosition
 zu64 ZFile::position() const {
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     // Move pointer by 0 to get current pos
     LARGE_INTEGER distance;
     distance.QuadPart = 0;
@@ -180,7 +180,7 @@ zu64 ZFile::position() const {
 }
 
 zu64 ZFile::seek(zu64 pos){
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     LARGE_INTEGER distance;
     distance.QuadPart = (long long)pos;
     LARGE_INTEGER newpos;
@@ -193,7 +193,7 @@ zu64 ZFile::seek(zu64 pos){
  #endif
 }
 bool ZFile::atEnd() const {
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     // Hack
     return position() >= fileSize();
 #else
@@ -211,7 +211,7 @@ zu64 ZFile::read(zbyte *dest, zu64 size){
     // Check file is open and has read bit set
     if(!isOpen() || !(_options & readbit))
         return 0;
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     DWORD read;
     bool ret = ReadFile(_handle, dest, size, &read, NULL) != 0;
     if(!ret)
@@ -227,7 +227,7 @@ zu64 ZFile::write(const zbyte *src, zu64 size){
     // Check file is open and has write bit set
     if(!isOpen() || !(_options & writebit))
         return 0;
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     DWORD write;
     bool ret = WriteFile(_handle, src, size, &write, NULL) != 0;
     if(!ret)
@@ -258,7 +258,7 @@ bool ZFile::remove(){
     return true;
 }
 bool ZFile::remove(ZPath file){
-#if COMPILER == MSVC
+#ifdef ZFILE_WINAPI
     if(isFile(file))
         return DeleteFile(file.str().wstr().c_str()) != 0;
     return false;
@@ -276,7 +276,7 @@ bool ZFile::remove(ZPath file){
 }
 
 bool ZFile::resizeFile(zu64 size){
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     LARGE_INTEGER dist;
     dist.QuadPart = (LONGLONG)size;
     LARGE_INTEGER pos;
@@ -296,7 +296,7 @@ bool ZFile::resizeFile(zu64 size){
 }
 
 zu64 ZFile::fileSize() const {
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     // Check file is open and has read bit set
     if(!isOpen() || !(_options & readbit))
         return 0;
@@ -392,7 +392,7 @@ bool ZFile::rename(ZPath old, ZPath newfl){
 }
 
 bool ZFile::removeDir(ZPath name){
-#if COMPILER == MSVC
+#ifdef ZFILE_WINAPI
     //TODO: Win32 removeDir
     return false;
 #else
@@ -432,7 +432,7 @@ bool ZFile::removeDir(ZPath name){
 }
 
 bool ZFile::exists(ZPath name){
-#if COMPILER == MSVC
+#ifdef ZFILE_WINAPI
     DWORD attr = GetFileAttributes(name.str('\\').wstr().c_str());
     return (attr != INVALID_FILE_ATTRIBUTES); // Just checks that there is something, anything at that path
 #else
@@ -445,7 +445,7 @@ bool ZFile::exists(ZPath name){
 }
 
 bool ZFile::isFile(ZPath file){
-#if COMPILER == MSVC
+#ifdef ZFILE_WINAPI
     DWORD attr = GetFileAttributes(file.str('\\').wstr().c_str());
     if(attr != INVALID_FILE_ATTRIBUTES)
         return !(attr & FILE_ATTRIBUTE_DIRECTORY) && !(attr & FILE_ATTRIBUTE_REPARSE_POINT); // Not a directory or link
@@ -463,7 +463,7 @@ bool ZFile::isFile(ZPath file){
 }
 
 bool ZFile::isDir(ZPath dir){
-#if COMPILER == MSVC
+#ifdef ZFILE_WINAPI
     DWORD attr = GetFileAttributes(dir.str('\\').wstr().c_str());
     if(attr != INVALID_FILE_ATTRIBUTES)
         return (attr & FILE_ATTRIBUTE_DIRECTORY);
@@ -479,7 +479,7 @@ bool ZFile::isDir(ZPath dir){
 }
 
 bool ZFile::makeDir(ZPath dir){
-#if COMPILER == MSVC
+#ifdef ZFILE_WINAPI
     if(exists(dir)){
         if(isDir(dir))
             return true;
@@ -527,7 +527,7 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
     if(!isDir(dir)){
         return files;
     }
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     WIN32_FIND_DATA finddata;
     HANDLE find = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &finddata);
     if(find == INVALID_HANDLE_VALUE){
@@ -571,7 +571,7 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse, bool hidden){
     ZArray<ZPath> dirs;
     if(!isDir(dir))
         return dirs;
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     WIN32_FIND_DATA finddata;
     HANDLE find = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &finddata);
     if(find == INVALID_HANDLE_VALUE){

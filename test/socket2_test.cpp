@@ -84,7 +84,7 @@ int tcpserver_test(){
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if PLATFORM != WINDOWS
+#ifndef ZSOCKET_WINAPI
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -343,7 +343,7 @@ int tcpserver_test2(){
 
 #endif
 
-#if PLATFORM != WINDOWS
+#ifndef ZSOCKET_WINAPI
 
 int tcpserver_test3(){
     fd_set master;    // master file descriptor list
