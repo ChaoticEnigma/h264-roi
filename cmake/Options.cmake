@@ -7,17 +7,13 @@ OPTION(EXTRA_WARNINGS                       "Produce Extra Compiler Warnings"   
 
 # General Options
 OPTION(LIBCHAOS_SHARED                      "Build LibChaos as a shared library"        OFF )
-OPTION(IBERTY_DEMANGLE                      "Use libiberty to demangle symbols"         OFF )
+#OPTION(IBERTY_DEMANGLE                      "Use libiberty to demangle symbols"         OFF )
 
 # Library Components
 OPTION(LIBCHAOS_UI                          "Build LibChaos UI library"                 OFF )
 OPTION(LIBCHAOS_TEST                        "Build and Run LibChaos Test suite"         ON  )
-OPTION(LIBCHAOS_UTIL                        "Build LibChaos Utilities"                  OFF )
 
-# ZParcel Tool
-OPTION(LIBCHAOS_ZPARCEL                     "Build ZParcel tool"                        OFF )
-
-# Extern Library Support
+# Third-Party Library Support
 OPTION(DISABLE_ZPNG                         "Disable PNG support"                       OFF )
 OPTION(DISABLE_ZJPEG                        "Disable JPEG support"                      OFF )
 OPTION(DISABLE_ZWEBP                        "Disable WebP support"                      OFF )
@@ -25,6 +21,9 @@ OPTION(DISABLE_ZWEBP                        "Disable WebP support"              
 OPTION(REQUIRE_ZJPEG                        "Require JPEG support"                      OFF )
 OPTION(REQUIRE_ZPNG                         "Require PNG support"                       OFF )
 OPTION(REQUIRE_ZWEBP                        "Require WebP support"                      OFF )
+
+# ZParcel Tool
+OPTION(LIBCHAOS_ZPARCEL                     "Build ZParcel tool"                        OFF )
 
 # Util Executables
 OPTION(LIBCHAOS_UTIL_EXTENSION_FIXER        "Build LibChaos Extension Fixer"            OFF )

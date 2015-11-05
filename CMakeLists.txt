@@ -11,8 +11,10 @@ INCLUDE(cmake/FindLibs.cmake)
 INCLUDE(cmake/ConfigureBuild.cmake)
 # CMake Utils
 INCLUDE(cmake/Utils.cmake)
+
 # CTest
 INCLUDE(CTest)
+ENABLE_TESTING()
 
 # Git Describe
 EXECUTE_PROCESS(
@@ -56,12 +58,6 @@ ELSE()
     SET(LibChaos_BUILD_LIST "Core")
 ENDIF()
 SET(LibChaos_INCLUDE ${LibChaos_Core_INCLUDE})
-
-# LibChaos Extern
-#ADD_SUBDIRECTORY(extern)
-IF(LIBCHAOS_EXTERN)
-    SET(LibChaos_BUILD_LIST ${LibChaos_BUILD_LIST} ${EXTERN_BUILD_LIST})
-ENDIF()
 
 # LibChaos UI
 ADD_SUBDIRECTORY(ui)
