@@ -203,7 +203,7 @@ bool ZFile::atEnd() const {
 }
 
 // ZReader
-zu64 ZFile::available(){
+zu64 ZFile::available() const{
     return fileSize() - tell();
 }
 

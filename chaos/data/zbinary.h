@@ -155,7 +155,7 @@ public:
     zu64 size() const { return _size; }
 
     // ZReader interface
-    zu64 available(){
+    zu64 available() const {
         return size() - tell();
     }
     zu64 read(zbyte *dest, zu64 length);

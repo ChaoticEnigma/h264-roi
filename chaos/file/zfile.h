@@ -67,7 +67,7 @@ public:
     bool atEnd() const;
 
     // ZReader
-    zu64 available();
+    zu64 available() const;
     zu64 read(zbyte *dest, zu64 size);
 
     // ZWriter
