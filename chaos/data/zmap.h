@@ -340,7 +340,7 @@ public:
 
     private:
         const ZMap<K,T> *_map;
-        ZMap<K,T>::MapElement *_elem;
+        MapElement *_elem;
     };
 
 private:

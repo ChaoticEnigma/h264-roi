@@ -230,7 +230,7 @@ private:
 public:
     class ZSetIterator : public ZConstSimplexIterator<T> {
     public:
-        ZSetIterator(const ZSet<T> *set, ZSet<T>::SetElement *start_elem) : _set(set), _elem(start_elem){}
+        ZSetIterator(const ZSet<T> *set, SetElement *start_elem) : _set(set), _elem(start_elem){}
 
         const T &get() const {
             return _elem->value;
@@ -245,7 +245,7 @@ public:
 
     private:
         const ZSet<T> *_set;
-        ZSet<T>::SetElement *_elem;
+        SetElement *_elem;
     };
 
 private:

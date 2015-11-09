@@ -60,7 +60,11 @@ private:
     jsontype _type;
 
     //! Decoded JSON data.
+#if COMPILER == MSVC
+    struct JSONValue {
+#else
     union JSONValue {
+#endif
         JSONValue();
         ~JSONValue();
 
