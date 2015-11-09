@@ -62,7 +62,7 @@ public:
     bool close();
 
     // ZPosition
-    zu64 position() const;
+    zu64 tell() const;
     zu64 seek(zu64 pos);
     bool atEnd() const;
 

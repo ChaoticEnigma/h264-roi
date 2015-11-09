@@ -156,7 +156,7 @@ public:
 
     // ZReader interface
     zu64 available(){
-        return size() - position();
+        return size() - tell();
     }
     zu64 read(zbyte *dest, zu64 length);
     zu64 read(ZBinary &dest, zu64 length){
@@ -169,7 +169,7 @@ public:
     }
 
     // ZPosition interface
-    zu64 position() const {
+    zu64 tell() const {
         return _rwpos;
     }
     zu64 seek(zu64 pos){

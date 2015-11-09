@@ -164,7 +164,7 @@ bool ZFile::close(){
 }
 
 // ZPosition
-zu64 ZFile::position() const {
+zu64 ZFile::tell() const {
 #ifdef ZFILE_WINAPI
     // Move pointer by 0 to get current pos
     LARGE_INTEGER distance;
@@ -195,7 +195,7 @@ zu64 ZFile::seek(zu64 pos){
 bool ZFile::atEnd() const {
 #ifdef ZFILE_WINAPI
     // Hack
-    return position() >= fileSize();
+    return tell() >= fileSize();
 #else
     // Check if file pointer is at end of file
     return feof(_file);
@@ -204,7 +204,7 @@ bool ZFile::atEnd() const {
 
 // ZReader
 zu64 ZFile::available(){
-    return fileSize() - position();
+    return fileSize() - tell();
 }
 
 zu64 ZFile::read(zbyte *dest, zu64 size){

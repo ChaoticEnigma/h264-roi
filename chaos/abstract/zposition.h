@@ -15,7 +15,7 @@ public:
     virtual ~ZPosition(){}
 
     //! Get the internal position of a persistent position index.
-    virtual zu64 position() const = 0;
+    virtual zu64 tell() const = 0;
     //! Try to set the position of an internal persistent position index, return the new position.
     virtual zu64 seek(zu64 pos) = 0;
     //! Check if the position is at the "end" of the stream or container.
