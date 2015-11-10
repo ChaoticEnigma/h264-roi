@@ -282,6 +282,10 @@ int string_test(){
     float float4 = floatstr4.toFloat();
     LOG(floatstr4 << " " << float4);
 
+    LOG("-- String Formatting:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
+    ZString fmtstr1 = "%d - %s";
+    ZString::format(fmtstr1, 10, "tst");
+    LOG(fmtstr1);
 
     return 0;
 }

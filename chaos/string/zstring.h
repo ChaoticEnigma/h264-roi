@@ -281,8 +281,6 @@ public:
 
     static ZString compound(ArZ parts, ZString delim);
 
-    //! Format this string with a variable number of arguments.
-    ZString &format(...);
     //! Create a formatted string with \a format and variable number of arguments.
     static ZString format(ZString format, ...);
 

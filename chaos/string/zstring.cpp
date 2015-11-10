@@ -832,15 +832,12 @@ ZString &ZString::duplicate(zu64 iter){
 //    return ZString(formatted.get());
 //}
 
-ZString &ZString::format(...){
-
-    return *this;
-}
-
 ZString ZString::format(ZString format, ...){
     va_list arglist;
     va_start(arglist, format);
-    ZString tmp = format.format(arglist);
+    int len = vsprintf(NULL, format.cc(), arglist);
+    char tmp[len+1];
+    vsprintf(tmp, format.cc(), arglist);
     va_end(arglist);
     return tmp;
 }
