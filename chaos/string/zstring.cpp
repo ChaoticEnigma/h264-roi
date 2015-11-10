@@ -832,14 +832,18 @@ ZString &ZString::duplicate(zu64 iter){
 //    return ZString(formatted.get());
 //}
 
-//ZString &ZString::format(...){
-//    va_list arglist;
-//    ZString fmt = data;
-//    va_start(arglist, fmt);
-//    data = format(fmt, arglist).str();
-//    va_end(arglist);
-//    return *this;
-//}
+ZString &ZString::format(...){
+
+    return *this;
+}
+
+ZString ZString::format(ZString format, ...){
+    va_list arglist;
+    va_start(arglist, format);
+    ZString tmp = format.format(arglist);
+    va_end(arglist);
+    return tmp;
+}
 
 bool ZString::charIsAlphabetic(chartype ch){
     return (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122);

@@ -46,13 +46,7 @@ public:
 
     ~ZString();
 
-//    ZString(ZStorage *stor) : ZString(){
-//        if(stor != nullptr){
-//            resize(stor->size());
-//            stor->copyBlockTo(0, stor->size(), (zbyte *)_data);
-//        }
-//    }
-
+    //! Copy constructor.
     ZString(const ZString &other);
 
     // Assumed UTF-8
@@ -287,8 +281,10 @@ public:
 
     static ZString compound(ArZ parts, ZString delim);
 
-    //ZString format(ZString fmt_str, ...);
-    //ZString &format(...);
+    //! Format this string with a variable number of arguments.
+    ZString &format(...);
+    //! Create a formatted string with \a format and variable number of arguments.
+    static ZString format(ZString format, ...);
 
     static bool charIsAlphabetic(chartype ch);
 
