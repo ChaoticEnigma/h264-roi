@@ -284,34 +284,40 @@ public:
     //! Create a formatted string with \a format and variable number of arguments.
     static ZString format(ZString format, ...);
 
+    ZString &fmtarg(ZString str);
+    ZString &operator%(ZString str){ return fmtarg(str); }
+
     static bool charIsAlphabetic(chartype ch);
 
     static bool alphaTest(ZString str1, ZString str2);
 
-    // Allows ZString to be used with std streams
+    //! Allow ZString to be used with std streams.
     friend std::ostream &operator<<(std::ostream &lhs, ZString rhs);
 
+    /*! Swap the contents of this string with another.
+     *  Does not swap allocators.
+     */
     void swap(ZString &other);
 
     inline bool isEmpty() const { return (size() == 0); }
 
-    // Number of bytes (code units)
+    //! Number of bytes (code units).
     inline zu64 realSize() const { return _realsize; }
 
+    //! Get pointer to raw bytes.
     inline const zbyte *bytes() const { return reinterpret_cast<zbyte*>(_data); }
 
-    // Number of *characters* (code points)
+    //! Number of *characters* (code points).
     zu64 length() const;
 
-    // ZString Iterator
-    //ZIterator<chartype> iterator(){
-    //    return ZIterator<chartype>(new ZStringAccessor(this));
-    //}
-
     // On empty string, will return null terminator
+    //! Get reference to the first character.
     inline chartype &first(){ return _data[0]; }
+    //! Get const reference to the first character.
     inline const chartype &first() const { return _data[0]; }
+    //! Get reference to the last character.
     inline chartype &last(){ return _data[size() - 1]; }
+    //! Get const reference to the last character.
     inline const chartype &last() const { return _data[size() - 1]; }
 
     // ZAccessor interface
