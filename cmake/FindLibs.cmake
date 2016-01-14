@@ -15,7 +15,7 @@ IF(NOT DISABLE_ZPNG)
     ENDIF()
 ENDIF()
 
-IF(NOT DIABLE_ZJPEG)
+IF(NOT DISABLE_ZJPEG)
     # Find libjpeg
     FIND_PATH(LIBJPEG_INCLUDE NAMES jpeglib.h)
     FIND_LIBRARY(LIBJPEG_LIB  NAMES libturbojpeg.a libjpeg.a)

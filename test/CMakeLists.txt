@@ -62,11 +62,17 @@ INCLUDE_DIRECTORIES(
 )
 
 # Download test images
-DownloadFile("https://www.gstatic.com/webp/gallery3/3_webp_ll.webp" dice.webp)
-DownloadFile("http://www.gstatic.com/webp/gallery/4.jpg" tree.jpg)
-DownloadArchive("https://imagetestsuite.googlecode.com/files/imagetestsuite-png-1.01.tar.gz" testpng.tar.gz)
-DownloadArchive("https://imagetestsuite.googlecode.com/files/imagetestsuite-jpg-1.00.tar.gz" testjpeg.tar.gz)
-DownloadArchive("http://www.schaik.com/pngsuite/PngSuite-2013jan13.tgz" pngsuite.tar.gz)
+IF(LIBCHAOS_WITH_PNG)
+    DownloadArchive("https://imagetestsuite.googlecode.com/files/imagetestsuite-png-1.01.tar.gz" testpng.tar.gz)
+    DownloadArchive("http://www.schaik.com/pngsuite/PngSuite-2013jan13.tgz" pngsuite.tar.gz)
+ENDIF()
+IF(LIBCHAOS_WITH_JPEG)
+    DownloadFile("http://www.gstatic.com/webp/gallery/4.jpg" tree.jpg)
+    DownloadArchive("https://imagetestsuite.googlecode.com/files/imagetestsuite-jpg-1.00.tar.gz" testjpeg.tar.gz)
+ENDIF()
+IF(LIBCHAOS_WITH_WEBP)
+    DownloadFile("https://www.gstatic.com/webp/gallery3/3_webp_ll.webp" dice.webp)
+ENDIF()
 
 ### =================== BUILD =================== ###
 
