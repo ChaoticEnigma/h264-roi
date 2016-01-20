@@ -3,7 +3,12 @@
 
 #include <stdio.h>
 
-int runTests(ZAssoc<ZString, test_func> tests);
+struct Test {
+    test_func func;
+    bool run;
+};
+
+int runTests(ZAssoc<ZString, Test> tests);
 
 int main(int argc, char **argv){
     try {
@@ -18,65 +23,63 @@ int main(int argc, char **argv){
 
         LOG("Testing LibChaos: " << LibChaosDescribe());
 
-        ZAssoc<ZString, test_func> defaulttests = {
-            { "allocator", allocator_test },
-            { "pointer", pointer_test },
-            { "storage", storage_test },
+        ZAssoc<ZString, Test> alltests = {
+            { "allocator",  { allocator_test,   true } },
+            { "pointer",    { pointer_test,     true } },
+            { "storage",    { storage_test,     true } },
 
-            { "binary", binary_test },
+            { "binary",     { binary_test,      true } },
 
-            { "array", array_test },
-            { "assoc", assoc_test },
-            { "stack", stack_test },
-            { "list", list_test },
-            { "queue", queue_test },
+            { "array",      { array_test,       true } },
+            { "assoc",      { assoc_test,       true } },
+            { "stack",      { stack_test,       true } },
+            { "list",       { list_test,        true } },
+            { "queue",      { queue_test,       true } },
 
-            { "graph", graph_test },
+            { "graph",      { graph_test,       false } },
 
-            { "hash", hash_test },
-            { "set", set_test },
-            { "map", map_test },
+            { "hash",       { hash_test,        true } },
+            { "set",        { set_test,         true } },
+            { "map",        { map_test,         true } },
 
-            { "string", string_test },
-            { "path", path_test },
-            { "json", json_test },
+            { "string",     { string_test,      true } },
+            { "path",       { path_test,        true } },
+            { "json",       { json_test,        true } },
 
-            { "thread", thread_test },
-            { "mutex", mutex_test },
+            { "thread",     { thread_test,      true } },
+            { "mutex",      { mutex_test,       true } },
 
-            { "number", number_test },
-            { "uid", uid_test },
+            { "number",     { number_test,      true } },
+            { "uid",        { uid_test,         true } },
 
-            { "file", file_test },
-            { "image", image_test },
-            { "pdf", pdf_test },
+            { "file",       { file_test,        true } },
+            { "image",      { image_test,       true } },
+            { "pdf",        { pdf_test,         true } },
+
+            { "udp",        { udp_test,         false } },
+            { "udpserver",  { udpserver_test,   false } },
+            { "tcp",        { tcp_test,         false } },
+            { "tcpserver",  { tcpserver_test,   false } },
+            { "tcpserver2", { tcpserver_test2,  false } },
+            { "tcpserver3", { tcpserver_test3,  false } },
+
+            { "sandbox",    { sandbox,          false } },
+
+            { "error",      { error_test,       false } },
         };
 
-        ZAssoc<ZString, test_func> tests = defaulttests;
-        tests.concat({
-            { "udp", udp_test },
-            { "udpserver", udpserver_test },
-            { "tcp", tcp_test },
-            { "tcpserver", tcpserver_test },
-            { "tcpserver2", tcpserver_test2 },
-            { "tcpserver3", tcpserver_test3 },
-
-            { "sandbox", sandbox },
-
-            { "error", error_test },
-        });
-
-        ZAssoc<ZString, test_func> runtests;
+        ZAssoc<ZString, Test> runtests;
         ZString runstr;
+        bool all = false;
         if(argc > 1){
             if(ZString(argv[1]) == "all"){
-                runtests = defaulttests;
-                runstr = "All";
+                all = true;
             } else {
                 for(int i = 1; i < argc; ++i){
                     ZString key = argv[i];
-                     if(tests.exists(key)){
-                        runtests.push(key, tests[key]);
+                     if(alltests.exists(key)){
+                        runtests.push(key, alltests[key]);
+                        runtests[key].run = true;
                         runstr << key << ",";
                     } else {
                         LOG("No Test " << key << ", Ignoring");
@@ -85,7 +88,11 @@ int main(int argc, char **argv){
             }
             runstr.strip(',');
         } else {
-            runtests = defaulttests;
+            all = true;
+        }
+
+        if(all){
+            runtests = alltests;
             runstr = "All";
         }
 
@@ -99,28 +106,30 @@ int main(int argc, char **argv){
     return -1;
 }
 
-int runTests(ZAssoc<ZString, test_func> tests){
+int runTests(ZAssoc<ZString, Test> tests){
     ArZ errorstrings;
     for(zu64 i = 0; i < tests.size(); ++i){
-        LOG("=== Starting Test '" << tests.key(i) << "'...");
-        int result = -1;
-        try {
-            result = tests[i]();
-        } catch(int err){
-            result = err;
-        } catch(ZException err){
-            ZString errstr = "!! Error: " + err.what();
-            errorstrings.push(errstr);
-            ELOG(errstr);
-            err.logStackTrace();
-            result = -2;
-        }
-        if(result != 0){
-            ZString errstr = "!!! Test '" + tests.key(i) + "' Failed: " + result;
-            errorstrings.push(errstr);
-            ELOG(errstr);
-        } else {
-            LOG("=== Finished Test '" << tests.key(i) << "'");
+        if(tests[i].run){
+            LOG("=== Starting Test '" << tests.key(i) << "'...");
+            int result = -1;
+            try {
+                result = tests[i].func();
+            } catch(int err){
+                result = err;
+            } catch(ZException err){
+                ZString errstr = "!! Error: " + err.what();
+                errorstrings.push(errstr);
+                ELOG(errstr);
+                err.logStackTrace();
+                result = -2;
+            }
+            if(result != 0){
+                ZString errstr = "!!! Test '" + tests.key(i) + "' Failed: " + result;
+                errorstrings.push(errstr);
+                ELOG(errstr);
+            } else {
+                LOG("=== Finished Test '" << tests.key(i) << "'");
+            }
         }
     }
     if(!errorstrings.isEmpty()){
