@@ -26,8 +26,10 @@
     #include <sys/socket.h>
     #include <ifaddrs.h>
     #include <net/if.h>
-    //#include <net/if_dl.h>
     #include <netinet/in.h>
+#if PLATFORM == MACOSX
+    #include <net/if_dl.h>
+#endif
 #endif
 
 namespace LibChaos {
