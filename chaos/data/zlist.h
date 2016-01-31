@@ -15,8 +15,8 @@
 #include <initializer_list>
 
 // For debug()
-#include "zstring.h"
-#include "zlog.h"
+//#include "zstring.h"
+//#include "zlog.h"
 
 namespace LibChaos {
 
@@ -165,18 +165,18 @@ public:
         return ZListIterator(this, _head->prev);
     }
 
-    ZString debug() const {
-        ZString str;
-        Node *current = _head;
-        for(zu64 i = 0; i < _size; ++i){
-            str += ZString::ItoS((zu64)current->prev, 16) + " ";
-            str += ZString::ItoS((zu64)current, 16);
-            str += " " + ZString::ItoS((zu64)current->next, 16);
-            str += ", ";
-            current = current->next;
-        }
-        return str;
-    }
+//    ZString debug() const {
+//        ZString str;
+//        Node *current = _head;
+//        for(zu64 i = 0; i < _size; ++i){
+//            str += ZString::ItoS((zu64)current->prev, 16) + " ";
+//            str += ZString::ItoS((zu64)current, 16);
+//            str += " " + ZString::ItoS((zu64)current->next, 16);
+//            str += ", ";
+//            current = current->next;
+//        }
+//        return str;
+//    }
 
     inline T &operator[](zu64 index){ return getNode(index)->data; }
     inline const T &operator[](zu64 index) const { return getNode(index)->data; }

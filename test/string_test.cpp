@@ -283,9 +283,9 @@ int string_test(){
     LOG(floatstr4 << " " << float4);
 
     LOG("-- String Formatting:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
-    ZString fmtstr1 = "%d - %s";
-    ZString::format(fmtstr1, 10, "tst");
-    LOG(fmtstr1);
+    ZString fmtstr1 = "%s - %s %";
+    ZString fmt1 = ZString::format(fmtstr1, { "test1", "test2" });
+    LOG(fmt1);
 
     return 0;
 }

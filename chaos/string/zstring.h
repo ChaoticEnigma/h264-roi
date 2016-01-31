@@ -9,6 +9,8 @@
 #include "ztypes.h"
 #include "zaccessor.h"
 #include "zallocator.h"
+#include "zarray.h"
+#include "zlist.h"
 #include "zassoc.h"
 #include "zhash.h"
 
@@ -281,8 +283,10 @@ public:
 
     static ZString compound(ArZ parts, ZString delim);
 
-    //! Create a formatted string with \a format and variable number of arguments.
-    static ZString format(ZString format, ...);
+    //! Format string with a variable number arguments in \a args.
+    ZString &format(ZList<ZString> args);
+    //! Create a formatted string with \a format and variable number arguments in \a args.
+    static ZString format(ZString formatstr, ZList<ZString> args);
 
     ZString &fmtarg(ZString str);
     ZString &operator%(ZString str){ return fmtarg(str); }

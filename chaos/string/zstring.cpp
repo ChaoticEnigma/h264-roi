@@ -5,6 +5,7 @@
 *******************************************************************************/
 #include "zstring.h"
 #include "zarray.h"
+#include "zlist.h"
 #include "zmath.h"
 
 // std::stringstream
@@ -17,6 +18,8 @@
 #if PLATFORM == MACOSX
     #include <math.h>
 #endif
+
+#include "zlog.h"
 
 namespace LibChaos {
 
@@ -812,34 +815,25 @@ ZString &ZString::duplicate(zu64 iter){
     return *this;
 }
 
-//ZString ZString::format(ZString fmt_str, ...){
-//    std::string fmt = fmt_str.str();
-//    int final_n, n = fmt.size() * 2; /* reserve 2 times as much as the length of the fmt_str */
-//    std::string str;
-//    std::unique_ptr<char[]> formatted;
-//    va_list ap;
-//    while(1) {
-//        formatted.reset(new char[n]); /* wrap the plain char array into the unique_ptr */
-//        strcpy(&formatted[0], fmt.c_str());
-//        va_start(ap, fmt);
-//        final_n = vsnprintf(&formatted[0], n, fmt.c_str(), ap);
-//        va_end(ap);
-//        if (final_n < 0 || final_n >= n)
-//            n += abs(final_n - n + 1);
-//        else
-//            break;
-//    }
-//    return ZString(formatted.get());
-//}
+ZString &ZString::format(ZList<ZString> args){
+    ZString str = *this;
+    ZArray<zu64> fpos = this->findAll("%");
+    zu64 off = 0;
+    for(zu64 i = 0; i < fpos.size(); ++i){
+        zu64 pos = fpos[i];
+        if(pos + 1 < size() && this->at(pos + 1) == 's'){
+            ZString arg = args.front();
+            args.popFront();
+            str.insert(pos + off, arg);
+            off += arg.size();
+        }
+    }
+    operator=(str);
+    return *this;
+}
 
-ZString ZString::format(ZString format, ...){
-    va_list arglist;
-    va_start(arglist, format);
-    int len = vsprintf(NULL, format.cc(), arglist);
-    char tmp[len+1];
-    vsprintf(tmp, format.cc(), arglist);
-    va_end(arglist);
-    return tmp;
+ZString ZString::format(ZString fmtstr, ZList<ZString> args){
+    return fmtstr.format(args);
 }
 
 bool ZString::charIsAlphabetic(chartype ch){
