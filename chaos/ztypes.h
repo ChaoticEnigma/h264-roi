@@ -229,6 +229,12 @@ static_assert(sizeof(zu64) == 8, "zu64 has incorrect size");
     static_assert(sizeof(void *) == 8, "void pointer is not 64-bit");
 #endif
 
+//! Simple exception structure.
+struct zexception {
+    zexception(const char *err) : what(err){}
+    const char *what;
+};
+
 //! Get a string describing this version of LibChaos.
 static const char *LibChaosDescribe(){
     return LIBCHAOS_DESCRIBE;

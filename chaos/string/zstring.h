@@ -116,10 +116,9 @@ public:
     friend bool operator!=(const ZString &lhs, const ZString &rhs);
 
     // Clear
-    inline void clear(){ resize(0); }
+    inline void clear(){ _resize(0); }
 
-    // Resize (IMPORTANT: memory is only allocated and initialized here)
-    void reserve(zu64 size);
+    // Basic String Manipulation
 
     //! Append \a str to string.
     ZString &append(const ZString &str);
@@ -136,6 +135,33 @@ public:
     //! Prepend \a str to string.
     ZString &prepend(const ZString &str);
 
+    //! Get \a len characters after \a pos of string.
+    ZString &substr(zu64 pos, zu64 len);
+    //! Get \a len characters after \a pos of \a str.
+    static ZString substr(ZString str, zu64 pos, zu64 len);
+
+    //! Get portion of string from \a pos to end.
+    ZString &substr(zu64 pos);
+    //! Get portion of \a str from \a pos to end.
+    static ZString substr(ZString str, zu64 pos);
+
+    //! Insert \a txt at \a pos in string.
+    ZString &insert(zu64 pos, const ZString &txt);
+    //! Insert \a txt at \a pos in \a str.
+    static ZString insert(ZString str, zu64 pos, const ZString &txt);
+
+    //! Substitute \a len characters starting at \a pos with \a after in string.
+    ZString &substitute(zu64 pos, zu64 len, const ZString &after);
+    //! Substitute \a len characters starting at \a pos with \a after in \a str.
+    static ZString substitute(ZString str, zu64 pos, zu64 len, const ZString &after);
+
+    //! Reverse the characters of the string.
+    ZString &reverse();
+    //! Reverse the characters of \a str.
+    static ZString reverse(ZString str);
+
+    // Basic String Parsing
+
     //! Count occurrences of \a test.
     zu64 count(ZString test) const;
 
@@ -146,21 +172,6 @@ public:
 
     //! Tests if string ends with \a test.
     bool endsWith(ZString test) const;
-
-    //! Insert \a txt at \a pos in string.
-    ZString &insert(zu64 pos, const ZString &txt);
-    //! Insert \a txt at \a pos in \a str.
-    static ZString insert(ZString str, zu64 pos, const ZString &txt);
-
-    //! Get portion of string from \a pos to end.
-    ZString &substr(zu64 pos);
-    //! Get portion of \a str from \a pos to end.
-    static ZString substr(ZString str, zu64 pos);
-
-    //! Get \a len characters after \a pos of string.
-    ZString &substr(zu64 pos, zu64 len);
-    //! Get \a len characters after \a pos of \a str.
-    static ZString substr(ZString str, zu64 pos, zu64 len);
 
     /*! Get location of of first occurrence of \a find in string after \a start.
      *  \return Index of first character of \a find if found, else \ref none.
@@ -176,10 +187,7 @@ public:
     //! Get locations of of all non-overlapping occurrences of \a find in \a str.
     static ZArray<zu64> findAll(const ZString &str, const ZString &find);
 
-    //! Replace section \a len characters long at \a pos with \a after in string.
-    ZString &replacePos(zu64 pos, zu64 len, const ZString &after);
-    //! Replace section \a len characters long at \a pos with \a after in \a str.
-    static ZString replacePos(ZString str, zu64 pos, zu64 len, const ZString &after);
+    // Advanced String Manipulation
 
     /*! Replace first occurence of \a before in string with \a after after \a start.
      *  \param before String to search for.
@@ -228,6 +236,8 @@ public:
     //! Get sub-string of \a str before first occurence of \a find in \a str.
     static ZString getUntil(ZString str, const ZString &find);
 
+    // Advanced String Parsing
+
     //! Get first string between \a start and \a end in string.
     ZString findFirstBetween(ZString start, ZString end);
     //! Replace first string between \a start and \a end in string with \a after.
@@ -258,9 +268,6 @@ public:
     static ZString strip(ZString str, chartype target);
 
     ZString removeWhitespace();
-
-    ZString &reverse();
-    static ZString reverse(ZString str);
 
     // Convert UPPERCASE characters to lowercase equivalents in <str>
     ZString &toLower();
@@ -334,7 +341,9 @@ public:
     inline zu64 size() const { return _size; }
 
 private:
-    void resize(zu64 len);
+    // Resize buffer (IMPORTANT: memory is only allocated and initialized here)
+    void _reserve(zu64 size);
+    void _resize(zu64 len);
     static bool _charIsWhitespace(chartype ch);
     zu64 _strReplace(const ZString &before, const ZString &after, zu64 startpos);
 

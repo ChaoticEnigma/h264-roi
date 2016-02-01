@@ -15,11 +15,6 @@
 
 namespace LibChaos {
 
-struct zexception {
-    zexception(const char *err) : what(err){}
-    const char *what;
-};
-
 struct zallocator_exception {
     zallocator_exception(const char *err) : what(err){}
     const char *what;

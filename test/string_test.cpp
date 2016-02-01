@@ -12,7 +12,13 @@ int string_test(){
     ZString str4("test4");
     ZString str5("test3test4");
 
-    LOG("-- Assign / Compare:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
+//    ZString(const char *);
+//    const char *cc() const;
+
+//    ZString(ZArray<char> bin);
+
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- Assign / Compare:"); // ///////////////////////////////////////////////////////////////////////////////////////////
 
     TASSERT(str1 != str2);
 
@@ -20,7 +26,8 @@ int string_test(){
     LOG(str1);
     TASSERT(str1 == str2);
 
-    LOG("-- Concat / Append:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- Concat / Append:"); // ////////////////////////////////////////////////////////////////////////////////////////////
 
     ZString str6 = str3.concat(str4);
     LOG(str6);
@@ -30,65 +37,8 @@ int string_test(){
     LOG(str3);
     TASSERT(str3 == str5);
 
-//    ZString(const char *);
-//    const char *cc() const;
-
-//    ZString(char, zu64 len = 1);
-
-//    ZString(zu16);
-//    ZString(zs16);
-//    ZString(zu32);
-//    ZString(zs32);
-//    ZString(zint);
-//    ZString(zuint);
-//    //explicit ZString(zsint);
-//    ZString(zu64);
-//    ZString(zs64);
-
-    LOG("-- Integer to String:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ZString itos1 = ZString::ItoS((zu64)4565464, 10);
-    LOG(itos1);
-    TASSERT(itos1 == "4565464");
-    ZString itos2 = ZString::ItoS((zs64)-980948, 16);
-    LOG(itos2);
-    TASSERT(itos2 == "-ef7d4");
-
-//    int tint() const;
-
-//    ZString(double flt, unsigned places = -1);
-
-//    ZString(ZArray<char> bin);
-
-//    char &operator[](zu64);
-
-//    zu64 size() const;
-//    inline zu64 length() const { return size(); }
-//    zu64 count(ZString) const;
-
-//    char first() const;
-//    char last() const;
-
-//    void clear();
-//    bool isEmpty() const;
-
-//    // Tests if <str> begins with <test>. Ignores whitespace at beginning of string if <ignore_whitespace>
-//    bool startsWith(ZString test, bool ignore_whitespace = true) const;
-//    // Alias for startsWith, always ignores whitespace
-//    inline bool beginsWith(ZString test) const { return startsWith(test, false); }
-
-//    // Tests if <str> ends with <test>
-//    bool endsWith(ZString test) const;
-
-    LOG("-- Insert:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ZString insert1 = "youShouldThisSentence";
-    ZString ins1 = ZString::insert(insert1, 9, "Complete");
-    ZString ins1_1 = insert1.insert(9, "Complete");
-    LOG(ins1);
-    TASSERT(ins1 == "youShouldCompleteThisSentence" && ins1 == ins1_1);
-
-    LOG("-- Substr:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- Substr:"); // /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ZString substr1 = "youShouldTakeTheRestOfThisString";
     ZString sub1 = ZString::substr(substr1, 16);
@@ -102,7 +52,34 @@ int string_test(){
     LOG(sub2);
     TASSERT(sub2 == "ME!" && sub2 == sub2_1);
 
-    LOG("-- Find:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- Insert:"); // /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ZString insert1 = "youShouldThisSentence";
+    ZString ins1 = ZString::insert(insert1, 9, "Complete");
+    ZString ins1_1 = insert1.insert(9, "Complete");
+    LOG(ins1);
+    TASSERT(ins1 == "youShouldCompleteThisSentence" && ins1 == ins1_1);
+
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- Replace:"); // ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ZString replace1 = "anotherInterestingStringWithInterestingThings";
+    ZString rep1 = ZString::substitute(replace1, 5, 20, "!!!!!");
+    LOG(rep1);
+    TASSERT(rep1 == "anoth!!!!!ithInterestingThings");
+
+    replace1.substitute(0, 15, "!!!");
+    LOG(replace1);
+    TASSERT(replace1 == "!!!ingStringWithInterestingThings");
+
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- Find:"); // ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//    zu64 count(ZString) const;
+//    bool startsWith(ZString test, bool ignore_whitespace = true) const;
+//    inline bool beginsWith(ZString test) const { return startsWith(test, false); }
+//    bool endsWith(ZString test) const;
 
     ZString find1("someInterestingString");
     zu64 pos1 = find1.findFirst("est");
@@ -133,16 +110,8 @@ int string_test(){
     RLOG(ZLog::newln);
     TASSERT(pos4.size() == 2 && pos4[0] == 12 && pos4[1] == 37);
 
-    LOG("-- Replace:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ZString replace1 = "anotherInterestingStringWithInterestingThings";
-    ZString rep1 = ZString::replacePos(replace1, 5, 20, "!!!!!");
-    LOG(rep1);
-    TASSERT(rep1 == "anoth!!!!!ithInterestingThings");
-
-    replace1.replacePos(0, 15, "!!!");
-    LOG(replace1);
-    TASSERT(replace1 == "!!!ingStringWithInterestingThings");
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- Replace:"); // ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ZString replace2 = "strposposposposdddddddd";
     ZString rep2 = ZString::replaceRecursive(replace2, "strpos", "bbbstr");
@@ -168,7 +137,6 @@ int string_test(){
     LOG(rep5);
     TASSERT(rep5 == "ttttssssss");
 
-//    // Get sub-string of <str> before first occurence of <find> in <str>
 //    static ZString getUntil(ZString str, ZString find);
 
 //    ZString findFirstBetween(ZString, ZString);
@@ -178,15 +146,11 @@ int string_test(){
 //    ZString label(ZString label, ZString value, bool modify = true);
 //    ZString label(AsArZ, bool modify = true);
 
-//    // Strip occurences of <target> from beginning and end of <str>
 //    ZString &strip(char target);
 //    static ZString strip(ZString str, char target);
 
 //    ZString removeWhitespace();
 
-//    ZString invert(bool modify = true);
-
-//    // Convert UPPERCASE characters to lowercase equivalents in <str>
 //    ZString &toLower();
 //    static ZString toLower(ZString str);
 
@@ -194,9 +158,11 @@ int string_test(){
 //    ZString popLast();
 //    static ZString compound(ArZ parts, ZString delim);
 
-//    ArZ split(ZString delim);
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- Explode / Compound:"); // /////////////////////////////////////////////////////////////////////////////////////////
 
-    LOG("-- Explode / Compound:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
+//    ArZ split(ZString delim);
+//    ArZ explodeList(unsigned nargs, ...);
 
     ZString strarr = "this!will!!explode!";
     ArZ arr1 = strarr.explode('!');
@@ -233,11 +199,11 @@ int string_test(){
     TASSERT(arr5.size() == 4 && arr5[0] == "these" && arr5[1] == "will" && arr5[2] == "all" && arr5[3] == "explode");
     TASSERT(cmp5 == "these-will-all-explode");
 
-//    ArZ explodeList(unsigned nargs, ...);
-
 //    bool isUtf8(ZString);
-
 //    static bool alphaTest(ZString str1, ZString str2);
+
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- String Iterators:"); // //////////////////////////////////////////////////////////////////////////////////////////
 
     ZString iterstr1 = "abcdefghijklmnopqrstuvwxyz";
     ZString iterstr2;
@@ -252,7 +218,19 @@ int string_test(){
     //}
     LOG(iterstr3);
 
-    LOG("-- Number Conversion:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- Number Conversion:"); // //////////////////////////////////////////////////////////////////////////////////////////
+
+//    int tint() const;
+//    ZString(double flt, unsigned places = -1);
+
+    ZString itos1 = ZString::ItoS((zu64)4565464, 10);
+    LOG(itos1);
+    TASSERT(itos1 == "4565464");
+
+    ZString itos2 = ZString::ItoS((zs64)-980948, 16);
+    LOG(itos2);
+    TASSERT(itos2 == "-ef7d4");
 
     ZString numstr1 = "3345";
     zu64 num1 = numstr1.tozu64();
@@ -282,9 +260,11 @@ int string_test(){
     float float4 = floatstr4.toFloat();
     LOG(floatstr4 << " " << float4);
 
-    LOG("-- String Formatting:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
-    ZString fmtstr1 = "%s - %s %";
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- String Formatting:"); // //////////////////////////////////////////////////////////////////////////////////////////
+    ZString fmtstr1 = "%s - %s";
     ZString fmt1 = ZString::format(fmtstr1, { "test1", "test2" });
+    TASSERT(fmt1 == "test1 - test2");
     LOG(fmt1);
 
     return 0;
@@ -328,7 +308,7 @@ int string_magic_block(){
     //tst2.replaceEach("that", "taat", 1);
     //LOG(tst2);
     ZString tst3 = "sdfgdfgdfgdfgdfgdfg";
-    tst3.replacePos(3, 5, "ZZZZ");
+    tst3.substitute(3, 5, "ZZZZ");
     LOG(tst3);
     return 0;
 }

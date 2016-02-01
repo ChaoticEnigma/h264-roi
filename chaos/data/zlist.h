@@ -37,6 +37,7 @@ public:
 
 public:
     ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _size(0), _head(nullptr){}
+
     ZList(std::initializer_list<T> ls) : ZList(){
         for(auto item = ls.begin(); item < ls.end(); ++item)
             pushBack(*item);
@@ -45,6 +46,15 @@ public:
     ZList(const T *data, zu64 size) : ZList(){
         for(zu64 i = 0; i < size; ++i)
             pushBack(data[i]);
+    }
+
+    //! ZList copy constructor.
+    ZList(const ZList<T> &other) : ZList(){
+        Node *current = other._head;
+        for(zu64 i = 0; current != nullptr && i < other.size(); ++i){
+            pushBack(current->data);
+            current = current->next;
+        }
     }
 
     ~ZList(){
@@ -181,10 +191,26 @@ public:
     inline T &operator[](zu64 index){ return getNode(index)->data; }
     inline const T &operator[](zu64 index) const { return getNode(index)->data; }
 
-    inline T &front(){ return _head->data; }
-    inline const T &front() const { return _head->data; }
-    inline T &back(){ return _head->prev->data; }
-    inline const T &back() const { return _head->prev->data; }
+    inline T &front(){
+        if(_head == nullptr)
+            throw zexception("Cannot reference head of empty ZList");
+        return _head->data;
+    }
+    inline const T &front() const {
+        if(_head == nullptr)
+            throw zexception("Cannot reference head of empty ZList");
+        return _head->data;
+    }
+    inline T &back(){
+        if(_head == nullptr)
+            throw zexception("Cannot reference back of empty ZList");
+        return _head->prev->data;
+    }
+    inline const T &back() const {
+        if(_head == nullptr)
+            throw zexception("Cannot reference back of empty ZList");
+        return _head->prev->data;
+    }
 
     inline bool isEmpty() const { return (_size == 0); }
     inline zu64 size() const { return _size; }

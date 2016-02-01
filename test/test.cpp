@@ -100,8 +100,13 @@ int main(int argc, char **argv){
         int ret = runTests(runtests);
         LOG("*** Finished Tests \"" << runstr << "\"");
         return ret;
+
     } catch(ZException e){
         printf("Catastrophic Failure: %s - %d\n%s\n", e.what().cc(), e.code(), e.traceStr().cc());
+    } catch(zexception e){
+        printf("CATACLYSMIC FAILURE: %s\n", e.what);
+    } catch(zallocator_exception e){
+        printf("Allocator Failure: %s\n", e.what);
     }
     return -1;
 }

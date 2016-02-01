@@ -34,7 +34,7 @@ ZString::~ZString(){
 }
 
 ZString::ZString(const ZString &other) : ZString(){
-    resize(other._size);
+    _resize(other._size);
     if(other._size && other._data)
         _alloc->rawcopy(other._data, _data, other._size);
 }
@@ -50,7 +50,7 @@ ZString::ZString(const chartype *str) : ZString(){
 }
 
 ZString::ZString(const ZString::chartype *ptr, zu64 length) : ZString(){
-    resize(length);
+    _resize(length);
     if(length && ptr)
         _alloc->rawcopy(ptr, _data, length);
 }
@@ -86,7 +86,7 @@ std::wstring ZString::wstr() const {
 }
 
 ZString::ZString(ZString::chartype ch, zu64 len) : ZString(){
-    resize(len);
+    _resize(len);
     if(len)
         for(zu64 i = 0; i < len; ++i)
             _data[i] = ch;
@@ -96,7 +96,7 @@ ZString ZString::ItoS(zu64 value, zu8 base, zu64 pad){
     ZString buffer;
     if(base < 2 || base > 16)
         return buffer;
-    buffer.reserve(35);
+    buffer._reserve(35);
     zu64 quotient = value;
     do {
         buffer += "0123456789abcdef"[ZMath::abs((zs64)(quotient % base))];
@@ -201,29 +201,22 @@ ZString::ZString(double num, unsigned places) : ZString(){
 }
 
 ZString &ZString::assign(const ZString &other){
-    resize(other.size());
+    _resize(other.size());
     if(other.size())
         _alloc->rawcopy(other._data, _data, other.size());
     return *this;
 }
 
-void ZString::reserve(zu64 size){
-    if(size > _realsize || _data == nullptr){ // Only reallocate if new size is larger than buffer
-        // TEST: newsize, but always leave extra space for null terminator, but don't count null terminator in realsize
-        zu64 newsize = MAX(_realsize * 2, size);
-        chartype *buff = _alloc->alloc(newsize + 1); // New size + null terminator
-        _alloc->rawcopy(_data, buff, _size); // Copy data to new buffer
-        // Update new buffer size
-        _realsize = newsize;
-        _alloc->dealloc(_data); // Delete old buffer
-        _data = buff;
-    }
-}
+//
+// Basic String Manipulation
+//
 
 ZString &ZString::append(const ZString &str){
     if(str.size()){
         zu64 oldsize = size();
-        resize(oldsize + str.size());
+        // Resize buffer
+        _resize(oldsize + str.size());
+        // Raw copy other string to end
         _alloc->rawcopy(str._data, _data + oldsize, str.size());
     }
     return *this;
@@ -238,12 +231,99 @@ ZString ZString::concat(const ZString &str) const {
 ZString &ZString::prepend(const ZString &str){
     if(str.size()){
         zu64 oldsize = size();
-        resize(str.size() + oldsize);
+        // Resize buffer
+        _resize(str.size() + oldsize);
+        // Raw move string to end
         _alloc->rawmove(_data, _data + str.size(), oldsize);
+        // Raw copy other string to beginning
         _alloc->rawcopy(str._data, _data, str.size());
     }
     return *this;
 }
+
+ZString &ZString::substr(zu64 pos, zu64 len){
+    if(pos < size()){
+        len = MIN(len, size() - pos);
+        // Construct new string from range and assign
+        assign(ZString(_data + pos, len));
+    } else {
+        clear();
+    }
+    return *this;
+}
+
+ZString ZString::substr(ZString str, zu64 pos, zu64 len){
+    if(pos >= str.size() || len == 0)
+        return ZString();
+    return str.substr(pos, len);
+}
+
+ZString &ZString::substr(zu64 pos){
+    substr(pos, none);
+    return *this;
+}
+
+ZString ZString::substr(ZString str, zu64 pos){
+    return str.substr(pos);
+}
+
+ZString &ZString::insert(zu64 pos, const ZString &txt){
+    if(txt.size()){
+        pos = MIN(pos, size());
+        // Get end of string after pos
+        ZString after = substr(*this, pos);
+        // Truncate to pos
+        _resize(pos);
+        // Append other string
+        append(txt);
+        // Append end of string
+        append(after);
+    }
+    return *this;
+}
+
+ZString ZString::insert(ZString str, zu64 pos, const ZString &txt){
+    return str.insert(pos, txt);
+}
+
+ZString &ZString::substitute(zu64 pos, zu64 len, const ZString &after){
+    len = MIN(len, size() - pos);
+    // Get end of string after range
+    ZString part2 = substr(*this, pos + len);
+    // Truncate to pos
+    _resize(pos);
+    // Append other string
+    append(after);
+    // Append end of string
+    append(part2);
+    return *this;
+}
+
+ZString ZString::substitute(ZString str, zu64 pos, zu64 len, const ZString &after){
+    return str.substitute(pos, len, after);
+}
+
+// BUG: ZString reverse does not support UTF-8
+ZString &ZString::reverse(){
+    ZString buff;
+    // Size temporary buffer
+    buff._resize(size());
+    // Copy characters in reverse order
+    for(zu64 i = size(), j = 0; i > 0; --i, ++j){
+        buff[j] = _data[i-1];
+    }
+    // Swap buffers
+    swap(buff);
+    return *this;
+}
+
+ZString ZString::reverse(ZString str){
+    return str.reverse();
+}
+
+//
+// Basic String Parsing
+//
 
 zu64 ZString::count(ZString test) const {
     ZString haystack = _data;
@@ -298,45 +378,6 @@ bool ZString::endsWith(ZString test) const {
     return test == end;
 }
 
-ZString &ZString::insert(zu64 pos, const ZString &txt){
-    if(txt.size()){
-        pos = MIN(pos, size());
-        ZString after = substr(*this, pos);
-        resize(pos);
-        append(txt).append(after);
-    }
-    return *this;
-}
-
-ZString ZString::insert(ZString str, zu64 pos, const ZString &txt){
-    return str.insert(pos, txt);
-}
-
-ZString &ZString::substr(zu64 pos){
-    substr(pos, none);
-    return *this;
-}
-
-ZString ZString::substr(ZString str, zu64 pos){
-    return str.substr(pos);
-}
-
-ZString &ZString::substr(zu64 pos, zu64 len){
-    if(pos < size()){
-        len = MIN(len, size() - pos);
-        assign(ZString(_data + pos, len));
-    } else {
-        clear();
-    }
-    return *this;
-}
-
-ZString ZString::substr(ZString str, zu64 pos, zu64 len){
-    if(pos >= str.size() || len == 0)
-        return ZString();
-    return str.substr(pos, len);
-}
-
 zu64 ZString::findFirst(const ZString &find, zu64 start) const {
     if(find.size() && find.size() <= size() && start < size()){
         zu64 startpos = 0;
@@ -379,17 +420,9 @@ ZArray<zu64> ZString::findAll(const ZString &str, const ZString &find){
     return str.findAll(find);
 }
 
-ZString &ZString::replacePos(zu64 pos, zu64 len, const ZString &after){
-    len = MIN(len, size() - pos);
-    ZString part2 = substr(*this, pos + len);
-    resize(pos);
-    append(after).append(part2);
-    return *this;
-}
-
-ZString ZString::replacePos(ZString str, zu64 pos, zu64 len, const ZString &after){
-    return str.replacePos(pos, len, after);
-}
+//
+// Advanced String Manipulation
+//
 
 ZString &ZString::replaceFirst(const ZString &before, const ZString &after, zu64 start){
     if(before.size() > size() || before == after)
@@ -720,7 +753,7 @@ ArZ ZString::escapedExplode(char delim) const {
     return out;
 }
 
-// Fixes syntax highlighting
+// Fixes syntax highlighting with va_args
 #ifndef BUILDING
     #define VAARGTYPE NULL
 #else
@@ -778,20 +811,6 @@ ZString ZString::removeWhitespace(){
     return *this;
 }
 
-ZString &ZString::reverse(){
-    ZString buff;
-    buff.reserve(size());
-    for(zu64 i = size(); i > 0; --i){
-        buff += _data[i-1];
-    }
-    swap(buff);
-    return *this;
-}
-
-ZString ZString::reverse(ZString str){
-    return str.reverse();
-}
-
 ZString &ZString::toLower(){
     for(zu64 i = 0; i < size(); ++i){
         // Custom tolower()
@@ -817,15 +836,19 @@ ZString &ZString::duplicate(zu64 iter){
 
 ZString &ZString::format(ZList<ZString> args){
     ZString str = *this;
-    ZArray<zu64> fpos = this->findAll("%");
+    // Find all '%' control characters
+    ZArray<zu64> fpos = findAll("%");
     zu64 off = 0;
     for(zu64 i = 0; i < fpos.size(); ++i){
         zu64 pos = fpos[i];
-        if(pos + 1 < size() && this->at(pos + 1) == 's'){
+        // Insert each string argument
+        if(pos + 1 < size() && at(pos + 1) == 's'){
             ZString arg = args.front();
             args.popFront();
-            str.insert(pos + off, arg);
+            // Replace control characters with argument
+            str.substitute(pos + off, 2, arg);
             off += arg.size();
+            off -= 2;
         }
     }
     operator=(str);
@@ -866,7 +889,7 @@ void ZString::swap(ZString &other){
 }
 
 zu64 ZString::length() const {
-    // This is wrong, WIP
+    // TODO: This is wrong, WIP
     return size();
 }
 
@@ -874,8 +897,21 @@ zu64 ZString::length() const {
 // Private functions
 // ///////////////////////////////////////////////////////////////////////////////
 
-void ZString::resize(zu64 len){
-    reserve(len);
+void ZString::_reserve(zu64 size){
+    if(size > _realsize || _data == nullptr){ // Only reallocate if new size is larger than buffer
+        // TEST: newsize, but always leave extra space for null terminator, but don't count null terminator in realsize
+        zu64 newsize = MAX(_realsize * 2, size);
+        chartype *buff = _alloc->alloc(newsize + 1); // New size + null terminator
+        _alloc->rawcopy(_data, buff, _size); // Copy data to new buffer
+        // Update new buffer size
+        _realsize = newsize;
+        _alloc->dealloc(_data); // Delete old buffer
+        _data = buff;
+    }
+}
+
+void ZString::_resize(zu64 len){
+    _reserve(len);
     // If the new size is smaller, just change size
     _size = len;
     _data[_size] = 0; // Always null terminate
@@ -888,7 +924,7 @@ bool ZString::_charIsWhitespace(chartype ch){
 zu64 ZString::_strReplace(const ZString &before, const ZString &after, zu64 startpos){
     zu64 pos = findFirst(before, startpos);
     if(pos != none)
-        replacePos(pos, before.size(), after);
+        substitute(pos, before.size(), after);
     return pos;
 }
 
