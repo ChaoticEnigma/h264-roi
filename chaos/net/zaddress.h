@@ -148,8 +148,9 @@ public:
 
     bool populate(sockaddr_storage *ptr) const;
 
+    //! Get a string describing the address in the form [addr]:port,family,type,protocol.
     ZString debugStr() const {
-        return ZString() + '[' + str() + "]:" + _port + ',' + _family + '-' + _type + '-' + _protocol;
+        return ZString() + '[' + str() + "]:" + port() + ',' + family() + '-' + type() + '-' + protocol();
     }
 
 private:

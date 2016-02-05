@@ -51,6 +51,7 @@ bool ZSocket::getSocket(zsocktype &fd, ZAddress addr){
 }
 
 bool ZSocket::open(ZAddress addr){
+    // Initialize sockets if needed
     if(socket_count <= 0)
         InitializeSockets();
     ++socket_count;
@@ -61,16 +62,21 @@ bool ZSocket::open(ZAddress addr){
     }
     bool ok = false;
     addr.setType(_type);
+
+    // Loop up address/hostname
     ZArray<ZAddress> addrs = ZAddress::lookUp(addr);
     for(zu64 i = 0; i < addrs.size(); ++i){
+        // Try addresses
         DLOG("ZSocket::open Trying " + addrs[i].debugStr());
         if(!getSocket(_socket, addrs[i]))
             continue;
 
+        // Set SO_REUSEADDR option if requested
         if(reuseaddr){
             setSocketOption(SocketOptions::reuseaddr, 1);
         }
 
+        // Try to bind socket
         sockaddr_storage addrstorage;
         addrs[i].populate(&addrstorage);
         if(::bind(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
@@ -83,6 +89,7 @@ bool ZSocket::open(ZAddress addr){
 
         LOG("Bound socket " << _socket);
     }
+    // Could not bind socket with any available addres
     if(!ok){
         ELOG("ZSocket: could not create and bind socket on any address");
         return false;
