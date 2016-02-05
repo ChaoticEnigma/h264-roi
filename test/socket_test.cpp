@@ -64,11 +64,12 @@ int udpserver_test(){
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZDatagramSocket sock;
-    ZAddress bind(8080);
+    ZAddress bind(8998);
     ELOG(bind.debugStr());
     if(!sock.open(bind)){
         ELOG("Socket Open Fail");
-        return 2;
+        ELOG(sock.getError().what());
+        TASSERT(false);
     }
 
     //sock.setBlocking(false);
