@@ -146,6 +146,9 @@ public:
 
     static ZArray<ZAddress> lookUp(ZAddress name);
 
+    /*! Populate the sockaddr_storage struct \a ptr with the necessary values from this ZAddress.
+     *  \note \a ptr is zeroed before population.
+     */
     bool populate(sockaddr_storage *ptr) const;
 
     //! Get a string describing the address in the form [addr]:port,family,type,protocol.
