@@ -41,6 +41,7 @@ ZSocket::~ZSocket(){
 }
 
 bool ZSocket::getSocket(zsocktype &fd, ZAddress addr){
+    DLOG("ZSocket::getSocket " + addr.familyStr() + " " + addr.typeStr() + " " + addr.protocolStr());
     fd = ::socket(addr.family(), addr.type(), addr.protocol());
     if(fd <= 0){
         ELOG("ZSocket: failed to create socket: " + ZError::getSystemError());
@@ -80,7 +81,7 @@ bool ZSocket::open(ZAddress addr){
         sockaddr_storage addrstorage;
         addrs[i].populate(&addrstorage);
         if(::bind(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
-            ELOG("ZSocket: bind error - " + ZError::getSystemError());
+            ELOG("ZSocket: failed to bind " +  addrs[i].debugStr() + " - error " + ZError::getSystemError());
             close();
             continue;
         }

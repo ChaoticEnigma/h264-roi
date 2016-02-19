@@ -150,12 +150,32 @@ ZAddress::~ZAddress(){
     //delete _sockaddress;
 }
 
-zu16 ZAddress::port() const {
-    return _port;
+ZString ZAddress::familyStr() const {
+    switch(_family){
+    case hostname:  return "Unspecified";
+    case unix:      return "UNIX";
+    case ipv4:      return "IPv4";
+    case ipv6:      return "IPv6";
+    default:        return "Unknwon";
+    }
 }
 
-int ZAddress::family() const {
-    return _family;
+ZString ZAddress::typeStr() const {
+    switch(_type){
+    case SOCK_STREAM: return "SOCK_STREAM";
+    case SOCK_DGRAM:  return "SOCK_DGRAM";
+    case SOCK_RAW:    return "SOCK_RAW";
+    default:          return "Unknown";
+    }
+}
+
+ZString ZAddress::protocolStr() const {
+    switch(_protocol){
+    case ip:    return "IP";
+    case tcp:   return "TCP";
+    case udp:   return "UDP";
+    default:    return "Unknown";
+    }
 }
 
 ZString ZAddress::str() const {

@@ -74,16 +74,16 @@ protected:
 class ZAddress : private ZAddressData {
 public:
     enum address_family {
+        hostname = AF_UNSPEC,
+        unix = AF_UNIX,
         ipv4 = AF_INET,
         ipv6 = AF_INET6,
-        hostname = AF_UNSPEC,
-        unix = AF_UNIX
     };
 
     enum protocol_type {
         ip = IPPROTO_IP,
         tcp = IPPROTO_TCP,
-        udp = IPPROTO_UDP
+        udp = IPPROTO_UDP,
     };
 
     ZAddress();
@@ -118,15 +118,20 @@ public:
         return !operator==(rhs);
     }
 
-    zport port() const;
+    zport port() const {
+        return _port;
+    }
     void setPort(zport port){
         _port = port;
     }
 
-    int family() const;
+    int family() const {
+        return _family;
+    }
     bool isName() const {
         return _family == hostname;
     }
+    ZString familyStr() const;
 
     int type() const {
         return _type;
@@ -134,6 +139,7 @@ public:
     void setType(int set){
         _type = set;
     }
+    ZString typeStr() const;
 
     int protocol() const {
         return _protocol;
@@ -141,6 +147,7 @@ public:
     void setProtocol(int set){
         _protocol = set;
     }
+    ZString protocolStr() const;
 
     ZString str() const;
 
