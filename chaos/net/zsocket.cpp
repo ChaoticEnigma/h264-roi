@@ -144,7 +144,7 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
     return (zu64)sent == data.size();
 }
 
-zu64 ZSocket::receive(ZAddress &sender, ZBinary &str){
+zu64 ZSocket::receive(ZAddress &sender, ZBinary &data){
     if(!isOpen()){
         ELOG("ZSocket: socket is not open");
         return 0;
@@ -159,12 +159,17 @@ zu64 ZSocket::receive(ZAddress &sender, ZBinary &str){
 #else
     long received = ::recvfrom(_socket, buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromLength);
 #endif
-    if(received <= 0)
+    if(received < 0){
+        ELOG("ZSocket:receive error - " + ZError::getSystemError());
         return 0;
-    sender = ZAddress(&from);
-    //sender = ZAddress(ntohl(from.sin_addr.s_addr), ntohs(from.sin_port));
-    str = ZBinary(buffer, (zu64)received);
-    return (zu64)received;
+    } else if(received == 0){
+        return 0;
+    } else {
+        sender = ZAddress(&from);
+        //sender = ZAddress(ntohl(from.sin_addr.s_addr), ntohs(from.sin_port));
+        data = ZBinary(buffer, (zu64)received);
+        return (zu64)received;
+    }
 }
 
 bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){

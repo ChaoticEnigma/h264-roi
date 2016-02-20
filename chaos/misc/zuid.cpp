@@ -154,14 +154,16 @@ ZUID::uuidtype ZUID::getType() const {
     }
 }
 
-ZString ZUID::str() const {
+ZString ZUID::str(bool separate, ZString delim) const {
     ZString uid;
     for(zu8 i = 0; i < 16; ++i)
         uid += ZString::ItoS(_id_octets[i], 16, 2);
-    uid.insert(8, "-");
-    uid.insert(8 + 1 + 4, "-");
-    uid.insert(8 + 1 + 4 + 1 + 4, "-");
-    uid.insert(8 + 1 + 4 + 1 + 4 + 1 + 4, "-");
+    if(separate){
+        uid.insert(8, delim);
+        uid.insert(8 + 1 + 4, delim);
+        uid.insert(8 + 1 + 4 + 1 + 4, delim);
+        uid.insert(8 + 1 + 4 + 1 + 4 + 1 + 4, delim);
+    }
     return uid;
 }
 

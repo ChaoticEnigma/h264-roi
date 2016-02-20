@@ -26,10 +26,11 @@ namespace LibChaos {
 class ZSocket {
 public:
     enum socket_type {
-        stream = SOCK_STREAM,
-        datagram = SOCK_DGRAM,
-        raw = SOCK_RAW
+        STREAM = SOCK_STREAM,
+        DATAGRAM = SOCK_DGRAM,
+        RAW = SOCK_RAW
     };
+
     struct SocketOptions {
         enum socketoption {
             reuseaddr = 1,
@@ -41,15 +42,29 @@ public:
     ZSocket(socket_type type);
     ~ZSocket();
 
+    //! Open the socket.
     bool open(ZAddress port);
+    //! Close the socket.
     void close();
+    //! Get if socket is open.
     bool isOpen() const;
 
     // UDP
+    /*! Send a datagram to \a destination with \a data.
+     * \return True on success.
+     */
     bool send(ZAddress destination, const ZBinary &data);
-    zu64 receive(ZAddress &sender, ZBinary &str);
+    /*! Receive a datagram, put the source address in \a sender, and datagram's data in \a data.
+     * \return Size of \a data.
+     */
+    zu64 receive(ZAddress &sender, ZBinary &data);
 
     // TCP
+    /*! Establish a stream connection with \a addr.
+     * \param[in]  addr     Remote address.
+     * \param[out] connfd   Connection socket.
+     * \param[out] connaddr Connection address.
+     */
     bool connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr);
     bool listen();
     bool accept(zsocktype &connfd, ZAddress &connaddr);

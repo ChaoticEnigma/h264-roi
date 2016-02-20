@@ -31,7 +31,7 @@ int udp_test(){
     //ZAddress addr("192.168.1.89", 8998);
     //ZAddress addr("192.168.1.72", 8998);
 
-    ZString dat = "hello world out there! ";
+    ZString dat = "Hello World out there! ";
     zu64 count = 0;
 
     for(zu64 i = 0; run && i < 5000; ++i){
@@ -65,10 +65,9 @@ int udpserver_test(){
 
     ZDatagramSocket sock;
     ZAddress bind(8998);
-    ELOG(bind.debugStr());
+    DLOG(bind.debugStr());
     if(!sock.open(bind)){
-        ELOG("Socket Open Fail");
-        ELOG(sock.getError().what());
+        ELOG("Socket Open Fail " + sock.getError().what());
         TASSERT(false);
     }
 

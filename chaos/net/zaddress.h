@@ -74,16 +74,16 @@ protected:
 class ZAddress : private ZAddressData {
 public:
     enum address_family {
-        hostname = AF_UNSPEC,
-        unix = AF_UNIX,
-        ipv4 = AF_INET,
-        ipv6 = AF_INET6,
+        HOSTNAME = AF_UNSPEC,
+        UNIX = AF_UNIX,
+        IPV4 = AF_INET,
+        IPV6 = AF_INET6,
     };
 
     enum protocol_type {
-        ip = IPPROTO_IP,
-        tcp = IPPROTO_TCP,
-        udp = IPPROTO_UDP,
+        IP = IPPROTO_IP,
+        TCP = IPPROTO_TCP,
+        UDP = IPPROTO_UDP,
     };
 
     ZAddress();
@@ -98,9 +98,9 @@ public:
     ZAddress(const sockaddr_storage *);
     ZAddress(const sockaddr *sa);
 
-    ZAddress &operator=(ZAddress rhs);
-
     ~ZAddress();
+
+    ZAddress &operator=(ZAddress rhs);
 
     inline bool operator==(const ZAddress &rhs) const {
         if(     this->_family == rhs._family &&
@@ -129,7 +129,7 @@ public:
         return _family;
     }
     bool isName() const {
-        return _family == hostname;
+        return _family == HOSTNAME;
     }
     ZString familyStr() const;
 

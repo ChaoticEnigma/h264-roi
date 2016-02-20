@@ -45,7 +45,7 @@ public:
     uuidtype getType() const;
 
     //! Get hexadecimal UUID string.
-    ZString str() const;
+    ZString str(bool separate = true, ZString delim = "-") const;
     //! Get binary container object.
     ZBinary bin() const;
     //! Get pointer to raw 16-octet UUID.

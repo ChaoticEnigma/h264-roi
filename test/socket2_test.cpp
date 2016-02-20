@@ -409,7 +409,7 @@ int tcpserver_test3(){
 //        return 3;
 //    }
 
-    ZSocket listensock(ZSocket::stream);
+    ZSocket listensock(ZSocket::STREAM);
     if(!listensock.open(ZAddress(8080))){
         ELOG("Open fail");
         return 5;

@@ -7,7 +7,7 @@
 
 namespace LibChaos {
 
-ZStreamSocket::ZStreamSocket() : ZSocket(ZSocket::stream){
+ZStreamSocket::ZStreamSocket() : ZSocket(ZSocket::STREAM){
 
 }
 

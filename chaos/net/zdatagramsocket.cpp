@@ -7,7 +7,7 @@
 
 namespace LibChaos {
 
-ZDatagramSocket::ZDatagramSocket() : ZSocket(ZSocket::datagram){
+ZDatagramSocket::ZDatagramSocket() : ZSocket(ZSocket::DATAGRAM){
     allowRebind(true);
 }
 
