@@ -27,11 +27,8 @@ int udp_test(){
     LOG("Sending...");
 
     ZAddress addr("127.0.0.1", 8998);
-    //ZAddress addr("192.168.1.38", 8998);
-    //ZAddress addr("192.168.1.89", 8998);
-    //ZAddress addr("192.168.1.72", 8998);
 
-    ZString dat = "Hello World out there! ";
+    ZString dat = "Hello World out There! ";
     zu64 count = 0;
 
     for(zu64 i = 0; run && i < 5000; ++i){
