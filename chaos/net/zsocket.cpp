@@ -42,7 +42,7 @@ ZSocket::~ZSocket(){
 
 bool ZSocket::getSocket(zsocktype &fd, int type, int proto){
     //DLOG("ZSocket::getSocket " + addr.familyStr() + " " + addr.typeStr() + " " + addr.protocolStr());
-    //DLOG("ZSocket::getSocket " + addr.familyStr());
+    DLOG("ZSocket::getSocket " << type + " " + proto);
     fd = ::socket(AF_INET, _type, proto);
     if(fd <= 0){
         ELOG("ZSocket: failed to create socket: " + ZError::getSystemError());

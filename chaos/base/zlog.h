@@ -17,19 +17,19 @@
 #define ZLOG_PREFUNC LibChaos::ZString(__FUNCTION__)
 
 #if LIBCHAOS_BUILD == LIBCHAOS_RELEASE
-    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::NORMAL) << A
+    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO) << A
     #define DLOG(A) LibChaos::ZLog(LibChaos::ZLog::DEBUG) << A
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS) << A
-    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLog::NORMAL) << LibChaos::ZLog::raw << A
-    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLog::NORMAL) << LibChaos::ZLog::this_thread << A
-    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLog::NORMAL) << LibChaos::ZLog::stdio << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERROR) << A
+    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO) << LibChaos::ZLog::RAW << A
+    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO) << LibChaos::ZLog::THIS_THREAD << A
+    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO) << LibChaos::ZLog::STDIO << A
 #else
-    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
     #define DLOG(A) LibChaos::ZLog(LibChaos::ZLog::DEBUG, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
-    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLog::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::raw << A
-    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLog::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::this_thread << A
-    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLog::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::stdio << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERROR, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::RAW << A
+    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::THIS_THREAD << A
+    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::STDIO << A
 #endif
 #define ORLOG(A) OLOG(LibChaos::ZLog::raw << A)
 
@@ -40,13 +40,13 @@ namespace LibChaos {
 
 struct ZLogInfo {
     enum info_type {
-        FILE        = 1,
-        LINE        = 2,
-        FUNCTION    = 3,
-        CLOCK       = 4,
-        DATE        = 5,
-        TIME        = 6,
-        THREAD      = 7,
+        FILE        = 1,    // File name
+        LINE        = 2,    // Line number
+        FUNCTION    = 3,    // Function name
+        CLOCK       = 4,    // Time since program start (hh:mm:ss.mmm)
+        DATE        = 5,    // Current date
+        TIME        = 6,    // Current time (hh:mm:ss)
+        THREAD      = 7,    // Thread number
     };
 
     ZLogInfo(info_type logtype, ZString loginfo) : type(logtype), info(loginfo){}
@@ -55,37 +55,40 @@ struct ZLogInfo {
     ZString info;
 };
 
-//! Logging provider.
+//! Formats a log entry and queues it with a ZLogWorker.
 class ZLog {
 public:
     typedef ZLogWorker::LogJob LogJob;
+    typedef int zlog_level;
 
-    enum zlog_source {
-        NORMAL  = 1,
-        DEBUG   = 2,
-        ERRORS  = 3,
-        ALL     = 4,
+    // Log level
+    enum {
+        ERROR   = 1,
+        WARNING = 2,
+        INFO    = 3,
+        VERBOSE = 4,
+        DEBUG   = 5,
     };
 
     enum zlog_flag {
         // Actions
-        flush = 1,          // Flush log immediately
-        newln = 2,          // Append newline to buffer
-        flushln = 3,        // Append newline and flush log
+        FLUSH       = 1,    // Flush log immediately
+        NEWLN       = 2,    // Append newline to buffer
+        FLUSHLN     = 3,    // Append newline and flush log
 
         // Format Modifers
-        noln = 4,           // Disable automatic newlines for this object
-        raw = 5,            // This object will log without formatting
+        NOLN        = 4,    // Disable automatic newlines for this object
+        RAW         = 5,    // This object will log without formatting
 
         // Target Modifiers
-        stdio = 9,          // Current instance outputs only to stdout
+        STDIO       = 9,    // Current instance outputs only to stdout
 
         // Sequence Modifiers
-        this_thread = 12    // Log immediately from this thread, block until done
+        THIS_THREAD = 12,   // Log immediately from this thread, block until done
     };
 
-    ZLog(zlog_source source = ZLog::NORMAL);
-    ZLog(zlog_source source, ZString prefile, ZString preline, ZString prefunc);
+    ZLog(zlog_level source = ZLog::INFO);
+    ZLog(zlog_level source, ZString prefile, ZString preline, ZString prefunc);
 
     ~ZLog();
 
@@ -113,8 +116,10 @@ public:
     inline ZLog &operator<<(double num){ return log(ZString(num)); }
     inline ZLog &operator<<(bool tf){ return log(tf ? "true" : "false"); }
 
+    //! Concat \a text to buffer with prepended space.
     inline ZLog &operator,(ZString text){ return log(" ").log(text); } // Base overload
 
+    //! Get log object buffer and clear object.
     ZString pullBuffer();
 
     static ZString getThread();
@@ -123,9 +128,9 @@ public:
     static void init();
     static void deInit();
 
-    static void formatStdout(zlog_source type, ZString fmt);
-    static void formatStderr(zlog_source type, ZString fmt);
-    static void addLogFile(ZPath, zlog_source type, ZString fmt);
+    static inline void logLevelStdOut(zlog_level level, ZString fmt){ ZLogWorker::logLevelStdOut(level, fmt); }
+    static inline void logLevelStdErr(zlog_level level, ZString fmt){ ZLogWorker::logLevelStdErr(level, fmt); }
+    static inline void logLevelFile(zlog_level level, ZPath file, ZString fmt){ ZLogWorker::logLevelFile(level, file, fmt); }
 
 private:
     void flushLog(bool final);

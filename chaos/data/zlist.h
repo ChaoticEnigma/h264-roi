@@ -62,9 +62,10 @@ public:
             _head->prev->next = nullptr; // Break circular link
             Node *current = _head;
             while(current != nullptr){
+                Node* next = current->next;
                 _talloc.destroy(&(current->data));
                 _alloc->dealloc(current);
-                current = current->next;
+                current = next;
             }
         }
         delete _alloc;

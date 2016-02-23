@@ -94,20 +94,20 @@ int string_test(){
 
     ZString find3 = "anotherInterestingStringWithInterestingThings";
     ZArray<zu64> pos3 = find3.findAll("est");
-    LOG("" << ZLog::noln);
+    LOG("" << ZLog::NOLN);
     FOREACH(pos3.size()){
         RLOG(pos3[i] << " ");
     }
-    RLOG(ZLog::newln);
+    RLOG(ZLog::NEWLN);
     TASSERT(pos3.size() == 2 && pos3[0] == 12 && pos3[1] == 33);
 
     ZString find4 = "anotherInterestesteingStringWithInterestesteingThings";
     ZArray<zu64> pos4 = ZString::findAll(find4, "este");
-    LOG("" << ZLog::noln);
+    LOG("" << ZLog::NOLN);
     FOREACH(pos4.size()){
         RLOG(pos4[i] << " ");
     }
-    RLOG(ZLog::newln);
+    RLOG(ZLog::NEWLN);
     TASSERT(pos4.size() == 2 && pos4[0] == 12 && pos4[1] == 37);
 
     // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -280,12 +280,12 @@ int string_block_old(){
     LOG(t3.size() << " " << t3);
     ZArray<ZString> words = t3.explode(' ');
     for(zu64 i = 0; i < words.size(); ++i)
-        LOG('-' << words[i] << "- " << ZLog::noln);
-    LOG(ZLog::newln);
+        LOG('-' << words[i] << "- " << ZLog::NOLN);
+    LOG(ZLog::NEWLN);
     //words.concat(t3.strict_explode(' '));
     for(zu64 i = 0; i < words.size(); ++i)
-        LOG('-' << words[i] << "- " << ZLog::noln);
-    LOG(ZLog::newln);
+        LOG('-' << words[i] << "- " << ZLog::NOLN);
+    LOG(ZLog::NEWLN);
 
     LOG("this text here");
     ZString tst;

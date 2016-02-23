@@ -528,7 +528,7 @@ void readpng_cleanup(PngReadData *data){
 }
 
 void readpng_warning_handler(png_struct *png_ptr, png_const_charp msg){
-    ELOG(ZLog::this_thread << "libpng read warning: " << msg);
+    ELOG(ZLog::THIS_THREAD << "libpng read warning: " << msg);
 }
 void readpng_error_handler(png_struct *png_ptr, png_const_charp msg){
     //ELOG(ZLog::this_thread << "libpng read error: " << msg);
@@ -704,7 +704,7 @@ void writepng_cleanup(PngWriteData *mainprog_ptr){
 }
 
 void writepng_warning_handler(png_struct *png_ptr, png_const_charp msg){
-    ELOG(ZLog::this_thread << "libpng write warning: " << msg);
+    ELOG(ZLog::THIS_THREAD << "libpng write warning: " << msg);
 }
 void writepng_error_handler(png_struct *png_ptr, png_const_charp msg){
     //ELOG(ZLog::this_thread << "libpng write error: " << msg);

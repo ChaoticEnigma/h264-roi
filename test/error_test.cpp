@@ -24,7 +24,7 @@ int error_test(){
     while(!userwait){
         // wait for ctrl+c
     }
-    RLOG(ZLog::newln);
+    RLOG(ZLog::NEWLN);
     if(userwait == 1)
         LOG("Caught Interrupt");
     else if(userwait == 2)

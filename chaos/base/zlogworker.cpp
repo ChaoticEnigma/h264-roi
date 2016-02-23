@@ -24,11 +24,18 @@ ZQueue<ZLogWorker::LogJob*> jobs;
 
 //ZMutex writemutex;
 
+struct LogHandler {
+    enum lhtype {
+       STDOUT, STDERR, FILE
+    };
+    LogHandler(lhtype type, ZString fmt) : type(type), fmt(fmt){}
+    lhtype type;
+    ZString fmt;
+    ZPath file;
+};
+
 ZMutex formatmutex;
-ZMap<int, ZString> stdoutlog;
-ZMap<int, ZString> stderrlog;
-ZArray<ZPath> logfilelist;
-ZMap<ZPath, ZMap<int, ZString> > logfiles;
+ZMap<int, ZList<LogHandler>> logformats;
 
 ZMutex threadidmutex;
 ZMap<ztid, zu32> threadids;
@@ -140,95 +147,56 @@ ZString ZLogWorker::makeLog(const LogJob *job, ZString fmt){
 
 void ZLogWorker::doLog(LogJob *job){
     formatmutex.lock();
-    ZString stdoutfmt = stdoutlog[job->source];
-    ZString stdoutfmtall = stdoutlog[ZLog::ALL];
-    ZString stderrfmt = stderrlog[job->source];
-    ZString stderrfmtall = stderrlog[ZLog::ALL];
+    ZList<LogHandler> formats = logformats[job->level];
     formatmutex.unlock();
 
-    // Do any stdout logging
-    if(!stdoutfmt.isEmpty()){
-        fprintf(stdout, "%s", makeLog(job, stdoutfmt).cc());
-        fflush(stdout);
-    } else if(!stdoutfmtall.isEmpty()){
-        fprintf(stdout, "%s", makeLog(job, stdoutfmtall).cc());
-        fflush(stdout);
-    }
-
-    // Do any stderr logging
-    if(!stderrfmt.isEmpty()){
-        fprintf(stderr, "%s", makeLog(job, stderrfmt).cc());
-        fflush(stderr);
-    } else if(!stderrfmtall.isEmpty()){
-        fprintf(stderr, "%s", makeLog(job, stderrfmtall).cc());
-        fflush(stderr);
-    }
-
-    // Do any file logging
-    if(!job->stdio){
-//        writemutex.lock();
-        for(zu64 i = 0; i < logfilelist.size(); ++i){
-            formatmutex.lock();
-            ZPath filename = logfilelist[i];
-            ZString filefmt = logfiles[filename][job->source];
-            ZString filefmtall = logfiles[filename][ZLog::ALL];
-            formatmutex.unlock();
-
-            if(!filefmt.isEmpty()){
-                ZFile::createDirsTo(filename);
-//                ZFile out(filename, ZFile::modewrite | ZFile::append);
-//                if(out.isOpen()){
-//                    ZString logstr = makeLog(job, filefmt);
-//                    out.write((const zbyte *)logstr.cc(), logstr.size());
-//                } else {
-//                    fprintf(stderr, "%s", "failed to open log file");
-//                    fflush(stderr);
-//                }
-//                out.close();
-
-                std::ofstream lgfl(filename.str().cc(), std::ios::app);
-                lgfl << makeLog(job, filefmt);
+    for(zu64 i = 0; i < formats.size(); ++i){
+        switch(formats.front().type){
+            case LogHandler::STDOUT:
+                fprintf(stdout, "%s", makeLog(job, formats.front().fmt).cc());
+                fflush(stdout);
+                break;
+            case LogHandler::STDERR:
+                fprintf(stderr, "%s", makeLog(job, formats.front().fmt).cc());
+                fflush(stderr);
+                break;
+            case LogHandler::FILE: {
+                ZFile::createDirsTo(formats.front().file);
+                std::ofstream lgfl(formats.front().file.str().cc(), std::ios::app);
+                lgfl << makeLog(job, formats.front().fmt);
                 lgfl.flush();
                 lgfl.close();
-            } else if(!filefmtall.isEmpty()){
-                ZFile::createDirsTo(filename);
-//                ZFile out(filename, ZFile::modewrite | ZFile::append);
-//                if(out.isOpen()){
-//                    ZString logstr = makeLog(job, filefmtall);
-//                    out.write((const zbyte *)logstr.cc(), logstr.size());
-//                } else {
-//                    fprintf(stderr, "%s", "failed to open log file");
-//                    fflush(stderr);
-//                }
-//                out.close();
-
-                std::ofstream lgfl(filename.str().cc(), std::ios::app);
-                lgfl << makeLog(job, filefmtall);
-                lgfl.flush();
-                lgfl.close();
+                break;
             }
+            default:
+                break;
         }
-//        writemutex.unlock();
+
+        // Rotate list
+        formats.rotate();
     }
 
     // Destroy the job
     delete job;
 }
 
-void ZLogWorker::formatStdout(int type, ZString fmt){
+void ZLogWorker::logLevelStdOut(int level, ZString fmt){
     formatmutex.lock();
-    stdoutlog[type] = fmt;
+    LogHandler lh(LogHandler::STDOUT, fmt);
+    logformats[level].push(lh);
     formatmutex.unlock();
 }
-void ZLogWorker::formatStderr(int type, ZString fmt){
+void ZLogWorker::logLevelStdErr(int level, ZString fmt){
     formatmutex.lock();
-    stderrlog[type] = fmt;
+    LogHandler lh(LogHandler::STDERR, fmt);
+    logformats[level].push(lh);
     formatmutex.unlock();
 }
-void ZLogWorker::addLogFile(ZPath pth, int type, ZString fmt){
+void ZLogWorker::logLevelFile(int level, ZPath file, ZString fmt){
     formatmutex.lock();
-    logfilelist.push(pth);
-    logfiles[pth][type] = fmt;
+    LogHandler lh(LogHandler::FILE, fmt);
+    lh.file = file;
+    logformats[level].push(lh);
     formatmutex.unlock();
 }
 
