@@ -7,7 +7,6 @@
 #define ZPOINTER_H
 
 #include "ztypes.h"
-#include "zexception.h"
 
 namespace LibChaos {
 
@@ -28,7 +27,9 @@ public:
     //! Empty container.
     ZPointer() : _data(nullptr){}
 
-    //! Take ownership of the pointer.
+    /*! Take ownership of a pointer.
+     *  \p ptr MUST be default-destructible by the delete operator.
+     */
     ZPointer(T *ptr) : ZPointer(){
         if(ptr != nullptr){
             _data = new PointerData;
@@ -81,22 +82,25 @@ public:
         other._data = data;
     }
 
-    // Check if this is the only Pointer to the object
+    //! Check if this is the only Pointer to the object.
     bool unique() const {
         return (count() == 0);
     }
 
-    // Count number of other Pointers to the object
+    //! Count number of other Pointers to the object.
     zu64 count() const {
         return (_data == nullptr ? 0 : _data->count - 1);
     }
 
-    //! Get pointer to shared object.
+    /*! Get pointer to shared object.
+     *  \return nullptr if no object owned.
+     */
     T *ptr() const {
         if(_data == nullptr)
-            throw ZException("ZPointer ptr: attempt to get pointer from object without ownership");
+            return nullptr;
         return _data->ptr;
     }
+    //! Shorthand for pointer to shared object.
     inline T *operator->(){ return ptr(); }
 
 private:
