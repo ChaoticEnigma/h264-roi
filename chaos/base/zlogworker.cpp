@@ -28,7 +28,7 @@ struct LogHandler {
     enum lhtype {
        STDOUT, STDERR, FILE
     };
-    LogHandler(lhtype type, ZString fmt) : type(type), fmt(fmt){}
+    LogHandler(lhtype t, ZString f) : type(t), fmt(f){}
     lhtype type;
     ZString fmt;
     ZPath file;
