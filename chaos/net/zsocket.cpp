@@ -40,9 +40,10 @@ ZSocket::~ZSocket(){
     delete buffer;
 }
 
-bool ZSocket::getSocket(zsocktype &fd, ZAddress addr){
-    DLOG("ZSocket::getSocket " + addr.familyStr() + " " + addr.typeStr() + " " + addr.protocolStr());
-    fd = ::socket(addr.family(), addr.type(), addr.protocol());
+bool ZSocket::getSocket(zsocktype &fd, int type, int proto){
+    //DLOG("ZSocket::getSocket " + addr.familyStr() + " " + addr.typeStr() + " " + addr.protocolStr());
+    //DLOG("ZSocket::getSocket " + addr.familyStr());
+    fd = ::socket(AF_INET, _type, proto);
     if(fd <= 0){
         ELOG("ZSocket: failed to create socket: " + ZError::getSystemError());
         fd = 0;
@@ -51,26 +52,33 @@ bool ZSocket::getSocket(zsocktype &fd, ZAddress addr){
     return true;
 }
 
-bool ZSocket::open(ZAddress addr){
+bool ZSocket::open(){
     // Initialize sockets if needed
     if(socket_count <= 0)
         InitializeSockets();
     ++socket_count;
 
-    if(isOpen()){
-        ELOG("ZSocket: socket already open");
+    if(!getSocket(_socket, _type, 0)){
+        ELOG("ZSocket::open Failed to create socket");
         return false;
     }
+    return true;
+}
+
+bool ZSocket::bind(ZAddress addr){
+    if(!isOpen()){
+        ELOG("ZSocket: socket not open");
+        return false;
+    }
+
     bool ok = false;
-    addr.setType(_type);
+    //addr.setType(_type);
 
     // Loop up address/hostname
-    ZArray<ZAddress> addrs = ZAddress::lookUp(addr);
+    ZArray<SockAddr> addrs = ZAddress::lookUp(addr);
     for(zu64 i = 0; i < addrs.size(); ++i){
         // Try addresses
-        DLOG("ZSocket::open Trying " + addrs[i].debugStr());
-        if(!getSocket(_socket, addrs[i]))
-            continue;
+        DLOG("ZSocket::open Trying " + addrs[i].addr.debugStr());
 
         // Set SO_REUSEADDR option if requested
         if(reuseaddr){
@@ -79,14 +87,14 @@ bool ZSocket::open(ZAddress addr){
 
         // Try to bind socket
         sockaddr_storage addrstorage;
-        addrs[i].populate(&addrstorage);
+        addrs[i].addr.populate(&addrstorage);
         if(::bind(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
-            ELOG("ZSocket: failed to bind " +  addrs[i].debugStr() + " - error " + ZError::getSystemError());
+            ELOG("ZSocket: failed to bind " +  addrs[i].addr.debugStr() + " - error " + ZError::getSystemError());
             close();
             continue;
         }
         ok = true;
-        _bound = addrs[i];
+        _bound = addrs[i].addr;
 
         LOG("Bound socket " << _socket);
     }
@@ -127,8 +135,8 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
         return false;
 
     sockaddr_storage addrstorage;
-    dest.setType(_type);
-    dest = ZAddress::lookUp(dest)[0];
+    //dest.setType(_type);
+    dest = ZAddress::lookUp(dest)[0].addr;
     dest.populate(&addrstorage);
 
 #if COMPILER == MSVC
@@ -140,7 +148,7 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
 #endif
 
     if(sent < 0)
-        ELOG("ZSocket: sendto error " + ZError::getSystemError());
+        ELOG("ZSocket::send sendto error " + ZError::getSystemError());
     return (zu64)sent == data.size();
 }
 
@@ -179,20 +187,20 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
     }
     bool ok = false;
     ZAddress end_addr;
-    addr.setType(_type);
-    ZArray<ZAddress> addrs = ZAddress::lookUp(addr);
+    //addr.setType(_type);
+    ZArray<SockAddr> addrs = ZAddress::lookUp(addr);
     for(zu64 i = 0; i < addrs.size(); ++i){
-        if(!getSocket(_socket, addrs[i]))
+        if(!getSocket(_socket, addrs[i].type, addrs[i].proto))
             continue;
-        LOG("Got socket for " << addrs[i].debugStr());
+        LOG("Got socket for " << addrs[i].addr.debugStr());
         sockaddr_storage addrstorage;
-        addrs[i].populate(&addrstorage);
+        addrs[i].addr.populate(&addrstorage);
         if(::connect(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
             ELOG("ZSocket: connect error " + ZError::getSystemError());
             close();
             continue;
         }
-        end_addr = addrs[i];
+        end_addr = addrs[i].addr;
         ok = true;
     }
     if(!ok){

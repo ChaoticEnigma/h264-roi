@@ -25,22 +25,11 @@
 
 namespace LibChaos {
 
-namespace ZLogSource {
-    enum zlog_source {
-        NORMAL = 1,
-        DEBUG = 2,
-        ERRORS = 3,
-        ALL = 4
-    };
-}
-
 //! Asynchronous ZLog log formatter / writer.
 class ZLogWorker {
 public:
-    typedef ZLogSource::zlog_source zlog_source;
-
     struct LogJob {
-        zlog_source source;
+        int source;
 
         ZTime time;
         ZClock clock;
@@ -67,9 +56,9 @@ public:
     void queue(LogJob *job);
     static void doLog(LogJob *job);
 
-    static void formatStdout(zlog_source type, ZString fmt);
-    static void formatStderr(zlog_source type, ZString fmt);
-    static void addLogFile(ZPath, zlog_source type, ZString fmt);
+    static void formatStdout(int type, ZString fmt);
+    static void formatStderr(int type, ZString fmt);
+    static void addLogFile(ZPath, int type, ZString fmt);
 private:
     static void *zlogWorker(void *);
     static void sigHandle(int);

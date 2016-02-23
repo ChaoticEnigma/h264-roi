@@ -21,9 +21,13 @@
 
 namespace LibChaos {
 
-ZAddressData::ZAddressData(int fam, int typ, int pro, zport port) : _family(fam), _type(typ), _protocol(pro), _port(port){}
+//ZAddressData::ZAddressData(int fam, int typ, int pro, zport port) : _family(fam), _type(typ), _protocol(pro), _port(port){}
+ZAddressData::ZAddressData(int fam, int typ, int pro, zport port) : _family(fam), _port(port){
 
-ZAddressData::ZAddressData(const ZAddressData &other) : _family(other._family), _type(other._type), _protocol(other._protocol), _name(other._name), _port(other._port){
+}
+
+//ZAddressData::ZAddressData(const ZAddressData &other) : _family(other._family), _type(other._type), _protocol(other._protocol), _name(other._name), _port(other._port){
+ZAddressData::ZAddressData(const ZAddressData &other) : _family(other._family), _name(other._name), _port(other._port){
     memcpy(_v6_addr, other._v6_addr, sizeof(_v6_addr));
 }
 
@@ -144,8 +148,8 @@ ZAddress::~ZAddress(){
 
 ZAddress &ZAddress::operator=(ZAddress rhs){
     _family = rhs._family;
-    _type = rhs._type;
-    _protocol = rhs._protocol;
+    //_type = rhs._type;
+    //_protocol = rhs._protocol;
     _port = rhs._port;
     _name = rhs._name;
     memcpy(_v6_addr, rhs._v6_addr, sizeof(_v6_addr));
@@ -162,23 +166,23 @@ ZString ZAddress::familyStr() const {
     }
 }
 
-ZString ZAddress::typeStr() const {
-    switch(_type){
-        case ZSocket::STREAM:   return "Stream";
-        case ZSocket::DATAGRAM: return "Datagram";
-        case ZSocket::RAW:      return "Raw";
-        default:                return "Unknown";
-    }
-}
+//ZString ZAddress::typeStr() const {
+//    switch(_type){
+//        case ZSocket::STREAM:   return "Stream";
+//        case ZSocket::DATAGRAM: return "Datagram";
+//        case ZSocket::RAW:      return "Raw";
+//        default:                return "Unknown";
+//    }
+//}
 
-ZString ZAddress::protocolStr() const {
-    switch(_protocol){
-        case ZAddress::IP:  return "IP";
-        case ZAddress::TCP: return "TCP";
-        case ZAddress::UDP: return "UDP";
-        default:            return "Unknown";
-    }
-}
+//ZString ZAddress::protocolStr() const {
+//    switch(_protocol){
+//        case ZAddress::IP:  return "IP";
+//        case ZAddress::TCP: return "TCP";
+//        case ZAddress::UDP: return "UDP";
+//        default:            return "Unknown";
+//    }
+//}
 
 ZString ZAddress::str() const {
     socklen_t csz;
@@ -201,14 +205,15 @@ ZString ZAddress::str() const {
     return out;
 }
 
-ZArray<ZAddress> ZAddress::lookUp(ZAddress addr){
+ZArray<SockAddr> ZAddress::lookUp(ZAddress addr){
     struct addrinfo hints, *result;
     int status;
     //char ipstr[INET6_ADDRSTRLEN];
 
     memset(&hints, 0, sizeof hints);
     //hints.ai_family = AF_UNSPEC; // Redundant
-    hints.ai_socktype = addr.type();
+    //hints.ai_socktype = addr.type();
+    hints.ai_socktype = 0;
 
     ZString name = addr.str();
     const char *aptr = name.isEmpty() ? NULL : name.cc();
@@ -218,10 +223,10 @@ ZArray<ZAddress> ZAddress::lookUp(ZAddress addr){
 
     if((status = getaddrinfo(aptr, sptr, &hints, &result)) != 0){
         ELOG("ZSocket: getaddrinfo for " << name << " " << (zuint)addr.port() << ": " << status <<": " << gai_strerror(status));
-        return ZArray<ZAddress>();
+        return ZArray<SockAddr>();
     }
 
-    ZArray<ZAddress> addrs;
+    ZArray<SockAddr> addrs;
     for(struct addrinfo *p = result; p != NULL; p = p->ai_next){
 //        void *addr;
 //        if(p->ai_family == AF_INET){
@@ -237,16 +242,22 @@ ZArray<ZAddress> ZAddress::lookUp(ZAddress addr){
         //      p->ai_protocol
         //      p->ai_canonname // Offical service name
 
+        SockAddr sockaddr;
         ZAddress newaddr((sockaddr_storage *)p->ai_addr);
         newaddr.setPort(addr.port());
-        newaddr.setType(p->ai_socktype);
-        newaddr.setProtocol(p->ai_protocol);
+        sockaddr.addr = newaddr;
+        sockaddr.type = p->ai_socktype;
+        sockaddr.proto = p->ai_protocol;
+//        newaddr.setType(p->ai_socktype);
+//        newaddr.setProtocol(p->ai_protocol);
 
         //inet_ntop(p->ai_family, addr, ipstr, INET6_ADDRSTRLEN);
         //ZAddress newaddr(ipstr);
 
-        if(!addrs.contains(newaddr))
-            addrs.push(newaddr);
+//        if(!addrs.contains(newaddr))
+//            addrs.push(newaddr);
+
+        addrs.push(sockaddr);
     }
     freeaddrinfo(result); // free the linked list
     return addrs;

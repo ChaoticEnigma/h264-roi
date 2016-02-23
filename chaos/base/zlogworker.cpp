@@ -4,6 +4,7 @@
 **                          (c) 2015 Zennix Studios                           **
 *******************************************************************************/
 #include "zlogworker.h"
+#include "zlog.h"
 #include "zfile.h"
 #include "zqueue.h"
 #include "zmap.h"
@@ -24,10 +25,10 @@ ZQueue<ZLogWorker::LogJob*> jobs;
 //ZMutex writemutex;
 
 ZMutex formatmutex;
-ZMap<ZLogWorker::zlog_source, ZString> stdoutlog;
-ZMap<ZLogWorker::zlog_source, ZString> stderrlog;
+ZMap<int, ZString> stdoutlog;
+ZMap<int, ZString> stderrlog;
 ZArray<ZPath> logfilelist;
-ZMap<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
+ZMap<ZPath, ZMap<int, ZString> > logfiles;
 
 ZMutex threadidmutex;
 ZMap<ztid, zu32> threadids;
@@ -140,9 +141,9 @@ ZString ZLogWorker::makeLog(const LogJob *job, ZString fmt){
 void ZLogWorker::doLog(LogJob *job){
     formatmutex.lock();
     ZString stdoutfmt = stdoutlog[job->source];
-    ZString stdoutfmtall = stdoutlog[ZLogSource::ALL];
+    ZString stdoutfmtall = stdoutlog[ZLog::ALL];
     ZString stderrfmt = stderrlog[job->source];
-    ZString stderrfmtall = stderrlog[ZLogSource::ALL];
+    ZString stderrfmtall = stderrlog[ZLog::ALL];
     formatmutex.unlock();
 
     // Do any stdout logging
@@ -170,7 +171,7 @@ void ZLogWorker::doLog(LogJob *job){
             formatmutex.lock();
             ZPath filename = logfilelist[i];
             ZString filefmt = logfiles[filename][job->source];
-            ZString filefmtall = logfiles[filename][ZLogSource::ALL];
+            ZString filefmtall = logfiles[filename][ZLog::ALL];
             formatmutex.unlock();
 
             if(!filefmt.isEmpty()){
@@ -214,17 +215,17 @@ void ZLogWorker::doLog(LogJob *job){
     delete job;
 }
 
-void ZLogWorker::formatStdout(zlog_source type, ZString fmt){
+void ZLogWorker::formatStdout(int type, ZString fmt){
     formatmutex.lock();
     stdoutlog[type] = fmt;
     formatmutex.unlock();
 }
-void ZLogWorker::formatStderr(zlog_source type, ZString fmt){
+void ZLogWorker::formatStderr(int type, ZString fmt){
     formatmutex.lock();
     stderrlog[type] = fmt;
     formatmutex.unlock();
 }
-void ZLogWorker::addLogFile(ZPath pth, zlog_source type, ZString fmt){
+void ZLogWorker::addLogFile(ZPath pth, int type, ZString fmt){
     formatmutex.lock();
     logfilelist.push(pth);
     logfiles[pth][type] = fmt;

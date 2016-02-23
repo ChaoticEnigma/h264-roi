@@ -49,7 +49,7 @@ int tcpserver_test(){
     ZStreamSocket sock;
     ZAddress bind(8080);
     LOG(bind.debugStr());
-    if(!sock.open(bind)){
+    if(!sock.open()){
         ELOG("Socket Open Fail");
         return 2;
     }
@@ -410,7 +410,7 @@ int tcpserver_test3(){
 //    }
 
     ZSocket listensock(ZSocket::STREAM);
-    if(!listensock.open(ZAddress(8080))){
+    if(!listensock.open()){
         ELOG("Open fail");
         return 5;
     }

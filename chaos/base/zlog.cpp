@@ -136,7 +136,7 @@ ZString ZLog::genLogFileName(ZString prefix){
     time_t raw;
     char buffer[20];
     time(&raw);
-    strftime(buffer, 20, "%m-%d-%y_%H-%M-%S", localtime(&raw));
+    strftime(buffer, 20, "%Y-%m-%d_%H.%M.%S", localtime(&raw));
     ZString out(prefix);
     out << buffer << ".log";
     return out;

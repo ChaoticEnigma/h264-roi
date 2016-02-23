@@ -19,7 +19,7 @@ int udp_test(){
 
     ZDatagramSocket sock;
     ZAddress bound(8998);
-    if(!sock.open(bound)){
+    if(!sock.open()){
         ELOG("Socket Open Fail");
         return 2;
     }
@@ -63,8 +63,12 @@ int udpserver_test(){
     ZDatagramSocket sock;
     ZAddress bind(8998);
     DLOG(bind.debugStr());
-    if(!sock.open(bind)){
+    if(!sock.open()){
         ELOG("Socket Open Fail " + sock.getError().what());
+        TASSERT(false);
+    }
+    if(!sock.bind(bind)){
+        ELOG("Socket Bind Fail " + sock.getError().what());
         TASSERT(false);
     }
 

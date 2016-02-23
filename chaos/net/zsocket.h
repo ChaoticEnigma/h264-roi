@@ -43,7 +43,9 @@ public:
     ~ZSocket();
 
     //! Open the socket.
-    bool open(ZAddress port);
+    bool open();
+    //! Bind the socket to an address.
+    bool bind(ZAddress port);
     //! Close the socket.
     void close();
     //! Get if socket is open.
@@ -98,7 +100,7 @@ protected:
 private:
     static bool InitializeSockets();
     static void ShutdownSockets();
-    bool getSocket(zsocktype &fd, ZAddress addr);
+    bool getSocket(zsocktype &fd, int type, int proto);
 
 private:
     static zu32 socket_count;
