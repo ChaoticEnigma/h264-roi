@@ -18,12 +18,10 @@ int udp_test(){
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZDatagramSocket sock;
-    //ZAddress bound(8998);
     if(!sock.open()){
         ELOG("Socket Open Fail");
         return 2;
     }
-    //LOG("Bound to " << sock.getBoundAddress().debugStr());
     LOG("Sending...");
 
     ZAddress addr("127.0.0.1", 8998);
@@ -36,14 +34,14 @@ int udp_test(){
         ZBinary data((const unsigned char *)str.cc(), str.size());
         if(sock.send(addr, data)){
             LOG("to " << addr.debugStr() << " (" << data.size() << "): \"" << data << "\"");
-//            ZAddress sender;
-//            ZBinary recvdata;
-//            if(sock.receive(sender, recvdata)){
-//                LOG("from " << sender.str() << " (" << recvdata.size() << "): \"" << recvdata << "\"");
-//                count++;
-//            } else {
-//                continue;
-//            }
+            ZAddress sender;
+            ZBinary recvdata;
+            if(sock.receive(sender, recvdata)){
+                LOG("from " << sender.str() << " (" << recvdata.size() << "): \"" << recvdata << "\"");
+                count++;
+            } else {
+                continue;
+            }
         } else {
             LOG("failed to send to " << addr.debugStr());
         }
@@ -88,14 +86,14 @@ int udpserver_test(){
         ZAddress sender;
         ZBinary data;
         if(sock.receive(sender, data)){
-            LOG("from " << sender.debugStr() << " (" << data.size() << "): \"" << data << "\"");
+            LOG("from " << sender.str() << " (" << data.size() << "): \"" << data << "\"");
             count++;
-//            ZAddress addr = sender;
-//            if(sock.send(addr, data)){
-//                LOG("to " << addr.debugStr() << " (" << data.size() << "): \"" << data << "\"");
-//            } else {
-//                LOG("failed to send to " << addr.str());
-//            }
+            ZAddress addr = sender;
+            if(sock.send(addr, data)){
+                LOG("to " << addr.debugStr() << " (" << data.size() << "): \"" << data << "\"");
+            } else {
+                LOG("failed to send to " << addr.str());
+            }
         } else {
             LOG("error receiving message: " << ZError::getSystemError());
             continue;

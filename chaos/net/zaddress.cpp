@@ -285,7 +285,6 @@ socklen_t ZAddress::getSockAddrLen() const {
 
 void ZAddress::parseAny(ZString str){
     memset(_v6_addr, 0, 16);
-
     if(!str.isEmpty()){
         // Try IPv4
         if(!parseIP(IPV4, str)){
@@ -298,9 +297,10 @@ void ZAddress::parseAny(ZString str){
         }
     }
 }
+
 bool ZAddress::parseIP(int af, ZString str){
     if(af == IPV4){
-        struct sockaddr_in addr4;
+        sockaddr_in addr4;
         int status = inet_pton(AF_INET, str.cc(), &(addr4.sin_addr));
         if(status == 0){
             // Invalid IPv4
@@ -316,7 +316,7 @@ bool ZAddress::parseIP(int af, ZString str){
         }
         return true;
     } else if(af == IPV6){
-        struct sockaddr_in6 addr6;
+        sockaddr_in6 addr6;
         int status = inet_pton(AF_INET6, str.cc(), &(addr6.sin6_addr));
         if(status == 0){
             // Invalid address, store as string
@@ -336,3 +336,4 @@ bool ZAddress::parseIP(int af, ZString str){
 }
 
 }
+
