@@ -26,21 +26,22 @@ namespace LibChaos {
 class ZSocket {
 public:
     enum socket_type {
-        STREAM = SOCK_STREAM,
+        STREAM   = SOCK_STREAM,
         DATAGRAM = SOCK_DGRAM,
-        RAW = SOCK_RAW
+        RAW      = SOCK_RAW
     };
 
     struct SocketOptions {
         enum socketoption {
-            reuseaddr = 1,
-            recvtimeout = 2,
+            OPT_REUSEADDR   = 1,
+            OPT_RECVTIMEOUT = 2,
         };
     };
 
 public:
     ZSocket(socket_type type);
     ~ZSocket();
+    ZSocket(const ZSocket &socket) = delete;
 
     //! Open the socket.
     bool open();
@@ -101,14 +102,22 @@ private:
     static bool InitializeSockets();
     static void ShutdownSockets();
     bool getSocket(zsocktype &fd, int type, int proto);
+    static socklen_t getSockAddrLen(int family);
 
 private:
     static zu32 socket_count;
 
+    //! Socket file descriptor.
     zsocktype _socket;
+    //! Socket type.
     socket_type _type;
+    //! Socket address family.
+    ZAddress::address_family _family;
+    //! Socket data buffer.
     unsigned char *buffer;
+    //! Socket buffer size.
     zu32 buffersize;
+
     bool reuseaddr;
     ZAddress _bound;
     ZException error;

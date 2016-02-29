@@ -43,12 +43,14 @@ ZSocket::~ZSocket(){
 bool ZSocket::getSocket(zsocktype &fd, int type, int proto){
     //DLOG("ZSocket::getSocket " + addr.familyStr() + " " + addr.typeStr() + " " + addr.protocolStr());
     DLOG("ZSocket::getSocket" << type << " " << proto);
-    fd = ::socket(AF_INET, _type, proto);
+    int fam = AF_INET;
+    fd = ::socket(fam, _type, proto);
     if(fd <= 0){
         ELOG("ZSocket: failed to create socket: " + ZError::getSystemError());
         fd = 0;
         return false;
     }
+    _family = (ZAddress::address_family)fam;
     return true;
 }
 
@@ -72,32 +74,33 @@ bool ZSocket::bind(ZAddress addr){
     }
 
     bool ok = false;
-    //addr.setType(_type);
 
     // Loop up address/hostname
-    ZArray<SockAddr> addrs = ZAddress::lookUp(addr);
+    ZList<SockAddr> addrs = ZAddress::lookUp(addr);
     for(zu64 i = 0; i < addrs.size(); ++i){
         // Try addresses
-        DLOG("ZSocket::open Trying " + addrs[i].addr.debugStr());
+        DLOG("ZSocket::open Trying " + addrs.front().addr.debugStr());
 
         // Set SO_REUSEADDR option if requested
         if(reuseaddr){
-            setSocketOption(SocketOptions::reuseaddr, 1);
+            setSocketOption(SocketOptions::OPT_REUSEADDR, 1);
         }
 
         // Try to bind socket
         sockaddr_storage addrstorage;
-        addrs[i].addr.populate(&addrstorage);
-        if(::bind(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
-            ELOG("ZSocket: failed to bind " +  addrs[i].addr.debugStr() + " - error " + ZError::getSystemError());
+        addrs.front().addr.populate(&addrstorage);
+        if(::bind(_socket, (const sockaddr *)&addrstorage, getSockAddrLen(addrs.front().addr.family())) != 0){
+            ELOG("ZSocket: failed to bind " +  addrs.front().addr.debugStr() + " - error " + ZError::getSystemError());
             close();
+            addrs.rotate();
             continue;
         }
         ok = true;
-        _bound = addrs[i].addr;
-
-        LOG("Bound socket " << _socket);
+        _bound = addrs.front().addr;
+        DLOG("Bound socket " << _socket);
+        break;
     }
+
     // Could not bind socket with any available addres
     if(!ok){
         ELOG("ZSocket: could not create and bind socket on any address");
@@ -136,15 +139,15 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
 
     sockaddr_storage addrstorage;
     //dest.setType(_type);
-    dest = ZAddress::lookUp(dest)[0].addr;
+    dest = ZAddress::lookUp(dest).front().addr;
     dest.populate(&addrstorage);
 
 #if COMPILER == MSVC
-    long sent = ::sendto(_socket, (const char *)data.raw(), (int)data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
+    long sent = ::sendto(_socket, (const char *)data.raw(), (int)data.size(), 0, (const sockaddr *)&addrstorage, getSockAddrLen(dest.family()));
 #elif COMPILER == MINGW
-    long sent = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
+    long sent = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, getSockAddrLen(dest.family()));
 #else
-    long sent = ::sendto(_socket, data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage));
+    long sent = ::sendto(_socket, data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, getSockAddrLen(dest.family()));
 #endif
 
     if(sent < 0)
@@ -161,11 +164,11 @@ zu64 ZSocket::receive(ZAddress &sender, ZBinary &data){
         buffer = new unsigned char[ZSOCKET_UDP_BUFFER];
     //memset(buffer, 0, ZSOCKET_BUFFER);
     sockaddr_storage from;
-    socklen_t fromLength = sizeof(from);
+    socklen_t fromlen;
 #ifdef ZSOCKET_WINAPI
-    long received = ::recvfrom(_socket, (char *)buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromLength);
+    long received = ::recvfrom(_socket, (char *)buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromlen);
 #else
-    long received = ::recvfrom(_socket, buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromLength);
+    long received = ::recvfrom(_socket, buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromlen);
 #endif
     if(received < 0){
         ELOG("ZSocket:receive error - " + ZError::getSystemError());
@@ -186,29 +189,31 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
         return false;
     }
     bool ok = false;
-    ZAddress end_addr;
-    //addr.setType(_type);
-    ZArray<SockAddr> addrs = ZAddress::lookUp(addr);
+    ZList<SockAddr> addrs = ZAddress::lookUp(addr);
     for(zu64 i = 0; i < addrs.size(); ++i){
-        if(!getSocket(_socket, addrs[i].type, addrs[i].proto))
-            continue;
-        LOG("Got socket for " << addrs[i].addr.debugStr());
-        sockaddr_storage addrstorage;
-        addrs[i].addr.populate(&addrstorage);
-        if(::connect(_socket, (const sockaddr *)&addrstorage, sizeof(sockaddr_storage)) != 0){
-            ELOG("ZSocket: connect error " + ZError::getSystemError());
-            close();
+        if(!getSocket(_socket, addrs.front().type, addrs.front().proto)){
+            addrs.rotate();
             continue;
         }
-        end_addr = addrs[i].addr;
+        LOG("Got socket for " << addrs.front().addr.debugStr());
+        ZAddress caddr = addrs.front().addr;
+        sockaddr_storage addrstorage;
+        caddr.populate(&addrstorage);
+        if(::connect(_socket, (const sockaddr *)&addrstorage, getSockAddrLen(caddr.family())) != 0){
+            ELOG("ZSocket: connect error " + ZError::getSystemError());
+            close();
+            addrs.rotate();
+            continue;
+        }
         ok = true;
+        break;
     }
     if(!ok){
         ELOG("ZSocket: could not create socket and connect to any address");
         return false;
     }
     connfd = _socket;
-    connaddr = end_addr;
+    connaddr = addrs.front().addr;
     return true;
 }
 
@@ -221,9 +226,9 @@ bool ZSocket::listen(){
 }
 
 bool ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
-    sockaddr_storage client_sin;
-    socklen_t sin_size = sizeof(client_sin);
-    zsocktype client = ::accept(_socket, (struct sockaddr *)&client_sin, &sin_size);
+    sockaddr_storage from;
+    socklen_t fromlen;
+    zsocktype client = ::accept(_socket, (struct sockaddr *)&from, &fromlen);
     if(client <= 0){
         ELOG("ZSocket: failed to accept socket: " + ZError::getSystemError());
         return false;
@@ -231,7 +236,7 @@ bool ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
 
     LOG("Accepted socket " << client << " on " << _socket);
 
-    ZAddress client_addr(&client_sin);
+    ZAddress client_addr(&from);
     connfd = client;
     connaddr = client_addr;
     return true;
@@ -298,7 +303,7 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
     socklen_t optptrsize = 0;
 
     switch(option){
-    case SocketOptions::reuseaddr: {
+    case SocketOptions::OPT_REUSEADDR: {
         sockoption = SO_REUSEADDR;
 #ifdef ZSOCKET_WINAPI
         optptr = (char *)!!(value);
@@ -310,7 +315,7 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
         break;
     }
 
-    case SocketOptions::recvtimeout: {
+    case SocketOptions::OPT_RECVTIMEOUT: {
         sockoption = SO_RCVTIMEO;
         timeval tv;
         tv.tv_sec = 0;
@@ -362,9 +367,10 @@ bool ZSocket::setBlocking(bool set){
 #endif
     return true;
 }
+
 void ZSocket::allowRebind(bool set){
     if(isOpen())
-        setSocketOption(SocketOptions::reuseaddr, (int)set);
+        setSocketOption(SocketOptions::OPT_REUSEADDR, (int)set);
     reuseaddr = set;
 }
 
@@ -389,6 +395,15 @@ void ZSocket::ShutdownSockets(){
 #ifdef ZSOCKET_WINAPI
     WSACleanup();
 #endif
+}
+
+socklen_t ZSocket::getSockAddrLen(int family){
+    if(family == AF_INET)
+        return sizeof(sockaddr_in);
+    else if(family == AF_INET6)
+        return sizeof(sockaddr_in6);
+    else
+        return 0;
 }
 
 }

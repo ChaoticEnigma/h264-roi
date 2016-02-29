@@ -76,14 +76,14 @@ struct SockAddr;
 class ZAddress : private ZAddressData {
 public:
     enum address_family {
-        HOSTNAME = AF_UNSPEC,
+        NAME = AF_UNSPEC,
         UNIX = AF_UNIX,
         IPV4 = AF_INET,
         IPV6 = AF_INET6,
     };
 
     enum protocol_type {
-        IP = IPPROTO_IP,
+        IP  = IPPROTO_IP,
         TCP = IPPROTO_TCP,
         UDP = IPPROTO_UDP,
     };
@@ -132,7 +132,7 @@ public:
         return _family;
     }
     bool isName() const {
-        return _family == HOSTNAME;
+        return _family == NAME;
     }
     ZString familyStr() const;
 
@@ -152,14 +152,16 @@ public:
 //    }
 //    ZString protocolStr() const;
 
+    //! Get string representation of address.
     ZString str() const;
 
-    static ZArray<SockAddr> lookUp(ZAddress name);
+    static ZList<SockAddr> lookUp(ZAddress name);
 
-    /*! Populate the sockaddr_storage struct \a ptr with the necessary values from this ZAddress.
+    /*! Populate a sockaddr_storage struct with the necessary values from this ZAddress.
      *  \note \a ptr is zeroed before population.
      */
     bool populate(sockaddr_storage *ptr) const;
+    socklen_t getSockAddrLen() const;
 
     //! Get a string describing the address in the form [addr]:port,family,type,protocol.
     ZString debugStr() const {

@@ -101,7 +101,7 @@ ZAddress::ZAddress(int fam, ZString str) : ZAddressData(fam, 0, 0, 0){
     } else if(_family == IPV6){
         parseIP(IPV6, str);
     } else {
-        _family = HOSTNAME;
+        _family = NAME;
         _name = str;
     }
 }
@@ -158,7 +158,7 @@ ZAddress &ZAddress::operator=(ZAddress rhs){
 
 ZString ZAddress::familyStr() const {
     switch(_family){
-        case ZAddress::HOSTNAME:    return "Unspecified";
+        case ZAddress::NAME:    return "Unspecified";
         case ZAddress::UNIX:        return "UNIX";
         case ZAddress::IPV4:        return "IPv4";
         case ZAddress::IPV6:        return "IPv6";
@@ -205,12 +205,9 @@ ZString ZAddress::str() const {
     return out;
 }
 
-ZArray<SockAddr> ZAddress::lookUp(ZAddress addr){
-    struct addrinfo hints, *result;
-    int status;
-    //char ipstr[INET6_ADDRSTRLEN];
-
-    memset(&hints, 0, sizeof hints);
+ZList<SockAddr> ZAddress::lookUp(ZAddress addr){
+    addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
     //hints.ai_family = AF_UNSPEC; // Redundant
     //hints.ai_socktype = addr.type();
     hints.ai_socktype = 0;
@@ -221,21 +218,15 @@ ZArray<SockAddr> ZAddress::lookUp(ZAddress addr){
     ZString serv = ZString::ItoS((zu64)addr.port());
     const char *sptr = serv.isEmpty() ? NULL : serv.cc();
 
+    int status;
+    addrinfo *result;
     if((status = getaddrinfo(aptr, sptr, &hints, &result)) != 0){
         ELOG("ZSocket: getaddrinfo for " << name << " " << (zuint)addr.port() << ": " << status <<": " << gai_strerror(status));
-        return ZArray<SockAddr>();
+        return ZList<SockAddr>();
     }
 
-    ZArray<SockAddr> addrs;
-    for(struct addrinfo *p = result; p != NULL; p = p->ai_next){
-//        void *addr;
-//        if(p->ai_family == AF_INET){
-//            struct sockaddr_in *v4 = (struct sockaddr_in *)p->ai_addr;
-//            addr = &(v4->sin_addr);
-//        } else {
-//            struct sockaddr_in6 *v6 = (struct sockaddr_in6 *)p->ai_addr;
-//            addr = &(v6->sin6_addr);
-//        }
+    ZList<SockAddr> addrs;
+    for(addrinfo *p = result; p != NULL; p = p->ai_next){
         // Other data:
         //      p->ai_family    // Family (AF_INET, AF_INET6)
         //      p->ai_socktype  // Socket type (SOCK_STREAM, SOCK_DGRAM)
@@ -259,17 +250,19 @@ ZArray<SockAddr> ZAddress::lookUp(ZAddress addr){
 
         addrs.push(sockaddr);
     }
+
     freeaddrinfo(result); // free the linked list
     return addrs;
 }
 
 bool ZAddress::populate(sockaddr_storage *ptr) const {
+    //bzero((char*)ptr, sizeof(sockaddr_storage));
     memset(ptr, 0, sizeof(sockaddr_storage));
     if(_family == IPV4){
         sockaddr_in *v4 = (sockaddr_in *)ptr;
         v4->sin_family = AF_INET;
         v4->sin_port = htons(_port);
-        memcpy(&(v4->sin_addr), _v4_addr, sizeof(v4->sin_addr));
+        memcpy(&(v4->sin_addr.s_addr), _v4_addr, sizeof(v4->sin_addr.s_addr));
     } else if(_family == IPV6){
         sockaddr_in6 *v6 = (sockaddr_in6 *)ptr;
         v6->sin6_family = AF_INET6;
@@ -281,6 +274,15 @@ bool ZAddress::populate(sockaddr_storage *ptr) const {
     return true;
 }
 
+socklen_t ZAddress::getSockAddrLen() const {
+    if(_family == IPV4)
+        return sizeof(sockaddr_in);
+    else if(_family == IPV6)
+        return sizeof(sockaddr_in6);
+    else
+        return 0;
+}
+
 void ZAddress::parseAny(ZString str){
     memset(_v6_addr, 0, 16);
 
@@ -290,7 +292,7 @@ void ZAddress::parseAny(ZString str){
             // Try IPv6
             if(!parseIP(IPV6, str)){
                 // Store name
-                _family = HOSTNAME;
+                _family = NAME;
                 _name = str;
             }
         }

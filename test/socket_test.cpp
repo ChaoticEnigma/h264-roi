@@ -18,12 +18,12 @@ int udp_test(){
     ZError::registerSignalHandler(ZError::terminate, stopHandler);
 
     ZDatagramSocket sock;
-    ZAddress bound(8998);
+    //ZAddress bound(8998);
     if(!sock.open()){
         ELOG("Socket Open Fail");
         return 2;
     }
-    LOG("Bound to " << sock.getBoundAddress().debugStr());
+    //LOG("Bound to " << sock.getBoundAddress().debugStr());
     LOG("Sending...");
 
     ZAddress addr("127.0.0.1", 8998);
@@ -45,7 +45,7 @@ int udp_test(){
 //                continue;
 //            }
         } else {
-            LOG("failed to send to " << addr.str());
+            LOG("failed to send to " << addr.debugStr());
         }
         ZThread::usleep(500000);
     }
@@ -88,7 +88,7 @@ int udpserver_test(){
         ZAddress sender;
         ZBinary data;
         if(sock.receive(sender, data)){
-            LOG("from " << sender.str() << " (" << data.size() << "): \"" << data << "\"");
+            LOG("from " << sender.debugStr() << " (" << data.size() << "): \"" << data << "\"");
             count++;
 //            ZAddress addr = sender;
 //            if(sock.send(addr, data)){
