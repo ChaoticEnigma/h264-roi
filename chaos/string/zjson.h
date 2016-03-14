@@ -24,18 +24,22 @@ public:
         NULLVAL,
     };
 public:
-    ZJSON();
+    ZJSON(jsontype type = OBJECT);
     ZJSON(ZString str);
 
     //! Copy constructor.
     ZJSON(const ZJSON &other);
+    //! Assignment operator.
+    ZJSON &operator=(const ZJSON &other);
 
-    //! String assignment overload.
-    ZJSON &operator=(ZString str);
+    //! Encode JSON string.
+    ZString encode();
 
     static bool validJSON(ZString str);
     bool isValid();
 
+    //! String assignment decode overload.
+    ZJSON &operator=(const ZString &str);
     //! Decode JSON string.
     bool decode(ZString str, zu64 *position = nullptr);
 
@@ -48,9 +52,6 @@ public:
     ZString &string();
     ZString &number();
     bool &boolean();
-
-    //! Encode JSON string.
-    ZString encode();
 
 private:
     void initType(jsontype type);

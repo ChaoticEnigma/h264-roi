@@ -10,15 +10,19 @@
 
 namespace LibChaos {
 
-ZJSON::ZJSON() : _type(UNDEF){
-
+ZJSON::ZJSON(jsontype type) : _type(UNDEF){
+    initType(type);
 }
 
-ZJSON::ZJSON(ZString str){
+ZJSON::ZJSON(ZString str) : _type(UNDEF){
     decode(str);
 }
 
-ZJSON::ZJSON(const ZJSON &other){
+ZJSON::ZJSON(const ZJSON &other) : _type(UNDEF){
+    operator=(other);
+}
+
+ZJSON &ZJSON::operator=(const ZJSON &other){
     initType(other._type);
     switch(other._type){
     case OBJECT:
@@ -39,11 +43,48 @@ ZJSON::ZJSON(const ZJSON &other){
     default:
         break;
     }
+    return *this;
 }
 
-ZJSON &ZJSON::operator=(ZString str){
-    decode(str);
-    return *this;
+ZString ZJSON::encode(){
+    ZString tmp;
+    switch(_type){
+    case OBJECT:
+        if(_data.object.size()){
+            tmp = "{ ";
+            for(auto i = _data.object.begin(); i.more(); i.advance()){
+                tmp += (ZString("\"") + i.get() + "\" : ");
+                tmp += _data.object[i.get()].encode();
+                tmp += ", ";
+            }
+            tmp.substr(0, tmp.size()-2);
+            tmp += " }";
+        } else {
+            return "{}";
+        }
+        break;
+    case ARRAY:
+        tmp = "[ ";
+        for(zu64 i = 0; i < _data.array.size(); ++i){
+            tmp += _data.array[i].encode();
+            tmp += ", ";
+        }
+        tmp.substr(0, tmp.size()-2);
+        tmp += " ]";
+        break;
+    case STRING:
+        return ZString("\"") + _data.string + "\"";
+        break;
+    case NUMBER:
+        return _data.number;
+        break;
+    case BOOLEAN:
+        return _data.boolean;
+        break;
+    default:
+        break;
+    }
+    return tmp;
 }
 
 bool isWhitespace(char ch){
@@ -142,6 +183,11 @@ bool ZJSON::validJSON(ZString s){
 
 bool ZJSON::isValid(){
     return (_type != UNDEF);
+}
+
+ZJSON &ZJSON::operator=(const ZString &str){
+    decode(str);
+    return *this;
 }
 
 bool ZJSON::decode(ZString s, zu64 *position){
@@ -344,12 +390,6 @@ bool &ZJSON::boolean(){
     return _data.boolean;
 }
 
-ZString ZJSON::encode(){
-    ZString tmp;
-
-    return tmp;
-}
-
 void ZJSON::initType(ZJSON::jsontype type){
     // Deconstruct existing value
     switch(_type){
@@ -384,6 +424,7 @@ void ZJSON::initType(ZJSON::jsontype type){
         break;
     case NUMBER:
         new (&_data.number) ZString;
+        _data.number = "0";
         break;
     case BOOLEAN:
         _data.boolean = false;
