@@ -7,6 +7,7 @@
 #include "zlog.h"
 #include "zrandom.h"
 #include "zmutex.h"
+#include "zlock.h"
 
 #include <time.h>
 
@@ -34,10 +35,17 @@
 
 namespace LibChaos {
 
+//! Prevent more than one uuid from being generated at one time.
 ZMutex zuidlock;
+//! Make sure previous timestamp it
 zu64 prevtime;
 zu16 prevclock = 0;
 ZBinary prevmac;
+
+//! Cache lock.
+ZMutex cachelock;
+//! Cached MAC address.
+ZBinary cachemac;
 
 /*! Generates an RFC 4122 compliant UUID of \a type.
  *  Default is time-based UUID (type 1).
@@ -50,7 +58,7 @@ ZUID::ZUID(uuidtype type){
         }
 
     } else if(type == TIME){
-        // Time-Clock-MAC Version 1 UUID
+        // Version 1 UUID: Time-Clock-MAC
         zuidlock.lock();
 
         // Get the time
@@ -73,15 +81,17 @@ ZUID::ZUID(uuidtype type){
         _id_octets[6] |= 0x10; // 0b00010000 // Insert UUID version 1
 
         zu16 clock;
-        ZBinary mac = getMACAddress();
+        // Get MAC address, allow caching
+        ZBinary mac = getMACAddress(true);
 
-        // Test previous values
+        // Check previous clock value.
         if(prevclock == 0){
+            // Initialize clock with random value.
             ZRandom randgen;
             ZBinary randomdat = randgen.generate(2);
             clock = (randomdat[0] << 8) | randomdat[1];
-//            random.read(_id_octets + 8, 2);
         } else {
+            // Increment clock if time is time has gone backwards or mac has changed.
             clock = prevclock;
             if(prevtime >= utctime || prevmac != mac){
                 ++clock;
@@ -331,8 +341,16 @@ ZList<ZBinary> ZUID::getMACAddresses(){
     return maclist;
 }
 
-ZBinary ZUID::getMACAddress(){
+ZBinary ZUID::getMACAddress(bool cache){
+    // Get cached MAC address
+    if(cache){
+        ZLock lock(cachelock);
+        if(cachemac.size())
+            return cachemac;
+    }
+
 #ifdef ZUID_WINAPI
+    // Win32 API
     PIP_ADAPTER_INFO adapterInfo;
     ULONG bufLen = sizeof(IP_ADAPTER_INFO);
     adapterInfo = new IP_ADAPTER_INFO[1];
@@ -353,6 +371,9 @@ ZBinary ZUID::getMACAddress(){
             if(validMAC(adapterInfoList->Address)){
                 ZBinary bin(adapterInfoList->Address, 6);
                 delete[] adapterInfo;
+                cachelock.lock();
+                cachemac = bin;
+                cachelock.unlock();
                 return bin;
             }
             adapterInfoList = adapterInfoList->Next;
@@ -361,7 +382,7 @@ ZBinary ZUID::getMACAddress(){
     delete[] adapterInfo;
 
 #elif PLATFORM == MACOSX
-
+    // getifaddrs API
     ifaddrs *iflist = NULL;
     // Get list of interfaces and addresses
     int r = getifaddrs(&iflist);
@@ -376,6 +397,9 @@ ZBinary ZUID::getMACAddress(){
                 // Get first valid MAC
                 if(validMAC(mac)){
                     ZBinary bin(mac, 6);
+                    cachelock.lock();
+                    cachemac = bin;
+                    cachelock.unlock();
                     return bin;
                 }
             }
@@ -384,6 +408,7 @@ ZBinary ZUID::getMACAddress(){
     }
 
 #else
+    // POSIX network inferface API
     struct ifreq ifr;
     struct ifconf ifc;
     char buf[1024];
@@ -404,8 +429,8 @@ ZBinary ZUID::getMACAddress(){
                     // Skip loopback interface
                     if(!(ifr.ifr_flags & IFF_LOOPBACK)){
                         // Get hardware address
-                        // TODO: FreeBSD MAC Address
 #if PLATFORM == FREEBSD
+                        // TODO: FreeBSD MAC Address
                         if(ioctl(sock, SIOCGIFMAC, &ifr) == 0){
                             memcpy(mac_address, ifr.ifr_mac.sa_data, 6);
 #else
@@ -414,6 +439,9 @@ ZBinary ZUID::getMACAddress(){
 #endif
                             if(validMAC(mac_address)){
                                 ZBinary bin(mac_address, 6);
+                                cachelock.lock();
+                                cachemac = bin;
+                                cachelock.unlock();
                                 return bin;
                             } else {
                                 DLOG("in2valid mac");
@@ -437,12 +465,16 @@ ZBinary ZUID::getMACAddress(){
         // socket failed
         DLOG("failed to open socket");
     }
+
 #endif
 
     // Otherwise, generate random 6 bytes
     ZRandom rand;
     ZBinary addr = rand.generate(6);
     addr[0] |= 0x02; // Mark as locally administered to avoid collision with real IEEE 802 MAC Addresses
+    cachelock.lock();
+    cachemac = addr;
+    cachelock.unlock();
     return addr;
 }
 
