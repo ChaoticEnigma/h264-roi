@@ -24,8 +24,13 @@ public:
         NULLVAL,
     };
 public:
-    ZJSON(jsontype type = OBJECT);
-    ZJSON(ZString str);
+    ZJSON(jsontype type = UNDEF);
+
+    ZJSON(ZString str) : ZJSON(STRING){ string() = str; }
+    ZJSON(const char *str) : ZJSON(ZString(str)){}
+    ZJSON(double num) : ZJSON(NUMBER){ number() = num; }
+    ZJSON(int num) : ZJSON((double)num){}
+    ZJSON(bool bl) : ZJSON(BOOLEAN){ boolean() = bl; }
 
     //! Copy constructor.
     ZJSON(const ZJSON &other);
@@ -38,10 +43,27 @@ public:
     static bool validJSON(ZString str);
     bool isValid();
 
-    //! String assignment decode overload.
-    ZJSON &operator=(const ZString &str);
     //! Decode JSON string.
     bool decode(ZString str, zu64 *position = nullptr);
+
+    //! Shortcut for object subscript operator.
+    ZJSON &operator[](ZString key){
+        initType(OBJECT);
+        return object()[key];
+    }
+
+    //! Shortcut for array subscript operator.
+    ZJSON &operator[](zu64 i){
+        initType(ARRAY);
+        return array()[i];
+    }
+
+    //! Shortcut for array add operator.
+    ZJSON &operator<<(ZJSON value){
+        initType(ARRAY);
+        array().push(value);
+        return *this;
+    }
 
     //! Get type of this JSON object.
     jsontype type() const { return _type; }
@@ -50,7 +72,7 @@ public:
     ZMap<ZString, ZJSON> &object();
     ZArray<ZJSON> &array();
     ZString &string();
-    ZString &number();
+    double &number();
     bool &boolean();
 
 private:
@@ -72,7 +94,7 @@ private:
         ZMap<ZString, ZJSON> object;
         ZArray<ZJSON> array;
         ZString string;
-        ZString number;
+        double number;
         bool boolean;
     } _data;
 };
