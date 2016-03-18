@@ -44,18 +44,11 @@ int json_test(){
     checkType(json1);
 
     ZJSON json2;
-    json2.object()["string"] = ZJSON(ZJSON::STRING);
-    json2.object()["string"].string() = "test1";
-    json2.object()["number"] = ZJSON(ZJSON::NUMBER);
-    json2.object()["number"].number() = "12345";
-    json2.object()["object"] = ZJSON(ZJSON::OBJECT);
-    json2.object()["object"].object()["str"] = ZJSON(ZJSON::STRING);
-    json2.object()["object"].object()["str"].string() = "test2";
-    json2.object()["array"] = ZJSON(ZJSON::ARRAY);
-    json2.object()["array"].array().push(ZJSON(ZJSON::STRING));
-    json2.object()["array"].array()[0].string() = "test\"3";
-    json2.object()["array"].array().push(ZJSON(ZJSON::NUMBER));
-    json2.object()["array"].array()[1].number() = "54321";
+    json2["string"] = "test1";
+    json2["number"] = 12345;
+    json2["object"]["str"] = "test2";
+    json2["array"] << "test3";
+    json2["array"] << 54321;
     LOG(json2.encode());
 
     return 0;

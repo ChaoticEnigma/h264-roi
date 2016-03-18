@@ -14,9 +14,9 @@ ZJSON::ZJSON(jsontype type) : _type(UNDEF){
     initType(type);
 }
 
-ZJSON::ZJSON(ZString str) : _type(UNDEF){
-    decode(str);
-}
+//ZJSON::ZJSON(ZString str) : _type(UNDEF){
+//    decode(str);
+//}
 
 ZJSON::ZJSON(const ZJSON &other) : _type(UNDEF){
     operator=(other);
@@ -189,11 +189,6 @@ bool ZJSON::isValid(){
     return (_type != UNDEF);
 }
 
-ZJSON &ZJSON::operator=(const ZString &str){
-    decode(str);
-    return *this;
-}
-
 bool ZJSON::decode(ZString s, zu64 *position){
 //    if(!validJSON(s))
 //        return false;
@@ -330,7 +325,7 @@ bool ZJSON::decode(ZString s, zu64 *position){
         // Number
         case num:
             if(isWhitespace(c) || c == ',' || c == '}'){
-                _data.number = vbuff;
+                _data.number = std::stod(vbuff.str());
                 if(position != nullptr){
                     *position = i;
                 }
@@ -382,7 +377,7 @@ ZString &ZJSON::string(){
     return _data.string;
 }
 
-ZString &ZJSON::number(){
+double &ZJSON::number(){
     if(_type != NUMBER)
         throw ZException("ZJSON object is not Number");
     return _data.number;
@@ -395,6 +390,10 @@ bool &ZJSON::boolean(){
 }
 
 void ZJSON::initType(ZJSON::jsontype type){
+    // Don't destroy objects if types are the same.
+    if(type == _type)
+        return;
+
     // Deconstruct existing value
     switch(_type){
     case OBJECT:
@@ -405,9 +404,6 @@ void ZJSON::initType(ZJSON::jsontype type){
         break;
     case STRING:
         _data.string.~ZString();
-        break;
-    case NUMBER:
-        _data.number.~ZString();
         break;
     default:
         break;
@@ -427,8 +423,7 @@ void ZJSON::initType(ZJSON::jsontype type){
         new (&_data.string) ZString;
         break;
     case NUMBER:
-        new (&_data.number) ZString;
-        _data.number = "0";
+        _data.number = 0.0f;
         break;
     case BOOLEAN:
         _data.boolean = false;
