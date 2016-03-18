@@ -53,7 +53,7 @@ int json_test(){
     json2.object()["object"].object()["str"].string() = "test2";
     json2.object()["array"] = ZJSON(ZJSON::ARRAY);
     json2.object()["array"].array().push(ZJSON(ZJSON::STRING));
-    json2.object()["array"].array()[0].string() = "test3";
+    json2.object()["array"].array()[0].string() = "test\"3";
     json2.object()["array"].array().push(ZJSON(ZJSON::NUMBER));
     json2.object()["array"].array()[1].number() = "54321";
     LOG(json2.encode());

@@ -64,16 +64,20 @@ ZString ZJSON::encode(){
         }
         break;
     case ARRAY:
-        tmp = "[ ";
-        for(zu64 i = 0; i < _data.array.size(); ++i){
-            tmp += _data.array[i].encode();
-            tmp += ", ";
+        if(_data.array.size()){
+            tmp = "[ ";
+            for(zu64 i = 0; i < _data.array.size(); ++i){
+                tmp += _data.array[i].encode();
+                tmp += ", ";
+            }
+            tmp.substr(0, tmp.size()-2);
+            tmp += " ]";
+        } else {
+            return "[]";
         }
-        tmp.substr(0, tmp.size()-2);
-        tmp += " ]";
         break;
     case STRING:
-        return ZString("\"") + _data.string + "\"";
+        return ZString("\"") + ZString::replace(_data.string, "\"", "\\\"") + "\"";
         break;
     case NUMBER:
         return _data.number;
