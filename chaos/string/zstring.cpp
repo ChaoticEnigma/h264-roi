@@ -385,11 +385,14 @@ zu64 ZString::findFirst(const ZString &find, zu64 start) const {
         for(zu64 i = start; i < size(); ++i){
             if(_data[i] == find[j]){
                 if(j == 0)
+                    // Find started
                     startpos = i;
                 ++j;
                 if(j == find.size())
+                    // Find complete
                     return startpos;
             } else if(j != 0){
+                // Restart find on previous character
                 --i;
                 j = 0;
             }
@@ -436,15 +439,16 @@ ZString ZString::replaceFirst(ZString str, const ZString &before, const ZString 
 }
 
 ZString &ZString::replace(const ZString &before, const ZString &after, zu64 max){
+    // No replacement to do
     if(before.size() > size() || before == after)
         return *this;
 
-    bool unlim = max == 0 ? true : false;
     zu64 count = 0;
-    zu64 last = 0;
-    while(unlim || count < max){
-        last = _strReplace(before, after, last);
-        if(last == none)
+    zu64 next = 0;
+    while(max == 0 || count < max){
+        // Replace first occurrence
+        next = _strReplace(before, after, next);
+        if(next == none)
             break;
         ++count;
     }
@@ -922,10 +926,11 @@ bool ZString::_charIsWhitespace(chartype ch){
 }
 
 zu64 ZString::_strReplace(const ZString &before, const ZString &after, zu64 startpos){
-    zu64 pos = findFirst(before, startpos);
-    if(pos != none)
-        substitute(pos, before.size(), after);
-    return pos;
+    zu64 pos = this->findFirst(before, startpos);
+    if(pos == none)
+        return none;
+    this->substitute(pos, before.size(), after);
+    return pos + after.size();
 }
 
 // ///////////////////////////////////////////////////////////////////////////////

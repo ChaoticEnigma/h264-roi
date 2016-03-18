@@ -6,7 +6,7 @@ void checkType(ZJSON &json){
     case ZJSON::OBJECT: {
         LOG("Object: " << json.object().size());
         for(auto i = json.object().begin(); i.more(); i.advance()){
-            LOG("O: " << i.get());
+            LOG(i.get());
             checkType(json.object()[i.get()]);
         }
         break;
@@ -47,7 +47,7 @@ int json_test(){
     json2["string"] = "test1";
     json2["number"] = 12345;
     json2["object"]["str"] = "test2";
-    json2["array"] << "test3";
+    json2["array"] << "test\"3\"";
     json2["array"] << 54321;
     LOG(json2.encode());
 

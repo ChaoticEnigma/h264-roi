@@ -345,6 +345,9 @@ private:
     void _reserve(zu64 size);
     void _resize(zu64 len);
     static bool _charIsWhitespace(chartype ch);
+    /*! Replace first occurrence of \a before with \a after starting at \a startpos.
+     *  \return Index of the next character after replacement.
+     */
     zu64 _strReplace(const ZString &before, const ZString &after, zu64 startpos);
 
     // Unicode Encoding

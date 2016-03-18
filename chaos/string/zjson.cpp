@@ -77,7 +77,7 @@ ZString ZJSON::encode(){
         }
         break;
     case STRING:
-        return ZString("\"") + ZString::replace(_data.string, "\"", "\\\"") + "\"";
+        return ZString("\"") + jsonEscape(_data.string) + "\"";
         break;
     case NUMBER:
         return _data.number;
@@ -433,12 +433,15 @@ void ZJSON::initType(ZJSON::jsontype type){
     }
 }
 
-ZJSON::JSONValue::JSONValue(){
-
-}
-
-ZJSON::JSONValue::~JSONValue(){
-
+ZString ZJSON::jsonEscape(ZString str){
+    str.replace("\\", "\\\\");
+    str.replace("\"", "\\\"");
+    str.replace("\b", "\\b");
+    str.replace("\f", "\\f");
+    str.replace("\n", "\\n");
+    str.replace("\r", "\\r");
+    str.replace("\t", "\\t");
+    return str;
 }
 
 }

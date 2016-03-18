@@ -77,6 +77,7 @@ public:
 
 private:
     void initType(jsontype type);
+    ZString jsonEscape(ZString str);
 
 private:
     //! JSON type.
@@ -88,8 +89,9 @@ private:
 #else
     union JSONValue {
 #endif
-        JSONValue();
-        ~JSONValue();
+        // Required empty constructor/destructor
+        JSONValue(){}
+        ~JSONValue(){}
 
         ZMap<ZString, ZJSON> object;
         ZArray<ZJSON> array;
