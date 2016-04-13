@@ -228,7 +228,7 @@ private:
     }
 
 public:
-    class ZSetIterator : public ZConstSimplexIterator<T> {
+    class ZSetIterator : public ZSimplexConstIterator<T> {
     public:
         ZSetIterator(const ZSet<T> *set, SetElement *start_elem) : _set(set), _elem(start_elem){}
 

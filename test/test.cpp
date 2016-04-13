@@ -18,16 +18,14 @@ int main(int argc, char **argv){
 
         LOG("Testing LibChaos: " << LibChaosDescribe());
 
-        ZList<Test> alltests;
-
         ZList<reg_func> regtests = {
-            string_tests
+            string_tests,
+            sandbox_tests
         };
 
-        for(auto it = regtests.begin(); it.more(); ++it){
+        ZList<Test> alltests;
+        for(auto it = regtests.begin(); it.more(); ++it)
             alltests.append(it.get()());
-        }
-
 
         for(auto it = alltests.begin(); it.more(); ++it){
             LOG(it.get().name);

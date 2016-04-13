@@ -19,11 +19,12 @@ struct Test {
     bool run;
 };
 
-typedef ZArray<Test> (*reg_func)(void);
+typedef ZList<Test> (*reg_func)(void);
 
-int sandbox();
+ZList<Test> sandbox_tests();
+//int sandbox();
 
-int test_forward_iterator(ZConstSimplexIterator<ZString> *it, zu64 size);
+int test_forward_iterator(ZSimplexConstIterator<ZString> *it, zu64 size);
 int test_reverse_iterator(ZDuplexIterator<ZString> *it, zu64 size);
 int test_duplex_iterator(ZDuplexIterator<ZString> *it, zu64 size);
 int test_random_iterator(ZRandomIterator<ZString> *it, zu64 size);
@@ -43,7 +44,7 @@ int graph_test();
 int binary_test();
 
 ZList<Test> string_tests();
-int string_test();
+//int string_test();
 int path_test();
 int json_test();
 

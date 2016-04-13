@@ -1,6 +1,6 @@
 #include "test.h"
 
-int test_forward_iterator(ZConstSimplexIterator<ZString> *it, zu64 size){
+int test_forward_iterator(ZSimplexConstIterator<ZString> *it, zu64 size){
     zu64 cf = 0;
     for(auto i = it; i->more(); i->advance()){
         LOG("f: " << i->get());

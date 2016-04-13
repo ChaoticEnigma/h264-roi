@@ -323,7 +323,7 @@ private:
     }
 
 public:
-    class ZMapIterator : public ZConstSimplexIterator<K> {
+    class ZMapIterator : public ZSimplexConstIterator<K> {
     public:
         ZMapIterator(const ZMap<K,T> *map, MapElement *start_elem) : _map(map), _elem(start_elem){}
 

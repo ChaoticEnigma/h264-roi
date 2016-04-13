@@ -31,25 +31,12 @@ public:
     class ZArrayIterator;
 
 public:
+    //! ZArray default constructor.
     ZArray(ZAllocator<T> *alloc = new ZAllocator<T>) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0){
         reserve(ZARRAY_INITIAL_CAPACITY);
     }
-    ZArray(const T *raw, zu64 size) : ZArray(){
-        reserve(size);
-        for(zu64 i = 0; i < size; ++i)
-            _alloc->construct(&_data[i], raw[i]);
-        _size = size;
-    }
-    ZArray(const T &first) : ZArray(){
-        _alloc->construct(_data, first);
-        _size = 1;
-    }
-    ZArray(const ZArray<T> &other) : ZArray(){
-        reserve(other._size);
-        for(zu64 i = 0; i < other._size; ++i)
-            _alloc->construct(&_data[i], other[i]);
-        _size = other._size;
-    }
+
+    //! ZArray initializer list constructor.
     ZArray(std::initializer_list<T> ls) : ZArray(){
         reserve(ls.size());
         zu64 i = 0;
@@ -58,6 +45,26 @@ public:
             ++i;
         }
         _size = ls.size();
+    }
+
+    ZArray(const T *raw, zu64 size) : ZArray(){
+        reserve(size);
+        for(zu64 i = 0; i < size; ++i)
+            _alloc->construct(&_data[i], raw[i]);
+        _size = size;
+    }
+
+//    ZArray(const T &first) : ZArray(){
+//        _alloc->construct(_data, first);
+//        _size = 1;
+//    }
+
+    //! ZArray copy constructor.
+    ZArray(const ZArray<T> &other) : ZArray(){
+        reserve(other._size);
+        for(zu64 i = 0; i < other._size; ++i)
+            _alloc->construct(&_data[i], other[i]);
+        _size = other._size;
     }
 
     ~ZArray(){

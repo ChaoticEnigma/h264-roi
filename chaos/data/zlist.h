@@ -34,10 +34,13 @@ public:
     };
 
     class ZListIterator;
+    class ZListConstIterator;
 
 public:
+    //! ZList copy constructor.
     ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _size(0), _head(nullptr){}
 
+    //! ZList initializer list constructor.
     ZList(std::initializer_list<T> ls) : ZList(){
         for(auto item = ls.begin(); item < ls.end(); ++item)
             pushBack(*item);
@@ -110,7 +113,7 @@ public:
 
     //! Add each element in \a list to the back of the list.
     void append(const ZList<T> &list){
-        for(auto it = list.begin(); it.more(); ++it){
+        for(auto it = list.cbegin(); it.more(); ++it){
             pushBack(it.get());
         }
     }
@@ -183,6 +186,15 @@ public:
         return ZListIterator(this, _head->prev);
     }
 
+    //! Get a const iterator starting at the beginning of the list.
+    ZListConstIterator cbegin() const {
+        return ZListConstIterator(this, _head);
+    }
+    //! Get a const iterator starting at the end of the list.
+    ZListConstIterator cend() const {
+        return ZListConstIterator(this, _head->prev);
+    }
+
 //    ZString debug() const {
 //        ZString str;
 //        Node *current = _head;
@@ -241,6 +253,41 @@ private:
     }
 
 public:
+    class ZListConstIterator : public ZDuplexConstIterator<T> {
+    public:
+        ZListConstIterator(const ZList<T> *list, const typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _prev(nullptr){}
+
+        const T &get() const override {
+            return _node->data;
+        }
+
+        bool more() const override {
+            return (_prev == nullptr || _node != _list->_head);
+        }
+        void advance() override {
+            _prev = _node;
+            _node = _node->next;
+        }
+
+        bool less() const override {
+            return (_prev == nullptr || _node != _list->_head->prev);
+        }
+        void recede() override {
+            _prev = _node;
+            _node = _node->prev;
+        }
+
+        //bool compare(ZListIterator it) const {
+        //    return (_list == it._list && _node == it._node);
+        //}
+        //ZITERATOR_COMPARE_OVERLOADS(ZListIterator)
+
+    private:
+        const ZList<T> *_list;
+        const typename ZList<T>::Node *_node;
+        const typename ZList<T>::Node *_prev;
+    };
+
     class ZListIterator : public ZDuplexIterator<T> {
     public:
         ZListIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _prev(nullptr){}

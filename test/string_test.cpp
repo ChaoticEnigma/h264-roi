@@ -5,6 +5,8 @@
 #include <cmath>
 #include <iostream>
 
+int string_test();
+
 ZList<Test> string_tests(){
     return {
         { "string-test", string_test, true }
