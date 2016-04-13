@@ -108,6 +108,13 @@ public:
     }
     inline void push(const T &data){ pushBack(data); }
 
+    //! Add each element in \a list to the back of the list.
+    void append(const ZList<T> &list){
+        for(auto it = list.begin(); it.more(); ++it){
+            pushBack(it.get());
+        }
+    }
+
     /*! Remove \a node from the list.
      *  Will not update head.
      */

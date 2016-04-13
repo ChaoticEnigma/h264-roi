@@ -5,6 +5,12 @@
 #include <cmath>
 #include <iostream>
 
+ZList<Test> string_tests(){
+    return {
+        { "string-test", string_test, true }
+    };
+}
+
 int string_test(){
     ZString str1;
     ZString str2("A String!");
@@ -271,6 +277,11 @@ int string_test(){
     ZString fmt1 = ZString::format(fmtstr1, { "test1", "test2" });
     TASSERT(fmt1 == "test1 - test2");
     LOG(fmt1);
+
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    LOG("-- Unicode:"); // //////////////////////////////////////////////////////////////////////////////////////////
+    ZString utf1 = "test";
+    utf1.unicode_debug();
 
     return 0;
 }

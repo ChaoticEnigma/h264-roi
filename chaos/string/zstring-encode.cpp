@@ -24,12 +24,12 @@ namespace wideconvert {
     std::wstring widen(std::string const &s);
 }
 
-void ZString::fromUtf16(std::wstring wstr){
+void ZString::fromwstring(std::wstring wstr){
 //    assign(nowide::narrow(wstr));
     assign(wideconvert::narrow(wstr));
 }
 
-std::wstring ZString::toUtf16() const{
+std::wstring ZString::towstring() const{
 //    return nowide::widen(_data);
     return wideconvert::widen(_data);
 }

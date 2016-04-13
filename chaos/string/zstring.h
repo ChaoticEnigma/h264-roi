@@ -302,6 +302,8 @@ public:
 
     static bool alphaTest(ZString str1, ZString str2);
 
+    void unicode_debug();
+
     //! Allow ZString to be used with std streams.
     friend std::ostream &operator<<(std::ostream &lhs, ZString rhs);
 
@@ -351,11 +353,12 @@ private:
     zu64 _strReplace(const ZString &before, const ZString &after, zu64 startpos);
 
     // Unicode Encoding
-    void fromUtf16(std::wstring wstr);
-    std::wstring toUtf16() const;
+    void fromwstring(std::wstring wstr);
+    std::wstring towstring() const;
 
     static bool isUtf8(ZString str);
 
+    //! Normalize UTF-8 in this string container.
     void unicode_normalize();
 
 private:

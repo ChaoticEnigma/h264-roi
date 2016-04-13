@@ -128,8 +128,11 @@ public:
     static void init();
     static void deInit();
 
+    //! Set the standard output format string for \a level.
     static inline void logLevelStdOut(zlog_level level, ZString fmt){ ZLogWorker::logLevelStdOut(level, fmt); }
+    //! Set the standard error format string for \a level.
     static inline void logLevelStdErr(zlog_level level, ZString fmt){ ZLogWorker::logLevelStdErr(level, fmt); }
+    //! Set the file output format string for \a level on \a file.
     static inline void logLevelFile(zlog_level level, ZPath file, ZString fmt){ ZLogWorker::logLevelFile(level, file, fmt); }
 
 private:

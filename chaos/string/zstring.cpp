@@ -50,39 +50,42 @@ ZString::ZString(const chartype *str) : ZString(){
 }
 
 ZString::ZString(const ZString::chartype *ptr, zu64 length) : ZString(){
-    _resize(length);
-    if(length && ptr)
+    if(ptr != nullptr && length != 0){
+        _resize(length);
         _alloc->rawcopy(ptr, _data, length);
+    }
 }
 
 ZString::ZString(const ZArray<ZString::chartype> &array) : ZString(array.raw(), array.size()){
-
+    // nah
 }
 
-ZString::ZString(std::string str) : ZString(str.c_str(), str.size()){}
+ZString::ZString(std::string str) : ZString(str.c_str(), str.size()){
+    // yeh
+}
 
 std::string ZString::str() const {
     return std::string(_data, size());
 }
 
 ZString::ZString(const wchar_t *wstr) : ZString(){
-    fromUtf16(wstr);
+    fromwstring(wstr);
 }
 
 ZString::ZString(const wchar_t *wstr, zu64 length) : ZString(){
-    fromUtf16(std::wstring(wstr, length));
+    fromwstring(std::wstring(wstr, length));
 }
 
 ZString::ZString(const ZArray<wchar_t> &array) : ZString(array.raw(), array.size()){
-
+    // eh
 }
 
 ZString::ZString(std::wstring wstr) : ZString(){
-    fromUtf16(wstr);
+    fromwstring(wstr);
 }
 
 std::wstring ZString::wstr() const {
-    return toUtf16();
+    return towstring();
 }
 
 ZString::ZString(ZString::chartype ch, zu64 len) : ZString(){

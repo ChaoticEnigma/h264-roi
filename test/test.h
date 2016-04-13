@@ -2,6 +2,7 @@
 #define TEST_H
 
 #include "zlog.h"
+#include "zmap.h"
 
 // Fail Current Test
 #define FAILTEST throw __LINE__;
@@ -9,6 +10,16 @@
 #define TASSERT(X) if(!(X)) throw __LINE__;
 
 using namespace LibChaos;
+
+typedef int (*test_func)(void);
+
+struct Test {
+    ZString name;
+    test_func func;
+    bool run;
+};
+
+typedef ZArray<Test> (*reg_func)(void);
 
 int sandbox();
 
@@ -31,6 +42,7 @@ int graph_test();
 
 int binary_test();
 
+ZList<Test> string_tests();
 int string_test();
 int path_test();
 int json_test();
@@ -60,7 +72,5 @@ int tcpserver_test2();
 int tcpserver_test3();
 
 int error_test();
-
-typedef int (*test_func)(void);
 
 #endif // TEST_H
