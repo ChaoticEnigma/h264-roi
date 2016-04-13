@@ -356,6 +356,8 @@ private:
 
     static bool isUtf8(ZString str);
 
+    void unicode_normalize();
+
 private:
     //! Allocator.
     ZAllocator<chartype> *_alloc;
