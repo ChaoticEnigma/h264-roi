@@ -11,7 +11,7 @@
 
 using namespace LibChaos;
 
-typedef int (*test_func)(void);
+typedef void (*test_func)(void);
 
 struct Test {
     ZString name;

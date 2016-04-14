@@ -1,6 +1,6 @@
 #include "test.h"
 
-int sandbox();
+void sandbox();
 
 ZList<Test> sandbox_tests(){
     return {
@@ -8,7 +8,6 @@ ZList<Test> sandbox_tests(){
     };
 }
 
-int sandbox(){
+void sandbox(){
 
-    return 0;
 }

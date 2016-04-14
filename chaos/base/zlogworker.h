@@ -59,6 +59,9 @@ public:
     static void logLevelStdOut(int type, ZString fmt);
     static void logLevelStdErr(int level, ZString fmt);
     static void logLevelFile(int level, ZPath file, ZString fmt);
+
+    static void setStdOutEnable(bool set);
+    static void setStdErrEnable(bool set);
 private:
     static void *zlogWorker(void *);
     static void sigHandle(int);

@@ -28,7 +28,19 @@ int main(int argc, char **argv){
             alltests.append(it.get()());
 
         for(auto it = alltests.begin(); it.more(); ++it){
-            LOG(it.get().name);
+            ZString status = "PASS";
+
+            ZLogWorker::setStdOutEnable(false);
+            try {
+                it.get().func();
+            } catch(int e){
+                status = ZString("FAIL: ") + e;
+            } catch(ZException e){
+                status = ZString("FAIL: ") + e.what();
+            }
+            ZLogWorker::setStdOutEnable(true);
+
+            LOG(it.get().name.pad(' ', 30) << status);
         }
 
         return 0;
@@ -118,38 +130,4 @@ int main(int argc, char **argv){
         printf("Allocator Failure: %s\n", e.what);
     }
     return -1;
-}
-
-int runTests(ZAssoc<ZString, Test> tests){
-    ArZ errorstrings;
-    for(zu64 i = 0; i < tests.size(); ++i){
-        if(tests[i].run){
-            LOG("=== Starting Test '" << tests.key(i) << "'...");
-            int result = -1;
-            try {
-                result = tests[i].func();
-            } catch(int err){
-                result = err;
-            } catch(ZException err){
-                ZString errstr = "!! Error: " + err.what();
-                errorstrings.push(errstr);
-                ELOG(errstr);
-                err.logStackTrace();
-                result = -2;
-            }
-            if(result != 0){
-                ZString errstr = "!!! Test '" + tests.key(i) + "' Failed: " + result;
-                errorstrings.push(errstr);
-                ELOG(errstr);
-            } else {
-                LOG("=== Finished Test '" << tests.key(i) << "'");
-            }
-        }
-    }
-    if(!errorstrings.isEmpty()){
-        for(zu64 i = 0; i < errorstrings.size(); ++i){
-            LOG("ERR: " << errorstrings[i]);
-        }
-    }
-    return 0;
 }

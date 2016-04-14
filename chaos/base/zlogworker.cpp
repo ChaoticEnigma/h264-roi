@@ -42,6 +42,9 @@ ZMap<ztid, zu32> threadids;
 
 bool ZLogWorker::lastcomp;
 
+bool enablestdout = true;
+bool enablestderr = true;
+
 ZLogWorker::ZLogWorker(){
 //    work = work(zlogWorker);
 
@@ -153,12 +156,16 @@ void ZLogWorker::doLog(LogJob *job){
     for(zu64 i = 0; i < formats.size(); ++i){
         switch(formats.front().type){
             case LogHandler::STDOUT:
-                fprintf(stdout, "%s", makeLog(job, formats.front().fmt).cc());
-                fflush(stdout);
+                if(enablestdout){
+                    fprintf(stdout, "%s", makeLog(job, formats.front().fmt).cc());
+                    fflush(stdout);
+                }
                 break;
             case LogHandler::STDERR:
-                fprintf(stderr, "%s", makeLog(job, formats.front().fmt).cc());
-                fflush(stderr);
+                if(enablestderr){
+                    fprintf(stderr, "%s", makeLog(job, formats.front().fmt).cc());
+                    fflush(stderr);
+                }
                 break;
             case LogHandler::FILE: {
                 ZFile::createDirsTo(formats.front().file);
@@ -198,6 +205,14 @@ void ZLogWorker::logLevelFile(int level, ZPath file, ZString fmt){
     lh.file = file;
     logformats[level].push(lh);
     formatmutex.unlock();
+}
+
+void ZLogWorker::setStdOutEnable(bool set){
+    enablestdout = set;
+}
+
+void ZLogWorker::setStdErrEnable(bool set){
+    enablestderr = set;
 }
 
 }
