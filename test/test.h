@@ -14,24 +14,33 @@ using namespace LibChaos;
 typedef void (*test_func)(void);
 
 struct Test {
+    //Test(const Test &t) : name(t.name), func(t.func), run(t.run), deps(t.deps){}
+    //Test(const Test &t) : name(t.name), func(t.func), run(t.run), deps(t.deps){}
     ZString name;
     test_func func;
     bool run;
+    ZList<ZString> deps;
 };
 
 typedef ZList<Test> (*reg_func)(void);
 
+ZList<Test> allocator_tests();
+ZList<Test> pointer_tests();
+
+ZList<Test> binary_tests();
+ZList<Test> array_tests();
+ZList<Test> list_tests();
+
+ZList<Test> string_tests();
+ZList<Test> path_tests();
+
 ZList<Test> sandbox_tests();
-//int sandbox();
 
 int test_forward_iterator(ZSimplexConstIterator<ZString> *it, zu64 size);
 int test_reverse_iterator(ZDuplexIterator<ZString> *it, zu64 size);
 int test_duplex_iterator(ZDuplexIterator<ZString> *it, zu64 size);
 int test_random_iterator(ZRandomIterator<ZString> *it, zu64 size);
 
-int array_test();
-int assoc_test();
-int stack_test();
 int list_test();
 int queue_test();
 
@@ -43,13 +52,8 @@ int graph_test();
 
 int binary_test();
 
-ZList<Test> string_tests();
-//int string_test();
-int path_test();
 int json_test();
 
-int pointer_test();
-int allocator_test();
 int storage_test();
 
 int thread_test();

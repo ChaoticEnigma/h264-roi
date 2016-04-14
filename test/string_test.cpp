@@ -232,17 +232,17 @@ void string_unicode(){
 
 ZList<Test> string_tests(){
     return {
-        { "string-assign-compare",      string_assign_compare,      true },
-        { "string-concat-append",       string_concat_append,       true },
-        { "string-substr",              string_substr,              true },
-        { "string-insert",              string_insert,              true },
-        { "string-find",                string_find,                true },
-        { "string-substitute",          string_substitute,          true },
-        { "string-replace",             string_replace,             true },
-        { "string-explode-compound",    string_explode_compound,    true },
-        { "string-iterator",            string_iterator,            true },
-        { "string-number",              string_number,              true },
-        { "string-format",              string_format,              true },
-        { "string-unicode",             string_unicode,             true },
+        { "string-assign-compare",      string_assign_compare,      true, {} },
+        { "string-concat-append",       string_concat_append,       true, {} },
+        { "string-substr",              string_substr,              true, {} },
+        { "string-insert",              string_insert,              true, {} },
+        { "string-find",                string_find,                true, {} },
+        { "string-substitute",          string_substitute,          true, {} },
+        { "string-replace",             string_replace,             true, { "string-find" } },
+        { "string-explode-compound",    string_explode_compound,    true, {} },
+        { "string-iterator",            string_iterator,            true, {} },
+        { "string-number",              string_number,              true, {} },
+        { "string-format",              string_format,              true, {} },
+        { "string-unicode",             string_unicode,             true, {} },
     };
 }

@@ -4,7 +4,7 @@ void sandbox();
 
 ZList<Test> sandbox_tests(){
     return {
-        { "sandbox", sandbox, false }
+        { "sandbox", sandbox, false, {} }
     };
 }
 

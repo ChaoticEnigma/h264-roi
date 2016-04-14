@@ -37,7 +37,7 @@ public:
     class ZListConstIterator;
 
 public:
-    //! ZList copy constructor.
+    //! ZList default constructor.
     ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _size(0), _head(nullptr){}
 
     //! ZList initializer list constructor.
@@ -46,6 +46,7 @@ public:
             pushBack(*item);
     }
 
+    //! ZList array initializer.
     ZList(const T *data, zu64 size) : ZList(){
         for(zu64 i = 0; i < size; ++i)
             pushBack(data[i]);
@@ -53,6 +54,9 @@ public:
 
     //! ZList copy constructor.
     ZList(const ZList<T> &other) : ZList(){
+//        for(auto i = other.cbegin(); i.more(); ++i){
+//            pushBack(i.get());
+//        }
         Node *current = other._head;
         for(zu64 i = 0; current != nullptr && i < other.size(); ++i){
             pushBack(current->data);

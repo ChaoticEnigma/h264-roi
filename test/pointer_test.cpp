@@ -23,7 +23,7 @@ void a(ZPointer<AnObject> &sptr, ZPointer<AnObject> ptr){
     //sptr.swap(ptr);
 }
 
-int pointer_test(){
+void pointer(){
 
     ZPointer<AnObject> sptr;
 
@@ -47,6 +47,10 @@ int pointer_test(){
     LOG(sptr.ptr()->str << " " << sptr.count());
 
     aptr.release();
+}
 
-    return 0;
+ZList<Test> pointer_tests(){
+    return {
+        { "pointer", pointer, true, {} },
+    };
 }

@@ -1,15 +1,14 @@
 #include "test.h"
 
-int path_test(){
-    LOG("-- Parse:");  // /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+void path_parse(){
     ZPath path1 = ZString("/some/odd/../complic/ated/../path");
     LOG(path1.prefix());
     LOG(path1.absolute());
     LOG(path1);
+}
 
-    LOG("-- Sanitize:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
-
+void path_sanitize(){
+    ZPath path1 = ZString("/some/odd/../complic/ated/../path");
     path1.sanitize();
     LOG(path1);
     TASSERT(path1.data() == ArZ({ "some","complic","path" }) && path1.absolute());
@@ -23,9 +22,9 @@ int path_test(){
     path3.sanitize();
     LOG(path3);
     TASSERT(path3.data() == ArZ({ "..","..","path" }) && path3.absolute());
+}
 
-    LOG("-- Relative To:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
-
+void path_relative(){
     ZPath path4 = "/some/odd/../complic/ated/../path";
     ZPath path5 = "/";
     LOG(path4);
@@ -65,6 +64,12 @@ int path_test(){
     path10.relativeTo(path11);
     LOG(path10);
     TASSERT(path10.data() == ArZ({ "..","..","thing.obj" }) && !path10.absolute());
+}
 
-    return 0;
+ZList<Test> path_tests(){
+    return {
+        { "path-parse",     path_parse,     true, {} },
+        { "path-sanitize",  path_sanitize,  true, {} },
+        { "path-relative",  path_relative,  true, {} },
+    };
 }

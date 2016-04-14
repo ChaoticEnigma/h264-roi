@@ -5,6 +5,19 @@
 
 int runTests(ZAssoc<ZString, Test> tests);
 
+void addTest(Test &test, ZMap<ZString, Test> &testmap, ZList<Test> &testlistout, ZMap<ZString, Test> &testmapout){
+    // Check for dependencies
+    for(auto j = test.deps.begin(); j.more(); ++j){
+        if(testmap.contains(j.get()))
+            addTest(testmap[j.get()], testmap, testlistout, testmapout);
+    }
+    if(!testmapout.contains(test.name)){
+        testlistout.push(test);
+        //testmapout[test.name] = test;
+        testmapout.add(test.name, test);
+    }
+}
+
 int main(int argc, char **argv){
     try {
         //ZLog::init(); // BUG: threaded zlog sometimes crashes
@@ -18,29 +31,60 @@ int main(int argc, char **argv){
 
         LOG("Testing LibChaos: " << LibChaosDescribe());
 
+        // Test registration functions
         ZList<reg_func> regtests = {
+            allocator_tests,
+            pointer_tests,
+
+            binary_tests,
+            array_tests,
+            list_tests,
+
             string_tests,
+            path_tests,
             sandbox_tests
         };
 
+        // List tests
         ZList<Test> alltests;
-        for(auto it = regtests.begin(); it.more(); ++it)
-            alltests.append(it.get()());
+        for(auto i = regtests.begin(); i.more(); ++i)
+            alltests.append(i.get()());
 
-        for(auto it = alltests.begin(); it.more(); ++it){
+        // Build map
+        ZMap<ZString, Test> testmap;
+        for(auto i = alltests.begin(); i.more(); ++i)
+            testmap.add(i.get().name, i.get());
+
+        // Resolve dependencies
+        ZMap<ZString, Test> testm;
+        ZList<Test> tests;
+        for(auto i = alltests.begin(); i.more(); ++i){
+            addTest(i.get(), testmap, tests, testm);
+        }
+
+        // Run tests
+        for(auto i = alltests.begin(); i.more(); ++i){
+            Test test = i.get();
             ZString status = "PASS";
 
             ZLogWorker::setStdOutEnable(false);
             try {
-                it.get().func();
+                test.func();
             } catch(int e){
-                status = ZString("FAIL: ") + e;
+                status = ZString("FAIL: line ") + e;
             } catch(ZException e){
                 status = ZString("FAIL: ") + e.what();
             }
             ZLogWorker::setStdOutEnable(true);
 
-            LOG(it.get().name.pad(' ', 30) << status);
+            ZString deps;
+            for(auto j = test.deps.begin(); j.more(); ++j){
+                deps += j.get();
+                deps += ",";
+            }
+            deps.substr(deps.size()-1);
+
+            LOG(test.name.pad(' ', 30) << status);
         }
 
         return 0;

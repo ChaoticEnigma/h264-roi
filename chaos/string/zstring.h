@@ -386,7 +386,17 @@ inline bool operator!=(const ZString &lhs, const ZString &rhs){
 }
 
 // ZString specialization ZHash
-ZHASH_USER_SPECIALIAZATION(ZString, (const ZString &str), (str.bytes(), str.size()), {})
+//ZHASH_USER_SPECIALIAZATION(ZString, (const ZString &str), (str.bytes(), str.size()), {})
+
+template <ZHashBase::hashMethod M> class ZHash<ZString, M> : public ZHashMethod<M> {
+public:
+    ZHash(const ZString &str) : ZHashMethod<M>(str.bytes(), str.size()){}
+};
+
+template <> class ZHash<ZString, ZHashBase::defaultHash> : public ZHashMethod<ZHashBase::defaultHash> {
+public:
+    ZHash(const ZString &str) : ZHashMethod<ZHashBase::defaultHash>(str.bytes(), str.size()){}
+};
 
 } // namespace LibChaos
 
