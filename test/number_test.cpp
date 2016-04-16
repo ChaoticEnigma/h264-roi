@@ -4,7 +4,7 @@
 
 #define printnum(A) LOG(ZString::ItoS((zu64)(A), 2, 64).insert(56, " ").insert(48, " ").insert(40, " ").insert(32, " ").insert(24, " ").insert(16, " ").insert(8, " ") << " " << (A))
 
-int number_test(){
+void number(){
     zu32 num1 = 453;
     printnum(num1);
     printnum(num1 + num1);
@@ -34,6 +34,10 @@ int number_test(){
     // 1 / 81 = 0.[012345679] = 0.012345679012345679012345679...
     // 22 / 7 = 3.[142857] = 3.142857142857142857...
     // 3227 / 555 = 5.8[144] = 5.8144144144...
+}
 
-    return 0;
+ZArray<Test> number_tests(){
+    return {
+        { "number", number, true, {} },
+    };
 }

@@ -36,8 +36,6 @@ void file_write(){
 
 void file_list(){
     ZPath near = "testdir";
-    ZPath farfile = near + "a/b/c/d/e/f.dat";
-    ZPath nearfile = near + "near.dat";
 
     ZArray<ZPath> nearfiles = ZFile::listFiles(near, false);
     for(zu64 i = 0; i < nearfiles.size(); ++i)

@@ -4,17 +4,15 @@
 #include "zlist.h"
 #include "zhash.h"
 
-int random_test(){
-    ZRandom random;
-    LOG(random.genzu());
-
-    return 0;
-}
-
 #define PADLEN 16
 #define PAD(X) ZString(X).pad(' ', PADLEN)
 
-int uid_test(){
+void random(){
+    ZRandom random;
+    LOG(random.genzu());
+}
+
+void uid(){
     ZUID uid1;
 
     ZString uidstr2 = "abcdef00-1234-5678-9012-fedcbaabcdef";
@@ -44,6 +42,11 @@ int uid_test(){
     LOG(ZString("MAC:").pad(' ', PADLEN) << macstr << " " << mac.size() << " " << mac);
 
     ZList<ZBinary> maclist = ZUID::getMACAddresses();
+}
 
-    return 0;
+ZArray<Test> misc_tests(){
+    return {
+        { "random", random, true, {} },
+        { "uid",    uid,    true, {} },
+    };
 }

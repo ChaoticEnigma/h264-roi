@@ -50,9 +50,13 @@ int main(int argc, char **argv){
 
             hash_tests,
             graph_tests,
+            misc_tests,
+            number_tests,
 
             file_tests,
             image_tests,
+
+            thread_tests,
 
             sandbox_tests
         };
@@ -76,8 +80,8 @@ int main(int argc, char **argv){
 
         // Run tests
         ZMap<ZString, int> teststatus;
-        for(auto i = tests.begin(); i.more(); ++i){
-            Test test = i.get();
+        for(zu64 i = 0; i < tests.size(); ++i){
+            Test test = tests[i];
             ZString status = " PASS";
 
             bool skip = false;
@@ -88,7 +92,9 @@ int main(int argc, char **argv){
                 }
             }
 
-            if(!skip){
+            if(!test.run){
+                status = "-SKIP: disabled";
+            } else if(!skip){
                 ZLogWorker::setStdOutEnable(false);
                 try {
                     test.func();
@@ -103,7 +109,7 @@ int main(int argc, char **argv){
                 ZLogWorker::setStdOutEnable(true);
             }
 
-            LOG(test.name.pad(' ', 30) << status);
+            LOG(i << " " << test.name.pad(' ', 30) << status);
         }
 
         return 0;

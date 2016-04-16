@@ -12,6 +12,7 @@ void *thread_func(void * /*zarg*/){
     LOG("waited 2 " << ZThread::thisTid());
     return NULL;
 }
+
 void *thread_func2(void *zarg){
     ZThreadArg *arg = (ZThreadArg*)zarg;
     LOG("running " << ZThread::thisTid());
@@ -25,7 +26,7 @@ void *thread_func2(void *zarg){
     return NULL;
 }
 
-int thread_test(){
+void thread(){
     LOG("=== Thread Test...");
     /*
     LOG("this text " << ZThread::thisTid());
@@ -46,7 +47,6 @@ int thread_test(){
     LOG("stopped " << thr2.tid());
     thr2.join();
     LOG("joined " << thr2.tid());
-    return 0;
 }
 
 //
@@ -104,7 +104,7 @@ HANDLE CreateChild(const char *name){
     return hThread;
 }
 
-int mutex_test(){
+void mutex(){
     HANDLE hT[4];
     InitializeCriticalSection(&gCS);
 
@@ -131,8 +131,15 @@ int mutex_test(){
 
 #else
 
-int mutex_test(){
-    return 0;
+void mutex(){
+
 }
 
 #endif
+
+ZArray<Test> thread_tests(){
+    return {
+        { "thread", thread, false, {} },
+        { "mutex",  mutex,  false, {} },
+    };
+}

@@ -36,9 +36,13 @@ ZArray<Test> json_tests();
 
 ZArray<Test> hash_tests();
 ZArray<Test> graph_tests();
+ZArray<Test> misc_tests();
+ZArray<Test> number_tests();
 
 ZArray<Test> file_tests();
 ZArray<Test> image_tests();
+
+ZArray<Test> thread_tests();
 
 ZArray<Test> sandbox_tests();
 
@@ -46,38 +50,5 @@ int test_forward_iterator(ZSimplexConstIterator<ZString> *it, zu64 size);
 int test_reverse_iterator(ZDuplexIterator<ZString> *it, zu64 size);
 int test_duplex_iterator(ZDuplexIterator<ZString> *it, zu64 size);
 int test_random_iterator(ZRandomIterator<ZString> *it, zu64 size);
-
-int list_test();
-int queue_test();
-
-int hash_test();
-int set_test();
-int map_test();
-
-int json_test();
-
-int storage_test();
-
-int thread_test();
-int mutex_test();
-
-int number_test();
-
-int random_test();
-int uid_test();
-
-int file_test();
-int image_test();
-int pdf_test();
-
-int udp_test();
-int udpserver_test();
-
-int tcp_test();
-int tcpserver_test();
-int tcpserver_test2();
-int tcpserver_test3();
-
-int error_test();
 
 #endif // TEST_H
