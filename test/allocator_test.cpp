@@ -14,9 +14,9 @@ void allocator_void(){
     alloc2.dealloc(test2);
 }
 
-ZList<Test> allocator_tests(){
+ZArray<Test> allocator_tests(){
     return {
-        { "allocator-char", allocator_char, true, {} },
+        { "allocator-char", allocator_char, true, { "allocator-void" } },
         { "allocator-void", allocator_void, true, {} },
     };
 }

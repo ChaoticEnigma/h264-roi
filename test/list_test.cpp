@@ -79,7 +79,7 @@ void queue(){
     ZQueue<int> tst1;
 }
 
-ZList<Test> list_tests(){
+ZArray<Test> list_tests(){
     return {
         { "list-push-pop",  list_push_pop,  true, {} },
         { "list-construct", list_construct, true, {} },

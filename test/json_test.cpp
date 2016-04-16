@@ -35,7 +35,7 @@ void checkType(ZJSON &json){
     }
 }
 
-int json_test(){
+void json(){
     ZString str1 = "{ \"object\" : { \"str\" : \"strval\" , \"num\" : 12345 } , \"array\" : [ \"val1\" , \"val2\" ] , \"string\" : \"stringval\" , \"number\" : 54321 }";
     LOG(str1);
     ZJSON json1;
@@ -50,6 +50,10 @@ int json_test(){
     json2["array"] << "test\"3\"";
     json2["array"] << 54321;
     LOG(json2.encode());
+}
 
-    return 0;
+ZArray<Test> json_tests(){
+    return {
+        { "json", json, true, {} },
+    };
 }

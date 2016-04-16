@@ -18,10 +18,8 @@
 #define PNGSUITE_DIR    "pngsuite"
 #define TESTJPEG_DIR    "testjpeg/imagetestsuite/jpg"
 
-int image_test(){
-
-    // 8-bit
-
+// 8-bit
+void encode_8bit(){
     zu64 width = 1920;
     zu64 height = 1080;
     LOG("Creating " << width << "x" << height << " 8-bit color image");
@@ -73,9 +71,12 @@ int image_test(){
     out1.clear();
     image1.encodeFormat(out1);
     TASSERT(ZFile::writeBinary(GEN_INVERT_PNG, out1));
+}
 
-    // 16-bit
-
+// 16-bit
+void encode_16bit(){
+    zu64 width = 1920;
+    zu64 height = 1080;
     LOG("Creating " << width << "x" << height << " 16-bit color image");
     ZImage image2(width, height, ZImage::RGB48);
     image2.newData();
@@ -86,7 +87,7 @@ int image_test(){
         ((zu16 *)image2.pixelAt(i))[2] = 0xFFFF;
     }
 
-    o = (width - (height+200)) / 2;
+    zu64 o = (width - (height+200)) / 2;
     for(zu64 y = 0; y < image2.height(); y++){
         for(zu64 x = 0; x < 200; ++x){
             ((zu16 *)image2.pixelAt(x+o, y))[0] = 0xFFFF;
@@ -100,9 +101,10 @@ int image_test(){
     image2.setFormat(ZImage::PNG);
     image2.encodeFormat(out2);
     TASSERT(ZFile::writeBinary(GEN_16_PNG, out2));
+}
 
-    // Convert Transparent WebP to PNG
-
+// Convert Transparent WebP to PNG
+void convert_webp_png(){
     ZBinary bin3i;
     ZFile::readBinary(DICE_WEBP, bin3i);
     ZImage image3(bin3i);
@@ -110,8 +112,10 @@ int image_test(){
     ZBinary bin3o;
     image3.encodeFormat(bin3o);
     ZFile::writeBinary(DICE_PNG, bin3o);
+}
 
-    // Convert JPEG to PNG
+// Convert JPEG to PNG
+void convert_jpeg_png(){
     ZBinary bin4i;
     ZFile::readBinary(TREE_JPEG, bin4i);
     ZImage image4(bin4i);
@@ -119,8 +123,10 @@ int image_test(){
     ZBinary bin4o;
     image4.encodeFormat(bin4o);
     ZFile::writeBinary(TREE_PNG, bin4o);
+}
 
-    // JPEG Decode Test
+// JPEG Decode Test
+void decode_jpeg(){
     ZArray<ZPath> list1 = ZFile::listFiles(TESTJPEG_DIR);
     for(zu64 i = 0; i < list1.size(); ++i){
         ZPath jfile = list1[i];
@@ -137,8 +143,10 @@ int image_test(){
             ZFile::writeBinary(jfile, jout);
         }
     }
+}
 
-    // PNG Decode Test
+// PNG Decode Test
+void decode_png(){
     ZArray<ZPath> list2 = ZFile::listFiles(TESTPNG_DIR);
     for(zu64 i = 0; i < list2.size(); ++i){
         ZPath pfile = list2[i];
@@ -155,6 +163,15 @@ int image_test(){
             ZFile::writeBinary(pfile, pout);
         }
     }
+}
 
-    return 0;
+ZArray<Test> image_tests(){
+    return {
+        { "encode-8bit",        encode_8bit,        true, {} },
+        { "encode-16bit",       encode_16bit,       true, {} },
+        { "convert-webp-png",   convert_webp_png,   true, {} },
+        { "convert-jpeg-png",   convert_jpeg_png,   true, {} },
+        { "decode-jpeg",        decode_jpeg,        true, {} },
+        { "decode-png",         decode_png,         true, {} },
+    };
 }

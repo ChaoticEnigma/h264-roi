@@ -100,19 +100,24 @@ void string_substitute(){
 }
 
 void string_replace(){
-    ZString replace2 = "strposposposposdddddddd";
-    ZString rep2 = ZString::replaceRecursive(replace2, "strpos", "bbbstr");
+    ZString replace1 = "strposposposposdddddddd";
+    ZString rep1 = ZString::replaceRecursive(replace1, "strpos", "bbbstr");
+    LOG(rep1);
+    TASSERT(rep1 == "bbbbbbbbbbbbstrdddddddd");
+
+    ZString replace2 = "a";
+    ZString rep2 = ZString::replaceRecursive(replace2, "a", "bad", 5);
     LOG(rep2);
-    TASSERT(rep2 == "bbbbbbbbbbbbstrdddddddd");
+    TASSERT(rep2 == "bbbbbaddddd");
 
-    ZString replace3 = "a";
-    ZString rep3 = ZString::replaceRecursive(replace3, "a", "bad", 5);
-    LOG(rep3);
-    TASSERT(rep3 == "bbbbbaddddd");
-
-    replace2.replaceRecursive("strpos", "posstr", 3);
-    LOG(replace2);
-    TASSERT(replace2 == "posposposstrposdddddddd");
+    ZString replace3 = "strposposposposdddddddd";
+    // strposposposposdddddddd
+    // posstrposposposdddddddd
+    // posposstrposposdddddddd
+    // posposposstrposdddddddd
+    replace3.replaceRecursive("strpos", "posstr", 3);
+    LOG(replace3);
+    TASSERT(replace3 == "posposposstrposdddddddd");
 
     ZString repalce4 = "strstrsstrstrsstrs";
     ZString rep4 = ZString::replace(repalce4, "strs", "aaaa");
@@ -230,19 +235,19 @@ void string_unicode(){
     utf1.unicode_debug();
 }
 
-ZList<Test> string_tests(){
+ZArray<Test> string_tests(){
     return {
-        { "string-assign-compare",      string_assign_compare,      true, {} },
-        { "string-concat-append",       string_concat_append,       true, {} },
-        { "string-substr",              string_substr,              true, {} },
-        { "string-insert",              string_insert,              true, {} },
-        { "string-find",                string_find,                true, {} },
-        { "string-substitute",          string_substitute,          true, {} },
+        { "string-assign-compare",      string_assign_compare,      true, { "allocator-char" } },
+        { "string-concat-append",       string_concat_append,       true, { "string-assign-compare" } },
+        { "string-substr",              string_substr,              true, { "string-assign-compare" } },
+        { "string-insert",              string_insert,              true, { "string-assign-compare" } },
+        { "string-find",                string_find,                true, { "string-assign-compare" } },
+        { "string-substitute",          string_substitute,          true, { "string-assign-compare" } },
         { "string-replace",             string_replace,             true, { "string-find" } },
-        { "string-explode-compound",    string_explode_compound,    true, {} },
-        { "string-iterator",            string_iterator,            true, {} },
-        { "string-number",              string_number,              true, {} },
-        { "string-format",              string_format,              true, {} },
-        { "string-unicode",             string_unicode,             true, {} },
+        { "string-explode-compound",    string_explode_compound,    true, { "string-find" } },
+        { "string-iterator",            string_iterator,            true, { "string-assign-compare" } },
+        { "string-number",              string_number,              true, { "string-assign-compare" } },
+        { "string-format",              string_format,              true, { "string-replace" } },
+        { "string-unicode",             string_unicode,             true, { "string-assign-compare" } },
     };
 }

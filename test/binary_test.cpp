@@ -35,10 +35,10 @@ void binary_read_write(){
     TASSERT(num2 == num2o);
 }
 
-ZList<Test> binary_tests(){
+ZArray<Test> binary_tests(){
     return {
         { "binary-construct",   binary_construct,   true, {} },
-        { "binary-find",        binary_find,        true, {} },
+        { "binary-find",        binary_find,        true, { "binary-construct" } },
         { "binary-read-write",  binary_read_write,  true, {} },
     };
 }

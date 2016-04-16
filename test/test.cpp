@@ -5,15 +5,18 @@
 
 int runTests(ZAssoc<ZString, Test> tests);
 
-void addTest(Test &test, ZMap<ZString, Test> &testmap, ZList<Test> &testlistout, ZMap<ZString, Test> &testmapout){
+void addTest(Test &test, ZMap<ZString, Test> &testmap, ZArray<Test> &testout, ZMap<ZString, Test> &testmapout){
     // Check for dependencies
-    for(auto j = test.deps.begin(); j.more(); ++j){
-        if(testmap.contains(j.get()))
-            addTest(testmap[j.get()], testmap, testlistout, testmapout);
+    for(auto i = test.deps.begin(); i.more(); ++i){
+        if(testmap.contains(*i)){
+            addTest(testmap[*i], testmap, testout, testmapout);
+        } else {
+            LOG("Skipping unknown dependency " << *i);
+        }
     }
+    // Add test
     if(!testmapout.contains(test.name)){
-        testlistout.push(test);
-        //testmapout[test.name] = test;
+        testout.push(test);
         testmapout.add(test.name, test);
     }
 }
@@ -32,8 +35,9 @@ int main(int argc, char **argv){
         LOG("Testing LibChaos: " << LibChaosDescribe());
 
         // Test registration functions
-        ZList<reg_func> regtests = {
+        ZArray<reg_func> regtests = {
             allocator_tests,
+            storage_tests,
             pointer_tests,
 
             binary_tests,
@@ -42,11 +46,19 @@ int main(int argc, char **argv){
 
             string_tests,
             path_tests,
+            json_tests,
+
+            hash_tests,
+            graph_tests,
+
+            file_tests,
+            image_tests,
+
             sandbox_tests
         };
 
         // List tests
-        ZList<Test> alltests;
+        ZArray<Test> alltests;
         for(auto i = regtests.begin(); i.more(); ++i)
             alltests.append(i.get()());
 
@@ -57,115 +69,44 @@ int main(int argc, char **argv){
 
         // Resolve dependencies
         ZMap<ZString, Test> testm;
-        ZList<Test> tests;
+        ZArray<Test> tests;
         for(auto i = alltests.begin(); i.more(); ++i){
             addTest(i.get(), testmap, tests, testm);
         }
 
         // Run tests
-        for(auto i = alltests.begin(); i.more(); ++i){
+        ZMap<ZString, int> teststatus;
+        for(auto i = tests.begin(); i.more(); ++i){
             Test test = i.get();
-            ZString status = "PASS";
+            ZString status = " PASS";
 
-            ZLogWorker::setStdOutEnable(false);
-            try {
-                test.func();
-            } catch(int e){
-                status = ZString("FAIL: line ") + e;
-            } catch(ZException e){
-                status = ZString("FAIL: ") + e.what();
-            }
-            ZLogWorker::setStdOutEnable(true);
-
-            ZString deps;
+            bool skip = false;
             for(auto j = test.deps.begin(); j.more(); ++j){
-                deps += j.get();
-                deps += ",";
+                if(teststatus.contains(*j) && teststatus[*j] == 2){
+                    skip = true;
+                    status = ZString("-SKIP: ") + *j;
+                }
             }
-            deps.substr(deps.size()-1);
+
+            if(!skip){
+                ZLogWorker::setStdOutEnable(false);
+                try {
+                    test.func();
+                    teststatus[test.name] = 1;
+                } catch(int e){
+                    status = ZString("!FAIL: line ") + e;
+                    teststatus[test.name] = 2;
+                } catch(ZException e){
+                    status = ZString("!FAIL: ") + e.what();
+                    teststatus[test.name] = 2;
+                }
+                ZLogWorker::setStdOutEnable(true);
+            }
 
             LOG(test.name.pad(' ', 30) << status);
         }
 
         return 0;
-
-//        ZMap<ZString, Test> alltests = {
-//            { "allocator",  { allocator_test,   true } },
-//            { "pointer",    { pointer_test,     true } },
-//            { "storage",    { storage_test,     true } },
-
-//            { "binary",     { binary_test,      true } },
-
-//            { "array",      { array_test,       true } },
-//            { "assoc",      { assoc_test,       true } },
-//            { "stack",      { stack_test,       true } },
-//            { "list",       { list_test,        true } },
-//            { "queue",      { queue_test,       true } },
-
-//            { "graph",      { graph_test,       false } },
-
-//            { "hash",       { hash_test,        true } },
-//            { "set",        { set_test,         true } },
-//            { "map",        { map_test,         true } },
-
-//            { "string",     { string_test,      true } },
-//            { "path",       { path_test,        true } },
-//            { "json",       { json_test,        true } },
-
-//            { "thread",     { thread_test,      true } },
-//            { "mutex",      { mutex_test,       true } },
-
-//            { "number",     { number_test,      true } },
-//            { "uid",        { uid_test,         true } },
-
-//            { "file",       { file_test,        true } },
-//            { "image",      { image_test,       true } },
-//            { "pdf",        { pdf_test,         true } },
-
-//            { "udp",        { udp_test,         false } },
-//            { "udpserver",  { udpserver_test,   false } },
-//            { "tcp",        { tcp_test,         false } },
-//            { "tcpserver",  { tcpserver_test,   false } },
-//            { "tcpserver2", { tcpserver_test2,  false } },
-//            { "tcpserver3", { tcpserver_test3,  false } },
-
-//            { "sandbox",    { sandbox,          false } },
-
-//            { "error",      { error_test,       false } },
-//        };
-
-//        bool all = false;
-//        if(argc > 1){
-//            if(ZString(argv[1]) == "all"){
-//                all = true;
-//            } else {
-//                for(int i = 1; i < argc; ++i){
-//                    ZString key = argv[i];
-//                    if()
-//                     if(alltests.exists(key)){
-//                        runtests.push(key, alltests[key]);
-//                        runtests[key].run = true;
-//                        runstr << key << ",";
-//                    } else {
-//                        LOG("No Test " << key << ", Ignoring");
-//                    }
-//                }
-//            }
-//            runstr.strip(',');
-//        } else {
-//            all = true;
-//        }
-
-//        if(all){
-//            runtests = alltests;
-//            runstr = "All";
-//        }
-
-//        LOG("*** Starting Tests \"" << runstr << "\"");
-//        int ret = runTests(runtests);
-//        LOG("*** Finished Tests \"" << runstr << "\"");
-//        return ret;
-
     } catch(ZException e){
         printf("Catastrophic Failure: %s - %d\n%s\n", e.what().cc(), e.code(), e.traceStr().cc());
     } catch(zexception e){

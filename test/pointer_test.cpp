@@ -49,7 +49,7 @@ void pointer(){
     aptr.release();
 }
 
-ZList<Test> pointer_tests(){
+ZArray<Test> pointer_tests(){
     return {
         { "pointer", pointer, true, {} },
     };

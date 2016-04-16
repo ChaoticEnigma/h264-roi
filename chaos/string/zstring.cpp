@@ -395,8 +395,8 @@ zu64 ZString::findFirst(const ZString &find, zu64 start) const {
                     // Find complete
                     return startpos;
             } else if(j != 0){
-                // Restart find on previous character
-                --i;
+                // Restart find after startpos
+                i = startpos;
                 j = 0;
             }
         }

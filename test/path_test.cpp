@@ -66,10 +66,10 @@ void path_relative(){
     TASSERT(path10.data() == ArZ({ "..","..","thing.obj" }) && !path10.absolute());
 }
 
-ZList<Test> path_tests(){
+ZArray<Test> path_tests(){
     return {
-        { "path-parse",     path_parse,     true, {} },
-        { "path-sanitize",  path_sanitize,  true, {} },
-        { "path-relative",  path_relative,  true, {} },
+        { "path-parse",     path_parse,     true, { "string-explode-compound" } },
+        { "path-sanitize",  path_sanitize,  true, { "path-parse" } },
+        { "path-relative",  path_relative,  true, { "path-parse" } },
     };
 }

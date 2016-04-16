@@ -71,14 +71,14 @@ void stack(){
     LOG(i);
 }
 
-ZList<Test> array_tests(){
+ZArray<Test> array_tests(){
     return {
         { "array-push",         array_push,         true, {} },
         { "array-construct",    array_construct,    true, {} },
-        { "array-initializer",  array_initializer,  true, {} },
-        { "array-insert",       array_insert,       true, {} },
-        { "array-erase",        array_erase,        true, {} },
-        { "array-iterator",     array_iterator,     true, {} },
+        { "array-initializer",  array_initializer,  true, { "array-construct" } },
+        { "array-insert",       array_insert,       true, { "array-construct" } },
+        { "array-erase",        array_erase,        true, { "array-construct" } },
+        { "array-iterator",     array_iterator,     true, { "array-construct" } },
         { "stack",              stack,              true, {} },
     };
 }

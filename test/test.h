@@ -14,27 +14,33 @@ using namespace LibChaos;
 typedef void (*test_func)(void);
 
 struct Test {
-    //Test(const Test &t) : name(t.name), func(t.func), run(t.run), deps(t.deps){}
-    //Test(const Test &t) : name(t.name), func(t.func), run(t.run), deps(t.deps){}
     ZString name;
     test_func func;
     bool run;
-    ZList<ZString> deps;
+    ZArray<ZString> deps;
 };
 
-typedef ZList<Test> (*reg_func)(void);
+typedef ZArray<Test> (*reg_func)(void);
 
-ZList<Test> allocator_tests();
-ZList<Test> pointer_tests();
+ZArray<Test> allocator_tests();
+ZArray<Test> storage_tests();
+ZArray<Test> pointer_tests();
 
-ZList<Test> binary_tests();
-ZList<Test> array_tests();
-ZList<Test> list_tests();
+ZArray<Test> binary_tests();
+ZArray<Test> array_tests();
+ZArray<Test> list_tests();
 
-ZList<Test> string_tests();
-ZList<Test> path_tests();
+ZArray<Test> string_tests();
+ZArray<Test> path_tests();
+ZArray<Test> json_tests();
 
-ZList<Test> sandbox_tests();
+ZArray<Test> hash_tests();
+ZArray<Test> graph_tests();
+
+ZArray<Test> file_tests();
+ZArray<Test> image_tests();
+
+ZArray<Test> sandbox_tests();
 
 int test_forward_iterator(ZSimplexConstIterator<ZString> *it, zu64 size);
 int test_reverse_iterator(ZDuplexIterator<ZString> *it, zu64 size);
@@ -47,10 +53,6 @@ int queue_test();
 int hash_test();
 int set_test();
 int map_test();
-
-int graph_test();
-
-int binary_test();
 
 int json_test();
 
