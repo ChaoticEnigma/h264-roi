@@ -249,5 +249,21 @@ ZArray<Test> string_tests(){
         { "string-number",              string_number,              true, { "string-assign-compare" } },
         { "string-format",              string_format,              true, { "string-replace" } },
         { "string-unicode",             string_unicode,             true, { "string-assign-compare" } },
+
+        { "string", nullptr, false, {
+                "string-assign-compare",
+                "string-concat-append",
+                "string-substr",
+                "string-insert",
+                "string-find",
+                "string-substitute",
+                "string-replace",
+                "string-explode-compound",
+                "string-iterator",
+                "string-number",
+                "string-format",
+                "string-unicode",
+            }
+        },
     };
 }

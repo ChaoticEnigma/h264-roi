@@ -4,8 +4,6 @@
 #include "zlog.h"
 #include "zmap.h"
 
-// Fail Current Test
-#define FAILTEST throw __LINE__;
 // Assert for Tests
 #define TASSERT(X) if(!(X)) throw __LINE__;
 
@@ -41,8 +39,12 @@ ZArray<Test> number_tests();
 
 ZArray<Test> file_tests();
 ZArray<Test> image_tests();
+ZArray<Test> pdf_tests();
+
+ZArray<Test> socket_tests();
 
 ZArray<Test> thread_tests();
+ZArray<Test> error_tests();
 
 ZArray<Test> sandbox_tests();
 

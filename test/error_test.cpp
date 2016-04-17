@@ -10,12 +10,7 @@ void intHandle(ZError::zerror_signal sig){
         userwait = 2;
 }
 
-int trace_block();
-
-int error_test(){
-    trace_block();
-    return 0;
-
+void error_signal(){
     ZError::registerSigSegv();
     ZError::registerInterruptHandler(intHandle);
     ZError::registerSignalHandler(ZError::terminate, intHandle);
@@ -29,22 +24,24 @@ int error_test(){
         LOG("Caught Interrupt");
     else if(userwait == 2)
         LOG("Caught Terminate");
-
-    return 0;
 }
 
-int trace_block(){
-
+void error_trace(){
     ArZ trace = ZError::getStackTrace();
 
     for(zu64 i = 0; i < trace.size(); ++i){
         LOG(trace[i]);
     }
-
-    return 0;
 }
 
-int exception_block(){
+void error_exception(){
 
-    return 0;
+}
+
+ZArray<Test> error_tests(){
+    return {
+        { "error-signal",       error_signal,       false, {} },
+        { "error-trace",        error_trace,        false, {} },
+        { "error-execption",    error_exception,    false, {} },
+    };
 }

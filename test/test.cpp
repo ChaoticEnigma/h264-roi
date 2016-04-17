@@ -5,11 +5,11 @@
 
 int runTests(ZAssoc<ZString, Test> tests);
 
-void addTest(Test &test, ZMap<ZString, Test> &testmap, ZArray<Test> &testout, ZMap<ZString, Test> &testmapout){
+void addTest(Test &test, ZMap<ZString, Test*> &testmap, ZArray<Test> &testout, ZMap<ZString, Test> &testmapout){
     // Check for dependencies
     for(auto i = test.deps.begin(); i.more(); ++i){
         if(testmap.contains(*i)){
-            addTest(testmap[*i], testmap, testout, testmapout);
+            addTest(*testmap[*i], testmap, testout, testmapout);
         } else {
             LOG("Skipping unknown dependency " << *i);
         }
@@ -55,8 +55,12 @@ int main(int argc, char **argv){
 
             file_tests,
             image_tests,
+            pdf_tests,
+
+            socket_tests,
 
             thread_tests,
+            error_tests,
 
             sandbox_tests
         };
@@ -67,15 +71,50 @@ int main(int argc, char **argv){
             alltests.append(i.get()());
 
         // Build map
-        ZMap<ZString, Test> testmap;
+        ZMap<ZString, Test*> testmap;
         for(auto i = alltests.begin(); i.more(); ++i)
-            testmap.add(i.get().name, i.get());
+            testmap.add(i.get().name, &i.get());
+
+        // Command line arguments
+        bool hideout = true;
+        for(int i = 1; i < argc; ++i){
+            ZString arg = argv[i];
+            if(arg == "++"){
+                for(auto j = alltests.begin(); j.more(); ++j)
+                    j.get().run = true;
+            } else if(arg == "--"){
+                for(auto j = alltests.begin(); j.more(); ++j)
+                    j.get().run = false;
+            } else if(arg.beginsWith("+")){
+                ZString name = ZString::substr(arg, 1);
+                if(testmap.contains(name))
+                    testmap[name]->run = true;
+                else
+                    LOG("No test: " << name);
+            } else if(arg.beginsWith("-")){
+                ZString name = ZString::substr(arg, 1);
+                if(testmap.contains(name))
+                    testmap[name]->run = false;
+                else
+                    LOG("No test: " << name);
+            } else if(testmap.contains(arg)){
+                if(testmap.contains(arg)){
+                    for(auto j = alltests.begin(); j.more(); ++j)
+                        j.get().run = false;
+                    testmap[arg]->run = true;
+                    hideout = false;
+                } else {
+                    LOG("No test: " << arg);
+                }
+            }
+        }
 
         // Resolve dependencies
-        ZMap<ZString, Test> testm;
         ZArray<Test> tests;
+        ZMap<ZString, Test> testm;
         for(auto i = alltests.begin(); i.more(); ++i){
-            addTest(i.get(), testmap, tests, testm);
+            if(i.get().run)
+                addTest(i.get(), testmap, tests, testm);
         }
 
         // Run tests
@@ -92,10 +131,12 @@ int main(int argc, char **argv){
                 }
             }
 
-            if(!test.run){
-                status = "-SKIP: disabled";
-            } else if(!skip){
-                ZLogWorker::setStdOutEnable(false);
+            ZClock clock;
+            LOG("* " << ZString(i).lpad(' ', 2) << " " << test.name.pad(' ', 30) << (hideout ? ZLog::NOLN : ZLog::NEWLN));
+
+            if(!skip && test.func){
+                if(hideout)
+                    ZLogWorker::setStdOutEnable(false);
                 try {
                     test.func();
                     teststatus[test.name] = 1;
@@ -106,10 +147,19 @@ int main(int argc, char **argv){
                     status = ZString("!FAIL: ") + e.what();
                     teststatus[test.name] = 2;
                 }
-                ZLogWorker::setStdOutEnable(true);
+                if(hideout)
+                    ZLogWorker::setStdOutEnable(true);
             }
 
-            LOG(i << " " << test.name.pad(' ', 30) << status);
+            ZString result = status;
+            if(teststatus[test.name] == 1)
+                result = result + " [" + clock.getSecs() + "]";
+
+            if(hideout)
+                RLOG(result << ZLog::NEWLN);
+            else
+                LOG("* " << ZString(i).lpad(' ', 2) << " " << test.name.pad(' ', 30) << status);
+
         }
 
         return 0;

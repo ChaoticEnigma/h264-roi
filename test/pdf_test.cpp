@@ -6,3 +6,9 @@ void pdf_read(){
     ZPDF pdf1(path);
     pdf1.list();
 }
+
+ZArray<Test> pdf_tests(){
+    return {
+        { "pdf-read", pdf_read, false, {} }
+    };
+}

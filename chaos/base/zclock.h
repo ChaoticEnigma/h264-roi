@@ -6,7 +6,6 @@
 #ifndef ZCLOCK_H
 #define ZCLOCK_H
 
-#include <ctime>
 #include "zstring.h"
 
 namespace LibChaos {
@@ -14,20 +13,30 @@ namespace LibChaos {
 //! Measure relative time differences.
 class ZClock {
 public:
-    ZClock(){
-        rawclock = clock();
-    }
+    //! Create clock, started by default.
+    ZClock();
+
+    //! Start clock.
+    void start();
+    //! Stop clock.
+    void stop();
 
     //! Get clock in seconds.
-    double getSecs() const {
-        return (double)rawclock / (double)CLOCKS_PER_SEC;
-    }
+    double getSecs() const;
 
     //! Get clock string.
     ZString str() const;
 
+    //! Return the clock start time.
+    clock_t getClockStart() const { return clock_a; }
+
+    //! Get time string from clock value.
+    static ZString clockStr(clock_t clock);
+
 private:
-    clock_t rawclock;
+    bool run;
+    clock_t clock_a;
+    clock_t clock_b;
 };
 
 }

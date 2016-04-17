@@ -1,4 +1,4 @@
-## LibChaos Test CMakeLists.txt
+#f # LibChaos Test CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
 PROJECT(LibChaos_Test)
@@ -40,7 +40,6 @@ SET(LibChaos_Test_SOURCES
     pdf_test.cpp
 
     socket_test.cpp
-    socket2_test.cpp
 
     sandbox.cpp
     error_test.cpp

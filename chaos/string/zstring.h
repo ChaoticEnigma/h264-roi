@@ -249,8 +249,12 @@ public:
     ZString &label(const ZString &label, const ZString &value);
     ZString &label(const AsArZ &values);
 
-    //! Pad string to minimum \a length with \a ch.
-    ZString &pad(chartype ch, zu64 length);
+    //! Pad left of string to minimum \a length with \a ch.
+    ZString &lpad(chartype ch, zu64 length);
+    //! Pad right of string to minimum \a length with \a ch.
+    ZString &rpad(chartype ch, zu64 length);
+    //! Alias for rpad().
+    ZString &pad(chartype ch, zu64 length){ return rpad(ch, length); }
 
     //! Strip occurences of \a target from beginning of string.
     ZString &stripFront(chartype target);

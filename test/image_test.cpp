@@ -167,11 +167,11 @@ void decode_png(){
 
 ZArray<Test> image_tests(){
     return {
-        { "encode-8bit",        encode_8bit,        true, {} },
-        { "encode-16bit",       encode_16bit,       true, {} },
-        { "convert-webp-png",   convert_webp_png,   true, {} },
-        { "convert-jpeg-png",   convert_jpeg_png,   true, {} },
-        { "decode-jpeg",        decode_jpeg,        true, {} },
-        { "decode-png",         decode_png,         true, {} },
+        { "encode-8bit",        encode_8bit,        false, {} },
+        { "encode-16bit",       encode_16bit,       false, {} },
+        { "convert-webp-png",   convert_webp_png,   false, {} },
+        { "convert-jpeg-png",   convert_jpeg_png,   false, {} },
+        { "decode-jpeg",        decode_jpeg,        false, {} },
+        { "decode-png",         decode_png,         false, {} },
     };
 }

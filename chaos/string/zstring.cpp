@@ -622,7 +622,14 @@ ZString &ZString::label(const AsArZ &values){
     return *this;
 }
 
-ZString &ZString::pad(chartype ch, zu64 len){
+ZString &ZString::lpad(ZString::chartype ch, zu64 len){
+    if(len > size())
+        prepend(ZString(ch, len - size()));
+    return *this;
+
+}
+
+ZString &ZString::rpad(chartype ch, zu64 len){
     if(len > size())
         append(ZString(ch, len - size()));
     return *this;
