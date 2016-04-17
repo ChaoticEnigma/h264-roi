@@ -7,6 +7,7 @@
 #define ZCLOCK_H
 
 #include "zstring.h"
+#include <ctime>
 
 namespace LibChaos {
 

@@ -26,9 +26,7 @@ typedef zbyte zbinary_bytetype;
 class ZBinary : public ZAccessor<zbinary_bytetype>, public ZPosition, public ZReader, public ZWriter {
 public:
     typedef zbinary_bytetype bytetype;
-    enum {
-        none = ZU64_MAX
-    };
+    enum { NONE = ZU64_MAX };
 
 public:
     ZBinary(ZAllocator<zbyte> *alloc = new ZAllocator<zbyte>) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0), _rwpos(0){}
@@ -131,6 +129,8 @@ public:
 
     ZBinary &nullTerm();
     ZBinary printable() const;
+
+    ZString strBytes();
 
     const char *asChar() const {
         return (char *)_data;

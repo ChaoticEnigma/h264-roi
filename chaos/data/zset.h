@@ -15,7 +15,7 @@ namespace LibChaos {
 
 template <typename T> class ZSet {
 public:
-    enum { none = ZU64_MAX };
+    enum { NONE = ZU64_MAX };
 
     struct SetElement {
         zbyte flags; // Some flags for unset and deleted

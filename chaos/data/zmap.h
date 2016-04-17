@@ -33,7 +33,7 @@ namespace LibChaos {
  */
 template <typename K, typename T> class ZMap {
 public:
-    enum { none = ZU64_MAX };
+    enum { NONE = ZU64_MAX };
 public:
     typedef zu64 maphash;
 

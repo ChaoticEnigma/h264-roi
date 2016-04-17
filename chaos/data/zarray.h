@@ -24,9 +24,7 @@ namespace LibChaos {
  */
 template <typename T> class ZArray : public YIndexedAccess<T>, public YPushPopAccess<T> {
 public:
-    enum {
-        none = ZU64_MAX
-    };
+    enum { NONE = ZU64_MAX };
 
     class ZArrayIterator;
 
@@ -238,7 +236,7 @@ public:
             if(_data[i] == test)
                 return i;
         }
-        return none;
+        return NONE;
     }
 
     //

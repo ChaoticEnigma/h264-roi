@@ -50,9 +50,9 @@ void file_list(){
 
     TASSERT(farfiles.size() == 2);
     zu64 findf = farfiles.find(ZPath("testdir/a/b/c/d/e/f.dat"));
-    TASSERT(findf != ZArray<ZPath>::none);
+    TASSERT(findf != ZArray<ZPath>::NONE);
     zu64 finds = farfiles.find(ZPath("testdir/near.dat"));
-    TASSERT(finds != ZArray<ZPath>::none);
+    TASSERT(finds != ZArray<ZPath>::NONE);
 }
 
 void file_read(){

@@ -386,7 +386,7 @@ void tcp_server_2(){
                     zu64 breakpos = bin.findFirst({0x0d, 0x0a, 0x0d, 0x0a});
                     LOG(breakpos);
 
-                    if(breakpos != ZBinary::none){
+                    if(breakpos != ZBinary::NONE){
                         ZBinary head = bin.getSub(0, breakpos);
                         head.nullTerm();
                         ZString header = head.printable().asChar();
