@@ -231,7 +231,7 @@ void string_format(){
 }
 
 void string_unicode(){
-    ZString utf1 = "test";
+    ZString utf1 = "test A\u0366 !";
     utf1.unicode_debug();
 }
 
