@@ -35,22 +35,26 @@ typedef ZAssoc<ZString, ZString> AsArZ;
  */
 class ZString : public ZAccessor<char> {
 public:
-    typedef zbyte codeunit;
+    typedef zu32 codepoint;
+    typedef zbyte codeunit8;
+    typedef zu16 codeunit16;
+    typedef zu32 codeunit32;
+    typedef codeunit8 codeunit;
+
     enum { NONE = ZU64_MAX };
 
 public:
     //! Default constructor with optional user allocator.
     ZString(ZAllocator<codeunit> *alloc = new ZAllocator<codeunit>);
 
-    ~ZString();
-
     //! Copy constructor.
     ZString(const ZString &other);
 
+    //! Destructor.
+    ~ZString();
+
     //! Construct from UTF-8 null-terminated C-string.
-    ZString(const char *str);
-    //! Construct from UTF-8 C-string with length \a len.
-    ZString(const char *ptr, zu64 length);
+    ZString(const char *str, zu64 max = ZU64_MAX);
     //! Construct from UTF-8 character array.
     ZString(const ZArray<char> &array);
 
@@ -60,9 +64,7 @@ public:
     inline const char *cc() const { return reinterpret_cast<const char*>(_data); }
 
     //! Construct from UTF-8 zero-terminated bytes.
-    ZString(const zbyte *str);
-    //! Construct from UTF-8 bytes with length \a len.
-    ZString(const zbyte *ptr, zu64 length);
+    ZString(const zbyte *str, zu64 max = 0);
     //! Construct from UTF-8 byte array.
     ZString(const ZArray<zbyte> &array);
 
@@ -84,8 +86,6 @@ public:
 
     //! Construct from UTF-16 null-terminated wide C-string.
     ZString(const wchar_t *wstr);
-    //! Construct from UTF-16 wide C-string with length \a len.
-    ZString(const wchar_t *wstr, zu64 length);
     //! Construct from UTF-16 wide character array.
     ZString(const ZArray<wchar_t> &array);
 
@@ -326,7 +326,7 @@ public:
 
     static bool alphaTest(ZString str1, ZString str2);
 
-    void unicode_debug();
+    static void unicode_debug(const codeunit *bytes);
 
     //! Get a unicode character reference string from a code point.
     static ZString codePointStr(zu64 cp);
@@ -368,9 +368,11 @@ public:
     inline zu64 size() const { return _size; }
 
 private:
-    // Resize buffer (IMPORTANT: memory is only allocated and initialized here)
+    //! Resize buffer. (IMPORTANT: memory is only allocated and initialized here)
     void _reserve(zu64 size);
+    //! Resize container.
     void _resize(zu64 len);
+
     static bool _charIsWhitespace(char ch);
     /*! Replace first occurrence of \a before with \a after starting at \a startpos.
      *  \return Index of the next character after replacement.
@@ -380,6 +382,16 @@ private:
     // Unicode Encoding
     //void fromwstring(std::wstring wstr);
     //std::wstring towstring() const;
+
+    void appendCodePoint(codepoint cp);
+
+    //! Parse UTF-8 string at \a units and replace this string with normalized UTF-8.
+    void parseUTF8(const codeunit8 *units, zu64 max);
+    //! Parse UTF-16 string at \a units and replace this string with normalized UTF-8.
+    void parseUTF16(const codeunit16 *units, zu64 max);
+
+    codepoint nextUTF8(const codeunit8 **units, zu8 maxunits);
+    codepoint nextUTF16(const codeunit16 **units, zu8 maxunits);
 
     //! Determine if \a str is valid UTF-8.
     static bool isUTF8(const char *str);

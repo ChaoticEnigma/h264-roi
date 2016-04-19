@@ -27,65 +27,34 @@ ZString::ZString(ZAllocator<codeunit> *alloc) : _alloc(alloc), _size(0), _realsi
     clear(); // Empty string with null terminator
 }
 
-ZString::~ZString(){
-    if(_data != nullptr)
-        _alloc->dealloc(_data);
-    delete _alloc;
-}
-
 ZString::ZString(const ZString &other) : ZString(){
     _resize(other._size);
     if(other._size && other._data)
         _alloc->rawcopy(other._data, _data, other._size);
 }
 
-ZString::ZString(const char *str) : ZString(){
-    if(str != nullptr){
-        zu64 i = 0;
-        while(str[i] != 0)
-            ++i;
-        if(i != 0){
-            _resize(i);
-            _alloc->rawcopy((const codeunit*)str, _data, i);
-        }
-    }
+ZString::~ZString(){
+    _alloc->dealloc(_data);
+    delete _alloc;
 }
 
-ZString::ZString(const char *ptr, zu64 length) : ZString(){
-    if(ptr != nullptr && length != 0){
-        _resize(length);
-        _alloc->rawcopy((const codeunit*)ptr, _data, length);
-    }
+ZString::ZString(const char *str, zu64 max) : ZString(){
+    parseUTF8((const codeunit*)str, max);
 }
 
-ZString::ZString(const ZArray<char> &array) : ZString(array.raw(), array.size()){
+ZString::ZString(const ZArray<char> &array) : ZString(array.raw()){
     // none
 }
 
-ZString::ZString(const zbyte *str) : ZString(){
-    if(str != nullptr){
-        zu64 i = 0;
-        while(str[i] != 0)
-            ++i;
-        if(i != 0){
-            _resize(i);
-            _alloc->rawcopy(str, _data, i);
-        }
-    }
+ZString::ZString(const codeunit *str, zu64 max) : ZString(){
+    parseUTF8(str, max);
 }
 
-ZString::ZString(const zbyte *ptr, zu64 length) : ZString(){
-    if(ptr != nullptr && length != 0){
-        _resize(length);
-        _alloc->rawcopy(ptr, _data, length);
-    }
-}
-
-ZString::ZString(const ZArray<zbyte> &array) : ZString(array.raw(), array.size()){
+ZString::ZString(const ZArray<codeunit> &array) : ZString(array.raw()){
     // none
 }
 
-ZString::ZString(std::string str) : ZString(str.c_str(), str.size()){
+ZString::ZString(std::string str) : ZString(str.c_str()){
     // none
 }
 
@@ -94,19 +63,16 @@ std::string ZString::str() const {
 }
 
 ZString::ZString(const wchar_t *wstr) : ZString(){
-    //fromwstring(wstr);
+    // TODO: UTF-16 constructor
+    //parseUTF16(wstr);
 }
 
-ZString::ZString(const wchar_t *wstr, zu64 length) : ZString(){
-    //fromwstring(std::wstring(wstr, length));
-}
-
-ZString::ZString(const ZArray<wchar_t> &array) : ZString(array.raw(), array.size()){
+ZString::ZString(const ZArray<wchar_t> &array) : ZString(array.raw()){
     // none
 }
 
-ZString::ZString(std::wstring wstr) : ZString(){
-    //fromwstring(wstr);
+ZString::ZString(std::wstring wstr) : ZString(wstr.c_str()){
+    // none
 }
 
 std::wstring ZString::wstr() const {
@@ -277,7 +243,9 @@ ZString &ZString::substr(zu64 pos, zu64 len){
     if(pos < size()){
         len = MIN(len, size() - pos);
         // Construct new string from range and assign
-        assign(ZString(_data + pos, len));
+        _alloc->rawmove(_data + pos, _data, len);
+        _resize(len);
+        //assign(ZString(_data + pos, len));
     } else {
         clear();
     }

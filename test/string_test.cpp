@@ -231,8 +231,10 @@ void string_format(){
 }
 
 void string_unicode(){
-    ZString utf1 = "test a\u0366 \U0002070E \xFF \xF0\x20\x9C\x8E \xF0\xA0\xDC\x8E !";
-    utf1.unicode_debug();
+    const char *utf1 = "test a\u0366 \U0002070E \xFF \xF0\x20\x9C\x8E \xF0\xA0\xDC\x8E !";
+    ZString::unicode_debug((const zbyte *)utf1);
+    ZString utf2 = utf1;
+    ZString::unicode_debug(utf2.bytes());
 }
 
 ZArray<Test> string_tests(){
