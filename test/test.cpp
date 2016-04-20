@@ -76,6 +76,7 @@ int main(int argc, char **argv){
             testmap.add(i.get().name, &i.get());
 
         // Command line arguments
+        bool predisable = true;
         bool hideout = true;
         for(int i = 1; i < argc; ++i){
             ZString arg = argv[i];
@@ -100,8 +101,14 @@ int main(int argc, char **argv){
                 else
                     LOG("No test: " << name);
             } else {
+                if(predisable){
+                    for(auto j = alltests.begin(); j.more(); ++j)
+                        j.get().run = false;
+                    predisable = false;
+                }
                 for(auto j = alltests.begin(); j.more(); ++j){
-                    j.get().run = (j.get().name.beginsWith(arg) ? true : false);
+                    if(j.get().name.beginsWith(arg))
+                        j.get().run = true;
                 }
             }
         }
@@ -129,14 +136,18 @@ int main(int argc, char **argv){
                 }
             }
 
-            ZClock clock;
             LOG("* " << ZString(i).lpad(' ', 2) << " " << ZString(test.name).pad(' ', 30) << (hideout ? ZLog::NOLN : ZLog::NEWLN));
 
+            ZClock clock;
             if(!skip && test.func){
-                if(hideout)
+                if(hideout){
                     ZLogWorker::setStdOutEnable(false);
+                    ZLogWorker::setStdErrEnable(false);
+                }
                 try {
+                    clock.start();
                     test.func();
+                    clock.stop();
                     teststatus[test.name] = 1;
                 } catch(int e){
                     status = ZString("!FAIL: line ") + e;
@@ -145,8 +156,10 @@ int main(int argc, char **argv){
                     status = ZString("!FAIL: ") + e.what();
                     teststatus[test.name] = 2;
                 }
-                if(hideout)
+                if(hideout){
                     ZLogWorker::setStdOutEnable(true);
+                    ZLogWorker::setStdErrEnable(true);
+                }
             }
 
             ZString result = status;

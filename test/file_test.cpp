@@ -124,7 +124,7 @@ ZArray<Test> file_tests(){
     return {
         { "file-create-dir",    file_create_dir,    true, {} },
         { "file-write",         file_write,         true, { "file-create-dir" } },
-        { "file-list",          file_list,          true, { "file-write" } },
+        { "file-list",          file_list,          true, { "file-write", "path-relative" } },
         { "file-read",          file_read,          true, { "file-list" } },
         { "file-list-dirs",     file_list_dirs,     true, { "file-create-dir" } },
         { "file-sequential-rw", file_create_dir,    true, {} },

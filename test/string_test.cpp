@@ -269,7 +269,7 @@ ZArray<Test> string_tests(){
         { "string-number",              string_number,              true, { "string-assign-compare" } },
         { "string-format",              string_format,              true, { "string-replace" } },
         { "string-utf8",                string_utf8,                true, { "string-assign-compare" } },
-        { "string-utf16",               string_utf16,               true, { "string-assign-compare" } },
-        { "string-utf32",               string_utf32,               true, { "string-assign-compare" } },
+        { "string-utf16",               string_utf16,               true, { "string-utf8" } },
+        { "string-utf32",               string_utf32,               true, { "string-utf8" } },
     };
 }

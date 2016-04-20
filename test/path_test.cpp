@@ -69,7 +69,7 @@ void path_relative(){
 ZArray<Test> path_tests(){
     return {
         { "path-parse",     path_parse,     true, { "string-explode-compound" } },
-        { "path-sanitize",  path_sanitize,  true, { "path-parse" } },
-        { "path-relative",  path_relative,  true, { "path-parse" } },
+        { "path-sanitize",  path_sanitize,  true, { "array-equality", "path-parse" } },
+        { "path-relative",  path_relative,  true, { "array-equality", "path-parse" } },
     };
 }

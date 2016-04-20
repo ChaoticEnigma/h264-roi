@@ -7,7 +7,7 @@
 #define ZCLOCK_H
 
 #include "zstring.h"
-#include <ctime>
+#include <time.h>
 
 namespace LibChaos {
 
@@ -22,22 +22,29 @@ public:
     //! Stop clock.
     void stop();
 
-    //! Get clock in seconds.
+    bool running() const { return run; }
+
+    timespec diff() const;
+
+    /*! Get clock in seconds.
+     *  If clock is running, get time since clock started.
+     *  If clock is not running, get time from when clock was started to when clock was stopped.
+     */
     double getSecs() const;
 
     //! Get clock string.
     ZString str() const;
 
     //! Return the clock start time.
-    clock_t getClockStart() const { return clock_a; }
+    timespec getClockStart() const { return clock_a; }
 
     //! Get time string from clock value.
-    static ZString clockStr(clock_t clock);
+    static ZString clockStr(timespec clock);
 
 private:
     bool run;
-    clock_t clock_a;
-    clock_t clock_b;
+    timespec clock_a;
+    timespec clock_b;
 };
 
 }

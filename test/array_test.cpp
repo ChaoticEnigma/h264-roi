@@ -24,6 +24,19 @@ void array_initializer(){
     LOG(tst3.size() << " " << tst3[0] << "." << tst3[1] << "." << tst3[2] << "." << tst3[3] << "." << tst3[4] << " OK");
 }
 
+void array_equality(){
+    ZArray<int> tst1;
+    tst1.push(45);
+    tst1.push(10);
+    tst1.push(567);
+    TASSERT(tst1.size() == 3 && tst1[0] == 45 && tst1[1] == 10 && tst1[2] == 567);
+
+    ZArray<int> tst2 = { 45, 10, 567 };
+    TASSERT(tst2.size() == 3 && tst2[0] == 45 && tst2[1] == 10 && tst2[2] == 567);
+
+    TASSERT(tst1 == tst2);
+}
+
 void array_insert(){
     ZArray<ZString> tst4({ "one", "two", "four", "five" });
     tst4.insert(2, "three");
@@ -76,6 +89,7 @@ ZArray<Test> array_tests(){
         { "array-push",         array_push,         true, {} },
         { "array-construct",    array_construct,    true, {} },
         { "array-initializer",  array_initializer,  true, { "array-construct" } },
+        { "array-equality",     array_equality,     true, { "array-push", "array-initializer" } },
         { "array-insert",       array_insert,       true, { "array-construct" } },
         { "array-erase",        array_erase,        true, { "array-construct" } },
         { "array-iterator",     array_iterator,     true, { "array-construct" } },
