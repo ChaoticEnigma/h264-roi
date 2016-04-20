@@ -230,24 +230,28 @@ void string_format(){
     LOG(fmt1);
 }
 
-void string_unicode(){
+void string_utf8(){
     const char *utf8a = "test a\u0366 \U0002070E \xFF \xF0\x20\x9C\x8E \xF0\xA0\xDC\x8E !";
-    ZString::unicode_debug((const zbyte *)utf8a);
+    ZString::debugUTF8((const zbyte *)utf8a);
     ZString utf8b;
     utf8b.parseUTF8((const zu8*)utf8a, 100);
-    ZString::unicode_debug(utf8b.bytes());
+    ZString::debugUTF8(utf8b.bytes());
     TASSERT(utf8b == "test a\u0366 \U0002070E    \u070E !");
+}
 
+void string_utf16(){
     const zu16 utf16a[] = { 0x0061, 0x0020, 0xD801, 0xDC37 };
     ZString utf16b;
     utf16b.parseUTF16(utf16a, 4);
-    ZString::unicode_debug(utf16b.bytes());
+    ZString::debugUTF8(utf16b.bytes());
     TASSERT(utf16b == "a \U00010437");
+}
 
+void string_utf32(){
     const zu32 utf32a[] = { 0x62, 0x20, 0x10437 };
     ZString utf32b;
     utf32b.parseUTF32(utf32a, 3);
-    ZString::unicode_debug(utf32b.bytes());
+    ZString::debugUTF8(utf32b.bytes());
     TASSERT(utf32b == "b \U00010437");
 }
 
@@ -264,22 +268,8 @@ ZArray<Test> string_tests(){
         { "string-iterator",            string_iterator,            true, { "string-assign-compare" } },
         { "string-number",              string_number,              true, { "string-assign-compare" } },
         { "string-format",              string_format,              true, { "string-replace" } },
-        { "string-unicode",             string_unicode,             true, { "string-assign-compare" } },
-
-        { "string", nullptr, false, {
-                "string-assign-compare",
-                "string-concat-append",
-                "string-substr",
-                "string-insert",
-                "string-find",
-                "string-substitute",
-                "string-replace",
-                "string-explode-compound",
-                "string-iterator",
-                "string-number",
-                "string-format",
-                "string-unicode",
-            }
-        },
+        { "string-utf8",                string_utf8,                true, { "string-assign-compare" } },
+        { "string-utf16",               string_utf16,               true, { "string-assign-compare" } },
+        { "string-utf32",               string_utf32,               true, { "string-assign-compare" } },
     };
 }

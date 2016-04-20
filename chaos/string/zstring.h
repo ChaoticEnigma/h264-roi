@@ -337,7 +337,7 @@ public:
     void parseUTF32(const codeunit32 *units, zu64 max);
 
     //! Get debug information on a UTF-8 string.
-    static void unicode_debug(const codeunit *bytes);
+    static void debugUTF8(const codeunit *bytes);
 
     //! Get a unicode character reference string from a code point.
     static ZString codePointStr(zu64 cp);

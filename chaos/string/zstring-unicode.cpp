@@ -5,7 +5,7 @@
 *******************************************************************************/
 #include "zstring.h"
 #include "zlog.h"
-#include <stdio.h>
+//#include <stdio.h>
 
 namespace LibChaos {
 
@@ -39,7 +39,7 @@ void ZString::parseUTF32(const ZString::codeunit32 *units, zu64 max){
     }
 }
 
-void ZString::unicode_debug(const codeunit *bytes){
+void ZString::debugUTF8(const codeunit *bytes){
     //printf("\"%s\"\n", (const char *)bytes);
 
     while(*bytes){
@@ -324,8 +324,8 @@ ZString::codepoint ZString::_nextUTF16(const codeunit16 **punits, zu64 *maxunits
 
     } else {
         // Invalid sequence
-        *punits += 2;
-        *maxunits -= 2;
+        *punits += 1;
+        *maxunits -= 1;
         return 0;
     }
 

@@ -79,7 +79,9 @@ int main(int argc, char **argv){
         bool hideout = true;
         for(int i = 1; i < argc; ++i){
             ZString arg = argv[i];
-            if(arg == "++"){
+            if(arg == "-v"){
+                hideout = false;
+            } else if(arg == "++"){
                 for(auto j = alltests.begin(); j.more(); ++j)
                     j.get().run = true;
             } else if(arg == "--"){
@@ -97,14 +99,9 @@ int main(int argc, char **argv){
                     testmap[name]->run = false;
                 else
                     LOG("No test: " << name);
-            } else if(testmap.contains(arg)){
-                if(testmap.contains(arg)){
-                    for(auto j = alltests.begin(); j.more(); ++j)
-                        j.get().run = false;
-                    testmap[arg]->run = true;
-                    hideout = false;
-                } else {
-                    LOG("No test: " << arg);
+            } else {
+                for(auto j = alltests.begin(); j.more(); ++j){
+                    j.get().run = (j.get().name.beginsWith(arg) ? true : false);
                 }
             }
         }
