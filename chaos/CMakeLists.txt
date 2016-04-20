@@ -118,7 +118,6 @@ SET(LibChaos_SOURCES
     string/zpath.cpp
     string/zstring.h
     string/zstring.cpp
-    #string/zstring-encode.cpp
     string/zstring-unicode.cpp
     string/zxml.h
     string/zxml.cpp
