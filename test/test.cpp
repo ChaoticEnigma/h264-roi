@@ -125,6 +125,7 @@ int main(int argc, char **argv){
 
             bool skip = false;
             for(auto j = test.deps.begin(); j.more(); ++j){
+                ZString name = *j;
                 if(teststatus.contains(*j) && teststatus[*j] == 2){
                     skip = true;
                     status = ZString("-SKIP: ") + *j;
@@ -132,7 +133,7 @@ int main(int argc, char **argv){
             }
 
             ZClock clock;
-            LOG("* " << ZString(i).lpad(' ', 2) << " " << test.name.pad(' ', 30) << (hideout ? ZLog::NOLN : ZLog::NEWLN));
+            LOG("* " << ZString(i).lpad(' ', 2) << " " << ZString(test.name).pad(' ', 30) << (hideout ? ZLog::NOLN : ZLog::NEWLN));
 
             if(!skip && test.func){
                 if(hideout)
@@ -158,15 +159,15 @@ int main(int argc, char **argv){
             if(hideout)
                 RLOG(result << ZLog::NEWLN);
             else
-                LOG("* " << ZString(i).lpad(' ', 2) << " " << test.name.pad(' ', 30) << status);
+                LOG("* " << ZString(i).lpad(' ', 2) << " " << ZString(test.name).pad(' ', 30) << status);
 
         }
 
         return 0;
     } catch(ZException e){
         printf("Catastrophic Failure: %s - %d\n%s\n", e.what().cc(), e.code(), e.traceStr().cc());
-    } catch(zexception e){
-        printf("CATACLYSMIC FAILURE: %s\n", e.what);
+//    } catch(zexception e){
+//        printf("CATACLYSMIC FAILURE: %s\n", e.what);
     } catch(zallocator_exception e){
         printf("Allocator Failure: %s\n", e.what);
     }

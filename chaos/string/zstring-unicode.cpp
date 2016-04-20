@@ -40,7 +40,7 @@ void ZString::parseUTF32(const ZString::codeunit32 *units, zu64 max){
 }
 
 void ZString::unicode_debug(const codeunit *bytes){
-    printf("\"%s\"\n", (const char *)bytes);
+    //printf("\"%s\"\n", (const char *)bytes);
 
     while(*bytes){
         zu32 cp = 0;

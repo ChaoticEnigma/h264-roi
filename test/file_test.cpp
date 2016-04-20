@@ -22,14 +22,14 @@ void file_write(){
     ZPath nearfile = near + "near.dat";
 
     ZFile farfl(farfile, ZFile::READWRITE);
-    LOG(farfl.isOpen());
     TASSERT(farfl.isOpen());
+
     LOG(farfl.write("this file is far away"));
     farfl.close();
 
     ZFile nearfl(nearfile, ZFile::READWRITE);
-    LOG(nearfl.isOpen());
     TASSERT(nearfl.isOpen());
+
     LOG(nearfl.write("this file is nearby"));
     nearfl.close();
 }
@@ -41,12 +41,13 @@ void file_list(){
     for(zu64 i = 0; i < nearfiles.size(); ++i)
         LOG(nearfiles[i]);
 
+    TASSERT(nearfiles.size() == 1);
+    nearfiles.front().relativeTo(ZPath::pwd());
+    TASSERT(nearfiles.front().data() == ArZ({ "testdir", "near.dat" }))
+
     ZArray<ZPath> farfiles = ZFile::listFiles(near, true);
     for(zu64 i = 0; i < farfiles.size(); ++i)
         LOG(farfiles[i]);
-
-    TASSERT(nearfiles.size() == 1);
-    TASSERT(nearfiles.front().data() == ArZ({ "testdir", "near.dat" }))
 
     TASSERT(farfiles.size() == 2);
     zu64 findf = farfiles.find(ZPath("testdir/a/b/c/d/e/f.dat"));
@@ -79,6 +80,8 @@ void file_read(){
     zu64 findf = farfiles.find(ZPath("testdir/a/b/c/d/e/f.dat"));
     zu64 finds = farfiles.find(ZPath("testdir/near.dat"));
 
+    TASSERT(findf != ZArray<int>::NONE);
+    TASSERT(finds != ZArray<int>::NONE);
     TASSERT(ZFile::readString(farfiles[findf]) == "this file is far away");
     TASSERT(ZFile::readString(farfiles[finds]) == "this file is nearby");
 }
@@ -90,6 +93,8 @@ void file_list_dirs(){
     for(zu64 i = 0; i < dirs.size(); ++i){
         LOG(dirs[i]);
     }
+
+    TASSERT(dirs.size() == 5);
 }
 
 void file_sequential_rw(){
