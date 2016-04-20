@@ -5,10 +5,135 @@
 *******************************************************************************/
 #include "zstring.h"
 #include "zlog.h"
+#include <stdio.h>
 
 namespace LibChaos {
 
-void ZString::appendCodePoint(codepoint cp){
+void ZString::parseUTF8(const codeunit8 *units, zu64 max){
+    clear();
+    if(units && max){
+        // Read and add code points
+        while(*units && max){
+            _appendCodePoint(_nextUTF8(&units, &max));
+        }
+    }
+}
+
+void ZString::parseUTF16(const codeunit16 *units, zu64 max){
+    clear();
+    if(units && max){
+        // Read and add code points
+        while(*units && max){
+            _appendCodePoint(_nextUTF16(&units, &max));
+        }
+    }
+}
+
+void ZString::parseUTF32(const ZString::codeunit32 *units, zu64 max){
+    clear();
+    if(units && max){
+        // Read and add code points
+        while(*units && max){
+            _appendCodePoint(_nextUTF32(&units, &max));
+        }
+    }
+}
+
+void ZString::unicode_debug(const codeunit *bytes){
+    printf("\"%s\"\n", (const char *)bytes);
+
+    while(*bytes){
+        zu32 cp = 0;
+
+        if((bytes[0] & 0xF8) == 0xF0){
+            // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+            // 4 bytes
+
+            if((bytes[1] & 0xC0) != 0x80)
+                LOG("Invalid byte 2: 0x" << ZString::ItoS(bytes[1],16,2));
+            if((bytes[2] & 0xC0) != 0x80)
+                LOG("Invalid byte 3: 0x" << ZString::ItoS(bytes[2],16,2));
+            if((bytes[3] & 0xC0) != 0x80)
+                LOG("Invalid byte 4: 0x" << ZString::ItoS(bytes[3],16,2));
+
+            cp = ((zu32)bytes[0] & 0x07) << 18 |
+                      ((zu32)bytes[1] & 0x3F) << 12 |
+                      ((zu32)bytes[2] & 0x3F) << 6 |
+                      (bytes[3] & 0x3F);
+
+            LOG("(" << codePointStr(cp) << ") [" << ZBinary(bytes, 4).strBytes() << "] '" << ZString(bytes, 4) << "'");
+            bytes += 4;
+
+        } else if((bytes[0] & 0xF0) == 0xE0){
+            // 1110xxxx 10xxxxxx 10xxxxxx
+            // 3 bytes
+
+            if((bytes[1] & 0xC0) != 0x80)
+                LOG("Invalid byte 2: 0x" << ZString::ItoS(bytes[1],16,2));
+            if((bytes[2] & 0xC0) != 0x80)
+                LOG("Invalid byte 3: 0x" << ZString::ItoS(bytes[2],16,2));
+
+            cp = ((zu32)bytes[0] & 0x0F) << 12 |
+                      ((zu32)bytes[1] & 0x3F) << 6 |
+                      (bytes[2] & 0x3F);
+
+            LOG("(" << codePointStr(cp) << ") [" << ZBinary(bytes, 3).strBytes() << "] '" << ZString(bytes, 3) << "'");
+            bytes += 3;
+
+        } else if((bytes[0] & 0xE0) == 0xC0){
+            // 110xxxxx 10xxxxxx
+            // 2 bytes
+
+            if((bytes[1] & 0xC0) != 0x80)
+                LOG("Invalid byte 2: 0x" << ZString::ItoS(bytes[1],16,2));
+
+            cp = ((zu32)bytes[0] & 0x1F) << 6 |
+                      (bytes[1] & 0x3F);
+
+            LOG("(" << codePointStr(cp) << ") [" << ZBinary(bytes, 2).strBytes() << "] '" << ZString(bytes, 2) << "'");
+            bytes += 2;
+
+        } else if((bytes[0] & 0x80) == 0){
+            // 0xxxxxxx
+            // 1 byte
+
+            cp = bytes[0];
+
+            LOG("(" << codePointStr(cp) << ") [" << ZBinary(bytes, 1).strBytes() << "] '" << ZString(bytes, 1) << "'");
+            bytes += 1;
+
+        } else {
+            LOG("Invalid byte: 0x" << ZString::ItoS(bytes[0],16,2));
+            bytes += 1;
+            continue;
+        }
+
+        if((0x15000 <= cp && cp <= 0x15FFF) ||
+           (0x17000 <= cp && cp <= 0x1AFFF) ||
+           (0x1C000 <= cp && cp <= 0x1CFFF)){
+            LOG("Invalid code point in plane 1");
+        } else if(0x2D000 <= cp && cp <= 0x2EFFF){
+            LOG("Invalid code point in plane 2");
+        } else if(0x30000 <= cp && cp <= 0xDFFFF){
+            LOG("Invalid code point in plane 3-13");
+        } else if(0xE1000 <= cp && cp <= 0xEFFFF){
+            LOG("Invalid code point in plane 14");
+        } else if(cp > 0x10FFFF){
+            LOG("Code point out of range");
+        }
+
+    }
+}
+
+ZString ZString::codePointStr(zu64 cp){
+    return ZString("U+") + ZString::ItoS(cp,16,5,true);
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Private functions
+// ///////////////////////////////////////////////////////////////////////////////
+
+void ZString::_appendCodePoint(codepoint cp){
     if(cp == 0){
         // Skip invalid code points
 
@@ -62,29 +187,7 @@ void ZString::appendCodePoint(codepoint cp){
     }
 }
 
-void ZString::parseUTF8(const codeunit8 *punits, zu64 max){
-    clear();
-    const codeunit8 *units = punits;
-    if(max == 0)
-        max = ZU64_MAX;
-    // Read and add code points
-    while(*units && (zu64)(units - punits) < max){
-        appendCodePoint(nextUTF8(&units, (zu64)(max - (units - punits))));
-    }
-}
-
-void ZString::parseUTF16(const codeunit16 *punits, zu64 max){
-    clear();
-    const codeunit16 *units = punits;
-    if(max == 0)
-        max = ZU64_MAX;
-    // Read and add code points
-    while(*units && (zu64)(units - punits) < max){
-        appendCodePoint(nextUTF16(&units, (zu64)(max - (units - punits))));
-    }
-}
-
-ZString::codepoint ZString::nextUTF8(const codeunit8 **punits, zu8 maxunits){
+ZString::codepoint ZString::_nextUTF8(const codeunit8 **punits, zu64 *maxunits){
     // UTF-8: RFC-3629
     // Non-standard 5-byte and 6-byte UTF-8 sequences are supported for compatibility, although they may never be used.
     // On invalid bytes, return 0.
@@ -94,54 +197,52 @@ ZString::codepoint ZString::nextUTF8(const codeunit8 **punits, zu8 maxunits){
     codepoint cp = 0;
 
     // Check leading byte
-    if(maxunits >= 1 && (units[0] & 0x80) == 0){
+    if(*maxunits >= 1 && (units[0] & 0x80) == 0){
         // 1 byte
-        cp = units[0];
+        cp |= units[0];
         *punits += 1;
+        *maxunits -= 1;
 
-    } else if(maxunits >= 2 && (units[0] & 0xE0) == 0xC0){
+    } else if(*maxunits >= 2 && (units[0] & 0xE0) == 0xC0){
         // 2 bytes
         // Check continuation bytes
         if((units[1] & 0xC0) != 0x80){
             *punits += 1;
+            *maxunits -= 1;
             return 0;
         }
         // Decode code point
         cp |= ((zu32)units[0] & 0x1F) << 6;
         cp |= ((zu32)units[1] & 0x3F);
         *punits += 2;
+        *maxunits -= 2;
 
-    } else if(maxunits >= 3 && (units[0] & 0xF0) == 0xE0){
+    } else if(*maxunits >= 3 && (units[0] & 0xF0) == 0xE0){
         // 3 bytes
         // Check continuation bytes
-        if((units[1] & 0xC0) != 0x80){
-            *punits += 1;
-            return 0;
-        }
-        if((units[2] & 0xC0) != 0x80){
-            *punits += 2;
-            return 0;
+        for(zu8 i = 1; i < 3; ++i){
+            if((units[i] & 0xC0) != 0x80){
+                *punits += i;
+                *maxunits -= i;
+                return 0;
+            }
         }
         // Decode code point
         cp |= ((zu32)units[0] & 0x0F) << 12;
         cp |= ((zu32)units[1] & 0x3F) << 6;
         cp |= ((zu32)units[2] & 0x3F);
         *punits += 3;
+        *maxunits -= 3;
 
-    } else if(maxunits >= 4 && (units[0] & 0xF8) == 0xF0){
+    } else if(*maxunits >= 4 && (units[0] & 0xF8) == 0xF0){
         // 4 bytes
         // Check continuation bytes
-        if((units[1] & 0xC0) != 0x80){
-            *punits += 1;
-            return 0;
-        }
-        if((units[2] & 0xC0) != 0x80){
-            *punits += 2;
-            return 0;
-        }
-        if((units[3] & 0xC0) != 0x80){
-            *punits += 3;
-            return 0;
+        for(zu8 i = 1; i < 4; ++i){
+            if((units[i] & 0xC0) != 0x80){
+                *punits += i;
+                *maxunits -= i;
+                return 0;
+            }
         }
         // Decode code point
         cp |= ((zu32)units[0] & 0x07) << 18;
@@ -149,25 +250,17 @@ ZString::codepoint ZString::nextUTF8(const codeunit8 **punits, zu8 maxunits){
         cp |= ((zu32)units[2] & 0x3F) << 6;
         cp |= ((zu32)units[3] & 0x3F);
         *punits += 4;
+        *maxunits -= 4;
 
-    } else if(maxunits >= 5 && (units[0] & 0xFC) == 0xF8){
+    } else if(*maxunits >= 5 && (units[0] & 0xFC) == 0xF8){
         // 5 bytes (non-standard)
         // Check continuation bytes
-        if((units[1] & 0xC0) != 0x80){
-            *punits += 1;
-            return 0;
-        }
-        if((units[2] & 0xC0) != 0x80){
-            *punits += 2;
-            return 0;
-        }
-        if((units[3] & 0xC0) != 0x80){
-            *punits += 3;
-            return 0;
-        }
-        if((units[4] & 0xC0) != 0x80){
-            *punits += 4;
-            return 0;
+        for(zu8 i = 1; i < 5; ++i){
+            if((units[i] & 0xC0) != 0x80){
+                *punits += i;
+                *maxunits -= i;
+                return 0;
+            }
         }
         // Decode code point
         cp |= ((zu32)units[0] & 0x03) << 24;
@@ -176,29 +269,17 @@ ZString::codepoint ZString::nextUTF8(const codeunit8 **punits, zu8 maxunits){
         cp |= ((zu32)units[3] & 0x3F) << 6;
         cp |= ((zu32)units[4] & 0x3F);
         *punits += 5;
+        *maxunits -= 5;
 
-    } else if(maxunits >= 6 && (units[0] & 0xFE) == 0xFC){
+    } else if(*maxunits >= 6 && (units[0] & 0xFE) == 0xFC){
         // 6 bytes (non-standard)
         // Check continuation bytes
-        if((units[1] & 0xC0) != 0x80){
-            *punits += 1;
-            return 0;
-        }
-        if((units[2] & 0xC0) != 0x80){
-            *punits += 2;
-            return 0;
-        }
-        if((units[3] & 0xC0) != 0x80){
-            *punits += 3;
-            return 0;
-        }
-        if((units[4] & 0xC0) != 0x80){
-            *punits += 4;
-            return 0;
-        }
-        if((units[5] & 0xC0) != 0x80){
-            *punits += 5;
-            return 0;
+        for(zu8 i = 1; i < 6; ++i){
+            if((units[i] & 0xC0) != 0x80){
+                *punits += i;
+                *maxunits -= i;
+                return 0;
+            }
         }
         // Decode code point
         cp |= ((zu32)units[0] & 0x01) << 30;
@@ -208,19 +289,69 @@ ZString::codepoint ZString::nextUTF8(const codeunit8 **punits, zu8 maxunits){
         cp |= ((zu32)units[4] & 0x3F) << 6;
         cp |= ((zu32)units[5] & 0x3F);
         *punits += 6;
+        *maxunits -= 6;
 
     } else {
         // invalid byte
         *punits += 1;
+        *maxunits -= 1;
         return 0;
     }
 
     return cp;
 }
 
-ZString::codepoint ZString::nextUTF16(const codeunit16 **units, zu8 maxunits){
+ZString::codepoint ZString::_nextUTF16(const codeunit16 **punits, zu64 *maxunits){
     // UTF-16: RFC-2781
-    return 0;
+
+    const codeunit16 *units = *punits;
+    codepoint cp = 0;
+
+    // Check for surrogate pairs
+    if(*maxunits >= 1 && (units[0] & 0xFC00) != 0xD800){
+        // Single
+        cp |= units[0];
+        *punits += 1;
+        *maxunits -= 1;
+
+    } else if(*maxunits >= 2 && (units[1] & 0xFC00) == 0xDC00){
+        // Pair
+        cp |= ((zu32)units[0] & 0x03FF) << 10;
+        cp |= ((zu32)units[1] & 0x03FF);
+        cp += 0x10000;
+        *punits += 2;
+        *maxunits -= 2;
+
+    } else {
+        // Invalid sequence
+        *punits += 2;
+        *maxunits -= 2;
+        return 0;
+    }
+
+    return cp;
+}
+
+ZString::codepoint ZString::_nextUTF32(const codeunit32 **punits, zu64 *maxunits){
+    // UTF-32
+
+    const codeunit32 *units = *punits;
+    codepoint cp = 0;
+
+    // Check for bit 32
+    if((units[0] & 0x80000000) == 0){
+        // 31 or less bits
+        cp |= units[0];
+        *punits += 1;
+        *maxunits -= 1;
+    } else {
+        // 32nd bit set
+        *punits += 1;
+        *maxunits -= 1;
+        return 0;
+    }
+
+    return cp;
 }
 
 bool ZString::isUTF8(const char *str){
@@ -285,96 +416,6 @@ bool ZString::isUTF8(const char *str){
         return false;
     }
     return true;
-}
-
-void ZString::unicode_debug(const codeunit *bytes){
-    LOG(ZString(bytes));
-
-    while(*bytes){
-        zu32 cp = 0;
-
-        if((bytes[0] & 0xF8) == 0xF0){
-            // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-            // 4 bytes
-
-            if((bytes[1] & 0xC0) != 0x80)
-                LOG("Invalid byte 2: 0x" << ZString::ItoS(bytes[1],16,2));
-            if((bytes[2] & 0xC0) != 0x80)
-                LOG("Invalid byte 3: 0x" << ZString::ItoS(bytes[2],16,2));
-            if((bytes[3] & 0xC0) != 0x80)
-                LOG("Invalid byte 4: 0x" << ZString::ItoS(bytes[3],16,2));
-
-            cp = ((zu32)bytes[0] & 0x07) << 18 |
-                      ((zu32)bytes[1] & 0x3F) << 12 |
-                      ((zu32)bytes[2] & 0x3F) << 6 |
-                      (bytes[3] & 0x3F);
-
-            LOG(ZString(bytes, 4) << " (" << codePointStr(cp) << ") [" << ZBinary(bytes, 4).strBytes() << "]");
-            bytes += 4;
-
-        } else if((bytes[0] & 0xF0) == 0xE0){
-            // 1110xxxx 10xxxxxx 10xxxxxx
-            // 3 bytes
-
-            if((bytes[1] & 0xC0) != 0x80)
-                LOG("Invalid byte 2: 0x" << ZString::ItoS(bytes[1],16,2));
-            if((bytes[2] & 0xC0) != 0x80)
-                LOG("Invalid byte 3: 0x" << ZString::ItoS(bytes[2],16,2));
-
-            cp = ((zu32)bytes[0] & 0x0F) << 12 |
-                      ((zu32)bytes[1] & 0x3F) << 6 |
-                      (bytes[2] & 0x3F);
-
-            LOG(ZString(bytes, 3) << " (" << codePointStr(cp) << ") [" << ZBinary(bytes, 3).strBytes() << "]");
-            bytes += 3;
-
-        } else if((bytes[0] & 0xE0) == 0xC0){
-            // 110xxxxx 10xxxxxx
-            // 2 bytes
-
-            if((bytes[1] & 0xC0) != 0x80)
-                LOG("Invalid byte 2: 0x" << ZString::ItoS(bytes[1],16,2));
-
-            cp = ((zu32)bytes[0] & 0x1F) << 6 |
-                      (bytes[1] & 0x3F);
-
-            LOG(ZString(bytes, 2) << " (" << codePointStr(cp) << ") [" << ZBinary(bytes, 2).strBytes() << "]");
-            bytes += 2;
-
-        } else if((bytes[0] & 0x80) == 0){
-            // 0xxxxxxx
-            // 1 byte
-
-            cp = bytes[0];
-
-            LOG(ZString(bytes, 1) << " (" << codePointStr(cp) << ") [" << ZBinary(bytes, 1).strBytes() << "]");
-            bytes += 1;
-
-        } else {
-            LOG("Invalid byte: 0x" << ZString::ItoS(bytes[0],16,2));
-            bytes += 1;
-            continue;
-        }
-
-        if((0x15000 <= cp && cp <= 0x15FFF) ||
-           (0x17000 <= cp && cp <= 0x1AFFF) ||
-           (0x1C000 <= cp && cp <= 0x1CFFF)){
-            LOG("Invalid code point in plane 1");
-        } else if(0x2D000 <= cp && cp <= 0x2EFFF){
-            LOG("Invalid code point in plane 2");
-        } else if(0x30000 <= cp && cp <= 0xDFFFF){
-            LOG("Invalid code point in plane 3-13");
-        } else if(0xE1000 <= cp && cp <= 0xEFFFF){
-            LOG("Invalid code point in plane 14");
-        } else if(cp > 0x10FFFF){
-            LOG("Code point out of range");
-        }
-
-    }
-}
-
-ZString ZString::codePointStr(zu64 cp){
-    return ZString("U+") + ZString::ItoS(cp,16,8,true);
 }
 
 void ZString::unicode_normalize(){

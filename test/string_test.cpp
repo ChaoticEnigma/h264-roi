@@ -231,10 +231,24 @@ void string_format(){
 }
 
 void string_unicode(){
-    const char *utf1 = "test a\u0366 \U0002070E \xFF \xF0\x20\x9C\x8E \xF0\xA0\xDC\x8E !";
-    ZString::unicode_debug((const zbyte *)utf1);
-    ZString utf2 = utf1;
-    ZString::unicode_debug(utf2.bytes());
+    const char *utf8a = "test a\u0366 \U0002070E \xFF \xF0\x20\x9C\x8E \xF0\xA0\xDC\x8E !";
+    ZString::unicode_debug((const zbyte *)utf8a);
+    ZString utf8b;
+    utf8b.parseUTF8((const zu8*)utf8a, 100);
+    ZString::unicode_debug(utf8b.bytes());
+    TASSERT(utf8b == "test a\u0366 \U0002070E    \u070E !");
+
+    const zu16 utf16a[] = { 0x0061, 0x0020, 0xD801, 0xDC37 };
+    ZString utf16b;
+    utf16b.parseUTF16(utf16a, 4);
+    ZString::unicode_debug(utf16b.bytes());
+    TASSERT(utf16b == "a \U00010437");
+
+    const zu32 utf32a[] = { 0x62, 0x20, 0x10437 };
+    ZString utf32b;
+    utf32b.parseUTF32(utf32a, 3);
+    ZString::unicode_debug(utf32b.bytes());
+    TASSERT(utf32b == "b \U00010437");
 }
 
 ZArray<Test> string_tests(){

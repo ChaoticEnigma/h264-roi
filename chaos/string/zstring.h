@@ -30,8 +30,11 @@ typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
 /*! UTF-8 contiguous string container.
- *  Wide characters are narrowed and encoded in UTF-8.
- *  Internal array is always null terminated.
+ *  Parses UTF-8, UTF-16, or UTF-32 strings and encodes parsed code points in normalized UTF-8.
+ *  Since unicode normalization can only be done on real unicode code points, invalid code unit sequences
+ *  and code points will be discarded. Non-unicode bytes in input will also be discarded.
+ *
+ *  Internal buffer will always be valid null-terminated UTF-8 representing a sequence of valid Unicode code points.
  */
 class ZString : public ZAccessor<char> {
 public:
@@ -64,7 +67,7 @@ public:
     inline const char *cc() const { return reinterpret_cast<const char*>(_data); }
 
     //! Construct from UTF-8 zero-terminated bytes.
-    ZString(const zbyte *str, zu64 max = 0);
+    ZString(const zbyte *str, zu64 max = ZU64_MAX);
     //! Construct from UTF-8 byte array.
     ZString(const ZArray<zbyte> &array);
 
@@ -326,6 +329,14 @@ public:
 
     static bool alphaTest(ZString str1, ZString str2);
 
+    //! Parse UTF-8 string at \a units and replace this string with normalized UTF-8.
+    void parseUTF8(const codeunit8 *units, zu64 max);
+    //! Parse UTF-16 string at \a units and replace this string with normalized UTF-8.
+    void parseUTF16(const codeunit16 *units, zu64 max);
+    //! Parse UTF-32 string at \a units and replace this string with normalized UTF-8.
+    void parseUTF32(const codeunit32 *units, zu64 max);
+
+    //! Get debug information on a UTF-8 string.
     static void unicode_debug(const codeunit *bytes);
 
     //! Get a unicode character reference string from a code point.
@@ -379,19 +390,11 @@ private:
      */
     zu64 _strReplace(const ZString &before, const ZString &after, zu64 startpos);
 
-    // Unicode Encoding
-    //void fromwstring(std::wstring wstr);
-    //std::wstring towstring() const;
+    void _appendCodePoint(codepoint cp);
 
-    void appendCodePoint(codepoint cp);
-
-    //! Parse UTF-8 string at \a units and replace this string with normalized UTF-8.
-    void parseUTF8(const codeunit8 *units, zu64 max);
-    //! Parse UTF-16 string at \a units and replace this string with normalized UTF-8.
-    void parseUTF16(const codeunit16 *units, zu64 max);
-
-    codepoint nextUTF8(const codeunit8 **units, zu8 maxunits);
-    codepoint nextUTF16(const codeunit16 **units, zu8 maxunits);
+    codepoint _nextUTF8(const codeunit8 **units, zu64 *maxunits);
+    codepoint _nextUTF16(const codeunit16 **units, zu64 *maxunits);
+    codepoint _nextUTF32(const codeunit32 **units, zu64 *maxunits);
 
     //! Determine if \a str is valid UTF-8.
     static bool isUTF8(const char *str);
@@ -424,17 +427,17 @@ inline bool operator!=(const ZString &lhs, const ZString &rhs){
 }
 
 // ZString specialization ZHash
-//ZHASH_USER_SPECIALIAZATION(ZString, (const ZString &str), (str.bytes(), str.size()), {})
+ZHASH_USER_SPECIALIAZATION(ZString, (const ZString &str), (str.bytes(), str.size()), {})
 
-template <ZHashBase::hashMethod M> class ZHash<ZString, M> : public ZHashMethod<M> {
-public:
-    ZHash(const ZString &str) : ZHashMethod<M>(str.bytes(), str.size()){}
-};
-
-template <> class ZHash<ZString, ZHashBase::defaultHash> : public ZHashMethod<ZHashBase::defaultHash> {
-public:
-    ZHash(const ZString &str) : ZHashMethod<ZHashBase::defaultHash>(str.bytes(), str.size()){}
-};
+//template <ZHashBase::hashMethod M> class ZHash<ZString, M> : public ZHashMethod<M> {
+//public:
+//    ZHash(const ZString &str) : ZHashMethod<M>(str.bytes(), str.size()){}
+//};
+//
+//template <> class ZHash<ZString, ZHashBase::defaultHash> : public ZHashMethod<ZHashBase::defaultHash> {
+//public:
+//    ZHash(const ZString &str) : ZHashMethod<ZHashBase::defaultHash>(str.bytes(), str.size()){}
+//};
 
 } // namespace LibChaos
 
