@@ -13,7 +13,7 @@ void ZString::parseUTF8(const codeunit8 *units, zu64 max){
     clear();
     if(units && max){
         // Read and add code points
-        while(*units && max){
+        while(max && *units){
             _appendCodePoint(_nextUTF8(&units, &max));
         }
     }
@@ -23,7 +23,7 @@ void ZString::parseUTF16(const codeunit16 *units, zu64 max){
     clear();
     if(units && max){
         // Read and add code points
-        while(*units && max){
+        while(max && *units){
             _appendCodePoint(_nextUTF16(&units, &max));
         }
     }
@@ -33,7 +33,7 @@ void ZString::parseUTF32(const ZString::codeunit32 *units, zu64 max){
     clear();
     if(units && max){
         // Read and add code points
-        while(*units && max){
+        while(max && *units){
             _appendCodePoint(_nextUTF32(&units, &max));
         }
     }

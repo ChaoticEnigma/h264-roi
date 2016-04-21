@@ -14,12 +14,13 @@ ZJSON::ZJSON(jsontype type) : _type(UNDEF){
     initType(type);
 }
 
-//ZJSON::ZJSON(ZString str) : _type(UNDEF){
-//    decode(str);
-//}
-
 ZJSON::ZJSON(const ZJSON &other) : _type(UNDEF){
     operator=(other);
+}
+
+ZJSON::~ZJSON(){
+    // BUG: ZJSON memory leak
+    //initType(UNDEF);
 }
 
 ZJSON &ZJSON::operator=(const ZJSON &other){

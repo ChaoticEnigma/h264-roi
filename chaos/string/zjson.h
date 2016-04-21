@@ -23,17 +23,28 @@ public:
         BOOLEAN,
         NULLVAL,
     };
+
 public:
+    //! Type constructor.
     ZJSON(jsontype type = UNDEF);
 
+    //! String (ZString) constructor.
     ZJSON(ZString str) : ZJSON(STRING){ string() = str; }
+    //! String (c-str) constructor.
     ZJSON(const char *str) : ZJSON(ZString(str)){}
+    //! Number (double) constructor.
     ZJSON(double num) : ZJSON(NUMBER){ number() = num; }
+    //! Number (int) constructor.
     ZJSON(int num) : ZJSON((double)num){}
+    //! Boolean constructor.
     ZJSON(bool bl) : ZJSON(BOOLEAN){ boolean() = bl; }
 
     //! Copy constructor.
     ZJSON(const ZJSON &other);
+
+    //! Destructor.
+    ~ZJSON();
+
     //! Assignment operator.
     ZJSON &operator=(const ZJSON &other);
 

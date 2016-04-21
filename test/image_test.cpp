@@ -173,7 +173,7 @@ ZArray<Test> image_tests(){
         { "encode-16bit",       encode_16bit,       true, {} },
         { "convert-webp-png",   convert_webp_png,   true, {} },
         { "convert-jpeg-png",   convert_jpeg_png,   true, {} },
-        { "decode-jpeg",        decode_jpeg,        true, {} },
+        { "decode-jpeg",        decode_jpeg,        false, {} },
         { "decode-png",         decode_png,         true, {} },
     };
 }
