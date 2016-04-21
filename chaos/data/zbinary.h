@@ -54,6 +54,8 @@ public:
     }
     ZBinary(ZString str) : ZBinary((const zbyte *)str.cc(), str.size()){}
 
+    //! Copy constructor.
+    // TODO: Reference-count ZBinary
     ZBinary(const ZBinary &other) : ZBinary(other._data, other._size){
         // _rwpos is not copied
     }
@@ -62,6 +64,7 @@ public:
         clear();
         delete _alloc;
     }
+
     void clear(){
         _size = 0;
         _realsize = 0;

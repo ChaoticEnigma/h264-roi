@@ -317,7 +317,6 @@ void ZImage::decodeFormat(const ZBinary &data){
         setFormat(format);
     }
 
-    // TODO: Reference-count ZBinary
     ZBinary tmp = data;
     if(_backend){
         bool ok = _backend->decode(&tmp);

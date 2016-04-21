@@ -14,6 +14,7 @@
 
 namespace LibChaos {
 
+//! Abstract iterator base class.
 class ZIteratorBase {
 public:
     enum iterator_type {
@@ -34,6 +35,7 @@ public:
 // ITERATOR
 // ////////////////////////////////////////
 
+//! Abstract templated constant iterator base class.
 template <typename T> class ZConstIterator : public virtual ZIteratorBase {
 public:
     virtual ~ZConstIterator(){}
@@ -43,6 +45,7 @@ public:
     inline const T &operator*() const { return get(); }
 };
 
+//! Abstract templated iterator base class.
 template <typename T> class ZIterator : public virtual ZConstIterator<T> {
 public:
     virtual ~ZIterator(){}
@@ -60,6 +63,7 @@ public:
 // SIMPLEX ITERATOR
 // ////////////////////////////////////////
 
+//! Abstract templated constant simplex iterator interface.
 template <typename T> class ZSimplexConstIterator : public virtual ZConstIterator<T> {
 public:
     virtual ~ZSimplexConstIterator(){}
@@ -76,6 +80,7 @@ public:
     inline void operator++(int){ advance(); }
 };
 
+//! Abstract templated simplex iterator interface.
 template <typename T> class ZSimplexIterator : public virtual ZIterator<T>, public virtual ZSimplexConstIterator<T> {
 public:
     virtual ~ZSimplexIterator(){}
@@ -85,6 +90,7 @@ public:
 // DUPLEX ITERATOR
 // ////////////////////////////////////////
 
+//! Abstract templated constant duplex iterator interface.
 template <typename T> class ZDuplexConstIterator  : public virtual ZSimplexConstIterator<T> {
 public:
     virtual ~ZDuplexConstIterator(){}
@@ -101,6 +107,7 @@ public:
     inline void operator--(int){ recede(); }
 };
 
+//! Abstract templated duplex iterator interface.
 template <typename T> class ZDuplexIterator  : public virtual ZSimplexIterator<T>, public virtual ZDuplexConstIterator<T> {
 public:
     virtual ~ZDuplexIterator(){}
@@ -111,6 +118,7 @@ public:
 // RANDOM ITERATOR
 // ////////////////////////////////////////
 
+//! Abstract templated constant random iterator interface.
 template <typename T> class ZRandomConstIterator  : public virtual ZDuplexConstIterator<T> {
 public:
     virtual ~ZRandomConstIterator(){}
@@ -128,6 +136,7 @@ public:
     inline const T &operator[](zu64 i) const { return at(i); }
 };
 
+//! Abstract templated random iterator interface.
 template <typename T> class ZRandomIterator  : public virtual ZDuplexIterator<T>, public virtual ZRandomConstIterator<T> {
 public:
     virtual ~ZRandomIterator(){}

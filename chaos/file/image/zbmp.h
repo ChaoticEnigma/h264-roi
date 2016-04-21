@@ -15,6 +15,7 @@
 
 namespace LibChaos {
 
+//! BMP encoder/decoder.
 class ZBMP : public YImageBackend {
 public:
     struct BMPError {

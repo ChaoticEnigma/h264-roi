@@ -20,6 +20,7 @@
 
 namespace LibChaos {
 
+//! Hash code base class.
 class ZHashBase {
 public:
     enum hashMethod {
@@ -33,6 +34,7 @@ public:
     virtual ~ZHashBase(){}
 };
 
+//! 32-bit hash code base class.
 class ZHash32Base : public ZHashBase {
 public:
     typedef zu32 hashtype;
@@ -48,6 +50,7 @@ protected:
     hashtype _hash;
 };
 
+//! 64-bit hash code base class.
 class ZHash64Base : public ZHashBase {
 public:
     typedef zu64 hashtype;
@@ -75,9 +78,11 @@ protected:
 };
 
 // Base ZHashMethod template
+//! Hash method provider template.
 template <ZHashBase::hashMethod> class ZHashMethod;
 
 // CRC-32 (32-bit)
+//! Hash method provider for 32-bit CRC.
 template <> class ZHashMethod<ZHashBase::crc32> : public ZHash32Base {
 public:
     ZHashMethod() : ZHash32Base(ZHASH_CRC32_INIT){}
@@ -89,6 +94,7 @@ protected:
 };
 
 // Simple Hash (64-bit)
+//! Hash method provider for 64-bit simple hash.
 template <> class ZHashMethod<ZHashBase::simpleHash64> : public ZHash64Base {
 public:
     ZHashMethod() : ZHash64Base(ZHASH_SIMPLEHASH_INIT){}
@@ -100,6 +106,7 @@ protected:
 };
 
 // FNV-1a Hash (64-bit)
+//! Hash method provider for 64-bit FNV-1a hash.
 template <> class ZHashMethod<ZHashBase::fnvHash64> : public ZHash64Base {
 public:
     ZHashMethod() : ZHash64Base(ZHASH_FNV1A_64_INIT){}
@@ -111,6 +118,7 @@ protected:
 };
 
 // XXH64 (64-bit)
+//! Hash method provider for 64-bit XXH64 hash.
 template <> class ZHashMethod<ZHashBase::xxHash64> : public ZHash64Base {
 public:
     ZHashMethod() : ZHash64Base(0), _state(xxHash64_init()){}
@@ -130,9 +138,11 @@ protected:
 };
 
 // Base ZHash template <data type T, hash method M, SFINAE placeholder>
+//! Hash code generator template.
 template <typename T, ZHashBase::hashMethod M = ZHashBase::defaultHash, typename = void> class ZHash;
 
 // zu64 specialization
+//! Hash code template specialization for zu64.
 template <> class ZHash<zu64> : public ZHash64Base {
 public:
     ZHash(zu64 data) : ZHash64Base(data){}
