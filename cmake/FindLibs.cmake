@@ -20,7 +20,9 @@ ENDIF()
 IF(NOT DISABLE_ZJPEG)
     # Find libjpeg
     FIND_PATH(LIBJPEG_INCLUDE NAMES jpeglib.h)
-    FIND_LIBRARY(LIBJPEG_LIB  NAMES libturbojpeg.a libjpeg.a libturbojpeg.so libjpeg.so)
+    FIND_LIBRARY(LIBJPEG_LIB  NAMES libjpeg.a libjpeg.so)
+    # Apparently libjpeg-turbo is not binary-compatible with libjpeg
+    #FIND_LIBRARY(LIBJPEG_LIB  NAMES libturbojpeg.a libjpeg.a libturbojpeg.so libjpeg.so)
 
     IF(LIBJPEG_LIB AND LIBJPEG_INCLUDE)
         SET(LIBCHAOS_WITH_JPEG TRUE)
