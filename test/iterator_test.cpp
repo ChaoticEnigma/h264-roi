@@ -1,5 +1,7 @@
 #include "test.h"
 
+namespace LibChaosTest {
+
 int test_forward_iterator(ZSimplexConstIterator<ZString> *it, zu64 size){
     zu64 cf = 0;
     for(auto i = it; i->more(); i->advance()){
@@ -44,4 +46,6 @@ int test_random_iterator(ZRandomIterator<ZString> *it, zu64 size){
         LOG("i: " << it->at(i));
     }
     return 0;
+}
+
 }

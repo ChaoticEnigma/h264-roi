@@ -1,6 +1,8 @@
 #include "test.h"
 #include "zjson.h"
 
+namespace LibChaosTest {
+
 void checkType(ZJSON &json){
     switch(json.type()){
     case ZJSON::OBJECT: {
@@ -56,4 +58,6 @@ ZArray<Test> json_tests(){
     return {
         { "json", json, true, {} },
     };
+}
+
 }

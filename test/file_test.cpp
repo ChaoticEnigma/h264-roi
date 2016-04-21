@@ -5,6 +5,8 @@
 #include "zrandom.h"
 #include "zhash.h"
 
+namespace LibChaosTest {
+
 void file_create_dir(){
     ZPath near = "testdir";
     ZPath farfile = near + "a/b/c/d/e/f.dat";
@@ -99,16 +101,19 @@ void file_list_dirs(){
 
 void file_sequential_rw(){
     ZFile rfile("testrandom", ZFile::READWRITE);
+
     ZRandom random;
     ZBinary rand1 = random.generate(0x100);
+    TASSERT(rfile.write(rand1) == 0x100);
     ZBinary rand2 = random.generate(0x100);
+    TASSERT(rfile.write(rand2) == 0x100);
     ZBinary rand3 = random.generate(0x100);
+    TASSERT(rfile.write(rand3) == 0x100);
     ZBinary rand4 = random.generate(0x100);
-    rfile.write(rand1);
-    rfile.write(rand2);
-    rfile.write(rand3);
-    rfile.write(rand4);
+    TASSERT(rfile.write(rand4) == 0x100);
+
     rfile.rewind();
+
     ZBinary randi;
     rfile.read(randi, 0x100);
     TASSERT(ZHash<ZBinary>(randi).hash() == ZHash<ZBinary>(rand1).hash());
@@ -129,4 +134,6 @@ ZArray<Test> file_tests(){
         { "file-list-dirs",     file_list_dirs,     true, { "file-create-dir" } },
         { "file-sequential-rw", file_create_dir,    true, {} },
     };
+}
+
 }

@@ -9,6 +9,8 @@
 
 using namespace LibChaos;
 
+namespace LibChaosTest {
+
 typedef void (*test_func)(void);
 
 struct Test {
@@ -52,5 +54,7 @@ int test_forward_iterator(ZSimplexConstIterator<ZString> *it, zu64 size);
 int test_reverse_iterator(ZDuplexIterator<ZString> *it, zu64 size);
 int test_duplex_iterator(ZDuplexIterator<ZString> *it, zu64 size);
 int test_random_iterator(ZRandomIterator<ZString> *it, zu64 size);
+
+}
 
 #endif // TEST_H

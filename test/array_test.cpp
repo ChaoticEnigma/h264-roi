@@ -2,6 +2,8 @@
 #include "zarray.h"
 #include "zstack.h"
 
+namespace LibChaosTest {
+
 void array_push(){
     ZArray<int> tst;
     tst.push(10);
@@ -95,4 +97,6 @@ ZArray<Test> array_tests(){
         { "array-iterator",     array_iterator,     true, { "array-construct" } },
         { "stack",              stack,              true, {} },
     };
+}
+
 }

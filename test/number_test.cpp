@@ -2,6 +2,8 @@
 #include "znumber.h"
 #include "zbinary.h"
 
+namespace LibChaosTest {
+
 #define printnum(A) LOG(ZString::ItoS((zu64)(A), 2, 64).insert(56, " ").insert(48, " ").insert(40, " ").insert(32, " ").insert(24, " ").insert(16, " ").insert(8, " ") << " " << (A))
 
 void number(){
@@ -40,4 +42,6 @@ ZArray<Test> number_tests(){
     return {
         { "number", number, true, {} },
     };
+}
+
 }

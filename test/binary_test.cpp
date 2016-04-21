@@ -1,6 +1,8 @@
 #include "test.h"
 #include "zbinary.h"
 
+namespace LibChaosTest {
+
 void binary_construct(){
     ZBinary bin1({'A','B','C','D','E','F'});
     LOG(ZString(bin1.printable().asChar()));
@@ -41,4 +43,6 @@ ZArray<Test> binary_tests(){
         { "binary-find",        binary_find,        true, { "binary-construct" } },
         { "binary-read-write",  binary_read_write,  true, {} },
     };
+}
+
 }

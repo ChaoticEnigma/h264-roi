@@ -1,5 +1,7 @@
 #include "test.h"
 
+namespace LibChaosTest {
+
 void path_parse(){
     ZPath path1 = ZString("/some/odd/../complic/ated/../path");
     LOG(path1.prefix());
@@ -72,4 +74,6 @@ ZArray<Test> path_tests(){
         { "path-sanitize",  path_sanitize,  true, { "array-equality", "path-parse" } },
         { "path-relative",  path_relative,  true, { "array-equality", "path-parse" } },
     };
+}
+
 }

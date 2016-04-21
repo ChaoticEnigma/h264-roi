@@ -1,6 +1,8 @@
 #include "test.h"
 #include "zpdf.h"
 
+namespace LibChaosTest {
+
 void pdf_read(){
     ZPath path = "E:/Desktop/CCO07042015.pdf";
     ZPDF pdf1(path);
@@ -11,4 +13,6 @@ ZArray<Test> pdf_tests(){
     return {
         { "pdf-read", pdf_read, false, {} }
     };
+}
+
 }

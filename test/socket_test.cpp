@@ -8,16 +8,19 @@
 
 #include "zerror.h"
 
+namespace LibChaosTest {
+
 static bool run = true;
 
 void stopHandler(ZError::zerror_signal sig){
     run = false;
+    TASSERT(false);
 }
 
 void udp_client(){
     LOG("=== UDP Socket Test...");
     ZError::registerInterruptHandler(stopHandler);
-    ZError::registerSignalHandler(ZError::terminate, stopHandler);
+    ZError::registerSignalHandler(ZError::TERMINATE, stopHandler);
 
     ZDatagramSocket sock;
     if(!sock.open()){
@@ -57,7 +60,7 @@ void udp_client(){
 void udp_server(){
     LOG("=== UDP Socket Server Test...");
     ZError::registerInterruptHandler(stopHandler);
-    ZError::registerSignalHandler(ZError::terminate, stopHandler);
+    ZError::registerSignalHandler(ZError::TERMINATE, stopHandler);
 
     ZDatagramSocket sock;
     ZAddress bind(8998);
@@ -108,7 +111,7 @@ void udp_server(){
 void tcp_client(){
     LOG("=== TCP Socket Test...");
     ZError::registerInterruptHandler(stopHandler);
-    ZError::registerSignalHandler(ZError::terminate, stopHandler);
+    ZError::registerSignalHandler(ZError::TERMINATE, stopHandler);
 
     ZStreamSocket sock;
 
@@ -138,7 +141,7 @@ void tcp_client(){
 void tcp_server(){
     LOG("=== TCP Socket Server Test...");
     ZError::registerInterruptHandler(stopHandler);
-    ZError::registerSignalHandler(ZError::terminate, stopHandler);
+    ZError::registerSignalHandler(ZError::TERMINATE, stopHandler);
 
     ZStreamSocket sock;
     ZAddress bind(8080);
@@ -587,4 +590,6 @@ ZArray<Test> socket_tests(){
         { "tcp-server-2",   tcp_server_2,   false, {} },
         { "tcp-server-3",   tcp_server_3,   false, {} },
     };
+}
+
 }

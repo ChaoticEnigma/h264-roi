@@ -7,6 +7,8 @@
 #define PADLEN 16
 #define PAD(X) ZString(X).pad(' ', PADLEN)
 
+namespace LibChaosTest {
+
 void random(){
     ZRandom random;
     LOG(random.genzu());
@@ -49,4 +51,6 @@ ZArray<Test> misc_tests(){
         { "random", random, true, {} },
         { "uid",    uid,    true, {} },
     };
+}
+
 }

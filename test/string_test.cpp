@@ -5,6 +5,8 @@
 #include <cmath>
 #include <iostream>
 
+namespace LibChaosTest {
+
 void string_assign_compare(){
     ZString str1;
     ZString str2("A String!");
@@ -272,4 +274,6 @@ ZArray<Test> string_tests(){
         { "string-utf16",               string_utf16,               true, { "string-utf8" } },
         { "string-utf32",               string_utf32,               true, { "string-utf8" } },
     };
+}
+
 }

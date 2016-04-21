@@ -2,6 +2,8 @@
 #include "zmap.h"
 #include "zset.h"
 
+namespace LibChaosTest {
+
 void hash(){
     int data1 = -34563;
     zu64 hash1 = ZHash<int>(data1).hash();
@@ -143,4 +145,6 @@ ZArray<Test> hash_tests(){
         { "map",    map,    true, {} },
         { "set",    set,    true, {} },
     };
+}
+
 }

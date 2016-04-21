@@ -2,6 +2,8 @@
 #include "zlist.h"
 #include "zqueue.h"
 
+namespace LibChaosTest {
+
 void list_push_pop(){
     ZList<int> list1;
     // push some values
@@ -87,4 +89,6 @@ ZArray<Test> list_tests(){
         { "list-iterator",  list_iterator,  true, {} },
         { "queue",          queue,          true, {} },
     };
+}
+
 }

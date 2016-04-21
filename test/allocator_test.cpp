@@ -2,6 +2,8 @@
 #include "zallocator.h"
 #include "zstorage.h"
 
+namespace LibChaosTest {
+
 void allocator_char(){
     ZAllocator<char> alloc;
     char *test = alloc.alloc(20);
@@ -19,4 +21,6 @@ ZArray<Test> allocator_tests(){
         { "allocator-char", allocator_char, true, { "allocator-void" } },
         { "allocator-void", allocator_void, true, {} },
     };
+}
+
 }

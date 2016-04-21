@@ -2,6 +2,8 @@
 #include "zpointer.h"
 #include <stdio.h>
 
+namespace LibChaosTest {
+
 struct AnObject {
     AnObject(ZString s){
         str = s;
@@ -53,4 +55,6 @@ ZArray<Test> pointer_tests(){
     return {
         { "pointer", pointer, true, {} },
     };
+}
+
 }

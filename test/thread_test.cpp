@@ -5,6 +5,8 @@
 #include "zlock.h"
 //#include <unistd.h>
 
+namespace LibChaosTest {
+
 void *thread_func(void * /*zarg*/){
     //ZThreadArg *arg = (ZThreadArg*)zarg;
     LOG("running " << ZThread::thisTid());
@@ -142,4 +144,6 @@ ZArray<Test> thread_tests(){
         { "thread", thread, false, {} },
         { "mutex",  mutex,  false, {} },
     };
+}
+
 }

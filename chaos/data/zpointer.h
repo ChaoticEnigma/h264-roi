@@ -39,8 +39,9 @@ public:
         }
     }
 
-    //! Acquire shared ownership of other contained pointer.
-    // NOTE: Other ZPointer object is not modified, but the data struct is
+    /*! Acquire shared ownership of other contained pointer.
+     *  \note Other ZPointer object is not modified, but the data struct is.
+     */
     ZPointer(const ZPointer &other) : _data(other._data){
         _increment();
     }

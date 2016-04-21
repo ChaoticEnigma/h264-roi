@@ -2,6 +2,8 @@
 #include "zimage.h"
 #include "zfile.h"
 
+namespace LibChaosTest {
+
 #define GEN_BMP         "gen.bmp"
 #define GEN_PPM         "gen.ppm"
 #define GEN_PNG         "gen.png"
@@ -170,8 +172,10 @@ ZArray<Test> image_tests(){
         { "encode-8bit",        encode_8bit,        true, {} },
         { "encode-16bit",       encode_16bit,       true, {} },
         { "convert-webp-png",   convert_webp_png,   true, {} },
-        { "convert-jpeg-png",   convert_jpeg_png,   false, {} },
-        { "decode-jpeg",        decode_jpeg,        false, {} },
-        { "decode-png",         decode_png,         false, {} },
+        { "convert-jpeg-png",   convert_jpeg_png,   true, {} },
+        { "decode-jpeg",        decode_jpeg,        true, {} },
+        { "decode-png",         decode_png,         true, {} },
     };
+}
+
 }
