@@ -174,7 +174,7 @@ ZArray<Test> image_tests(){
         { "convert-webp-png",   convert_webp_png,   true, {} },
         { "convert-jpeg-png",   convert_jpeg_png,   true, {} },
         { "decode-jpeg",        decode_jpeg,        false, {} },
-        { "decode-png",         decode_png,         true, {} },
+        { "decode-png",         decode_png,         false, {} },
     };
 }
 
