@@ -13,7 +13,11 @@
 #include "zreader.h"
 #include "zwriter.h"
 
-#if PLATFORM != WINDOWS
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+    #define ZFILE_WINAPI
+#endif
+
+#ifndef ZFILE_WINAPI
     #include <fstream>
 #endif
 
@@ -58,12 +62,12 @@ public:
     bool close();
 
     // ZPosition
-    zu64 position() const;
+    zu64 tell() const;
     zu64 seek(zu64 pos);
     bool atEnd() const;
 
     // ZReader
-    zu64 available();
+    zu64 available() const;
     zu64 read(zbyte *dest, zu64 size);
 
     // ZWriter
@@ -82,7 +86,7 @@ public:
     zu64 fileSize() const;
     static zu64 fileSize(ZPath path);
 
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     bool isOpen() const { return (_handle != NULL); }
 #else
     bool isOpen() const { return (_file != NULL); }
@@ -90,7 +94,7 @@ public:
     zu16 &bits(){ return _options; }
     ZPath path() const { return _path; }
 
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     HANDLE handle(){ return _handle; }
 #else
     FILE *fp(){ return _file; }
@@ -105,23 +109,24 @@ public:
     static zu64 copy(ZPath src, ZPath dest);
     static bool rename(ZPath old, ZPath newfl);
 
-    static bool removeDir(ZPath path);
-
     // Path-related functions
     static bool exists(ZPath path);
 
     static bool isFile(ZPath dir);
     static bool isDir(ZPath dir);
 
-    // Creates directory if it doesn't exist
+    //! Creates directory if it doesn't exist.
     static bool makeDir(ZPath dir);
-    // Creates all directories in path before last path part, if they don't exist
+    //! Creates all directories in path before last path part, if they don't exist.
     static bool createDirsTo(ZPath path);
 
-    // List files in a directory, recursize by default
-    static ZArray<ZPath> listFiles(ZPath dir, bool recurse = true);
-    // List directories in a directory, non-recursive by default
-    static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false, bool hidden = false);
+    //! Removes a directory if it exists.
+    static bool removeDir(ZPath path);
+
+    //! List files in a directory, recursize by default.
+    static ZArray<ZPath> listFiles(ZPath dir, bool recurse = false);
+    //! List directories in a directory, non-recursive by default.
+    static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false, bool hidden = true);
 
     static zu64 dirSize(ZPath dir);
 
@@ -130,7 +135,7 @@ public:
 private:
     zu16 _options;
     ZPath _path;
-#if PLATFORM == WINDOWS
+#ifdef ZFILE_WINAPI
     HANDLE _handle;
 #else
     FILE *_file;

@@ -2,56 +2,59 @@
 #define TEST_H
 
 #include "zlog.h"
+#include "zmap.h"
 
-// Fail Current Test
-#define FAILTEST throw __LINE__;
 // Assert for Tests
 #define TASSERT(X) if(!(X)) throw __LINE__;
 
 using namespace LibChaos;
 
-int sandbox();
+namespace LibChaosTest {
 
-int array_test();
-int assoc_test();
-int stack_test();
-int map_test();
-int list_test();
-int queue_test();
+typedef void (*test_func)(void);
 
-int binary_test();
+struct Test {
+    ZString name;
+    test_func func;
+    bool run;
+    ZArray<ZString> deps;
+};
 
-int string_test();
-int path_test();
-int json_test();
+typedef ZArray<Test> (*reg_func)(void);
 
-int pointer_test();
-int allocator_test();
-int storage_test();
+ZArray<Test> allocator_tests();
+ZArray<Test> storage_tests();
+ZArray<Test> pointer_tests();
 
-int thread_test();
-int mutex_test();
+ZArray<Test> binary_tests();
+ZArray<Test> array_tests();
+ZArray<Test> list_tests();
 
-int number_test();
+ZArray<Test> string_tests();
+ZArray<Test> path_tests();
+ZArray<Test> json_tests();
 
-int random_test();
-int uid_test();
-int hash_test();
+ZArray<Test> hash_tests();
+ZArray<Test> graph_tests();
+ZArray<Test> misc_tests();
+ZArray<Test> number_tests();
 
-int file_test();
-int image_test();
-int pdf_test();
+ZArray<Test> file_tests();
+ZArray<Test> image_tests();
+ZArray<Test> pdf_tests();
 
-int udp_test();
-int udpserver_test();
+ZArray<Test> socket_tests();
 
-int tcp_test();
-int tcpserver_test();
-int tcpserver_test2();
-int tcpserver_test3();
+ZArray<Test> thread_tests();
+ZArray<Test> error_tests();
 
-int error_test();
+ZArray<Test> sandbox_tests();
 
-typedef int (*test_func)(void);
+int test_forward_iterator(ZSimplexConstIterator<ZString> *it, zu64 size);
+int test_reverse_iterator(ZDuplexIterator<ZString> *it, zu64 size);
+int test_duplex_iterator(ZDuplexIterator<ZString> *it, zu64 size);
+int test_random_iterator(ZRandomIterator<ZString> *it, zu64 size);
+
+}
 
 #endif // TEST_H

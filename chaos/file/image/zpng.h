@@ -18,6 +18,7 @@
 
 namespace LibChaos {
 
+//! PNG encoder/decoder, libpng wrapper.
 class ZPNG : public YImageBackend {
 public:
     struct PNGError {

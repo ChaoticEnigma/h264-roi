@@ -7,22 +7,23 @@ OPTION(EXTRA_WARNINGS                       "Produce Extra Compiler Warnings"   
 
 # General Options
 OPTION(LIBCHAOS_SHARED                      "Build LibChaos as a shared library"        OFF )
-OPTION(IBERTY_DEMANGLE                      "Use libiberty to demangle symbols"         OFF )
+#OPTION(IBERTY_DEMANGLE                      "Use libiberty to demangle symbols"         OFF )
 
 # Library Components
-OPTION(LIBCHAOS_EXTERN                      "Build LibChaos with External Libraries"    ON  )
 OPTION(LIBCHAOS_UI                          "Build LibChaos UI library"                 OFF )
 OPTION(LIBCHAOS_TEST                        "Build and Run LibChaos Test suite"         ON  )
-OPTION(LIBCHAOS_UTIL                        "Build LibChaos Utilities"                  OFF )
 
-# ZParcel Tool
-OPTION(LIBCHAOS_ZPARCEL                     "Build ZParcel tool"                        OFF )
-
-# Extern Library Support
+# Third-Party Library Support
 OPTION(DISABLE_ZPNG                         "Disable PNG support"                       OFF )
 OPTION(DISABLE_ZJPEG                        "Disable JPEG support"                      OFF )
 OPTION(DISABLE_ZWEBP                        "Disable WebP support"                      OFF )
-OPTION(DISABLE_ZH264                        "Disable H264 support"                      OFF )
+
+OPTION(REQUIRE_ZJPEG                        "Require JPEG support"                      OFF )
+OPTION(REQUIRE_ZPNG                         "Require PNG support"                       OFF )
+OPTION(REQUIRE_ZWEBP                        "Require WebP support"                      OFF )
+
+# ZParcel Tool
+OPTION(LIBCHAOS_ZPARCEL                     "Build ZParcel tool"                        OFF )
 
 # Util Executables
 OPTION(LIBCHAOS_UTIL_EXTENSION_FIXER        "Build LibChaos Extension Fixer"            OFF )
@@ -33,12 +34,6 @@ OPTION(LIBCHAOS_UTIL_IMAGE_LIBRARY_MANAGER  "Build LibChaos Image Library Manage
 OPTION(LIBCHAOS_UTIL_IMAGE_REVERSE_SEARCH   "Build LibChaos Image Reverse Search"       OFF )
 
 # All Extra Targets Excluded from All
-IF(LIBCHAOS_EXTERN)
-    SET(LIBCHAOS_EXTERN_ALL)
-ELSE()
-    SET(LIBCHAOS_EXTERN_ALL     EXCLUDE_FROM_ALL)
-ENDIF()
-
 IF(LIBCHAOS_UI)
     SET(LIBCHAOS_UI_ALL)
 ELSE()

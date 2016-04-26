@@ -1,5 +1,7 @@
 
+# Find Doxygen tool.
 FIND_PACKAGE(Doxygen)
+
 IF(DOXYGEN_FOUND)
     # General Doxygen Options
     SET(DOXYGEN_INPUT ${CMAKE_CURRENT_SOURCE_DIR})
@@ -42,7 +44,9 @@ IF(DOXYGEN_FOUND)
         )
     ENDIF()
 
+    # Find Latex tool.
     FIND_PACKAGE(LATEX)
+
     IF(LATEX_FOUND)
         SET(DOXYGEN_LATEX "YES")
     ELSE()

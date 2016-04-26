@@ -1,7 +1,9 @@
 #include "test.h"
 #include "zbinary.h"
 
-int binary_test(){
+namespace LibChaosTest {
+
+void binary_construct(){
     ZBinary bin1({'A','B','C','D','E','F'});
     LOG(ZString(bin1.printable().asChar()));
     LOG(ZString(bin1.getSub(0, 2).printable().asChar()));
@@ -9,13 +11,17 @@ int binary_test(){
     LOG(ZString(bin1.getSub(4, 6).printable().asChar()));
     LOG(ZString(bin1.getSub(5, 4).printable().asChar()));
     LOG(ZString(bin1.getSub(6, 2).printable().asChar()));
+}
 
+void binary_find(){
     ZBinary bin2({'A','0','B','C','D','2','2','E','F'});
     LOG(ZString(bin2.printable().asChar()));
     zu64 pos = bin2.findFirst({'2','2'});
     LOG(pos);
     LOG(ZString(bin2.getSub(0, pos).printable().asChar()));
+}
 
+void binary_read_write(){
     ZBinary bin3;
     bin3.reserve(16);
     zu64 num1 = 0x056379084560;
@@ -29,6 +35,14 @@ int binary_test(){
     LOG(num2 << " " << num2o);
     TASSERT(num1 == num1o);
     TASSERT(num2 == num2o);
+}
 
-    return 0;
+ZArray<Test> binary_tests(){
+    return {
+        { "binary-construct",   binary_construct,   true, {} },
+        { "binary-find",        binary_find,        true, { "binary-construct" } },
+        { "binary-read-write",  binary_read_write,  true, {} },
+    };
+}
+
 }

@@ -5,14 +5,16 @@ PROJECT(LibChaos)
 
 # Options
 INCLUDE(cmake/Options.cmake)
-# Find External Libraries
+# Find External Third Party Libraries
 INCLUDE(cmake/FindLibs.cmake)
 # Build Settings
 INCLUDE(cmake/ConfigureBuild.cmake)
 # CMake Utils
 INCLUDE(cmake/Utils.cmake)
+
 # CTest
 INCLUDE(CTest)
+ENABLE_TESTING()
 
 # Git Describe
 EXECUTE_PROCESS(
@@ -43,6 +45,7 @@ SET(LibChaos_OTHER_FILES
     doc/LibChaos_Todo_Ideas.txt
     doc/Doxyfile.in
     doc/Doxyfile-help.in
+    doc/ZParcel.txt
 )
 
 ## Libraries
@@ -56,12 +59,6 @@ ELSE()
     SET(LibChaos_BUILD_LIST "Core")
 ENDIF()
 SET(LibChaos_INCLUDE ${LibChaos_Core_INCLUDE})
-
-# LibChaos Extern
-#ADD_SUBDIRECTORY(extern)
-IF(LIBCHAOS_EXTERN)
-    SET(LibChaos_BUILD_LIST ${LibChaos_BUILD_LIST} ${EXTERN_BUILD_LIST})
-ENDIF()
 
 # LibChaos UI
 ADD_SUBDIRECTORY(ui)

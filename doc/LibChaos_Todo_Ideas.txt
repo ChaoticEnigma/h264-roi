@@ -69,16 +69,10 @@ ZDelta
     - binary delta algorithm
     - simple version control implementation in utils
 
-ZHash
-    - ZBinary hashing / checksums
-    
-ZUid
+ZUID
     - custom generation
     - generation options
         - sequence
-        - random
-        - time
-        - MAC
         - content hash
 
 ZDatabase
@@ -134,7 +128,41 @@ ZParcel
         - sensitive : zero block on removal
     - hints for entire parcel
         - storage : attempt to reorganize parcel frequently
-        - preformance : optimize space less, oper8 as fast as possible
+        - performance : optimize space less, operate as fast as possible
         - sensitive : always zero blocks
-    
+
     ? compression
+
+
+ZIterator 1
+    class ZIterable<T, type>
+    class ZIterator<T>
+    class ZIterator<ZList<T>> : ZIterable<T, DUPLEX>
+    ZIterator<ZList<T>> ZList<T>::begin()
+
+ZIterator 2
+    class ZIterator<T, type>
+    class ZList<T>::ZListIterator : ZIterator<T, DUPLEX>
+    ZList<T>::ZListIterator ZList<T>::begin()
+
+ZIterator 3
+    class ZIterable<T, type>
+    class ZIterator<T, type> : ZIterable<T, type>
+    ZIterator<T>(ZIterable<T> *it)
+    class ZListIterable<T> : ZIterable<T, DUPLEX>
+    ZIterator<T> ZList<T>::begin() return ZIterator<T>(new ZListIterable<T>(head))
+
+
+ZReader 1
+    class ZReadable<T>
+        zu64 read(zbyte *dest, zu64 size) const
+    class ZBinary : ZReadable<unsigned char>
+    class ZReader<T>
+    ZReader<T>(const ZReadable<T> *rdr)
+    ZReader<T>(const ZReader<T> &other)
+
+ZReader 2
+    class ZReader<T>
+        zu64 read(zbyte *dest, zu64 size)
+    class ZBinary : ZReader<unsigned char>
+

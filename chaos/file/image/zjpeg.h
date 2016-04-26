@@ -14,6 +14,7 @@
 
 namespace LibChaos {
 
+//! JPEG encoder/decoder, libjpeg wrapper.
 class ZJPEG : public YImageBackend {
 public:
     struct JPEGError {

@@ -4,6 +4,7 @@
 **                          (c) 2015 Zennix Studios                           **
 *******************************************************************************/
 #include "zlogworker.h"
+#include "zlog.h"
 #include "zfile.h"
 #include "zqueue.h"
 #include "zmap.h"
@@ -23,16 +24,26 @@ ZQueue<ZLogWorker::LogJob*> jobs;
 
 //ZMutex writemutex;
 
+struct LogHandler {
+    enum lhtype {
+       STDOUT, STDERR, FILE
+    };
+    LogHandler(lhtype t, ZString f) : type(t), fmt(f){}
+    lhtype type;
+    ZString fmt;
+    ZPath file;
+};
+
 ZMutex formatmutex;
-ZMap<ZLogWorker::zlog_source, ZString> stdoutlog;
-ZMap<ZLogWorker::zlog_source, ZString> stderrlog;
-ZArray<ZPath> logfilelist;
-ZMap<ZPath, ZMap<ZLogWorker::zlog_source, ZString> > logfiles;
+ZMap<int, ZList<LogHandler>> logformats;
 
 ZMutex threadidmutex;
 ZMap<ztid, zu32> threadids;
 
 bool ZLogWorker::lastcomp;
+
+bool enablestdout = true;
+bool enablestderr = true;
 
 ZLogWorker::ZLogWorker(){
 //    work = work(zlogWorker);
@@ -104,9 +115,8 @@ void *ZLogWorker::zlogWorker(void *arg){
 
 ZString ZLogWorker::getThread(ztid thread){
     zu16 id;
-
     threadidmutex.lock();
-    if(threadids.exists(thread)){
+    if(threadids.contains(thread)){
         id = threadids[thread];
     } else {
         id = threadids.size();
@@ -120,7 +130,7 @@ ZString ZLogWorker::makeLog(const LogJob *job, ZString fmt){
     if(!job->raw){
         fmt.replace("%log%", job->log);
 
-        fmt.replace("%clock%", job->clock.str());
+        fmt.replace("%clock%", ZClock::clockStr(job->clock.getClockStart()));
         fmt.replace("%date%", job->time.dateStr());
         fmt.replace("%time%", job->time.timeStr());
         fmt.replace("%datetime%", job->time.dateStr() + " " + job->time.timeStr());
@@ -140,96 +150,69 @@ ZString ZLogWorker::makeLog(const LogJob *job, ZString fmt){
 
 void ZLogWorker::doLog(LogJob *job){
     formatmutex.lock();
-    ZString stdoutfmt = stdoutlog[job->source];
-    ZString stdoutfmtall = stdoutlog[ZLogSource::ALL];
-    ZString stderrfmt = stderrlog[job->source];
-    ZString stderrfmtall = stderrlog[ZLogSource::ALL];
+    ZList<LogHandler> formats = logformats[job->level];
     formatmutex.unlock();
 
-    // Do any stdout logging
-    if(!stdoutfmt.isEmpty()){
-        fprintf(stdout, "%s", makeLog(job, stdoutfmt).cc());
-        fflush(stdout);
-    } else if(!stdoutfmtall.isEmpty()){
-        fprintf(stdout, "%s", makeLog(job, stdoutfmtall).cc());
-        fflush(stdout);
-    }
-
-    // Do any stderr logging
-    if(!stderrfmt.isEmpty()){
-        fprintf(stderr, "%s", makeLog(job, stderrfmt).cc());
-        fflush(stderr);
-    } else if(!stderrfmtall.isEmpty()){
-        fprintf(stderr, "%s", makeLog(job, stderrfmtall).cc());
-        fflush(stderr);
-    }
-
-    // Do any file logging
-    if(!job->stdio){
-//        writemutex.lock();
-        for(zu64 i = 0; i < logfilelist.size(); ++i){
-            formatmutex.lock();
-            ZPath filename = logfilelist[i];
-            ZString filefmt = logfiles[filename][job->source];
-            ZString filefmtall = logfiles[filename][ZLogSource::ALL];
-            formatmutex.unlock();
-
-            if(!filefmt.isEmpty()){
-                ZFile::createDirsTo(filename);
-//                ZFile out(filename, ZFile::modewrite | ZFile::append);
-//                if(out.isOpen()){
-//                    ZString logstr = makeLog(job, filefmt);
-//                    out.write((const zbyte *)logstr.cc(), logstr.size());
-//                } else {
-//                    fprintf(stderr, "%s", "failed to open log file");
-//                    fflush(stderr);
-//                }
-//                out.close();
-
-                std::ofstream lgfl(filename.str().cc(), std::ios::app);
-                lgfl << makeLog(job, filefmt);
+    for(zu64 i = 0; i < formats.size(); ++i){
+        switch(formats.front().type){
+            case LogHandler::STDOUT:
+                if(enablestdout){
+                    fprintf(stdout, "%s", makeLog(job, formats.front().fmt).cc());
+                    fflush(stdout);
+                }
+                break;
+            case LogHandler::STDERR:
+                if(enablestderr){
+                    fprintf(stderr, "%s", makeLog(job, formats.front().fmt).cc());
+                    fflush(stderr);
+                }
+                break;
+            case LogHandler::FILE: {
+                ZFile::createDirsTo(formats.front().file);
+                std::ofstream lgfl(formats.front().file.str().cc(), std::ios::app);
+                lgfl << makeLog(job, formats.front().fmt);
                 lgfl.flush();
                 lgfl.close();
-            } else if(!filefmtall.isEmpty()){
-                ZFile::createDirsTo(filename);
-//                ZFile out(filename, ZFile::modewrite | ZFile::append);
-//                if(out.isOpen()){
-//                    ZString logstr = makeLog(job, filefmtall);
-//                    out.write((const zbyte *)logstr.cc(), logstr.size());
-//                } else {
-//                    fprintf(stderr, "%s", "failed to open log file");
-//                    fflush(stderr);
-//                }
-//                out.close();
-
-                std::ofstream lgfl(filename.str().cc(), std::ios::app);
-                lgfl << makeLog(job, filefmtall);
-                lgfl.flush();
-                lgfl.close();
+                break;
             }
+            default:
+                break;
         }
-//        writemutex.unlock();
+
+        // Rotate list
+        formats.rotate();
     }
 
     // Destroy the job
     delete job;
 }
 
-void ZLogWorker::formatStdout(zlog_source type, ZString fmt){
+void ZLogWorker::logLevelStdOut(int level, ZString fmt){
     formatmutex.lock();
-    stdoutlog[type] = fmt;
+    LogHandler lh(LogHandler::STDOUT, fmt);
+    logformats[level].push(lh);
     formatmutex.unlock();
 }
-void ZLogWorker::formatStderr(zlog_source type, ZString fmt){
+void ZLogWorker::logLevelStdErr(int level, ZString fmt){
     formatmutex.lock();
-    stderrlog[type] = fmt;
+    LogHandler lh(LogHandler::STDERR, fmt);
+    logformats[level].push(lh);
     formatmutex.unlock();
 }
-void ZLogWorker::addLogFile(ZPath pth, zlog_source type, ZString fmt){
+void ZLogWorker::logLevelFile(int level, ZPath file, ZString fmt){
     formatmutex.lock();
-    logfilelist.push(pth);
-    logfiles[pth][type] = fmt;
+    LogHandler lh(LogHandler::FILE, fmt);
+    lh.file = file;
+    logformats[level].push(lh);
     formatmutex.unlock();
+}
+
+void ZLogWorker::setStdOutEnable(bool set){
+    enablestdout = set;
+}
+
+void ZLogWorker::setStdErrEnable(bool set){
+    enablestderr = set;
 }
 
 }

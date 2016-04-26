@@ -85,17 +85,18 @@ bool ZJPEG::decode(ZReader *input){
         JSAMPARRAY buffer = new JSAMPROW[buffer_count];
         // Each row is an array of samples
         buffer[0] = new JSAMPLE[_image->stride()];
+
         JSAMPROW row;
 
         // Read image scanlines
         while(cinfo.output_scanline < cinfo.output_height){
             // Set pointer to next output row
-            row = _image->buffer() + ((cinfo.output_scanline - 1) * _image->stride());
+            //row = _image->buffer() + ((cinfo.output_scanline - 1) * _image->stride());
             // Decode scanline(s) into buffer
-            //jpeg_read_scanlines(&cinfo, buffer, buffer_count);
-            jpeg_read_scanlines(&cinfo, &row, 1);
+            jpeg_read_scanlines(&cinfo, buffer, buffer_count);
+            //jpeg_read_scanlines(&cinfo, &row, 1);
             // Copy scanline to buffer
-            //memcpy(_image->buffer() + ((cinfo.output_scanline - 1) * _image->stride()), buffer[0], _image->stride());
+            memcpy(_image->buffer() + ((cinfo.output_scanline - 1) * _image->stride()), buffer[0], _image->stride());
         }
 
         // Cleanup

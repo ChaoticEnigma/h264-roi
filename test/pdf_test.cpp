@@ -1,13 +1,18 @@
 #include "test.h"
 #include "zpdf.h"
 
-int pdf_test(){
+namespace LibChaosTest {
 
-    return 0;
-
+void pdf_read(){
     ZPath path = "E:/Desktop/CCO07042015.pdf";
     ZPDF pdf1(path);
     pdf1.list();
+}
 
-    return 0;
+ZArray<Test> pdf_tests(){
+    return {
+        { "pdf-read", pdf_read, false, {} }
+    };
+}
+
 }

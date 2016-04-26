@@ -17,7 +17,7 @@ public:
     /*! Get number of available bytes.
      *  Returns ZU64_MAX for infinity.
      */
-    virtual zu64 available() = 0;
+    virtual zu64 available() const = 0;
 
     /*! Read \a size bytes from object at current position into \a dest.
      *  If \a dest is null, call must "read" \a size, but not copy to \a dest.

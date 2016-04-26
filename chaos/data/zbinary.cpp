@@ -33,10 +33,10 @@ void ZBinary::reverse(){
 
 zu64 ZBinary::findFirst(const ZBinary &find) const {
     if(find.size() > _size){
-        return none;
+        return NONE;
     }
     zu64 j = 0;
-    zu64 start = none;
+    zu64 start = NONE;
     for(zu64 i = 0; i < _size; ++i){
         if(_data[i] == find[j]){
             if(j == find.size() - 1)
@@ -127,6 +127,15 @@ ZBinary ZBinary::printable() const {
         }
     }
     return tmp;
+}
+
+ZString ZBinary::strBytes(){
+    ZString str;
+    for(zu64 i = 0; i < size(); ++i){
+        str += ZString("0x") + ZString::ItoS(_data[i], 16, 2) + " ";
+    }
+    str.substr(0, str.size()-1);
+    return str;
 }
 
 zu64 ZBinary::read(zbyte *dest, zu64 length){

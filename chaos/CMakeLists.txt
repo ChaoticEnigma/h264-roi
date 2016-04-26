@@ -15,7 +15,7 @@ SET(LibChaos_SOURCES
     abstract/zaccessor.h
     abstract/zbase.h
     abstract/zhashable.h
-    abstract/ziterable.h
+    abstract/ziterator.h
     abstract/zposition.h
     abstract/zreader.h
     abstract/zserializer.h
@@ -28,7 +28,6 @@ SET(LibChaos_SOURCES
     base/zerror.cpp
     base/zexception.h
     base/zexception.cpp
-    base/ziterator.h
     base/zlog.h
     base/zlog.cpp
     base/zlogworker.h
@@ -44,10 +43,12 @@ SET(LibChaos_SOURCES
     data/zdata.h
     data/zdefaultstorage.h
     data/zfilestorage.h
+    data/zgraph.h
     data/zlist.h
     data/zmap.h
     data/zpointer.h
     data/zqueue.h
+    data/zset.h
     data/zstack.h
 
     file/database.h
@@ -117,7 +118,7 @@ SET(LibChaos_SOURCES
     string/zpath.cpp
     string/zstring.h
     string/zstring.cpp
-    string/zstring-encode.cpp
+    string/zstring-unicode.cpp
     string/zxml.h
     string/zxml.cpp
 
@@ -205,6 +206,7 @@ INCLUDE_DIRECTORIES(
     ${LibChaos_INCLUDE}
     lib/fnv-5.0.3
 )
+
 IF(LIBCHAOS_WITH_PNG)
     INCLUDE_DIRECTORIES(${ZLIB_INCLUDE} ${LIBPNG_INCLUDE})
     ADD_DEFINITIONS(-DPNG_STATIC)
@@ -223,7 +225,7 @@ ENDIF()
 ### =================== BUILD =================== ###
 
 ADD_LIBRARY(chaos ${LIBCHAOS_LINK} ${LibChaos_HEADERS} ${LibChaos_SOURCES})
-TARGET_LINK_LIBRARIES(chaos ${EXTERN_LIBRARIES})
+
 IF(LIBCHAOS_WITH_PNG)
     TARGET_LINK_LIBRARIES(chaos ${LIBPNG_LIB} ${ZLIB_LIB})
 ENDIF()
@@ -235,7 +237,7 @@ IF(LIBCHAOS_WITH_WEBP)
 ENDIF()
 
 
-IF(LIBCHAOS_PLATFORM_WINDOWS)
+IF(LIBCHAOS_PLATFORM_WINDOWS OR LIBCHAOS_PLATFORM_CYGWIN)
     IF(LIBCHAOS_COMPILER_MSVC)
         TARGET_LINK_LIBRARIES(chaos Ws2_32 iphlpapi)
     ELSE()

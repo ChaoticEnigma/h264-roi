@@ -2,18 +2,25 @@
 #include "zallocator.h"
 #include "zstorage.h"
 
-int allocator_test(){
-    LOG("alloc char");
+namespace LibChaosTest {
+
+void allocator_char(){
     ZAllocator<char> alloc;
     char *test = alloc.alloc(20);
-    LOG("free char");
     alloc.dealloc(test);
+}
 
-    LOG("Alloc void");
+void allocator_void(){
     ZAllocator<void> alloc2;
     void *test2 = alloc2.alloc(20);
-    LOG("free void");
     alloc2.dealloc(test2);
+}
 
-    return 0;
+ZArray<Test> allocator_tests(){
+    return {
+        { "allocator-char", allocator_char, true, { "allocator-void" } },
+        { "allocator-void", allocator_void, true, {} },
+    };
+}
+
 }

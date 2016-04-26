@@ -25,7 +25,7 @@ ZString ZException::traceStr() const {
 }
 
 void ZException::logStackTrace() const {
-    ELOG(ZLog::raw << trace() << ZLog::newln);
+    ELOG(ZLog::RAW << trace() << ZLog::NEWLN);
 }
 
 }

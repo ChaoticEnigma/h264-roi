@@ -26,9 +26,7 @@ typedef zbyte zbinary_bytetype;
 class ZBinary : public ZAccessor<zbinary_bytetype>, public ZPosition, public ZReader, public ZWriter {
 public:
     typedef zbinary_bytetype bytetype;
-    enum {
-        none = ZU64_MAX
-    };
+    enum { NONE = ZU64_MAX };
 
 public:
     ZBinary(ZAllocator<zbyte> *alloc = new ZAllocator<zbyte>) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0), _rwpos(0){}
@@ -56,6 +54,8 @@ public:
     }
     ZBinary(ZString str) : ZBinary((const zbyte *)str.cc(), str.size()){}
 
+    //! Copy constructor.
+    // TODO: Reference-count ZBinary
     ZBinary(const ZBinary &other) : ZBinary(other._data, other._size){
         // _rwpos is not copied
     }
@@ -64,6 +64,7 @@ public:
         clear();
         delete _alloc;
     }
+
     void clear(){
         _size = 0;
         _realsize = 0;
@@ -132,6 +133,8 @@ public:
     ZBinary &nullTerm();
     ZBinary printable() const;
 
+    ZString strBytes();
+
     const char *asChar() const {
         return (char *)_data;
     }
@@ -155,8 +158,8 @@ public:
     zu64 size() const { return _size; }
 
     // ZReader interface
-    zu64 available(){
-        return size() - position();
+    zu64 available() const {
+        return size() - tell();
     }
     zu64 read(zbyte *dest, zu64 length);
     zu64 read(ZBinary &dest, zu64 length){
@@ -169,7 +172,7 @@ public:
     }
 
     // ZPosition interface
-    zu64 position() const {
+    zu64 tell() const {
         return _rwpos;
     }
     zu64 seek(zu64 pos){

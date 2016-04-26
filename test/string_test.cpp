@@ -5,22 +5,23 @@
 #include <cmath>
 #include <iostream>
 
-int string_test(){
+namespace LibChaosTest {
+
+void string_assign_compare(){
     ZString str1;
     ZString str2("A String!");
-    ZString str3("test3");
-    ZString str4("test4");
-    ZString str5("test3test4");
-
-    LOG("-- Assign / Compare:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     TASSERT(str1 != str2);
 
     str1 = str2;
     LOG(str1);
     TASSERT(str1 == str2);
+}
 
-    LOG("-- Concat / Append:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
+void string_concat_append(){
+    ZString str3("test3");
+    ZString str4("test4");
+    ZString str5("test3test4");
 
     ZString str6 = str3.concat(str4);
     LOG(str6);
@@ -29,67 +30,9 @@ int string_test(){
     str3.append(str4);
     LOG(str3);
     TASSERT(str3 == str5);
+}
 
-//    ZString(const char *);
-//    const char *cc() const;
-
-//    ZString(char, zu64 len = 1);
-
-//    ZString(zu16);
-//    ZString(zs16);
-//    ZString(zu32);
-//    ZString(zs32);
-//    ZString(zint);
-//    ZString(zuint);
-//    //explicit ZString(zsint);
-//    ZString(zu64);
-//    ZString(zs64);
-
-    LOG("-- Integer to String:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ZString itos1 = ZString::ItoS((zu64)4565464, 10);
-    LOG(itos1);
-    TASSERT(itos1 == "4565464");
-    ZString itos2 = ZString::ItoS((zs64)-980948, 16);
-    LOG(itos2);
-    TASSERT(itos2 == "-ef7d4");
-
-//    int tint() const;
-
-//    ZString(double flt, unsigned places = -1);
-
-//    ZString(ZArray<char> bin);
-
-//    char &operator[](zu64);
-
-//    zu64 size() const;
-//    inline zu64 length() const { return size(); }
-//    zu64 count(ZString) const;
-
-//    char first() const;
-//    char last() const;
-
-//    void clear();
-//    bool isEmpty() const;
-
-//    // Tests if <str> begins with <test>. Ignores whitespace at beginning of string if <ignore_whitespace>
-//    bool startsWith(ZString test, bool ignore_whitespace = true) const;
-//    // Alias for startsWith, always ignores whitespace
-//    inline bool beginsWith(ZString test) const { return startsWith(test, false); }
-
-//    // Tests if <str> ends with <test>
-//    bool endsWith(ZString test) const;
-
-    LOG("-- Insert:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ZString insert1 = "youShouldThisSentence";
-    ZString ins1 = ZString::insert(insert1, 9, "Complete");
-    ZString ins1_1 = insert1.insert(9, "Complete");
-    LOG(ins1);
-    TASSERT(ins1 == "youShouldCompleteThisSentence" && ins1 == ins1_1);
-
-    LOG("-- Substr:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
-
+void string_substr(){
     ZString substr1 = "youShouldTakeTheRestOfThisString";
     ZString sub1 = ZString::substr(substr1, 16);
     ZString sub1_1 = substr1.substr(16);
@@ -101,9 +44,17 @@ int string_test(){
     ZString sub2_1 = substr2.substr(13, 3);
     LOG(sub2);
     TASSERT(sub2 == "ME!" && sub2 == sub2_1);
+}
 
-    LOG("-- Find:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
+void string_insert(){
+    ZString insert1 = "youShouldThisSentence";
+    ZString ins1 = ZString::insert(insert1, 9, "Complete");
+    ZString ins1_1 = insert1.insert(9, "Complete");
+    LOG(ins1);
+    TASSERT(ins1 == "youShouldCompleteThisSentence" && ins1 == ins1_1);
+}
 
+void string_find(){
     ZString find1("someInterestingString");
     zu64 pos1 = find1.findFirst("est");
     zu64 pos1_1 = ZString::findFirst(find1, "est");
@@ -117,46 +68,58 @@ int string_test(){
 
     ZString find3 = "anotherInterestingStringWithInterestingThings";
     ZArray<zu64> pos3 = find3.findAll("est");
-    LOG("" << ZLog::noln);
+    LOG("" << ZLog::NOLN);
     FOREACH(pos3.size()){
         RLOG(pos3[i] << " ");
     }
-    RLOG(ZLog::newln);
+    RLOG(ZLog::NEWLN);
     TASSERT(pos3.size() == 2 && pos3[0] == 12 && pos3[1] == 33);
 
     ZString find4 = "anotherInterestesteingStringWithInterestesteingThings";
     ZArray<zu64> pos4 = ZString::findAll(find4, "este");
-    LOG("" << ZLog::noln);
+    LOG("" << ZLog::NOLN);
     FOREACH(pos4.size()){
         RLOG(pos4[i] << " ");
     }
-    RLOG(ZLog::newln);
+    RLOG(ZLog::NEWLN);
     TASSERT(pos4.size() == 2 && pos4[0] == 12 && pos4[1] == 37);
 
-    LOG("-- Replace:");  // //////////////////////////////////////////////////////////////////////////////////////////////////////
+    ZString find5 = "ssassassb";
+    zu64 pos5 = find5.findFirst("ssassb");
+    LOG(pos5);
+    TASSERT(pos5 == 3);
+}
 
+void string_substitute(){
     ZString replace1 = "anotherInterestingStringWithInterestingThings";
-    ZString rep1 = ZString::replacePos(replace1, 5, 20, "!!!!!");
+    ZString rep1 = ZString::substitute(replace1, 5, 20, "!!!!!");
     LOG(rep1);
     TASSERT(rep1 == "anoth!!!!!ithInterestingThings");
 
-    replace1.replacePos(0, 15, "!!!");
+    replace1.substitute(0, 15, "!!!");
     LOG(replace1);
     TASSERT(replace1 == "!!!ingStringWithInterestingThings");
+}
 
-    ZString replace2 = "strposposposposdddddddd";
-    ZString rep2 = ZString::replaceRecursive(replace2, "strpos", "bbbstr");
+void string_replace(){
+    ZString replace1 = "strposposposposdddddddd";
+    ZString rep1 = ZString::replaceRecursive(replace1, "strpos", "bbbstr");
+    LOG(rep1);
+    TASSERT(rep1 == "bbbbbbbbbbbbstrdddddddd");
+
+    ZString replace2 = "a";
+    ZString rep2 = ZString::replaceRecursive(replace2, "a", "bad", 5);
     LOG(rep2);
-    TASSERT(rep2 == "bbbbbbbbbbbbstrdddddddd");
+    TASSERT(rep2 == "bbbbbaddddd");
 
-    ZString replace3 = "a";
-    ZString rep3 = ZString::replaceRecursive(replace3, "a", "bad", 5);
-    LOG(rep3);
-    TASSERT(rep3 == "bbbbbaddddd");
-
-    replace2.replaceRecursive("strpos", "posstr", 3);
-    LOG(replace2);
-    TASSERT(replace2 == "posposposstrposdddddddd");
+    ZString replace3 = "strposposposposdddddddd";
+    // strposposposposdddddddd
+    // posstrposposposdddddddd
+    // posposstrposposdddddddd
+    // posposposstrposdddddddd
+    replace3.replaceRecursive("strpos", "posstr", 3);
+    LOG(replace3);
+    TASSERT(replace3 == "posposposstrposdddddddd");
 
     ZString repalce4 = "strstrsstrstrsstrs";
     ZString rep4 = ZString::replace(repalce4, "strs", "aaaa");
@@ -167,36 +130,11 @@ int string_test(){
     ZString rep5 = replace5.replace("ss", "t", 4);
     LOG(rep5);
     TASSERT(rep5 == "ttttssssss");
+}
 
-//    // Get sub-string of <str> before first occurence of <find> in <str>
-//    static ZString getUntil(ZString str, ZString find);
-
-//    ZString findFirstBetween(ZString, ZString);
-//    ZString replaceBetween(ZString start, ZString end, ZString after);
-//    ZString findFirstXmlTagCont(ZString tag);
-//    ZString replaceXmlTagCont(ZString tag, ZString after);
-//    ZString label(ZString label, ZString value, bool modify = true);
-//    ZString label(AsArZ, bool modify = true);
-
-//    // Strip occurences of <target> from beginning and end of <str>
-//    ZString &strip(char target);
-//    static ZString strip(ZString str, char target);
-
-//    ZString removeWhitespace();
-
-//    ZString invert(bool modify = true);
-
-//    // Convert UPPERCASE characters to lowercase equivalents in <str>
-//    ZString &toLower();
-//    static ZString toLower(ZString str);
-
-//    ZString duplicate(unsigned iterate, bool modify = true);
-//    ZString popLast();
-//    static ZString compound(ArZ parts, ZString delim);
-
+void string_explode_compound(){
 //    ArZ split(ZString delim);
-
-    LOG("-- Explode / Compound:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
+//    ArZ explodeList(unsigned nargs, ...);
 
     ZString strarr = "this!will!!explode!";
     ArZ arr1 = strarr.explode('!');
@@ -232,13 +170,9 @@ int string_test(){
     LOG(cmp5);
     TASSERT(arr5.size() == 4 && arr5[0] == "these" && arr5[1] == "will" && arr5[2] == "all" && arr5[3] == "explode");
     TASSERT(cmp5 == "these-will-all-explode");
+}
 
-//    ArZ explodeList(unsigned nargs, ...);
-
-//    bool isUtf8(ZString);
-
-//    static bool alphaTest(ZString str1, ZString str2);
-
+void string_iterator(){
     ZString iterstr1 = "abcdefghijklmnopqrstuvwxyz";
     ZString iterstr2;
     //for(ZStringIterator i = iterstr1.begin(); !i.atEnd(); ++i){
@@ -251,8 +185,16 @@ int string_test(){
     //    iterstr3 += *i;
     //}
     LOG(iterstr3);
+}
 
-    LOG("-- Number Conversion:"); // //////////////////////////////////////////////////////////////////////////////////////////////////////
+void string_number(){
+    ZString itos1 = ZString::ItoS((zu64)4565464, 10);
+    LOG(itos1);
+    TASSERT(itos1 == "4565464");
+
+    ZString itos2 = ZString::ItoS((zs64)-980948, 16);
+    LOG(itos2);
+    TASSERT(itos2 == "-ef7d4");
 
     ZString numstr1 = "3345";
     zu64 num1 = numstr1.tozu64();
@@ -281,50 +223,57 @@ int string_test(){
     ZString floatstr4 = "-455";
     float float4 = floatstr4.toFloat();
     LOG(floatstr4 << " " << float4);
-
-
-    return 0;
 }
 
-int string_block_old(){
-    LOG("=== String Test...");
-    ZString t3 = "hello, this is a string";
-    LOG(t3.size() << " " << t3);
-    t3.append(", and this is appended");
-    LOG(t3.size() << " " << t3);
-    t3.replace(" is ", " \"is still\" ");
-    LOG(t3.size() << " " << t3);
-    ZArray<ZString> words = t3.explode(' ');
-    for(zu64 i = 0; i < words.size(); ++i)
-        LOG('-' << words[i] << "- " << ZLog::noln);
-    LOG(ZLog::newln);
-    //words.concat(t3.strict_explode(' '));
-    for(zu64 i = 0; i < words.size(); ++i)
-        LOG('-' << words[i] << "- " << ZLog::noln);
-    LOG(ZLog::newln);
-
-    LOG("this text here");
-    ZString tst;
-    tst << 'a';
-    tst << '5';
-    tst << ' ';
-    tst << 'g';
-    tst << "7";
-    LOG(tst);
-    LOG("more text here");
-    return 0;
+void string_format(){
+    ZString fmtstr1 = "%s - %s";
+    ZString fmt1 = ZString::format(fmtstr1, { "test1", "test2" });
+    TASSERT(fmt1 == "test1 - test2");
+    LOG(fmt1);
 }
 
-int string_magic_block(){
-    LOG("=== String Magic Test...");
-    ZString tst = "this and this text";
-    tst.replace("this", "xthisx", 4);
-    LOG(tst);
-    //ZString tst2 = "that that that text";
-    //tst2.replaceEach("that", "taat", 1);
-    //LOG(tst2);
-    ZString tst3 = "sdfgdfgdfgdfgdfgdfg";
-    tst3.replacePos(3, 5, "ZZZZ");
-    LOG(tst3);
-    return 0;
+void string_utf8(){
+    const char *utf8a = "test a\u0366 \U0002070E \xFF \xF0\x20\x9C\x8E \xF0\xA0\xDC\x8E !";
+    ZString::debugUTF8((const zbyte *)utf8a);
+    ZString utf8b;
+    utf8b.parseUTF8((const zu8*)utf8a, 100);
+    ZString::debugUTF8(utf8b.bytes());
+    TASSERT(utf8b == "test a\u0366 \U0002070E    \u070E !");
+}
+
+void string_utf16(){
+    const zu16 utf16a[] = { 0x0061, 0x0020, 0xD801, 0xDC37 };
+    ZString utf16b;
+    utf16b.parseUTF16(utf16a, 4);
+    ZString::debugUTF8(utf16b.bytes());
+    TASSERT(utf16b == "a \U00010437");
+}
+
+void string_utf32(){
+    const zu32 utf32a[] = { 0x62, 0x20, 0x10437 };
+    ZString utf32b;
+    utf32b.parseUTF32(utf32a, 3);
+    ZString::debugUTF8(utf32b.bytes());
+    TASSERT(utf32b == "b \U00010437");
+}
+
+ZArray<Test> string_tests(){
+    return {
+        { "string-assign-compare",      string_assign_compare,      true, { "allocator-char" } },
+        { "string-concat-append",       string_concat_append,       true, { "string-assign-compare" } },
+        { "string-substr",              string_substr,              true, { "string-assign-compare" } },
+        { "string-insert",              string_insert,              true, { "string-assign-compare" } },
+        { "string-find",                string_find,                true, { "string-assign-compare" } },
+        { "string-substitute",          string_substitute,          true, { "string-assign-compare" } },
+        { "string-replace",             string_replace,             true, { "string-find" } },
+        { "string-explode-compound",    string_explode_compound,    true, { "string-find" } },
+        { "string-iterator",            string_iterator,            true, { "string-assign-compare" } },
+        { "string-number",              string_number,              true, { "string-assign-compare" } },
+        { "string-format",              string_format,              true, { "string-replace" } },
+        { "string-utf8",                string_utf8,                true, { "string-assign-compare" } },
+        { "string-utf16",               string_utf16,               true, { "string-utf8" } },
+        { "string-utf32",               string_utf32,               true, { "string-utf8" } },
+    };
+}
+
 }

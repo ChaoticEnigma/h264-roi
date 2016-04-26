@@ -2,16 +2,18 @@
 #include "zexception.h"
 
 int mainwrap(int argc, char **argv){
-    ZLog::formatStdout(ZLogSource::NORMAL, "%log%");
-    ZLog::formatStdout(ZLogSource::DEBUG, "%time% (%file%:%line%) - %log%");
-    ZLog::formatStderr(ZLogSource::ERRORS, "%time% (%file%:%line%) - %log%");
+    ZLog::logLevelStdOut(ZLogSource::NORMAL, "%log%");
+    ZLog::logLevelStdOut(ZLogSource::DEBUG, "%time% (%file%:%line%) - %log%");
+    ZLog::logLevelStdErr(ZLogSource::ERRORS, "%time% (%file%:%line%) - %log%");
 
     // Arguments
     ZString cmdstr;
+    ZString argstr;
     ArZ args;
     AsArZ flags;
     for(int i = 0; i < argc; ++i){
         cmdstr << argv[i] << " ";
+        if(i > 0) argstr << argv[i] << " ";
         if(argv[i][0] == '-'){
             ZString tmp = argv[i];
             tmp.substr(1);
@@ -22,8 +24,9 @@ int mainwrap(int argc, char **argv){
     }
     args.popFront();
     cmdstr.substr(0, cmdstr.size() - 1);
+    argstr.substr(0, argstr.size() - 1);
 
-    LOG("ZParcel Command: \"" << cmdstr << "\"");
+    LOG("ZParcel Command: \"" << argstr << "\"");
 
     if(args.size() > 0 && args[0] == "create"){
         if(args.size() < 2 || args.size() > 3){

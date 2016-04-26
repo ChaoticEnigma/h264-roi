@@ -32,6 +32,7 @@
 #define MSVC        0x13
 #define CLANG       0x14
 
+/*
 // Detection
 #if defined(__MINGW32__)
     #define COMPILER MINGW
@@ -49,6 +50,9 @@
 #if COMPILER != _LIBCHAOS_COMPILER
     #warning Different detected and specified compilers!
 #endif
+*/
+
+#define COMPILER _LIBCHAOS_COMPILER
 
 // Disable some MSVC warnings
 #if COMPILER == MSVC
@@ -66,11 +70,9 @@
 #define FREEBSD     0x22
 #define WINDOWS     0x23
 #define MACOSX      0x24
+#define CYGWIN      0x25
 
-// Platforms are Tested as such:
-// Windows and Mac OS X are tested first, and treated as exceptions
-// POSIX platforms (Linux, FreeBSD) are the default (preferred) case
-
+/*
 // Detection
 #if defined(__linux__)
     #define PLATFORM LINUX
@@ -88,6 +90,9 @@
 #if PLATFORM != _LIBCHAOS_PLATFORM
     #warning Different detected and specified platforms!
 #endif
+*/
+
+#define PLATFORM _LIBCHAOS_PLATFORM
 
 //
 // Build
@@ -115,11 +120,11 @@
 #define LIBCHAOS_BIG_ENDIAN (*(const zu16 *)"\0\xff" < 0x100) /* pure evil */
 
 // Constants
-#ifdef NULL
-    #undef NULL
-#endif
+//#ifdef NULL
+//    #undef NULL
+//#endif
 //#define NULL (void *)0
-#define NULL nullptr
+//#define NULL nullptr
 
 // Macros
 #define FOREACH(A) for(zu64 i = 0; i < A; ++i)
@@ -223,6 +228,12 @@ static_assert(sizeof(zu64) == 8, "zu64 has incorrect size");
 #ifdef FORCE_X64
     static_assert(sizeof(void *) == 8, "void pointer is not 64-bit");
 #endif
+
+//! Simple exception structure.
+struct zexception {
+    zexception(const char *err) : what(err){}
+    const char *what;
+};
 
 //! Get a string describing this version of LibChaos.
 static const char *LibChaosDescribe(){

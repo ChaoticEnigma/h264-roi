@@ -47,8 +47,6 @@ LibChaos is a general-purpose C++ utilities library.
     - XML                   (\ref LibChaos::ZXML                "ZXML")
     - Out-of-Memory Storage (\ref LibChaos::ZDefaultStorage     "ZDefaultStorage",
                              \ref LibChaos::ZFileStorage        "ZFileStorage")
-
-- Planned:
     - WebP Images           (\ref LibChaos::ZWebP               "ZWebP")
 
 ## Building LibChaos

@@ -24,30 +24,17 @@ namespace LibChaos {
  */
 template <typename T> class ZArray : public YIndexedAccess<T>, public YPushPopAccess<T> {
 public:
-    enum {
-        none = ZU64_MAX
-    };
+    enum { NONE = ZU64_MAX };
+
+    class ZArrayIterator;
 
 public:
+    //! ZArray default constructor.
     ZArray(ZAllocator<T> *alloc = new ZAllocator<T>) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0){
         reserve(ZARRAY_INITIAL_CAPACITY);
     }
-    ZArray(const T *raw, zu64 size) : ZArray(){
-        reserve(size);
-        for(zu64 i = 0; i < size; ++i)
-            _alloc->construct(&_data[i], raw[i]);
-        _size = size;
-    }
-    ZArray(const T &first) : ZArray(){
-        _alloc->construct(_data, first);
-        _size = 1;
-    }
-    ZArray(const ZArray<T> &other) : ZArray(){
-        reserve(other._size);
-        for(zu64 i = 0; i < other._size; ++i)
-            _alloc->construct(&_data[i], other[i]);
-        _size = other._size;
-    }
+
+    //! ZArray initializer list constructor.
     ZArray(std::initializer_list<T> ls) : ZArray(){
         reserve(ls.size());
         zu64 i = 0;
@@ -56,6 +43,26 @@ public:
             ++i;
         }
         _size = ls.size();
+    }
+
+    ZArray(const T *raw, zu64 size) : ZArray(){
+        reserve(size);
+        for(zu64 i = 0; i < size; ++i)
+            _alloc->construct(&_data[i], raw[i]);
+        _size = size;
+    }
+
+//    ZArray(const T &first) : ZArray(){
+//        _alloc->construct(_data, first);
+//        _size = 1;
+//    }
+
+    //! ZArray copy constructor.
+    ZArray(const ZArray<T> &other) : ZArray(){
+        reserve(other._size);
+        for(zu64 i = 0; i < other._size; ++i)
+            _alloc->construct(&_data[i], other[i]);
+        _size = other._size;
     }
 
     ~ZArray(){
@@ -191,16 +198,24 @@ public:
     // Element Access
     //
 
-    inline T &at(zu64 index){ return _data[index]; }
+    inline T &at(zu64 index){
+        if(index >= size())
+            throw zexception("Index out of range");
+        return _data[index];
+    }
     inline T &operator[](zu64 index){ return at(index); }
 
-    inline const T &at(zu64 index) const { return _data[index]; }
+    inline const T &at(zu64 index) const {
+        if(index >= size())
+            throw zexception("Index out of range");
+        return _data[index];
+    }
     inline const T &operator[](zu64 index) const { return at(index); }
 
-    inline T &front(){ return _data[0]; }
-    inline const T &front() const { return _data[0]; }
-    inline T &back(){ return _data[_size - 1]; }
-    inline const T &back() const { return _data[_size - 1]; }
+    inline T &front(){ return at(0); }
+    inline const T &front() const { return at(0); }
+    inline T &back(){ return at(_size - 1); }
+    inline const T &back() const { return at(_size - 1); }
 
     T &peek(){
         return back();
@@ -221,7 +236,7 @@ public:
             if(_data[i] == test)
                 return i;
         }
-        return none;
+        return NONE;
     }
 
     //
@@ -278,9 +293,14 @@ public:
         return resize(_size - count);
     }
 
-    //ZIterator<T> iterator(){
-    //    return ZIterator<T>(new ZArrayAccessor(this));
-    //}
+    //! Get an iterator starting at the beginning of the array.
+    ZArrayIterator begin(){
+        return ZArrayIterator(this, 0);
+    }
+    //! Get an iterator starting at the end of the array.
+    ZArrayIterator end(){
+        return ZArrayIterator(this, size()-1);
+    }
 
     inline bool isEmpty() const { return (_size == 0); }
     inline bool empty() const { return isEmpty(); }
@@ -292,7 +312,55 @@ public:
     inline T *ptr() const { return _data; }
     inline T *raw() const { return ptr(); }
 
+public:
+    class ZArrayIterator : public ZRandomIterator<T> {
+    public:
+        ZArrayIterator(ZArray<T> *array, zu64 index) : _array(array), _index(index){}
+
+        T &get(){
+            return _array->at(_index);
+        }
+        const T &get() const {
+            return _array->at(_index);
+        }
+
+        bool more() const {
+            return (_index < _array->size());
+        }
+        void advance(){
+            ++_index;
+        }
+
+        bool less() const {
+            return (_index >= 0 && _index < _array->size());
+        }
+        void recede(){
+            --_index;
+        }
+
+        zu64 size() const {
+            return _array->size();
+        }
+
+        T &at(zu64 i){
+            return _array->at(i);
+        }
+        const T &at(zu64 i) const {
+            return _array->at(i);
+        }
+
+        //bool compare(ZListIterator it) const {
+        //    return (_list == it._list && _node == it._node);
+        //}
+        //ZITERATOR_COMPARE_OVERLOADS(ZListIterator)
+
+    private:
+        ZArray<T> *_array;
+        zu64 _index;
+    };
+
 private:
+    //! Buffer memory allocator.
     ZAllocator<T> *_alloc;
     T *_data;
     zu64 _size;

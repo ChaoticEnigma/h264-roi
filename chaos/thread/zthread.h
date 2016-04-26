@@ -8,7 +8,7 @@
 
 #include "ztypes.h"
 
-#if COMPILER == MSVC
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
     #define ZTHREAD_WINTHREADS
 #endif
 
@@ -30,6 +30,7 @@ struct ZThreadArg {
     std::atomic<bool> *_stop;
 };
 
+//! Cross-platform/API thread handle abstraction.
 class ZThread {
 public:
     typedef void *(*funcType)(void *);
@@ -68,7 +69,11 @@ public:
 
 private:
 #ifdef ZTHREAD_WINTHREADS
+#if COMPILER == MSVC
     static DWORD _stdcall entry_win(LPVOID ptr);
+#else
+    static DWORD entry_win(LPVOID ptr);
+#endif
 #else
     static void *entry_posix(void *ptr);
 #endif

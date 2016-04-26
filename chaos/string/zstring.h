@@ -9,13 +9,15 @@
 #include "ztypes.h"
 #include "zaccessor.h"
 #include "zallocator.h"
+#include "zarray.h"
+#include "zlist.h"
 #include "zassoc.h"
 #include "zhash.h"
 
 // Needed for std::ostream overload
 #include <iosfwd>
 
-#if PLATFORM == WINDOWS
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
     #define UNICODE
     #define _UNICODE
     #include <string>
@@ -27,64 +29,81 @@ class ZString;
 typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
-typedef char zstring_chartype;
-
 /*! UTF-8 contiguous string container.
- *  Wide characters are narrowed and encoded in UTF-8.
- *  Internal array is always null terminated.
+ *  Parses UTF-8, UTF-16, or UTF-32 strings and encodes parsed code points in normalized UTF-8.
+ *  Since unicode normalization can only be done on real unicode code points, invalid code unit sequences
+ *  and code points will be discarded. Non-unicode bytes in input will also be discarded.
+ *
+ *  Internal buffer will always be valid null-terminated UTF-8 representing a sequence of valid Unicode code points.
  */
-class ZString : public ZAccessor<zstring_chartype> {
+class ZString : public ZAccessor<char> {
 public:
-    typedef zstring_chartype chartype;
-    enum {
-        none = ZU64_MAX
-    };
+    typedef zu32 codepoint;
+    typedef zbyte codeunit8;
+    typedef zu16 codeunit16;
+    typedef zu32 codeunit32;
+    typedef codeunit8 codeunit;
+
+    enum { NONE = ZU64_MAX };
 
 public:
-    //! Default constructor with optional user-allocator argument.
-    ZString(ZAllocator<chartype> *alloc = new ZAllocator<chartype>);
+    //! Default constructor with optional user allocator.
+    ZString(ZAllocator<codeunit> *alloc = new ZAllocator<codeunit>);
 
-    ~ZString();
-
-//    ZString(ZStorage *stor) : ZString(){
-//        if(stor != nullptr){
-//            resize(stor->size());
-//            stor->copyBlockTo(0, stor->size(), (zbyte *)_data);
-//        }
-//    }
-
+    //! Copy constructor.
     ZString(const ZString &other);
 
-    // Assumed UTF-8
-    ZString(const chartype *str); // Null-terminated C-string
-    ZString(const chartype *ptr, zu64 length);
-    ZString(const ZArray<chartype> &array); // ZArray<char>
+    //! Destructor.
+    ~ZString();
 
-    // std strings
-    // Assumed UTF-8
+    //! Construct from UTF-8 null-terminated C-string.
+    ZString(const char *str, zu64 max = ZU64_MAX);
+    //! Construct from UTF-8 character array.
+    ZString(const ZArray<char> &array);
+
+    //! Get pointer to data as C-string.
+    inline char *c() const { return reinterpret_cast<char*>(_data); }
+    //! Get constant pointer to data as C-string.
+    inline const char *cc() const { return reinterpret_cast<const char*>(_data); }
+
+    //! Construct from UTF-8 zero-terminated bytes.
+    ZString(const zbyte *str, zu64 max = ZU64_MAX);
+    //! Construct from UTF-8 byte array.
+    ZString(const ZArray<zbyte> &array);
+
+    //! Get pointer to raw bytes.
+    inline zbyte *bytes(){ return reinterpret_cast<zbyte*>(_data); }
+    //! Get constant pointer to raw bytes.
+    inline const zbyte *bytes() const { return reinterpret_cast<const zbyte*>(_data); }
+
+    //! Get reference to byte \a i.
+    inline zbyte &byte(zu64 i){ return bytes()[i]; }
+    //! Get constant reference to byte \a i.
+    inline const zbyte &byte(zu64 i) const { return bytes()[i]; }
+
+    //! Construct from UTF-8 STL string.
     ZString(std::string str);
+
+    //! Get STL string.
     std::string str() const;
 
-    // Null-terminated wide string
-    // Assumed UTF-16
+    //! Construct from UTF-16 null-terminated wide C-string.
     ZString(const wchar_t *wstr);
-    ZString(const wchar_t *wstr, zu64 length);
-    ZString(const ZArray<wchar_t> &array); //  ZArray<wchar_t>
+    //! Construct from UTF-16 wide character array.
+    ZString(const ZArray<wchar_t> &array);
 
-    // std wide strings
-    // Assumed UTF-16 and converted to UTF-8
+    //! Construct from UTF-16 STL wide string.
     ZString(std::wstring wstr);
+
+    //! Get STL wide string.
     std::wstring wstr() const;
 
-    // Pointer to data
-    inline chartype *c() const { return _data; }
-    inline const chartype *cc() const { return _data; }
+    //! Construct string filled with \a ch to length \a len.
+    ZString(char ch, zu64 len = 1);
 
-    // Fill constructor
-    ZString(chartype ch, zu64 len = 1);
-
-    // Interger to string
-    static ZString ItoS(zu64 num, zu8 base = 10, zu64 pad = 0);
+    //! Get string representation of unsigned integer \a num with \a base, padded to \a pad characters, using uppercase letters if \a upper.
+    static ZString ItoS(zu64 num, zu8 base = 10, zu64 pad = 0, bool upper = false);
+    //! Get string representation of signed integer \a num with \a base.
     static ZString ItoS(zs64 num, zu8 base = 10);
 
     ZString(zuc num) : ZString((zull)num){}
@@ -120,10 +139,9 @@ public:
     friend bool operator!=(const ZString &lhs, const ZString &rhs);
 
     // Clear
-    inline void clear(){ resize(0); }
+    inline void clear(){ _resize(0); }
 
-    // Resize (IMPORTANT: memory is only allocated and initialized here)
-    void reserve(zu64 size);
+    // Basic String Manipulation
 
     //! Append \a str to string.
     ZString &append(const ZString &str);
@@ -140,34 +158,43 @@ public:
     //! Prepend \a str to string.
     ZString &prepend(const ZString &str);
 
-    //! Count occurrences of \a test.
-    zu64 count(ZString test) const;
-
-    //! Tests if \a str begins with \a test. Ignores whitespace at beginning of string if \a ignore_whitespace.
-    bool startsWith(const ZString &test, bool ignore_whitespace = true) const;
-    //! Tests if string begins with \a test. Ignores whitespace at beginning of string if \a ignore_whitespace.
-    static bool startsWith(const ZString &str, const ZString &test, bool ignore_whitespace = true);
-
-    //! Alias for startsWith, always ignores whitespace
-    inline bool beginsWith(ZString test) const { return startsWith(test, false); }
-
-    //! Tests if string ends with \a test.
-    bool endsWith(ZString test) const;
-
-    //! Insert \a txt at \a pos in string.
-    ZString &insert(zu64 pos, const ZString &txt);
-    //! Insert \a txt at \a pos in \a str.
-    static ZString insert(ZString str, zu64 pos, const ZString &txt);
+    //! Get \a len characters after \a pos of string.
+    ZString &substr(zu64 pos, zu64 len);
+    //! Get \a len characters after \a pos of \a str.
+    static ZString substr(ZString str, zu64 pos, zu64 len);
 
     //! Get portion of string from \a pos to end.
     ZString &substr(zu64 pos);
     //! Get portion of \a str from \a pos to end.
     static ZString substr(ZString str, zu64 pos);
 
-    //! Get \a len characters after \a pos of string.
-    ZString &substr(zu64 pos, zu64 len);
-    //! Get \a len characters after \a pos of \a str.
-    static ZString substr(ZString str, zu64 pos, zu64 len);
+    //! Insert \a txt at \a pos in string.
+    ZString &insert(zu64 pos, const ZString &txt);
+    //! Insert \a txt at \a pos in \a str.
+    static ZString insert(ZString str, zu64 pos, const ZString &txt);
+
+    //! Substitute \a len characters starting at \a pos with \a after in string.
+    ZString &substitute(zu64 pos, zu64 len, const ZString &after);
+    //! Substitute \a len characters starting at \a pos with \a after in \a str.
+    static ZString substitute(ZString str, zu64 pos, zu64 len, const ZString &after);
+
+    //! Reverse the characters of the string.
+    ZString &reverse();
+    //! Reverse the characters of \a str.
+    static ZString reverse(ZString str);
+
+    // Basic String Parsing
+
+    //! Count occurrences of \a test.
+    zu64 count(ZString test) const;
+
+    //! Tests if \a str begins with \a test. Ignores whitespace at beginning of string if \a ignore_whitespace.
+    bool beginsWith(const ZString &test, bool ignorewhitespace = false) const;
+    //! Tests if string begins with \a test. Ignores whitespace at beginning of string if \a ignore_whitespace.
+    static bool beginsWith(const ZString &str, const ZString &test, bool ignorewhitespace = false);
+
+    //! Tests if string ends with \a test.
+    bool endsWith(ZString test) const;
 
     /*! Get location of of first occurrence of \a find in string after \a start.
      *  \return Index of first character of \a find if found, else \ref none.
@@ -183,10 +210,7 @@ public:
     //! Get locations of of all non-overlapping occurrences of \a find in \a str.
     static ZArray<zu64> findAll(const ZString &str, const ZString &find);
 
-    //! Replace section \a len characters long at \a pos with \a after in string.
-    ZString &replacePos(zu64 pos, zu64 len, const ZString &after);
-    //! Replace section \a len characters long at \a pos with \a after in \a str.
-    static ZString replacePos(ZString str, zu64 pos, zu64 len, const ZString &after);
+    // Advanced String Manipulation
 
     /*! Replace first occurence of \a before in string with \a after after \a start.
      *  \param before String to search for.
@@ -235,6 +259,8 @@ public:
     //! Get sub-string of \a str before first occurence of \a find in \a str.
     static ZString getUntil(ZString str, const ZString &find);
 
+    // Advanced String Parsing
+
     //! Get first string between \a start and \a end in string.
     ZString findFirstBetween(ZString start, ZString end);
     //! Replace first string between \a start and \a end in string with \a after.
@@ -246,28 +272,29 @@ public:
     ZString &label(const ZString &label, const ZString &value);
     ZString &label(const AsArZ &values);
 
-    //! Pad string to minimum \a length with \a ch.
-    ZString &pad(chartype ch, zu64 length);
+    //! Pad left of string to minimum \a length with \a ch.
+    ZString &lpad(char ch, zu64 length);
+    //! Pad right of string to minimum \a length with \a ch.
+    ZString &rpad(char ch, zu64 length);
+    //! Alias for rpad().
+    ZString &pad(char ch, zu64 length){ return rpad(ch, length); }
 
     //! Strip occurences of \a target from beginning of string.
-    ZString &stripFront(chartype target);
+    ZString &stripFront(char target);
     //! Strip occurences of \a target from beginning of \a str.
-    static ZString stripFront(ZString str, chartype target);
+    static ZString stripFront(ZString str, char target);
 
     //! Strip occurences of \a target from end of string.
-    ZString &stripBack(chartype target);
+    ZString &stripBack(char target);
     //! Strip occurences of \a target from end of \a str.
-    static ZString stripBack(ZString str, chartype target);
+    static ZString stripBack(ZString str, char target);
 
     //! Strip occurences of \a target from beginning and end of string.
-    ZString &strip(chartype target);
+    ZString &strip(char target);
     //! Strip occurences of \a target from beginning and end of \a str.
-    static ZString strip(ZString str, chartype target);
+    static ZString strip(ZString str, char target);
 
     ZString removeWhitespace();
-
-    ZString &reverse();
-    static ZString reverse(ZString str);
 
     // Convert UPPERCASE characters to lowercase equivalents in <str>
     ZString &toLower();
@@ -281,77 +308,109 @@ public:
     // Explode a string into any array of substrings
     // All explode functions will treat consecutive delimiters as one delimitier
     // Delimiters at the beginning or end of a string are discarded
-    ArZ explode(chartype delim) const;
+    ArZ explode(char delim) const;
     ArZ strExplode(const ZString &delim) const;
-    ArZ quotedExplode(chartype delim) const;
-    ArZ escapedExplode(chartype delim) const;
+    ArZ quotedExplode(char delim) const;
+    ArZ escapedExplode(char delim) const;
     ArZ explodeList(unsigned nargs, ...) const;
     //ArZ explode();
 
     static ZString compound(ArZ parts, ZString delim);
 
-    //ZString format(ZString fmt_str, ...);
-    //ZString &format(...);
+    //! Format string with a variable number arguments in \a args.
+    ZString &format(ZList<ZString> args);
+    //! Create a formatted string with \a format and variable number arguments in \a args.
+    static ZString format(ZString formatstr, ZList<ZString> args);
 
-    static bool charIsAlphabetic(chartype ch);
+    ZString &fmtarg(ZString str);
+    ZString &operator%(ZString str){ return fmtarg(str); }
+
+    static bool charIsAlphabetic(char ch);
 
     static bool alphaTest(ZString str1, ZString str2);
 
-    // Allows ZString to be used with std streams
+    //! Parse UTF-8 string at \a units and replace this string with normalized UTF-8.
+    void parseUTF8(const codeunit8 *units, zu64 max);
+    //! Parse UTF-16 string at \a units and replace this string with normalized UTF-8.
+    void parseUTF16(const codeunit16 *units, zu64 max);
+    //! Parse UTF-32 string at \a units and replace this string with normalized UTF-8.
+    void parseUTF32(const codeunit32 *units, zu64 max);
+
+    //! Get debug information on a UTF-8 string.
+    static void debugUTF8(const codeunit *bytes);
+
+    //! Get a unicode character reference string from a code point.
+    static ZString codePointStr(zu64 cp);
+
+    //! Allow ZString to be used with std streams.
     friend std::ostream &operator<<(std::ostream &lhs, ZString rhs);
 
+    /*! Swap the contents of this string with another.
+     *  Does not swap allocators.
+     */
     void swap(ZString &other);
 
     inline bool isEmpty() const { return (size() == 0); }
 
-    // Number of bytes (code units)
+    //! Number of bytes (code units).
     inline zu64 realSize() const { return _realsize; }
 
-    inline const zbyte *bytes() const { return reinterpret_cast<zbyte*>(_data); }
-
-    // Number of *characters* (code points)
+    //! Number of *characters* (code points).
     zu64 length() const;
 
-    // ZString Iterator
-    //ZIterator<chartype> iterator(){
-    //    return ZIterator<chartype>(new ZStringAccessor(this));
-    //}
-
     // On empty string, will return null terminator
-    inline chartype &first(){ return _data[0]; }
-    inline const chartype &first() const { return _data[0]; }
-    inline chartype &last(){ return _data[size() - 1]; }
-    inline const chartype &last() const { return _data[size() - 1]; }
+    //! Get reference to the first character.
+    inline char &first(){ return c()[0]; }
+    //! Get const reference to the first character.
+    inline const char &first() const { return cc()[0]; }
+    //! Get reference to the last character.
+    inline char &last(){ return c()[size() - 1]; }
+    //! Get const reference to the last character.
+    inline const char &last() const { return cc()[size() - 1]; }
 
     // ZAccessor interface
     //! Get reference to character at \a i.
-    char &at(zu64 i){ return _data[i]; }
+    inline char &at(zu64 i){ return c()[i]; }
     //! Get constant reference to character at \a i.
-    const char &at(zu64 i) const { return _data[i]; }
+    inline const char &at(zu64 i) const { return cc()[i]; }
+
     char *raw(){ return c(); }
     const char *raw() const { return cc(); }
     inline zu64 size() const { return _size; }
 
 private:
-    void resize(zu64 len);
-    static bool _charIsWhitespace(chartype ch);
+    //! Resize buffer. (IMPORTANT: memory is only allocated and initialized here)
+    void _reserve(zu64 size);
+    //! Resize container.
+    void _resize(zu64 len);
+
+    static bool _charIsWhitespace(char ch);
+    /*! Replace first occurrence of \a before with \a after starting at \a startpos.
+     *  \return Index of the next character after replacement.
+     */
     zu64 _strReplace(const ZString &before, const ZString &after, zu64 startpos);
 
-    // Unicode Encoding
-    void fromUtf16(std::wstring wstr);
-    std::wstring toUtf16() const;
+    void _appendCodePoint(codepoint cp);
 
-    static bool isUtf8(ZString str);
+    codepoint _nextUTF8(const codeunit8 **units, zu64 *maxunits);
+    codepoint _nextUTF16(const codeunit16 **units, zu64 *maxunits);
+    codepoint _nextUTF32(const codeunit32 **units, zu64 *maxunits);
+
+    //! Determine if \a str is valid UTF-8.
+    static bool isUTF8(const char *str);
+
+    //! Normalize UTF-8 in this string container.
+    void unicode_normalize();
 
 private:
     //! Allocator.
-    ZAllocator<chartype> *_alloc;
+    ZAllocator<codeunit> *_alloc;
     //! Length of string in bytes.
     zu64 _size;
     //! Size of real buffer.
     zu64 _realsize;
     //! String buffer.
-    chartype *_data;
+    codeunit *_data;
 };
 
 inline ZString operator+(const ZString &lhs, const ZString &rhs){

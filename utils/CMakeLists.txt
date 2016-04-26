@@ -17,10 +17,6 @@ SET(LibChaosUtils_DuplicateFinder_SOURCES
     duplicatefinder.cpp
 )
 
-SET(LibChaosUtils_ImageDownloader_SOURCES
-    imagedownloader.cpp
-)
-
 SET(LibChaosUtils_ImageLibraryManager_SOURCES
     imagelibrarymanager.cpp
 )
@@ -33,7 +29,6 @@ SET(LibChaosUtils_FILES
     ${LibChaos_Utils_ExtensionFixer_SOURCES}
     ${LibChaos_Utils_AudiobookSorter_SOURCES}
     ${LibChaos_Utils_DuplicateFinder_SOURCES}
-    ${LibChaos_Utils_ImageDownloader_SOURCES}
     ${LibChaos_Utils_ImageLibraryManager_SOURCES}
     ${LibChaos_Utils_ImageReverseSearch_SOURCES}
     PARENT_SCOPE
@@ -69,13 +64,6 @@ IF(NOT LIBCHAOS_UTIL_DUPLICATE_FINDER)
 ENDIF()
 ADD_EXECUTABLE(duplicatefinder ${LIBCHAOS_UTIL_DUPLICATE_FINDER_ALL} ${LibChaosUtils_DuplicateFinder_SOURCES})
 TARGET_LINK_LIBRARIES(duplicatefinder chaos)
-
-# Image Downloader
-IF(NOT LIBCHAOS_UTIL_IMAGE_DOWNLOADER)
-    SET(LIBCHAOS_UTIL_IMAGE_DOWNLOADER_ALL EXCLUDE_FROM_ALL)
-ENDIF()
-ADD_EXECUTABLE(imagedownloader ${LIBCHAOS_UTIL_IMAGE_DOWNLOADER_ALL} ${LibChaosUtils_ImageDownloader_SOURCES})
-TARGET_LINK_LIBRARIES(imagedownloader chaos)
 
 # Image Library Manager
 IF(NOT LIBCHAOS_UTIL_IMAGE_LIBRARY_MANAGER)

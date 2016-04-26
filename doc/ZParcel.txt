@@ -1,0 +1,14 @@
+ZParcel Design Requirements
+
+Commands:
+=========
+    create <path> [version]
+    modify <path> <modify-cmd>
+        addfield <name> <type>
+    list <path>
+    add <path> [field[:type]=value] ...
+    edit <path> <record> [field=value] ...
+    tree <path> <tree-cmd> <args> ...
+        ls <tree-path>
+        cp <tree-path> <path>
+        rm <tree-path>

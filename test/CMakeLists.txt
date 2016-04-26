@@ -1,4 +1,4 @@
-## LibChaos Test CMakeLists.txt
+#f # LibChaos Test CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
 PROJECT(LibChaos_Test)
@@ -21,6 +21,9 @@ SET(LibChaos_Test_SOURCES
 
     array_test.cpp
     list_test.cpp
+    iterator_test.cpp
+
+    graph_test.cpp
 
     string_test.cpp
     path_test.cpp
@@ -30,13 +33,13 @@ SET(LibChaos_Test_SOURCES
     thread_test.cpp
 
     misc_test.cpp
+    hash_test.cpp
 
     file_test.cpp
     image_test.cpp
     pdf_test.cpp
 
     socket_test.cpp
-    socket2_test.cpp
 
     sandbox.cpp
     error_test.cpp
@@ -58,22 +61,17 @@ INCLUDE_DIRECTORIES(
 )
 
 # Download test images
-FILE(DOWNLOAD "https://www.gstatic.com/webp/gallery3/3_webp_ll.webp" ${CMAKE_CURRENT_BINARY_DIR}/dice.webp)
-
-SET(TESTPNG ${CMAKE_CURRENT_BINARY_DIR}/testpng.tar.gz)
-SET(TESTJPEG ${CMAKE_CURRENT_BINARY_DIR}/testjpeg.tar.gz)
-
-FILE(DOWNLOAD "https://imagetestsuite.googlecode.com/files/imagetestsuite-png-1.01.tar.gz" ${TESTPNG})
-FILE(DOWNLOAD "https://imagetestsuite.googlecode.com/files/imagetestsuite-jpg-1.00.tar.gz" ${TESTJPEG})
-
-EXECUTE_PROCESS(
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E tar xzf "${TESTPNG}"
-)
-EXECUTE_PROCESS(
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E tar xzf "${TESTJPEG}"
-)
+IF(LIBCHAOS_WITH_PNG)
+    DownloadArchive("https://imagetestsuite.googlecode.com/files/imagetestsuite-png-1.01.tar.gz" testpng.tar.gz)
+    DownloadArchive("http://www.schaik.com/pngsuite/PngSuite-2013jan13.tgz" pngsuite.tar.gz)
+ENDIF()
+IF(LIBCHAOS_WITH_JPEG)
+    DownloadFile("http://www.gstatic.com/webp/gallery/4.jpg" tree.jpg)
+    DownloadArchive("https://imagetestsuite.googlecode.com/files/imagetestsuite-jpg-1.00.tar.gz" testjpeg.tar.gz)
+ENDIF()
+IF(LIBCHAOS_WITH_WEBP)
+    DownloadFile("https://www.gstatic.com/webp/gallery3/3_webp_ll.webp" dice.webp)
+ENDIF()
 
 ### =================== BUILD =================== ###
 

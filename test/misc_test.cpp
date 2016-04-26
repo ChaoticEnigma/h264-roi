@@ -4,17 +4,17 @@
 #include "zlist.h"
 #include "zhash.h"
 
-int random_test(){
-    ZRandom random;
-    LOG(random.genzu());
-
-    return 0;
-}
-
 #define PADLEN 16
 #define PAD(X) ZString(X).pad(' ', PADLEN)
 
-int uid_test(){
+namespace LibChaosTest {
+
+void random(){
+    ZRandom random;
+    LOG(random.genzu());
+}
+
+void uid(){
     ZUID uid1;
 
     ZString uidstr2 = "abcdef00-1234-5678-9012-fedcbaabcdef";
@@ -44,40 +44,13 @@ int uid_test(){
     LOG(ZString("MAC:").pad(' ', PADLEN) << macstr << " " << mac.size() << " " << mac);
 
     ZList<ZBinary> maclist = ZUID::getMACAddresses();
-
-    return 0;
 }
 
-int hash_test(){
-    int data1 = -34563;
-    zu64 hash1 = ZHash<int>(data1).hash();
-    LOG(data1 << " " << hash1);
-
-    auto hf = [](ZString data){
-        zu64 hash1a = ZHash<ZString>(data).hash();
-        zu64 hash1b = ZHash<ZString>(data).hash();
-        LOG("Default: " << data << " " << hash1a << " " << hash1b);
-        TASSERT(hash1a == hash1b);
-
-        zu64 hash2a = ZHash<ZString, ZHashBase::xxHash64>(data).hash();
-        zu64 hash2b = ZHash<ZString, ZHashBase::xxHash64>(data).hash();
-        LOG("XXHash: " << data << " " << hash2a << " " << hash2b);
-        TASSERT(hash2a == hash2b);
-
-        zu64 hash3a = ZHash<ZString, ZHashBase::fnvHash64>(data).hash();
-        zu64 hash3b = ZHash<ZString, ZHashBase::fnvHash64>(data).hash();
-        LOG("FNVHash: " << data << " " << hash3a << " " << hash3b);
-        TASSERT(hash3a == hash3b)
+ZArray<Test> misc_tests(){
+    return {
+        { "random", random, true, {} },
+        { "uid",    uid,    true, {} },
     };
+}
 
-
-    ZString data2 = "hashdata";
-    ZString data3 = "hashdata1";
-    ZString data4 = "hashdata2";
-
-    hf(data2);
-    hf(data3);
-    hf(data4);
-
-    return 0;
 }

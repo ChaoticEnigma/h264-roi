@@ -15,12 +15,10 @@
 #include <initializer_list>
 
 // For debug()
-#include "zstring.h"
+//#include "zstring.h"
+//#include "zlog.h"
 
 namespace LibChaos {
-
-template <typename T> class ZList;
-template <typename T> class ZIterator<ZList<T>>;
 
 /*! Linked list sequence container.
  *  Implemented as a circular doubly-linked list.
@@ -35,112 +33,128 @@ public:
         T data;
     };
 
+    class ZListIterator;
+    class ZListConstIterator;
+
 public:
-    ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _talloc(new ZAllocator<T>()), _size(0), _head(nullptr){}
+    //! ZList default constructor.
+    ZList(ZAllocator<Node> *alloc = new ZAllocator<Node>()) : _alloc(alloc), _size(0), _head(nullptr){}
+
+    //! ZList initializer list constructor.
     ZList(std::initializer_list<T> ls) : ZList(){
         for(auto item = ls.begin(); item < ls.end(); ++item)
             pushBack(*item);
     }
 
+    //! ZList array initializer.
     ZList(const T *data, zu64 size) : ZList(){
         for(zu64 i = 0; i < size; ++i)
             pushBack(data[i]);
+    }
+
+    //! ZList copy constructor.
+    ZList(const ZList<T> &other) : ZList(){
+//        for(auto i = other.cbegin(); i.more(); ++i){
+//            pushBack(i.get());
+//        }
+        Node *current = other._head;
+        for(zu64 i = 0; current != nullptr && i < other.size(); ++i){
+            pushBack(current->data);
+            current = current->next;
+        }
     }
 
     ~ZList(){
         if(_head != nullptr){
             _head->prev->next = nullptr; // Break circular link
             Node *current = _head;
-            Node *next;
-            do { // Delete all nodes
-                _talloc->destroy(&(current->data));
-//                _talloc->dealloc(&(current->data));
-                next = current->next;
-//                _alloc->destroy(current);
+            while(current != nullptr){
+                Node* next = current->next;
+                _talloc.destroy(&(current->data));
                 _alloc->dealloc(current);
                 current = next;
-            } while(current != nullptr);
+            }
         }
-        delete _talloc;
         delete _alloc;
     }
 
-    //! Insert \a data before \a node.
+    /*! Insert \a data before \a node.
+     *  Will not update head.
+     */
     Node *insert(const T &data, Node *node){
         Node *newnode = newNode(data);
         newnode->next = node;
         newnode->prev = node->prev;
         node->prev->next = newnode;
         node->prev = newnode;
+        ++_size;
         return newnode;
     }
 
     //! Add \a data to the front of the list.
     void pushFront(const T &data){
-        Node *node = newNode(data);
         if(_head == nullptr){
-            _head = node;
-            node->prev = _head;
-            node->next = _head;
+            _head = newNode(data);
+            _head->prev = _head;
+            _head->next = _head;
+            ++_size;
         } else {
-            _head->prev->next = node;
-            _head->next->prev = node;
-            node->prev = _head->prev;
-            node->next = _head;
-            _head = node;
+            _head = insert(data, _head);
         }
-        ++_size;
     }
+    //! Add \a data to the back of the list.
     void pushBack(const T &data){
-        Node *node = newNode(data);
         if(_head == nullptr){
-            _head = node;
-            node->prev = _head;
-            node->next = _head;
+            _head = newNode(data);
+            _head->prev = _head;
+            _head->next = _head;
+            ++_size;
         } else {
-            node->prev = _head->prev;
-            node->next = _head;
-            _head->prev->next = node;
-            _head->prev = node;
+            insert(data, _head);
         }
-        ++_size;
     }
     inline void push(const T &data){ pushBack(data); }
 
-    void popFront(){
-        if(_head != nullptr){
-            Node *old = _head;
-            if(_size > 1){
-                _head->prev->next = _head->next;
-                _head->next->prev = _head->prev;
-                _head = _head->next;
-            } else {
-                _head = nullptr;
-            }
-            --_size;
-            _talloc->destroy(&(old->data));
-//            _talloc->dealloc(old->data);
-//            _alloc->destroy(old);
-            _alloc->dealloc(old);
+    //! Add each element in \a list to the back of the list.
+    void append(const ZList<T> &list){
+        for(auto it = list.cbegin(); it.more(); ++it){
+            pushBack(it.get());
         }
     }
+
+    /*! Remove \a node from the list.
+     *  Will not update head.
+     */
+    void remove(Node *node){
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
+        --_size;
+        _talloc.destroy(&(node->data));
+        _alloc->dealloc(node);
+    }
+
+    //! Remove an element from the front of the list.
+    void popFront(){
+        if(_head != nullptr){
+            Node *next = _head->next;
+            remove(_head);
+            _head = (_size ? next : nullptr);
+        }
+    }
+    //! Remove an element from the back of the list.
     void popBack(){
         if(_head != nullptr){
-            Node *old = _head->prev;
-            if(_size > 1){
-                _head->prev->prev->next = _head;
-                _head->prev = _head->prev->prev;
-            } else {
+            remove(_head->prev);
+            if(!_size)
                 _head = nullptr;
-            }
-            --_size;
-            _talloc->destroy(&(old->data));
-//            _talloc->dealloc(old->data);
-//            _alloc->destroy(old);
-            _alloc->dealloc(old);
         }
     }
     inline void pop(){ popFront(); }
+
+    //! Move the head of the list to the next element.
+    void rotate(){
+        _head = _head->next;
+    }
 
     T &peekFront(){
         return _head->data;
@@ -154,11 +168,10 @@ public:
     const T &peekBack() const {
         return _head->prev->data;
     }
-
     inline T &peek(){ return peekFront(); }
     inline const T &peek() const { return peekFront(); }
 
-    // Swap data but NOT allocators of two lists
+    //! Swap data but not allocators of two lists.
     void swap(ZList &other){
         zu64 tmpsize = _size;
         Node *tmphead = _head;
@@ -168,34 +181,60 @@ public:
         other._head = tmphead;
     }
 
-    //! Get an iterator for the list.
-    ZIterator<ZList<T>> begin(){
-        return ZIterator<ZList<T>>(this, _head);
+    //! Get an iterator starting at the beginning of the list.
+    ZListIterator begin(){
+        return ZListIterator(this, _head);
     }
-    ZIterator<ZList<T>> end(){
-        return ZIterator<ZList<T>>(this, _head->prev);
+    //! Get an iterator starting at the end of the list.
+    ZListIterator end(){
+        return ZListIterator(this, _head->prev);
     }
 
-    ZString debug() const {
-        ZString str;
-        Node *current = _head;
-        for(zu64 i = 0; i < _size; ++i){
-            str += ZString::ItoS((zu64)current->prev, 16) + " ";
-            str += ZString::ItoS((zu64)current, 16);
-            str += " " + ZString::ItoS((zu64)current->next, 16);
-            str += ", ";
-            current = current->next;
-        }
-        return str;
+    //! Get a const iterator starting at the beginning of the list.
+    ZListConstIterator cbegin() const {
+        return ZListConstIterator(this, _head);
     }
+    //! Get a const iterator starting at the end of the list.
+    ZListConstIterator cend() const {
+        return ZListConstIterator(this, _head->prev);
+    }
+
+//    ZString debug() const {
+//        ZString str;
+//        Node *current = _head;
+//        for(zu64 i = 0; i < _size; ++i){
+//            str += ZString::ItoS((zu64)current->prev, 16) + " ";
+//            str += ZString::ItoS((zu64)current, 16);
+//            str += " " + ZString::ItoS((zu64)current->next, 16);
+//            str += ", ";
+//            current = current->next;
+//        }
+//        return str;
+//    }
 
     inline T &operator[](zu64 index){ return getNode(index)->data; }
     inline const T &operator[](zu64 index) const { return getNode(index)->data; }
 
-    inline T &front(){ return _head->data; }
-    inline const T &front() const { return _head->data; }
-    inline T &back(){ return _head->prev->data; }
-    inline const T &back() const { return _head->prev->data; }
+    inline T &front(){
+        if(_head == nullptr)
+            throw zexception("Cannot reference head of empty ZList");
+        return _head->data;
+    }
+    inline const T &front() const {
+        if(_head == nullptr)
+            throw zexception("Cannot reference head of empty ZList");
+        return _head->data;
+    }
+    inline T &back(){
+        if(_head == nullptr)
+            throw zexception("Cannot reference back of empty ZList");
+        return _head->prev->data;
+    }
+    inline const T &back() const {
+        if(_head == nullptr)
+            throw zexception("Cannot reference back of empty ZList");
+        return _head->prev->data;
+    }
 
     inline bool isEmpty() const { return (_size == 0); }
     inline zu64 size() const { return _size; }
@@ -203,11 +242,9 @@ public:
 private:
     Node *newNode(const T &data){
        Node *node = _alloc->alloc();
-//       _alloc->construct(node);
-//       node->data = _talloc->alloc();
        node->prev = nullptr;
        node->next = nullptr;
-       _talloc->construct(&(node->data), data);
+       _talloc.construct(&(node->data), data);
        return node;
     }
 
@@ -219,48 +256,89 @@ private:
         return current;
     }
 
-private:
-    ZAllocator<Node> *_alloc;
-    ZAllocator<T> *_talloc;
-    zu64 _size;
-    Node *_head;
-};
-
-template <typename T> class ZIterator<ZList<T>> : public ZIterable<T> {
 public:
-    ZIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _end(0){}
+    class ZListConstIterator : public ZDuplexConstIterator<T> {
+    public:
+        ZListConstIterator(const ZList<T> *list, const typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _prev(nullptr){}
 
-    T &get(){
-        return _node->data;
-    }
-    void advance(){
-        if(_end == 2)
-            _end = 0;
-        if(_node == _list->_head->prev)
-            _end = 1;
-        _node = _node->next;
-    }
-    void recede(){
-        if(_end == 1)
-            _end = 0;
-        if(_node == _list->_head)
-            _end = 2;
-        _node = _node->prev;
-    }
-    bool atEnd() const {
-        return (_end != 0);
-    }
+        const T &get() const override {
+            return _node->data;
+        }
 
-    bool compare(ZIterator<ZList<T>> *it) const {
-        return (_list == it->_list && _node == it->_node);
-    }
+        bool more() const override {
+            return (_prev == nullptr || _node != _list->_head);
+        }
+        void advance() override {
+            _prev = _node;
+            _node = _node->next;
+        }
 
-    ZITERABLE_COMPARE_OVERLOADS(ZIterator<ZList<T>>)
+        bool less() const override {
+            return (_prev == nullptr || _node != _list->_head->prev);
+        }
+        void recede() override {
+            _prev = _node;
+            _node = _node->prev;
+        }
+
+        //bool compare(ZListIterator it) const {
+        //    return (_list == it._list && _node == it._node);
+        //}
+        //ZITERATOR_COMPARE_OVERLOADS(ZListIterator)
+
+    private:
+        const ZList<T> *_list;
+        const typename ZList<T>::Node *_node;
+        const typename ZList<T>::Node *_prev;
+    };
+
+    class ZListIterator : public ZDuplexIterator<T> {
+    public:
+        ZListIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _prev(nullptr){}
+
+        T &get() override {
+            return _node->data;
+        }
+        const T &get() const override {
+            return _node->data;
+        }
+
+        bool more() const override {
+            return (_prev == nullptr || _node != _list->_head);
+        }
+        void advance() override {
+            _prev = _node;
+            _node = _node->next;
+        }
+
+        bool less() const override {
+            return (_prev == nullptr || _node != _list->_head->prev);
+        }
+        void recede() override {
+            _prev = _node;
+            _node = _node->prev;
+        }
+
+        //bool compare(ZListIterator it) const {
+        //    return (_list == it._list && _node == it._node);
+        //}
+        //ZITERATOR_COMPARE_OVERLOADS(ZListIterator)
+
+    private:
+        ZList<T> *_list;
+        typename ZList<T>::Node *_node;
+        typename ZList<T>::Node *_prev;
+    };
 
 private:
-    ZList<T> *_list;
-    typename ZList<T>::Node *_node;
-    char _end;
+    //! Node memory allocator.
+    ZAllocator<Node> *_alloc;
+    //! Allocator only for constructing T inside nodes.
+    ZAllocator<T> _talloc;
+    //! Number of nodes in list.
+    zu64 _size;
+    //! Pointer to first node in list.
+    Node *_head;
 };
 
 }

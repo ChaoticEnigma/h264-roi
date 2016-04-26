@@ -3,126 +3,218 @@
 
 #include <stdio.h>
 
-int runTests(ZAssoc<ZString, test_func> tests);
+using namespace LibChaosTest;
 
+int runTests(ZAssoc<ZString, Test> tests);
+
+//! Add a test to testout and testmapout, resolving and adding recursive dependencies first.
+void addTest(Test &test, ZMap<ZString, Test*> &testmap, ZArray<Test> &testout, ZMap<ZString, Test> &testmapout){
+    // Check for dependencies
+    for(auto i = test.deps.begin(); i.more(); ++i){
+        if(testmap.contains(*i)){
+            addTest(*testmap[*i], testmap, testout, testmapout);
+        } else {
+            LOG("Skipping unknown dependency " << *i);
+        }
+    }
+    // Add test
+    if(!testmapout.contains(test.name)){
+        testout.push(test);
+        testmapout.add(test.name, test);
+    }
+}
+
+//! Run tests as specified on the command line.
 int main(int argc, char **argv){
     try {
         //ZLog::init(); // BUG: threaded zlog sometimes crashes
-        ZLog::formatStdout(ZLogSource::NORMAL, "%clock% %thread% - %log%");
-        ZLog::formatStdout(ZLogSource::DEBUG, "%clock% %thread% - %log%");
-        ZLog::formatStderr(ZLogSource::ERRORS, "%clock% %thread% %function% (%file%:%line%) - %log%");
+        ZLog::logLevelStdOut(ZLog::INFO, "%clock% %thread% N %log%");
+        ZLog::logLevelStdOut(ZLog::DEBUG, "\x1b[35m%clock% %thread% D %log%\x1b[m");
+        ZLog::logLevelStdErr(ZLog::ERROR, "\x1b[31m%clock% %thread% E [%function%|%file%:%line%] %log%\x1b[m");
         ZPath lgf = ZPath("logs") + ZLog::genLogFileName("testchaos_");
-        ZLog::addLogFile(lgf, ZLogSource::NORMAL, "%time% %thread% - %log%");
-        ZLog::addLogFile(lgf, ZLogSource::DEBUG, "%time% %thread% %function% (%file%:%line%) - %log%");
-        ZLog::addLogFile(lgf, ZLogSource::ERRORS, "%time% %thread% %function% (%file%:%line%) - %log%");
+        ZLog::logLevelFile(ZLog::INFO, lgf, "%time% %thread% N %log%");
+        ZLog::logLevelFile(ZLog::DEBUG, lgf, "%time% %thread% D [%function%|%file%:%line%] %log%");
+        ZLog::logLevelFile(ZLog::ERROR, lgf, "%time% %thread% E [%function%|%file%:%line%] %log%");
 
         LOG("Testing LibChaos: " << LibChaosDescribe());
 
-        ZAssoc<ZString, test_func> defaulttests = {
-            { "allocator", allocator_test },
-            { "pointer", pointer_test },
-            { "storage", storage_test },
+        // Test registration functions
+        ZArray<reg_func> regtests = {
+            allocator_tests,
+            storage_tests,
+            pointer_tests,
 
-            { "binary", binary_test },
+            binary_tests,
+            array_tests,
+            list_tests,
 
-            { "array", array_test },
-            { "assoc", assoc_test },
-            { "stack", stack_test },
-            { "map", map_test },
-            { "list", list_test },
-            { "queue", queue_test },
+            string_tests,
+            path_tests,
+            json_tests,
 
-            { "string", string_test },
-            { "path", path_test },
-            { "json", json_test },
+            hash_tests,
+            graph_tests,
+            misc_tests,
+            number_tests,
 
-            { "thread", thread_test },
-            { "mutex", mutex_test },
+            file_tests,
+            image_tests,
+            pdf_tests,
 
-            { "number", number_test },
-            { "uid", uid_test },
-            { "hash", hash_test },
+            socket_tests,
 
-            { "file", file_test },
-            { "image", image_test },
-            { "pdf", pdf_test },
+            thread_tests,
+            error_tests,
+
+            sandbox_tests
         };
 
-        ZAssoc<ZString, test_func> tests = defaulttests;
-        tests.concat({
-            { "udp", udp_test },
-            { "udpserver", udpserver_test },
-            { "tcp", tcp_test },
-            { "tcpserver", tcpserver_test },
-            { "tcpserver2", tcpserver_test2 },
-            { "tcpserver3", tcpserver_test3 },
+        // List tests
+        ZArray<Test> alltests;
+        for(auto i = regtests.begin(); i.more(); ++i)
+            alltests.append(i.get()());
 
-            { "sandbox", sandbox },
+        // Build map
+        ZMap<ZString, Test*> testmap;
+        for(auto i = alltests.begin(); i.more(); ++i)
+            testmap.add(i.get().name, &i.get());
 
-            { "error", error_test },
-        });
-
-        ZAssoc<ZString, test_func> runtests;
-        ZString runstr;
-        if(argc > 1){
-            if(ZString(argv[1]) == "all"){
-                runtests = defaulttests;
-                runstr = "All";
+        // Command line arguments
+        bool predisable = true;
+        bool hideout = true;
+        for(int i = 1; i < argc; ++i){
+            ZString arg = argv[i];
+            if(arg == "-v"){
+                hideout = false;
+            } else if(arg == "++"){
+                // Enable all tests
+                for(auto j = alltests.begin(); j.more(); ++j)
+                    j.get().run = true;
+            } else if(arg == "--"){
+                // Disable all tests
+                for(auto j = alltests.begin(); j.more(); ++j)
+                    j.get().run = false;
+            } else if(arg.beginsWith("+")){
+                // Enable specified test
+                ZString name = ZString::substr(arg, 1);
+                if(testmap.contains(name))
+                    testmap[name]->run = true;
+                else
+                    LOG("No test: " << name);
+            } else if(arg.beginsWith("-")){
+                // Disable specified test
+                ZString name = ZString::substr(arg, 1);
+                if(testmap.contains(name))
+                    testmap[name]->run = false;
+                else
+                    LOG("No test: " << name);
             } else {
-                for(int i = 1; i < argc; ++i){
-                    ZString key = argv[i];
-                     if(tests.exists(key)){
-                        runtests.push(key, tests[key]);
-                        runstr << key << ",";
-                    } else {
-                        LOG("No Test " << key << ", Ignoring");
-                    }
+                // Enable all tests beginning with argument, disable all other tests
+                if(predisable){
+                    for(auto j = alltests.begin(); j.more(); ++j)
+                        j.get().run = false;
+                    predisable = false;
+                }
+                for(auto j = alltests.begin(); j.more(); ++j){
+                    if(j.get().name.beginsWith(arg))
+                        j.get().run = true;
                 }
             }
-            runstr.strip(',');
-        } else {
-            runtests = defaulttests;
-            runstr = "All";
         }
 
-        LOG("*** Starting Tests \"" << runstr << "\"");
-        int ret = runTests(runtests);
-        LOG("*** Finished Tests \"" << runstr << "\"");
-        return ret;
+        // Add tests and resolve dependencies
+        ZArray<Test> tests;
+        ZMap<ZString, Test> testm;
+        for(auto i = alltests.begin(); i.more(); ++i){
+            if(i.get().run)
+                addTest(i.get(), testmap, tests, testm);
+        }
+
+        // Run tests
+        ZMap<ZString, int> teststatus;
+        int failed = 0;
+        for(zu64 i = 0; i < tests.size(); ++i){
+            Test test = tests[i];
+            ZString status = " PASS";
+
+            bool skip = false;
+            for(auto j = test.deps.begin(); j.more(); ++j){
+                if(teststatus.contains(*j) && teststatus[*j] == 2){
+                    skip = true;
+                    status = ZString("-SKIP: ") + *j;
+                }
+            }
+
+            LOG("* " << ZString(i).lpad(' ', 2) << " " << ZString(test.name).pad(' ', 30) << (hideout ? ZLog::NOLN : ZLog::NEWLN));
+
+            ZClock clock;
+            if(!skip && test.func){
+                if(hideout){
+                    ZLogWorker::setStdOutEnable(false);
+                    ZLogWorker::setStdErrEnable(false);
+                }
+                try {
+                    clock.start();
+                    test.func();
+                    clock.stop();
+                    // PASS
+                    teststatus[test.name] = 1;
+                } catch(int e){
+                    // FAIL
+                    status = ZString("!FAIL: line ") + e;
+                    teststatus[test.name] = 2;
+                    ++failed;
+                } catch(ZException e){
+                    // FAIL
+                    status = ZString("!FAIL: ZException: ") + e.what();
+                    teststatus[test.name] = 2;
+                    ++failed;
+                } catch(zexception e){
+                    // FAIL
+                    status = ZString("!FAIL: zexception: ") + e.what;
+                    teststatus[test.name] = 2;
+                    ++failed;
+                }
+                if(hideout){
+                    ZLogWorker::setStdOutEnable(true);
+                    ZLogWorker::setStdErrEnable(true);
+                }
+            }
+
+            ZString result = status;
+            if(teststatus.contains(test.name) && teststatus[test.name] == 1){
+                // Test pass
+                double time = clock.getSecs();
+                ZString unit = "s";
+                if(time < 1){
+                    time = time * 1000;
+                    unit = "ms";
+                    if(time < 1){
+                        time = time * 1000;
+                        unit = "us";
+                    }
+                }
+                result = result + " [" + time + " " + unit + "]";
+            }
+
+            if(hideout)
+                RLOG(result << ZLog::NEWLN);
+            else
+                LOG("* " << ZString(i).lpad(' ', 2) << " " << ZString(test.name).pad(' ', 30) << status);
+
+        }
+
+        // Return number of tests failed
+        return failed;
+
     } catch(ZException e){
         printf("Catastrophic Failure: %s - %d\n%s\n", e.what().cc(), e.code(), e.traceStr().cc());
+    } catch(zexception e){
+        printf("CATACLYSMIC FAILURE: %s\n", e.what);
+    } catch(zallocator_exception e){
+        printf("Allocator Failure: %s\n", e.what);
     }
-    return -1;
-}
 
-int runTests(ZAssoc<ZString, test_func> tests){
-    ArZ errorstrings;
-    for(zu64 i = 0; i < tests.size(); ++i){
-        LOG("=== Starting Test '" << tests.key(i) << "'...");
-        int result = -1;
-        try {
-            result = tests[i]();
-        } catch(int err){
-            result = err;
-        } catch(ZException err){
-            ZString errstr = "!! Error: " + err.what();
-            errorstrings.push(errstr);
-            ELOG(errstr);
-            err.logStackTrace();
-            result = -2;
-        }
-        if(result != 0){
-            ZString errstr = "!!! Test '" + tests.key(i) + "' Failed: " + result;
-            errorstrings.push(errstr);
-            ELOG(errstr);
-        } else {
-            LOG("=== Finished Test '" << tests.key(i) << "'");
-        }
-    }
-    if(!errorstrings.isEmpty()){
-        for(zu64 i = 0; i < errorstrings.size(); ++i){
-            LOG("ERR: " << errorstrings[i]);
-        }
-    }
-    return 0;
+    // Fatal error, early exit
+    return -1;
 }
