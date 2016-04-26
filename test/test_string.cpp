@@ -1,4 +1,4 @@
-#include "test.h"
+#include "tests.h"
 
 #include "zstring.h"
 #include "zpath.h"
