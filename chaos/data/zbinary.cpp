@@ -2,6 +2,10 @@
 
 namespace LibChaos {
 
+ZBinary &ZBinary::fill(ZBinary::bytetype dat){
+    return fill(dat, size());
+}
+
 ZBinary &ZBinary::fill(ZBinary::bytetype dat, zu64 size){
     reserve(size);
     _size = size;
@@ -129,12 +133,24 @@ ZBinary ZBinary::printable() const {
     return tmp;
 }
 
-ZString ZBinary::strBytes(){
+ZString ZBinary::strBytes(bool space, bool prefix){
     ZString str;
     for(zu64 i = 0; i < size(); ++i){
-        str += ZString("0x") + ZString::ItoS(_data[i], 16, 2) + " ";
+        str += (prefix ? ZString("0x") : ZString()) + ZString::ItoS(_data[i], 16, 2) + (space ? " " : "");
     }
-    str.substr(0, str.size()-1);
+    if(space) str.substr(0, str.size()-1);
+    return str;
+}
+
+ZString ZBinary::strWords(bool space, bool prefix){
+    ZString str;
+    char sp = 1;
+    for(zu64 i = 0; i < size(); ++i){
+        str += (prefix && sp == 1 ? ZString("0x") : ZString()) + ZString::ItoS(_data[i], 16, 2) + (space && sp == 2 ? " " : "");
+        if(sp == 2) sp = 0;
+        ++sp;
+    }
+    if(space) str.substr(0, str.size()-1);
     return str;
 }
 

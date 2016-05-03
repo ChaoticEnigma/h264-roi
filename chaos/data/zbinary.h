@@ -108,6 +108,7 @@ public:
         _size = size;
     }
 
+    ZBinary &fill(bytetype dat);
     ZBinary &fill(bytetype dat, zu64 size);
 
     ZBinary &concat(const ZBinary &other);
@@ -133,7 +134,10 @@ public:
     ZBinary &nullTerm();
     ZBinary printable() const;
 
-    ZString strBytes();
+    //! Format bytes as hexadecimal digits.
+    ZString strBytes(bool space = true, bool prefix = false);
+    //! Format words as hexadecimal digits.
+    ZString strWords(bool space = true, bool prefix = false);
 
     const char *asChar() const {
         return (char *)_data;
