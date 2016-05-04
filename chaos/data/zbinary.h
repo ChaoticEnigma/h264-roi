@@ -137,7 +137,7 @@ public:
     //! Format bytes as hexadecimal digits.
     ZString strBytes(bool space = true, bool prefix = false);
     //! Format words as hexadecimal digits.
-    ZString strWords(bool space = true, bool prefix = false);
+    ZString strWords(zu8 wordsize = 2, bool space = true, bool prefix = false);
 
     const char *asChar() const {
         return (char *)_data;

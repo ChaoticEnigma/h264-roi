@@ -142,12 +142,12 @@ ZString ZBinary::strBytes(bool space, bool prefix){
     return str;
 }
 
-ZString ZBinary::strWords(bool space, bool prefix){
+ZString ZBinary::strWords(zu8 wordsize, bool space, bool prefix){
     ZString str;
     char sp = 1;
     for(zu64 i = 0; i < size(); ++i){
-        str += (prefix && sp == 1 ? ZString("0x") : ZString()) + ZString::ItoS(_data[i], 16, 2) + (space && sp == 2 ? " " : "");
-        if(sp == 2) sp = 0;
+        str += (prefix && sp == 1 ? ZString("0x") : ZString()) + ZString::ItoS(_data[i], 16, 2) + (space && sp == wordsize ? " " : "");
+        if(sp == wordsize) sp = 0;
         ++sp;
     }
     if(space) str.substr(0, str.size()-1);
