@@ -1,4 +1,4 @@
-#include "test.h"
+#include "tests.h"
 #include "zmap.h"
 #include "zset.h"
 

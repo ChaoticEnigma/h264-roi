@@ -5,50 +5,45 @@ PROJECT(LibChaos_Test)
 
 ### =================== SOURCES =================== ###
 
-SET(LibChaos_Test_HEADERS
-    test.h
-)
-
-### =================== SOURCES =================== ###
-
 SET(LibChaos_Test_SOURCES
-    test.cpp
-
-    pointer_test.cpp
-    allocator_test.cpp
-    storage_test.cpp
-    binary_test.cpp
-
-    array_test.cpp
-    list_test.cpp
-    iterator_test.cpp
-
-    graph_test.cpp
-
-    string_test.cpp
-    path_test.cpp
-    json_test.cpp
-    number_test.cpp
-
-    thread_test.cpp
-
-    misc_test.cpp
-    hash_test.cpp
-
-    file_test.cpp
-    image_test.cpp
-    pdf_test.cpp
-
-    socket_test.cpp
-
+    tests.h
+    main.cpp
     sandbox.cpp
-    error_test.cpp
+
+    test_pointer.cpp
+    test_allocator.cpp
+    test_storage.cpp
+    test_binary.cpp
+
+    test_array.cpp
+    test_list.cpp
+    test_iterator.cpp
+
+    test_graph.cpp
+
+    test_string.cpp
+    test_path.cpp
+    test_json.cpp
+    test_number.cpp
+
+    test_thread.cpp
+
+    test_misc.cpp
+    test_hash.cpp
+
+    test_file.cpp
+    test_image.cpp
+    test_pdf.cpp
+
+    test_socket.cpp
+
+    test_error.cpp
 )
 
 ### =================== CONFIG =================== ###
 
 # Export Properties
-GatherSources(${LibChaos_Test_HEADERS} ${LibChaos_Test_SOURCES} ${LibChaos_Test_PNG_SOURCES})
+GatherSources(${LibChaos_Test_HEADERS} ${LibChaos_Test_PNG_SOURCES})
 
 # Include Directories
 GET_PROPERTY(LibChaos_Include GLOBAL PROPERTY LibChaosInclude)

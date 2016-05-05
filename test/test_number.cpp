@@ -1,4 +1,4 @@
-#include "test.h"
+#include "tests.h"
 #include "znumber.h"
 #include "zbinary.h"
 
