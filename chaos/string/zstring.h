@@ -40,7 +40,7 @@ class ZString : public ZAccessor<char> {
 public:
     typedef zu32 codepoint;
     typedef zbyte codeunit8;
-    typedef zu16 codeunit16;
+    typedef wchar_t codeunit16;
     typedef zu32 codeunit32;
     typedef codeunit8 codeunit;
 
@@ -88,7 +88,7 @@ public:
     std::string str() const;
 
     //! Construct from UTF-16 null-terminated wide C-string.
-    ZString(const wchar_t *wstr);
+    ZString(const wchar_t *wstr, zu64 max = ZU64_MAX);
     //! Construct from UTF-16 wide character array.
     ZString(const ZArray<wchar_t> &array);
 
@@ -390,11 +390,16 @@ private:
      */
     zu64 _strReplace(const ZString &before, const ZString &after, zu64 startpos);
 
+    //! Append a UTF-8 encoded code point to the container.
     void _appendCodePoint(codepoint cp);
+    static void _appendUTF16(std::wstring &str, codepoint cp);
 
-    codepoint _nextUTF8(const codeunit8 **units, zu64 *maxunits);
-    codepoint _nextUTF16(const codeunit16 **units, zu64 *maxunits);
-    codepoint _nextUTF32(const codeunit32 **units, zu64 *maxunits);
+    //! Decode the next UTF-8 code point.
+    static codepoint _nextUTF8(const codeunit8 **units, zu64 *maxunits);
+    //! Decode the next UTF-16 code point.
+    static codepoint _nextUTF16(const codeunit16 **units, zu64 *maxunits);
+    //! Decode the next UTF-32 code point.
+    static codepoint _nextUTF32(const codeunit32 **units, zu64 *maxunits);
 
     //! Determine if \a str is valid UTF-8.
     static bool isUTF8(const char *str);

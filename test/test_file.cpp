@@ -1,4 +1,4 @@
-#include "test.h"
+#include "tests.h"
 
 #include "zfile.h"
 #include "zexception.h"

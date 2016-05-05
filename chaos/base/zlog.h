@@ -19,14 +19,14 @@
 #if LIBCHAOS_BUILD == LIBCHAOS_RELEASE
     #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO) << A
     #define DLOG(A) LibChaos::ZLog(LibChaos::ZLog::DEBUG) << A
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERROR) << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS) << A
     #define RLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO) << LibChaos::ZLog::RAW << A
     #define TLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO) << LibChaos::ZLog::THIS_THREAD << A
     #define OLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO) << LibChaos::ZLog::STDIO << A
 #else
     #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
     #define DLOG(A) LibChaos::ZLog(LibChaos::ZLog::DEBUG, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERROR, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
     #define RLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::RAW << A
     #define TLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::THIS_THREAD << A
     #define OLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::STDIO << A
@@ -63,7 +63,7 @@ public:
 
     // Log level
     enum {
-        ERROR   = 1,
+        ERRORS   = 1,
         WARNING = 2,
         INFO    = 3,
         VERBOSE = 4,

@@ -5,7 +5,6 @@
 *******************************************************************************/
 #include "zstring.h"
 #include "zlog.h"
-//#include <stdio.h>
 
 namespace LibChaos {
 
@@ -29,7 +28,7 @@ void ZString::parseUTF16(const codeunit16 *units, zu64 max){
     }
 }
 
-void ZString::parseUTF32(const ZString::codeunit32 *units, zu64 max){
+void ZString::parseUTF32(const codeunit32 *units, zu64 max){
     clear();
     if(units && max){
         // Read and add code points
@@ -134,6 +133,8 @@ ZString ZString::codePointStr(zu64 cp){
 // ///////////////////////////////////////////////////////////////////////////////
 
 void ZString::_appendCodePoint(codepoint cp){
+    // UTF-8: RFC-3629
+
     if(cp == 0){
         // Skip invalid code points
 
@@ -184,6 +185,20 @@ void ZString::_appendCodePoint(codepoint cp){
 
     } else {
         // Cannot encode code points larger than 31 bits with UTF-8
+    }
+}
+
+void ZString::_appendUTF16(std::wstring &str, codepoint cp){
+    // UTF-16: RFC-2781
+
+    if(cp < 0x10000){
+        str.append(1, cp & 0xFFFF);
+    } else {
+        zu32 up = cp - 0x10000;
+        zu16 w1 = 0xD800 | ((up >> 10) & 0x3FF);
+        zu16 w2 = 0xDC00 | (up & 0x3FF);
+        str.append(1, w1);
+        str.append(1, w2);
     }
 }
 

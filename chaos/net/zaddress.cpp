@@ -156,13 +156,26 @@ ZAddress &ZAddress::operator=(ZAddress rhs){
     return *this;
 }
 
+bool ZAddress::operator==(const ZAddress &rhs) const {
+    if(     this->_family == rhs._family &&
+            //this->_type == rhs._type &&
+            //this->_protocol == rhs._protocol &&
+            this->_name == rhs._name &&
+            this->_v6_parts.first == rhs._v6_parts.first &&
+            this->_v6_parts.second == rhs._v6_parts.second &&
+            this->_port == rhs._port
+            )
+        return true;
+    return false;
+}
+
 ZString ZAddress::familyStr() const {
     switch(_family){
-        case ZAddress::NAME:    return "Unspecified";
-        case ZAddress::UNIX:        return "UNIX";
-        case ZAddress::IPV4:        return "IPv4";
-        case ZAddress::IPV6:        return "IPv6";
-        default:                    return "Unknwon";
+    case ZAddress::NAME:    return "Unspecified";
+    case ZAddress::UNIX:        return "UNIX";
+    case ZAddress::IPV4:        return "IPv4";
+    case ZAddress::IPV6:        return "IPv6";
+    default:                    return "Unknwon";
     }
 }
 
