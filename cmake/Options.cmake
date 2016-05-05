@@ -11,7 +11,7 @@ OPTION(LIBCHAOS_SHARED                      "Build LibChaos as a shared library"
 
 # Library Components
 OPTION(LIBCHAOS_UI                          "Build LibChaos UI library"                 OFF )
-OPTION(LIBCHAOS_TEST                        "Build and Run LibChaos Test suite"         ON  )
+OPTION(LIBCHAOS_TEST                        "Build and Run LibChaos Test suite"         OFF )
 
 # Third-Party Library Support
 OPTION(DISABLE_ZPNG                         "Disable PNG support"                       OFF )

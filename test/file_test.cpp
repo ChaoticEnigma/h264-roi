@@ -40,16 +40,19 @@ void file_list(){
     ZPath near = "testdir";
 
     ZArray<ZPath> nearfiles = ZFile::listFiles(near, false);
-    for(zu64 i = 0; i < nearfiles.size(); ++i)
+    for(zu64 i = 0; i < nearfiles.size(); ++i){
+        nearfiles[i].relativeTo(ZPath::pwd());
         LOG(nearfiles[i]);
+    }
 
     TASSERT(nearfiles.size() == 1);
-    nearfiles.front().relativeTo(ZPath::pwd());
     TASSERT(nearfiles.front().data() == ArZ({ "testdir", "near.dat" }))
 
     ZArray<ZPath> farfiles = ZFile::listFiles(near, true);
-    for(zu64 i = 0; i < farfiles.size(); ++i)
+    for(zu64 i = 0; i < farfiles.size(); ++i){
+        farfiles[i].relativeTo(ZPath::pwd());
         LOG(farfiles[i]);
+    }
 
     TASSERT(farfiles.size() == 2);
     zu64 findf = farfiles.find(ZPath("testdir/a/b/c/d/e/f.dat"));
@@ -62,12 +65,16 @@ void file_read(){
     ZPath near = "testdir";
 
     ZArray<ZPath> nearfiles = ZFile::listFiles(near, false);
-    for(zu64 i = 0; i < nearfiles.size(); ++i)
+    for(zu64 i = 0; i < nearfiles.size(); ++i){
+        nearfiles[i].relativeTo(ZPath::pwd());
         LOG(nearfiles[i]);
+    }
 
     ZArray<ZPath> farfiles = ZFile::listFiles(near, true);
-    for(zu64 i = 0; i < farfiles.size(); ++i)
+    for(zu64 i = 0; i < farfiles.size(); ++i){
+        farfiles[i].relativeTo(ZPath::pwd());
         LOG(farfiles[i]);
+    }
 
     for(zu64 i = 0; i < nearfiles.size(); ++i){
         LOG(nearfiles[i] << " - " << ZFile::readString(nearfiles[i]));
