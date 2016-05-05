@@ -43,7 +43,7 @@ ZString::ZString(const char *str, zu64 max) : ZString(){
 }
 
 ZString::ZString(const ZArray<char> &array) : ZString(array.raw()){
-    // none
+    // Forwarded
 }
 
 ZString::ZString(const codeunit *str, zu64 max) : ZString(){
@@ -51,40 +51,47 @@ ZString::ZString(const codeunit *str, zu64 max) : ZString(){
 }
 
 ZString::ZString(const ZArray<codeunit> &array) : ZString(array.raw()){
-    // none
+    // Forwarded
 }
 
 ZString::ZString(std::string str) : ZString(str.c_str()){
-    // none
+    // Forwarded
 }
 
 std::string ZString::str() const {
     return std::string(cc(), size());
 }
 
-ZString::ZString(const wchar_t *wstr) : ZString(){
-    // TODO: UTF-16 constructor
-    //parseUTF16(wstr);
+ZString::ZString(const wchar_t *wstr, zu64 max) : ZString(){
+    parseUTF16(wstr, max);
 }
 
 ZString::ZString(const ZArray<wchar_t> &array) : ZString(array.raw()){
-    // none
+    // Forwarded
 }
 
 ZString::ZString(std::wstring wstr) : ZString(wstr.c_str()){
-    // none
+    // Forwarded
 }
 
 std::wstring ZString::wstr() const {
-    //return towstring();
-    return std::wstring();
+    std::wstring str;
+    zu64 max = size();
+    const codeunit *units = _data;
+    // Read and add code points
+    while(max && *units){
+        _appendUTF16(str, _nextUTF8(&units, &max));
+    }
+    return str;
 }
 
 ZString::ZString(char ch, zu64 len) : ZString(){
     _resize(len);
-    if(len)
-        for(zu64 i = 0; i < len; ++i)
+    if(len){
+        for(zu64 i = 0; i < len; ++i){
             at(i) = ch;
+        }
+    }
 }
 
 ZString ZString::ItoS(zu64 value, zu8 base, zu64 pad, bool upper){

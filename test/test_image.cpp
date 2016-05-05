@@ -171,9 +171,9 @@ ZArray<Test> image_tests(){
     return {
         { "encode-8bit",        encode_8bit,        true, {} },
         { "encode-16bit",       encode_16bit,       true, {} },
-        { "convert-webp-png",   convert_webp_png,   true, {} },
-        { "convert-jpeg-png",   convert_jpeg_png,   true, {} },
-        { "decode-jpeg",        decode_jpeg,        false, {} },
+        { "convert-webp-png",   convert_webp_png,   ZImage::isFormatSupported(ZImage::WEBP) && ZImage::isFormatSupported(ZImage::PNG), {} },
+        { "convert-jpeg-png",   convert_jpeg_png,   ZImage::isFormatSupported(ZImage::JPEG) && ZImage::isFormatSupported(ZImage::PNG), {} },
+        { "decode-jpeg",        decode_jpeg,        ZImage::isFormatSupported(ZImage::JPEG), {} },
         { "decode-png",         decode_png,         false, {} },
     };
 }

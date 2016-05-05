@@ -486,7 +486,7 @@ bool ZFile::makeDir(ZPath dir){
         else
             return false;
     } else {
-        return CreateDirectory(dir.str('\\').wstr().c_str(), NULL) != 0;
+        return (CreateDirectory(dir.str('\\').wstr().c_str(), NULL) != 0);
     }
 #else
     struct stat flstat;
