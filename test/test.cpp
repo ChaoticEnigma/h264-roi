@@ -30,11 +30,11 @@ int main(int argc, char **argv){
         //ZLog::init(); // BUG: threaded zlog sometimes crashes
         ZLog::logLevelStdOut(ZLog::INFO, "%clock% %thread% N %log%");
         ZLog::logLevelStdOut(ZLog::DEBUG, "\x1b[35m%clock% %thread% D %log%\x1b[m");
-        ZLog::logLevelStdErr(ZLog::ERROR, "\x1b[31m%clock% %thread% E [%function%|%file%:%line%] %log%\x1b[m");
+        ZLog::logLevelStdErr(ZLog::ERRORS, "\x1b[31m%clock% %thread% E [%function%|%file%:%line%] %log%\x1b[m");
         ZPath lgf = ZPath("logs") + ZLog::genLogFileName("testchaos_");
         ZLog::logLevelFile(ZLog::INFO, lgf, "%time% %thread% N %log%");
         ZLog::logLevelFile(ZLog::DEBUG, lgf, "%time% %thread% D [%function%|%file%:%line%] %log%");
-        ZLog::logLevelFile(ZLog::ERROR, lgf, "%time% %thread% E [%function%|%file%:%line%] %log%");
+        ZLog::logLevelFile(ZLog::ERRORS, lgf, "%time% %thread% E [%function%|%file%:%line%] %log%");
 
         LOG("Testing LibChaos: " << LibChaosDescribe());
 

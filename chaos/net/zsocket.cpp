@@ -4,14 +4,14 @@
 **                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zsocket.h"
+#include "zaddress.h"
 #include "zlog.h"
 #include "zexception.h"
 #include "zerror.h"
 
 #ifdef ZSOCKET_WINAPI
     #include <winsock2.h>
-    #include <windows.h>
-    typedef int socklen_t;
+    #include <ws2tcpip.h>
 #else
     #include <sys/socket.h>
     #include <netinet/in.h>
