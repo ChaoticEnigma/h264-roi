@@ -84,7 +84,7 @@ public:
     //! Construct from UTF-8 STL string.
     ZString(std::string str);
 
-    //! Get STL string.
+    //! Get UTF-8 STL string.
     std::string str() const;
 
     //! Construct from UTF-16 null-terminated wide C-string.
@@ -95,7 +95,7 @@ public:
     //! Construct from UTF-16 STL wide string.
     ZString(std::wstring wstr);
 
-    //! Get STL wide string.
+    //! Get UTF-16 STL wide string.
     std::wstring wstr() const;
 
     //! Construct string filled with \a ch to length \a len.
@@ -296,9 +296,13 @@ public:
 
     ZString removeWhitespace();
 
-    // Convert UPPERCASE characters to lowercase equivalents in <str>
+    //! Convert uppercase ASCII characters to lowercase ASCII equivalents.
     ZString &toLower();
     static ZString toLower(ZString str);
+
+    //! Convert lowercase ASCII characters to uppercase ASCII equivalents.
+    ZString &toUpper();
+    static ZString toUpper(ZString str);
 
     // What is this for...?
     ZString &duplicate(zu64 iterate);

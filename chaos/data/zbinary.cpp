@@ -133,25 +133,39 @@ ZBinary ZBinary::printable() const {
     return tmp;
 }
 
-ZString ZBinary::strBytes(bool space, bool prefix){
+ZString ZBinary::strBytes(zu16 groupsize, zu16 linesize, bool upper) const {
     ZString str;
-    for(zu64 i = 0; i < size(); ++i){
-        str += (prefix ? ZString("0x") : ZString()) + ZString::ItoS(_data[i], 16, 2) + (space ? " " : "");
+    for(zu64 i = 1; i < size()+1; ++i){
+        str += ZString::ItoS(_data[i-1], 16, 2, upper) + (groupsize != 0 && i % groupsize == 0 ? " " : "");
+        if(linesize != 0 && i % ((zu32)linesize * groupsize) == 0){
+            str += "\n";
+        }
     }
-    if(space) str.substr(0, str.size()-1);
     return str;
 }
 
-ZString ZBinary::strWords(zu8 wordsize, bool space, bool prefix){
+ZString ZBinary::dumpBytes(zu16 groupsize, zu16 linesize, bool upper) const{
     ZString str;
-    char sp = 1;
-    for(zu64 i = 0; i < size(); ++i){
-        str += (prefix && sp == 1 ? ZString("0x") : ZString()) + ZString::ItoS(_data[i], 16, 2) + (space && sp == wordsize ? " " : "");
-        if(sp == wordsize) sp = 0;
-        ++sp;
+    str += ZString::ItoS(0, 16, 4, upper) + "  ";
+    for(zu64 i = 1; i < size()+1; ++i){
+        str += ZString::ItoS(_data[i-1], 16, 2, upper) + (groupsize != 0 && i % groupsize == 0 ? " " : "");
+        if(linesize != 0 && i % ((zu32)linesize * groupsize) == 0){
+            ZString asc;
+            for(zu64 j = i - (groupsize * linesize); j < i; ++j)
+                asc += displayByte(_data[j]);
+            str += ZString("| ") + asc;
+            str += "\n";
+            str += ZString::ItoS(i, 16, 4) + "  ";
+        }
     }
-    if(space) str.substr(0, str.size()-1);
     return str;
+}
+
+ZString ZBinary::displayByte(zbyte byte){
+    if(byte > 31 && byte < 126)
+        return ZString((char)byte);
+    else
+        return ".";
 }
 
 zu64 ZBinary::read(zbyte *dest, zu64 length){

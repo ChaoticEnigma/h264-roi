@@ -134,10 +134,16 @@ public:
     ZBinary &nullTerm();
     ZBinary printable() const;
 
-    //! Format bytes as hexadecimal digits.
-    ZString strBytes(bool space = true, bool prefix = false);
-    //! Format words as hexadecimal digits.
-    ZString strWords(zu8 wordsize = 2, bool space = true, bool prefix = false);
+    /*! Format bytes as hexadecimal digits.
+     *  \param groupsize The number of bytes between spaces.
+     *  \param linesize The number of groups on each line.
+     *  \param upper Uppercase hexadecimal.
+     */
+    ZString strBytes(zu16 groupsize = 0, zu16 linesize = 0, bool upper = false) const;
+
+    ZString dumpBytes(zu16 groupsize = 0, zu16 linesize = 0, bool upper = false) const;
+
+    static ZString displayByte(zbyte byte);
 
     const char *asChar() const {
         return (char *)_data;
