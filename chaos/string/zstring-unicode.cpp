@@ -5,6 +5,7 @@
 *******************************************************************************/
 #include "zstring.h"
 #include "zlog.h"
+#include <string>
 
 namespace LibChaos {
 
