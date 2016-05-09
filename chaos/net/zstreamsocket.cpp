@@ -39,12 +39,14 @@ bool ZStreamSocket::listen(){
     return ZSocket::listen();
 }
 
-bool ZStreamSocket::accept(ZConnection &conn){
+ZPointer<ZConnection> ZStreamSocket::accept(){
     zsocktype connfd;
     ZAddress connaddr;
     bool ret = ZSocket::accept(connfd, connaddr);
-    conn = ZConnection(connfd, connaddr);
-    return ret;
+    if(ret)
+        return ZPointer<ZConnection>(new ZConnection(connfd, connaddr));
+    else
+        return nullptr;
 }
 
 }

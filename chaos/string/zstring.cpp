@@ -15,9 +15,7 @@
 // Variable arguments lists
 #include <cstdarg>
 
-#if PLATFORM == MACOSX
-    #include <math.h>
-#endif
+#include <math.h>
 
 #include "zlog.h"
 
