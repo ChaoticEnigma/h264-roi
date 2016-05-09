@@ -10,50 +10,35 @@
 #include "zexception.h"
 #include <atomic>
 
-#define ZLOG_DEBUG_DEPTH 100
-
 #define ZLOG_PREFILE LibChaos::ZPath(__FILE__).last()
 #define ZLOG_PRELINE LibChaos::ZString(__LINE__)
 #define ZLOG_PREFUNC LibChaos::ZString(__FUNCTION__)
 
-#if LIBCHAOS_BUILD == LIBCHAOS_RELEASE
-    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO) << A
-    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLog::DEBUG) << A
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS) << A
-    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO) << LibChaos::ZLog::RAW << A
-    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO) << LibChaos::ZLog::THIS_THREAD << A
-    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO) << LibChaos::ZLog::STDIO << A
-#else
+#if LIBCHAOS_BUILD == LIBCHAOS_DEBUG
+    // All context information provided on debug build
     #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
     #define DLOG(A) LibChaos::ZLog(LibChaos::ZLog::DEBUG, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
     #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
-    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::RAW << A
-    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::THIS_THREAD << A
-    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::STDIO << A
+#elif LIBCHAOS_BUILD == LIBCHAOS_RELEASE
+    // Debug logging disabled on release build
+    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO) << A
+    #define DLOG(A)
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS) << A
+#else
+    // Default logging on normal build
+    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO) << A
+    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLog::DEBUG) << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS) << A
 #endif
-#define ORLOG(A) OLOG(LibChaos::ZLog::raw << A)
+
+#define RLOG(A)  LOG(LibChaos::ZLog::RAW << A)
+#define TLOG(A)  LOG(LibChaos::ZLog::THIS_THREAD << A)
+#define OLOG(A)  LOG(LibChaos::ZLog::STDIO << A)
 
 #define IF_LOG(A, B, C, D) if(A){ LOG( B << C ); } else { LOG( B << D ); }
 #define IF_DLOG(A, B, C, D) if(A){ DLOG( B << C ); } else { DLOG( B << D ); }
 
 namespace LibChaos {
-
-struct ZLogInfo {
-    enum info_type {
-        FILE        = 1,    // File name
-        LINE        = 2,    // Line number
-        FUNCTION    = 3,    // Function name
-        CLOCK       = 4,    // Time since program start (hh:mm:ss.mmm)
-        DATE        = 5,    // Current date
-        TIME        = 6,    // Current time (hh:mm:ss)
-        THREAD      = 7,    // Thread number
-    };
-
-    ZLogInfo(info_type logtype, ZString loginfo) : type(logtype), info(loginfo){}
-
-    info_type type;
-    ZString info;
-};
 
 //! Formats a log entry and queues it with a ZLogWorker.
 class ZLog {
@@ -94,8 +79,6 @@ public:
 
     ZLog &operator<<(zlog_flag);
     ZLog &log(ZString logtext);
-
-    ZLog &operator<<(ZLogInfo info);
 
     inline ZLog &operator<<(ZString text){ return log(text); } // Base overload
     inline ZLog &operator<<(const char *text){ return log(text); }
