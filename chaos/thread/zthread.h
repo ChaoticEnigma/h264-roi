@@ -7,6 +7,7 @@
 #define ZTHREAD_H
 
 #include "ztypes.h"
+#include "zmutex.h"
 
 #if PLATFORM == WINDOWS || PLATFORM == CYGWIN
     #define ZTHREAD_WINTHREADS
@@ -39,6 +40,7 @@ public:
         ZThread *handle;
         funcType func;
         ZThreadArg zarg;
+        ZMutex mutex;
     };
 
 public:
@@ -50,7 +52,8 @@ public:
     //! Create thread and run \a func with \a user data.
     ZThread(funcType func, void *user);
 
-    ZThread(const ZThread &other);
+    ZThread(const ZThread &other) = delete;
+    ZThread &operator=(const ZThread &other) = delete;
 
     ~ZThread();
 
@@ -84,8 +87,6 @@ public:
     //! Sleep the current thread for \a microseconds.
     static void usleep(zu32 microseconds);
 
-    void setCopyable();
-
     //! Get the thread id of the thread.
     ztid tid();
     //! Get the thread id of the current thread.
@@ -94,7 +95,7 @@ public:
     //! Check id the thread is still alive.
     bool alive();
 
-private:
+public:
     void _setThreadAlive(bool alive);
 
 private:

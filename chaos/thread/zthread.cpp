@@ -38,9 +38,20 @@ DWORD entry_win(LPVOID ptr){
 void *entry_posix(void *ptr){
     using namespace LibChaos;
     ZThread::zthreadparam *param = (ZThread::zthreadparam *)ptr;
-    param->handle->_setThreadAlive(true);
+
+    param->mutex.lock();
+    if(param->handle)
+        param->handle->_setThreadAlive(true);
+    param->mutex.unlock();
+
+    // Run thread function
     void *ret = param->func(&param->zarg);
-    param->handle->_setThreadAlive(false);
+
+    param->mutex.lock();
+    if(param->handle)
+        param->handle->_setThreadAlive(false);
+    param->mutex.unlock();
+
     return ret;
 }
 
@@ -49,7 +60,7 @@ void *entry_posix(void *ptr){
 namespace LibChaos {
 
 bool ZThreadArg::stop(){
-    return (bool)*_stop;
+    return _stop;
 }
 
 ZThread::ZThread() : _thread(0), _param(nullptr), _alive(false), _copyable(false){
@@ -64,14 +75,8 @@ ZThread::ZThread(funcType func, void *user) : ZThread(){
     run(func, user);
 }
 
-ZThread::ZThread(const ZThread &other) : _thread(other._thread), _param(other._param), _alive(other._alive), _copyable(other._copyable){
-
-}
-
 ZThread::~ZThread(){
-    if(!_copyable){
-        detach();
-    }
+    detach();
 }
 
 bool ZThread::run(funcType func){
@@ -102,8 +107,8 @@ void *ZThread::join(){
         WaitForSingleObject(_thread, INFINITE);
     return NULL;
 #else
-    void *retval = NULL;
-    if(_alive){
+    void *retval = nullptr;
+    if(_thread && _alive){
         pthread_join(_thread, &retval);
     }
     return retval;
@@ -117,15 +122,21 @@ void ZThread::kill(){
         _alive = false;
     }
 #else
-    if(_alive){
-        _return = pthread_cancel(_thread);
+    if(_thread && _alive){
+        pthread_cancel(_thread);
+        _param->mutex.lock();
+        _param->handle = nullptr;
+        _param->mutex.unlock();
         _alive = false;
+        _thread = 0;
     }
 #endif
 }
 
 void ZThread::stop(){
-    _stop = true;
+    if(_param){
+        _param->zarg._stop = true;
+    }
 }
 
 void ZThread::detach(){
@@ -133,8 +144,14 @@ void ZThread::detach(){
     if(_alive)
         CloseHandle(_thread);
 #else
-    if(_alive)
-        _return = pthread_detach(_thread);
+    if(_thread && _alive){
+        pthread_detach(_thread);
+        _param->mutex.lock();
+        _param->handle = nullptr;
+        _param->mutex.unlock();
+        _alive = false;
+        _thread = 0;
+    }
 #endif
 }
 
@@ -179,10 +196,6 @@ void ZThread::usleep(zu32 microseconds){
 #else
     ::usleep(microseconds);
 #endif
-}
-
-void ZThread::setCopyable(){
-    _copyable = true;
 }
 
 ztid ZThread::tid(){
