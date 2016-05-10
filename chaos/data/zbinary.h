@@ -141,7 +141,7 @@ public:
      */
     ZString strBytes(zu16 groupsize = 0, zu16 linesize = 0, bool upper = false) const;
 
-    ZString dumpBytes(zu16 groupsize = 0, zu16 linesize = 0, bool upper = false) const;
+    ZString dumpBytes(zu16 groupsize = 4, zu16 linesize = 4, bool upper = false, zu64 offset = 0) const;
 
     static ZString displayByte(zbyte byte);
 
