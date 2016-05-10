@@ -14,10 +14,8 @@
 #include <algorithm>
 // Variable arguments lists
 #include <cstdarg>
-
-#if PLATFORM == MACOSX
-    #include <math.h>
-#endif
+// pow
+#include <math.h>
 
 #include "zlog.h"
 
