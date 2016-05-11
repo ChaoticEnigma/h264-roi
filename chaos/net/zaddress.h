@@ -17,6 +17,7 @@
     #include <winsock2.h>
     #define IPV4_MAX 16
     #define IPV6_MAX 46
+    typedef int socklen_t;
 #else
     #if PLATFORM == MACOSX
         #include <sys/types.h>
@@ -105,18 +106,7 @@ public:
 
     ZAddress &operator=(ZAddress rhs);
 
-    inline bool operator==(const ZAddress &rhs) const {
-        if(     this->_family == rhs._family &&
-                //this->_type == rhs._type &&
-                //this->_protocol == rhs._protocol &&
-                this->_name == rhs._name &&
-                this->_v6_parts.first == rhs._v6_parts.first &&
-                this->_v6_parts.second == rhs._v6_parts.second &&
-                this->_port == rhs._port
-            )
-            return true;
-        return false;
-    }
+    bool operator==(const ZAddress &rhs) const;
     inline bool operator!=(const ZAddress &rhs) const {
         return !operator==(rhs);
     }

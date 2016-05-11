@@ -1,9 +1,16 @@
-#include "test.h"
+#include "tests.h"
 
 #include "zthread.h"
 #include "zmutex.h"
 #include "zlock.h"
-//#include <unistd.h>
+
+#if PLATFORM == WINDOWS
+    #include <windows.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <assert.h>
+    #include <iostream>
+#endif
 
 namespace LibChaosTest {
 
@@ -51,28 +58,9 @@ void thread(){
     LOG("joined " << thr2.tid());
 }
 
-//
-//
-//
-
-/**
- * @author Jeff Tanner, Seattle, jeff_tanner@earthlink.net
- *
- * Update volatile global variable until maximum value
- * is reached using critical sections.
- */
-
 #if PLATFORM == WINDOWS
 
-//#include "stdafx.h"
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <iostream>
-//using namespace std;
-
-ZMutex mutex;
+ZMutex gmutex;
 CRITICAL_SECTION gCS; // shared structure
 
 const int gcMaxCount = 10;
@@ -83,7 +71,7 @@ DWORD threadLoop(void *name){
         TLOG((char *)name << " entering critical Section...");
 //        EnterCriticalSection(&gCS);
 //        mutex.lock();
-        ZLock lock(mutex);
+        ZLock lock(gmutex);
         if(gCount < gcMaxCount){
             TLOG((char *)name << " in critical Section");
             gCount++;
@@ -128,7 +116,6 @@ void mutex(){
     CloseHandle(hT[3]);
 
     DeleteCriticalSection(&gCS);
-    return 0;
 }
 
 #else

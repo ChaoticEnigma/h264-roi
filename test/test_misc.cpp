@@ -1,4 +1,4 @@
-#include "test.h"
+#include "tests.h"
 #include "zrandom.h"
 #include "zuid.h"
 #include "zlist.h"

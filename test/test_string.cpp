@@ -1,4 +1,4 @@
-#include "test.h"
+#include "tests.h"
 
 #include "zstring.h"
 #include "zpath.h"
@@ -242,7 +242,7 @@ void string_utf8(){
 }
 
 void string_utf16(){
-    const zu16 utf16a[] = { 0x0061, 0x0020, 0xD801, 0xDC37 };
+    const wchar_t utf16a[] = { 0x0061, 0x0020, 0xD801, 0xDC37 };
     ZString utf16b;
     utf16b.parseUTF16(utf16a, 4);
     ZString::debugUTF8(utf16b.bytes());

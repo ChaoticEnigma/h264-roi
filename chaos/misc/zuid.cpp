@@ -208,7 +208,9 @@ zu64 ZUID::getTimestamp(){
 
 ZList<ZBinary> ZUID::getMACAddresses(){
     ZList<ZBinary> maclist;
+
 #ifdef ZUID_WINAPI
+
     ULONG addrslen = sizeof(IP_ADAPTER_ADDRESSES);
     IP_ADAPTER_ADDRESSES *addrs = (IP_ADAPTER_ADDRESSES *)new zbyte[addrslen];
     ULONG flags = GAA_FLAG_INCLUDE_ALL_INTERFACES;
@@ -220,48 +222,18 @@ ZList<ZBinary> ZUID::getMACAddresses(){
     }
     if(ret == NO_ERROR){
         IP_ADAPTER_ADDRESSES *addr = addrs;
-        while(addrs != NULL){
+        while(addr != NULL){
             if(addr->PhysicalAddressLength == 6){
                 ZBinary mac(addr->PhysicalAddress, 6);
                 ZString macstr;
                 for(zu64 i = 0 ; i < mac.size(); ++i)
                     macstr += ZString::ItoS(mac[i], 16, 2) += ":";
                 macstr.substr(0, macstr.size()-1);
-                LOG(macstr);
             }
             addr = addr->Next;
         }
     }
     delete[] addrs;
-    LOG("done");
-
-    /*
-    PIP_ADAPTER_INFO adapterInfo;
-    ULONG bufLen = sizeof(IP_ADAPTER_INFO);
-    adapterInfo = new IP_ADAPTER_INFO[1];
-
-    // Get number of adapters and list of adapter info
-    DWORD status = GetAdaptersInfo(adapterInfo, &bufLen);
-    if(status == ERROR_BUFFER_OVERFLOW){
-        // Make larger list for adapters
-        delete[] adapterInfo;
-        adapterInfo = new IP_ADAPTER_INFO[bufLen];
-        status = GetAdaptersInfo(adapterInfo, &bufLen);
-    }
-
-    if(status == NO_ERROR){
-        // Get first acceptable MAC from list
-        PIP_ADAPTER_INFO adapterInfoList = adapterInfo;
-        while(adapterInfoList != NULL){
-            if(validMAC(adapterInfoList->Address)){
-                maclist.push(ZBinary(adapterInfoList->Address, 6));
-                delete[] adapterInfo;
-            }
-            adapterInfoList = adapterInfoList->Next;
-        }
-    }
-    delete[] adapterInfo;
-    */
 
 #elif PLATFORM == MACOSX
 
@@ -338,6 +310,7 @@ ZList<ZBinary> ZUID::getMACAddresses(){
     }
 
 #endif
+
     return maclist;
 }
 
