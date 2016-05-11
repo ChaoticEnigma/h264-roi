@@ -243,8 +243,7 @@ void string_utf8(){
 
 void string_utf16(){
     const wchar_t utf16a[] = { 0x0061, 0x0020, 0xD801, 0xDC37 };
-    ZString utf16b;
-    utf16b.parseUTF16(utf16a, 4);
+    ZString utf16b(utf16a, 4);
     ZString::debugUTF8(utf16b.bytes());
     TASSERT(utf16b == "a \U00010437");
 }

@@ -40,7 +40,7 @@ class ZString : public ZAccessor<char> {
 public:
     typedef zu32 codepoint;
     typedef zbyte codeunit8;
-    typedef wchar_t codeunit16;
+    typedef zu16 codeunit16;
     typedef zu32 codeunit32;
     typedef codeunit8 codeunit;
 

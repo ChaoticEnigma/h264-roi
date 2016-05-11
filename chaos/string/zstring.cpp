@@ -61,7 +61,12 @@ std::string ZString::str() const {
 }
 
 ZString::ZString(const wchar_t *wstr, zu64 max) : ZString(){
-    parseUTF16(wstr, max);
+    ZArray<codeunit16> units;
+    for(zu64 i = 0; i < max && *wstr; ++i){
+        units.push((codeunit16)(*wstr & 0xFFFF));
+        ++wstr;
+    }
+    parseUTF16(units.raw(), units.size());
 }
 
 ZString::ZString(const ZArray<wchar_t> &array) : ZString(array.raw()){
