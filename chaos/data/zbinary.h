@@ -108,6 +108,7 @@ public:
         _size = size;
     }
 
+    ZBinary &fill(bytetype dat);
     ZBinary &fill(bytetype dat, zu64 size);
 
     ZBinary &concat(const ZBinary &other);
@@ -133,7 +134,16 @@ public:
     ZBinary &nullTerm();
     ZBinary printable() const;
 
-    ZString strBytes();
+    /*! Format bytes as hexadecimal digits.
+     *  \param groupsize The number of bytes between spaces.
+     *  \param linesize The number of groups on each line.
+     *  \param upper Uppercase hexadecimal.
+     */
+    ZString strBytes(zu16 groupsize = 0, zu16 linesize = 0, bool upper = false) const;
+
+    ZString dumpBytes(zu16 groupsize = 4, zu16 linesize = 4, bool upper = false, zu64 offset = 0) const;
+
+    static ZString displayByte(zbyte byte);
 
     const char *asChar() const {
         return (char *)_data;

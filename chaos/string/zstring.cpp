@@ -14,10 +14,8 @@
 #include <algorithm>
 // Variable arguments lists
 #include <cstdarg>
-
-#if PLATFORM == MACOSX
-    #include <math.h>
-#endif
+// pow
+#include <math.h>
 
 #include "zlog.h"
 
@@ -831,16 +829,26 @@ ZString ZString::removeWhitespace(){
 
 ZString &ZString::toLower(){
     for(zu64 i = 0; i < size(); ++i){
-        // Custom tolower()
-        //if((int)tmp[i] >= 65 && (int)tmp[i] <= 90)
-        //    tmp[i] = (char)((int)tmp[i] + 32);
-        _data[i] = tolower(_data[i]);
+        if(65 <= _data[i] && _data[i] <= 90)
+            _data[i] += 32;
     }
     return *this;
 }
 
 ZString ZString::toLower(ZString str){
     return str.toLower();
+}
+
+ZString &ZString::toUpper(){
+    for(zu64 i = 0; i < size(); ++i){
+        if(97 <= _data[i] && _data[i] <= 122)
+            _data[i] -= 32;
+    }
+    return *this;
+}
+
+ZString ZString::toUpper(ZString str){
+    return str.toUpper();
 }
 
 ZString &ZString::duplicate(zu64 iter){
