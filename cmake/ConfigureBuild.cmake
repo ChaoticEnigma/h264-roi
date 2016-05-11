@@ -127,14 +127,16 @@ ENDIF()
 
 SET(CONFIGURE_BUILD_STRING ${BUILD_STRING})
 
+# Assemble compile flags
 IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
-#    IF(LIBCHAOS_COMPILER_GCC)
-#        SET(CXXGNU "${CXXGNU} -std=c++14")
-#    ELSE()
-        SET(CXXGNU "${CXXGNU} -std=c++11")
-#    ENDIF()
+    #IF(LIBCHAOS_COMPILER_GCC)
+    #    SET(CXXGNU "${CXXGNU} -std=c++14")
+    #ELSE()
+    #    SET(CXXGNU "${CXXGNU} -std=c++11")
+    #ENDIF()
 
-    IF(DEBUG) # Enable gratuitous warnings on debug build
+    # Enable gratuitous warnings on debug build
+    IF(DEBUG)
         SET(CXXGNU "${CXXGNU} -Wall -Wextra -Wpedantic")
         #SET(CXXGNU "${CXXGNU} -fms-extensions")
         #SET(CXXF "${CXXF} -Wbloody_everything") # Some day...
@@ -144,18 +146,19 @@ IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
         SET(CXXGNU "${CXXGNU} -Winit-self  -Wredundant-decls -Wundef -Woverloaded-virtual") # Declarationss
         SET(CXXGNU "${CXXGNU} -Wmissing-include-dirs -Wctor-dtor-privacy -Wdisabled-optimization")
 
-        IF(${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_CLANG})
-            # Clang options
-        ELSE()
+        # GCC only warnings
+        IF(NOT LIBCHAOS_COMPILER_CLANG)
             SET(CXXGNU "${CXXGNU} -Wlogical-op -Wnoexcept -Wstrict-null-sentinel")
         ENDIF()
 
+        # Disabled warnings
         SET(CXXF "${CXXF} -Wshadow") # Some warnings are too verbose to be useful
-        SET(CXXGNU "${CXXGNU} -Wno-unused-parameter -Wno-unused") # Disabled Warnings
+        SET(CXXGNU "${CXXGNU} -Wno-unused-parameter -Wno-unused")
         IF(NOT COMPILER_MINGW)
             SET(CXXGNU "${CXXGNU} -Wno-comment") # Not recognized on MinGW
         ENDIF()
 
+        # Extra warnings
         IF(EXTRA_WARNINGS)
             IF(LIBCHAOS_COMPILER_CLANG)
                 SET(CXXGNU "${CXXGNU} -Weverything") # Enable all diagnostics
@@ -166,8 +169,10 @@ IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
         ENDIF()
     ENDIF()
 
+    # Forced errors
     SET(CXXGNU "${CXXGNU} -Werror=return-type") # Should be errors
 
+    # Compiler-specific
     IF(LIBCHAOS_COMPILER_CLANG)
         SET(CXXGNU "${CXXGNU} -Wno-nested-anon-types") # Clang warns about nested anonymous types
     ENDIF()
