@@ -2,6 +2,10 @@
 
 namespace LibChaos {
 
+ZBinary &ZBinary::fill(ZBinary::bytetype dat){
+    return fill(dat, size());
+}
+
 ZBinary &ZBinary::fill(ZBinary::bytetype dat, zu64 size){
     reserve(size);
     _size = size;
@@ -129,13 +133,50 @@ ZBinary ZBinary::printable() const {
     return tmp;
 }
 
-ZString ZBinary::strBytes(){
+ZString ZBinary::strBytes(zu16 groupsize, zu16 linesize, bool upper) const {
     ZString str;
-    for(zu64 i = 0; i < size(); ++i){
-        str += ZString("0x") + ZString::ItoS(_data[i], 16, 2) + " ";
+    for(zu64 i = 1; i < size()+1; ++i){
+        str += ZString::ItoS(_data[i-1], 16, 2, upper) + (groupsize != 0 && i % groupsize == 0 ? " " : "");
+        if(linesize != 0 && i % ((zu32)linesize * groupsize) == 0){
+            str += "\n";
+        }
     }
-    str.substr(0, str.size()-1);
     return str;
+}
+
+ZString ZBinary::dumpBytes(zu16 groupsize, zu16 linesize, bool upper, zu64 offset) const{
+    const zu64 linelen = (zu64)groupsize * linesize;
+    ZString str;
+    str += ZString::ItoS(offset, 16, 4) + "  ";
+    zu64 i = 1;
+    for(i = 1; i < size()+1; ++i){
+        str += ZString::ItoS(_data[i-1], 16, 2, upper) + (groupsize != 0 && i % groupsize == 0 ? " " : "");
+        if(linesize != 0 && i % linelen == 0){
+            ZString asc;
+            for(zu64 j = i - linelen; j < i; ++j)
+                asc += displayByte(_data[j]);
+            str += ZString("| ") + asc + "\n";
+            if(i < size())
+                str += ZString::ItoS(offset + i, 16, 4) + "  ";
+        }
+    }
+    --i;
+    if(linesize != 0 && i % linelen != 0){
+        ZString asc;
+        for(zu64 j = i - (i % linelen); j < i; ++j)
+            asc += displayByte(_data[j]);
+        str += ZString(' ', linelen * 2 + linesize - (i % linelen) * 2 - (i % linelen) / groupsize) + ZString("| ") + asc + "\n";
+    }
+    if(linesize == 0 || size() == 0)
+        str += "\n";
+    return str;
+}
+
+ZString ZBinary::displayByte(zbyte byte){
+    if(byte > 31 && byte < 126)
+        return ZString((char)byte);
+    else
+        return ".";
 }
 
 zu64 ZBinary::read(zbyte *dest, zu64 length){
