@@ -34,7 +34,7 @@ ENDIF()
 IF(NOT DISABLE_ZWEBP)
     # Find libwebp
     FIND_PATH(LIBWEBP_INCLUDE NAMES webp/decode.h webp/encode.h)
-    FIND_LIBRARY(LIBWEBP_LIB NAMES libwebp.a libwebp.so)
+    FIND_LIBRARY(LIBWEBP_LIB  NAMES libwebp.a libwebp.so)
 
     IF(LIBWEBP_INCLUDE AND LIBWEBP_LIB)
         SET(LIBCHAOS_WITH_WEBP TRUE)

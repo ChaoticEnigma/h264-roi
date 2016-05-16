@@ -71,7 +71,7 @@ ENDIF()
 ### =================== BUILD =================== ###
 
 ADD_EXECUTABLE(testchaos ${LIBCHAOS_TEST_ALL} ${LibChaos_Test_HEADERS} ${LibChaos_Test_SOURCES})
-TARGET_LINK_LIBRARIES(testchaos chaos)
+LibChaos_Configure_Target(testchaos)
 
 ### =================== TESTS =================== ###
 
