@@ -34,8 +34,6 @@ ELSE()
     SET(BUILD_STRING "${BUILD_STRING} (Static)")
 ENDIF()
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LIBCHAOS_CXX_FLAGS}")
-
 # Readme Files
 SET(LibChaos_OTHER_FILES
     doc/README.md
@@ -65,6 +63,9 @@ ADD_SUBDIRECTORY(ui)
 IF(LIBCHAOS_UI)
     SET(LibChaos_BUILD_LIST ${LibChaos_BUILD_LIST} "UI")
 ENDIF()
+
+# Configure Target Macro
+INCLUDE(cmake/ConfigureTarget.cmake)
 
 ## Tools
 
