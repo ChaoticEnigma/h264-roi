@@ -8,6 +8,7 @@
 
 #include "zsocket.h"
 #include "zconnection.h"
+#include "zpointer.h"
 
 namespace LibChaos {
 
@@ -27,7 +28,7 @@ public:
 
     bool connect(ZAddress addr, ZConnection &conn);
     bool listen();
-    bool accept(ZConnection &conn);
+    ZPointer<ZConnection> accept();
 
     zsocktype getSocket() const {
         return ZSocket::getSocket();

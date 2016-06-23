@@ -46,7 +46,7 @@ public:
      *  Does not directly allocate memory, but constructors may.
      *  \p ptr must point to memory large enough to hold \p count T's.
      */
-    virtual T *construct(T *ptr, T obj = T(), zu64 count = 1){
+    virtual T *construct(T *ptr, const T &obj = T(), zu64 count = 1){
         T *tmp = ptr;
         for(zu64 i = 0; i < count; ++i){
 //            new (tmp++) T(obj);

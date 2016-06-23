@@ -79,8 +79,7 @@ void ZLogWorker::queue(LogJob *job){
     jobcondition.signal();
 }
 
-void *ZLogWorker::zlogWorker(void *arg){
-    ZThreadArg *zarg = (ZThreadArg*)arg;
+void *ZLogWorker::zlogWorker(ZThreadArg *zarg){
     ZQueue<LogJob*> tmp;
     while(true){
         jobmutex.lock(); // Lock mutex
