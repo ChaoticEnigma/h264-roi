@@ -17,6 +17,12 @@
 // pow
 #include <math.h>
 
+#if PLATFORM == MACOSX
+    #include <math.h>
+#else
+    #include <cmath>
+#endif
+
 #include "zlog.h"
 
 namespace LibChaos {
