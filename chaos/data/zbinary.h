@@ -141,8 +141,15 @@ public:
      */
     ZString strBytes(zu16 groupsize = 0, zu16 linesize = 0, bool upper = false) const;
 
+    /*! Format bytes as hexdump.
+     *  \param groupsize The number of bytes between spaces.
+     *  \param linesize The number of groups on each line.
+     *  \param upper Uppercase hexadecimal.
+     *  \param offset Value to start offset at.
+     */
     ZString dumpBytes(zu16 groupsize = 4, zu16 linesize = 4, bool upper = false, zu64 offset = 0) const;
 
+    //! Get single-character printable representation of a byte.
     static ZString displayByte(zbyte byte);
 
     const char *asChar() const {
