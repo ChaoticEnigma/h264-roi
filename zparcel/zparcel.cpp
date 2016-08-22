@@ -4,47 +4,18 @@
 
 namespace LibChaos {
 
-static const ZMap<ZString, ZParcel::fieldtype> nametotype = {
-    { "null",       ZParcel::nullfield },
-
-    { "uint",       ZParcel::uintfield },
-
-    { "sint",       ZParcel::sintfield },
-    { "int",        ZParcel::sintfield },
-    { "integer",    ZParcel::sintfield },
-
-    { "float",      ZParcel::floatfield },
-    { "double",     ZParcel::floatfield },
-    { "decimal",    ZParcel::floatfield },
-
-    { "zuid",       ZParcel::zuidfield },
-    { "uuid",       ZParcel::zuidfield },
-    { "guid",       ZParcel::zuidfield },
-    { "uid",        ZParcel::zuidfield },
-
-    { "string",     ZParcel::stringfield },
-    { "str",        ZParcel::stringfield },
-    { "text",       ZParcel::stringfield },
-
-    { "binary",     ZParcel::blobfield },
-    { "bin",        ZParcel::blobfield },
-    { "blob",       ZParcel::blobfield },
-
-    { "file",       ZParcel::filefield },
-};
-
 static const ZMap<ZParcel::fieldtype, ZString> typetoname = {
-    { ZParcel::nullfield,   "null" },
-    { ZParcel::uintfield,   "unsigned int" },
-    { ZParcel::sintfield,   "signed int" },
-    { ZParcel::floatfield,  "float" },
-    { ZParcel::zuidfield,   "zuid" },
-    { ZParcel::stringfield, "string" },
-    { ZParcel::filefield,   "file" },
-    { ZParcel::blobfield,   "binary" },
+    { ZParcel::NULLFIELD,   "null" },
+    { ZParcel::UINTFIELD,   "uint" },
+    { ZParcel::SINTFIELD,   "sint" },
+    { ZParcel::FLOATFIELD,  "float" },
+    { ZParcel::ZUIDFIELD,   "zuid" },
+    { ZParcel::STRINGFIELD, "string" },
+    { ZParcel::FILEFIELD,   "file" },
+    { ZParcel::BLOBFIELD,   "binary" },
 };
 
-ZParcel::ZParcel() : _parser(nullptr), _version(versionunknown){
+ZParcel::ZParcel() : _parser(nullptr), _version(UNKNOWN){
 
 }
 
@@ -55,7 +26,7 @@ ZParcel::~ZParcel(){
 void ZParcel::create(ZPath path){
     _file.open(path, ZFile::READWRITE);
     _parser = new ZParcel4Parser(&_file);
-    _version = version4;
+    _version = VERSION1;
     _parser->create();
 }
 
@@ -71,20 +42,85 @@ void ZParcel::close(){
     _file.close();
 }
 
-void ZParcel::addRecord(ZParcelRecord record){
-    addRecords({ record });
-}
+// /////////////////////////////////////////////////////////////////////////////
 
-void ZParcel::addRecords(ZList<ZParcelRecord> records){
-    LOG("Adding " << records.size() << " records");
+void ZParcel::storeNull(ZUID id){
 
 }
+
+void ZParcel::storeBool(ZUID id, bool bl){
+
+}
+
+void ZParcel::storeUint(ZUID id, zu64 num){
+
+}
+
+void ZParcel::storeSint(ZUID id, zs64 num){
+
+}
+
+void ZParcel::storeFloat(ZUID id, double num){
+
+}
+
+void ZParcel::storeZUID(ZUID id, ZUID uid){
+
+}
+
+void ZParcel::storeString(ZUID id, ZString str){
+
+}
+
+void ZParcel::storeBlob(ZUID id, ZBinary blob){
+
+}
+
+void ZParcel::storeFile(ZUID id, ZFile file){
+
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+
+bool ZParcel::fetchBool(ZUID id){
+
+}
+
+zu64 ZParcel::fetchUint(ZUID id){
+
+}
+
+zs64 ZParcel::fetchSint(ZUID id){
+
+}
+
+double ZParcel::fetchFloat(ZUID id){
+
+}
+
+ZUID ZParcel::fetchZUID(ZUID id){
+
+}
+
+ZString ZParcel::fetchString(ZUID id){
+
+}
+
+ZBinary ZParcel::fetchBlob(ZUID id){
+
+}
+
+ZFile ZParcel::fetchFile(ZUID id){
+
+}
+
+// /////////////////////////////////////////////////////////////////////////////
 
 ZParcel::fieldid ZParcel::getFieldId(ZString name){
     return 0;
 }
 
-ZParcel::fieldtype ZParcel::typeType(ZString name){
+ZParcel::fieldtype ZParcel::nameToType(ZString name){
     return nametotype[name];
 }
 

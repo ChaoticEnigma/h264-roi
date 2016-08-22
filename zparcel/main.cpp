@@ -72,7 +72,7 @@ int mainwrap(int argc, char **argv){
             }
             ZString name = args[3];
             LOG("Adding New Field to ZParcel " << args[1]);
-            ZParcel4Parser::fieldtype type = ZParcel::typeType(name);
+            ZParcel4Parser::fieldtype type = ZParcel::nameToType(name);
             ZParcel4Parser::fieldid id = parcel->addField(name, type);
             if(id){
                 LOG("Created field " << id << " - " << name << " : " << type);
@@ -124,7 +124,7 @@ int mainwrap(int argc, char **argv){
             ArZ fpair = fieldname.split(":");
             if(pair.size() == 2){
                 fieldname = fpair[0];
-                ZParcel::fieldtype type = ZParcel::typeType(fpair[1]);
+                ZParcel::objtype type = ZParcel::nameToType(fpair[1]);
                 // Check if field exists, create if not, check that types are the same
             } else {
                 // Check if field exists
