@@ -4,15 +4,15 @@
 
 namespace LibChaos {
 
-static const ZMap<ZParcel::fieldtype, ZString> typetoname = {
-    { ZParcel::NULLFIELD,   "null" },
-    { ZParcel::UINTFIELD,   "uint" },
-    { ZParcel::SINTFIELD,   "sint" },
-    { ZParcel::FLOATFIELD,  "float" },
-    { ZParcel::ZUIDFIELD,   "zuid" },
-    { ZParcel::STRINGFIELD, "string" },
-    { ZParcel::FILEFIELD,   "file" },
-    { ZParcel::BLOBFIELD,   "binary" },
+static const ZMap<ZParcel::objtype, ZString> typetoname = {
+    { ZParcel::NULLOBJ,   "null" },
+    { ZParcel::UINTOBJ,   "uint" },
+    { ZParcel::SINTOBJ,   "sint" },
+    { ZParcel::FLOATOBJ,  "float" },
+    { ZParcel::ZUIDOBJ,   "zuid" },
+    { ZParcel::STRINGOBJ, "string" },
+    { ZParcel::FILEOBJ,   "file" },
+    { ZParcel::BLOBOBJ,   "binary" },
 };
 
 ZParcel::ZParcel() : _parser(nullptr), _version(UNKNOWN){
@@ -120,11 +120,11 @@ ZParcel::fieldid ZParcel::getFieldId(ZString name){
     return 0;
 }
 
-ZParcel::fieldtype ZParcel::nameToType(ZString name){
+ZParcel::objtype ZParcel::nameToType(ZString name){
     return nametotype[name];
 }
 
-ZString ZParcel::typeName(fieldtype type){
+ZString ZParcel::typeName(objtype type){
     return typetoname[type];
 }
 
