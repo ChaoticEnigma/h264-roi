@@ -136,10 +136,11 @@ ZUID::ZUID(ZString str){
 }
 
 bool ZUID::operator==(const ZUID &uid){
-    for(zu8 i = 0; i < 16; ++i)
-        if(_id_octets[i] != uid._id_octets[i])
-            return false;
-    return true;
+    return ::memcmp(_id_octets, uid._id_octets, 16) == 0;
+}
+
+bool ZUID::operator<(const ZUID &uid){
+    return ::memcmp(_id_octets, uid._id_octets, 16) < 0;
 }
 
 ZUID::uuidtype ZUID::getType() const {

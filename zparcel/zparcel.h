@@ -5,12 +5,13 @@
 #include "zstring.h"
 #include "zbinary.h"
 #include "zpath.h"
-
-#include "zparcelrecord.h"
-#include "zparcel4parser.h"
+#include "zfile.h"
 
 namespace LibChaos {
 
+/*! Interface for storing and fetching objects from the LibChaos parcel file format.
+ *  Each object is stored, fetched or updated through a unique UUID.
+ */
 class ZParcel {
 public:
     enum parceltype {
@@ -140,9 +141,15 @@ public:
     static ZString typeName(objtype type);
 
 private:
+    //! Store an object.
+    void _storeObject(ZUID id, objtype type, ZBinary &data);
+    //! Get reader at payload offset.
+    ZReader *_getReader(ZUID id);
+
+private:
     ZFile _file;
-    ZParcel4Parser *_parser;
     parceltype _version;
+    zu64 _freelist;
 };
 
 } // namespace LibChaos

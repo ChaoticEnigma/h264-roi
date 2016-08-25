@@ -8,11 +8,11 @@ PROJECT(ZParcel)
 SET(ZParcel_HEADERS
     main.h
     zparcel.h
-    zparcelrecord.h
+    #zparcelrecord.h
     #zparceltypes.h
     #zparcelconvert.h
-    zparcel4page.h
-    zparcel4parser.h
+    #zparcel4page.h
+    #zparcel4parser.h
 )
 
 ### =================== SOURCES =================== ###
@@ -21,10 +21,10 @@ SET(ZParcel_SOURCES
     ${ZParcel_HEADERS}
     main.cpp
     zparcel.cpp
-    zparcelrecord.cpp
+    #zparcelrecord.cpp
     #zparcelconvert.cpp
-    zparcel4page.cpp
-    zparcel4parser.cpp
+    #zparcel4page.cpp
+    #zparcel4parser.cpp
 )
 
 ### =================== CONFIG =================== ###

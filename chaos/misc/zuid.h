@@ -41,6 +41,9 @@ public:
     //! Compare UUIDs.
     bool operator==(const ZUID &uid);
 
+    //! Algebraic comparison for ZUID trees.
+    bool operator<(const ZUID &uid);
+
     //! Get the type of the UUID.
     uuidtype getType() const;
 

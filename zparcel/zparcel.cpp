@@ -1,6 +1,11 @@
 #include "zparcel.h"
-
+#include "zmap.h"
 #include "zlog.h"
+
+#define ZPARCEL_SIG "ZPARCEL"
+#define ZPARCEL_SIG_LEN 7
+
+#define ZPARCEL_HEAD_NODE 16
 
 namespace LibChaos {
 
@@ -15,7 +20,21 @@ static const ZMap<ZParcel::objtype, ZString> typetoname = {
     { ZParcel::BLOBOBJ,   "binary" },
 };
 
-ZParcel::ZParcel() : _parser(nullptr), _version(UNKNOWN){
+struct BTreeNode {
+    ZUID uid;
+    zu64 lnode;
+    zu64 rnode;
+    zu64 data;
+    zu64 size;
+};
+
+struct FreeNode {
+    zu64 next;
+    zu64 pos[4];
+    zu64 len[4];
+};
+
+ZParcel::ZParcel() : _version(UNKNOWN){
 
 }
 
@@ -24,60 +43,67 @@ ZParcel::~ZParcel(){
 }
 
 void ZParcel::create(ZPath path){
-    _file.open(path, ZFile::READWRITE);
-    _parser = new ZParcel4Parser(&_file);
     _version = VERSION1;
-    _parser->create();
+    _file.open(path, ZFile::READWRITE | ZFile::TRUNCATE);
+    _file.write(ZPARCEL_SIG, ZPARCEL_SIG_LEN);
+    _file.writeu8(_version);
+    // Freelist location
+    _file.writebeu64(0);
 }
 
 bool ZParcel::open(ZPath file){
     _file.open(file, ZFile::READWRITE);
-    _parser = new ZParcel4Parser(&_file);
-    _parser->open();
+    ZBinary sig(ZPARCEL_SIG_LEN);
+    _file.read(sig.raw(), sig.size());
+    if(sig != ZBinary(ZPARCEL_SIG, ZPARCEL_SIG_LEN))
+        return false;
+    _version = _file.readu8();
+    _freelist = _file.readbeu64();
     return true;
 }
 
 void ZParcel::close(){
-    delete _parser;
     _file.close();
 }
 
 // /////////////////////////////////////////////////////////////////////////////
 
 void ZParcel::storeNull(ZUID id){
-
+    _storeObject(id, NULLOBJ, ZBinary());
 }
 
 void ZParcel::storeBool(ZUID id, bool bl){
-
+    ZBinary data(bl ? 1 : 0);
+    _storeObject(id, BOOLOBJ, data);
 }
 
 void ZParcel::storeUint(ZUID id, zu64 num){
-
+    _storeObject(id, UINTOBJ, ZBinary().writebeu64(num));
 }
 
 void ZParcel::storeSint(ZUID id, zs64 num){
-
+    _storeObject(id, SINTOBJ, ZBinary().writebes64(num));
 }
 
 void ZParcel::storeFloat(ZUID id, double num){
-
+    _storeObject(id, FLOATOBJ, ZBinary().writedouble(num));
 }
 
 void ZParcel::storeZUID(ZUID id, ZUID uid){
-
+    _storeObject(id, ZUIDOBJ, uid.bin());
 }
 
 void ZParcel::storeString(ZUID id, ZString str){
-
+    _storeObject(id, STRINGOBJ, ZBinary(str.bytes(), str.size()));
 }
 
 void ZParcel::storeBlob(ZUID id, ZBinary blob){
-
+    _storeObject(id, BLOBOBJ, blob);
 }
 
 void ZParcel::storeFile(ZUID id, ZFile file){
-
+    ZString name = file.path().relativeTo(ZPath(_file.path()).parent()).str();
+    _storeObject(id, FILEOBJ, ZBinary(name.bytes(), name.size()));
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -116,16 +142,22 @@ ZFile ZParcel::fetchFile(ZUID id){
 
 // /////////////////////////////////////////////////////////////////////////////
 
-ZParcel::fieldid ZParcel::getFieldId(ZString name){
-    return 0;
-}
+ZParcel::objtype ZParcel::getType(ZUID id){
 
-ZParcel::objtype ZParcel::nameToType(ZString name){
-    return nametotype[name];
 }
 
 ZString ZParcel::typeName(objtype type){
     return typetoname[type];
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+
+void ZParcel::_storeObject(ZUID id, ZParcel::objtype type, ZBinary &data){
+
+}
+
+ZReader *ZParcel::_getReader(ZUID id){
+    return nullptr;
 }
 
 }

@@ -42,12 +42,12 @@ private:
     typedef void *HANDLE;
 
     enum zfile_bits {
-        readbit         = 0x001,    // Reading allowed
-        writebit        = 0x002,    // Writing allowed
+        readbit         = 0x001,    //!< Reading allowed
+        writebit        = 0x002,    //!< Writing allowed
         readwritebits   = 0x003,
 
-        createbit       = 0x004,    // Create allowed
-        apptruncbit     = 0x008,    // Not set for append, set for truncate
+        createbit       = 0x004,    //!< Create allowed
+        apptruncbit     = 0x008,    //!< Not set for append, set for truncate
     };
 
 public:
@@ -117,14 +117,14 @@ public:
     static bool isFile(ZPath dir);
     static bool isDir(ZPath dir);
 
-    // Creates directory if it doesn't exist
+    //! Creates directory if it doesn't exist.
     static bool makeDir(ZPath dir);
-    // Creates all directories in path before last path part, if they don't exist
+    //! Creates all directories in path before last path part, if they don't exist.
     static bool createDirsTo(ZPath path);
 
-    // List files in a directory, recursize by default
+    //! List files in a directory, recursize by default.
     static ZArray<ZPath> listFiles(ZPath dir, bool recurse = true);
-    // List directories in a directory, non-recursive by default
+    //! List directories in a directory, non-recursive by default.
     static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false, bool hidden = false);
 
     static zu64 dirSize(ZPath dir);

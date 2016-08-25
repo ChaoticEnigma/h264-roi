@@ -163,6 +163,31 @@ public:
         write(tmp, 8);
     }
 
+    // Floating point
+    // Implementation may change
+    void writefloat(float num){
+        zu32 raw = *(zu32 *)&num;
+        zbyte tmp[4];
+        tmp[0] = (raw >> 24) & 0xFF;
+        tmp[1] = (raw >> 16) & 0xFF;
+        tmp[2] = (raw >> 8) & 0xFF;
+        tmp[3] = raw & 0xFF;
+        write(tmp, 4);
+    }
+    void writedouble(double num){
+        zu64 raw = *(zu64 *)&num;
+        zbyte tmp[8];
+        tmp[0] = (raw >> 56) & 0xFF;
+        tmp[1] = (raw >> 48) & 0xFF;
+        tmp[2] = (raw >> 40) & 0xFF;
+        tmp[3] = (raw >> 32) & 0xFF;
+        tmp[4] = (raw >> 24) & 0xFF;
+        tmp[5] = (raw >> 16) & 0xFF;
+        tmp[6] = (raw >> 8) & 0xFF;
+        tmp[7] = raw & 0xFF;
+        write(tmp, 8);
+    }
+
 };
 
 }
