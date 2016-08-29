@@ -1,10 +1,13 @@
 #include "main.h"
 #include "zexception.h"
+#include "zlog.h"
+
+using namespace LibChaos;
 
 int mainwrap(int argc, char **argv){
-    ZLog::formatStdout(ZLogSource::NORMAL, "%log%");
-    ZLog::formatStdout(ZLogSource::DEBUG, "%time% (%file%:%line%) - %log%");
-    ZLog::formatStderr(ZLogSource::ERRORS, "%time% (%file%:%line%) - %log%");
+    ZLog::logLevelStdOut(ZLog::INFO, "%log%");
+    ZLog::logLevelStdOut(ZLog::DEBUG, "%time% (%file%:%line%) - %log%");
+    ZLog::logLevelStdErr(ZLog::ERRORS, "%time% (%file%:%line%) - %log%");
 
     // Arguments
     ZString cmdstr;
@@ -33,27 +36,6 @@ int mainwrap(int argc, char **argv){
             LOG("Usage: create <file> [version]");
             return EXIT_FAILURE;
         }
-        zu16 version = 4;
-        if(args.size() > 2 && args[2] == "4")
-            version = 4;
-
-        if(version == 4){
-            LOG("Creating New Version 4 ZParcel " << args[1]);
-            if(ZFile::exists(args[1]))
-                ZFile::remove(args[1]);
-            ZFile file(args[1], ZFile::READWRITE);
-            ZParcel4Parser *parcel = new ZParcel4Parser(&file);
-
-            //parcel->setPageSize(11); // 2KB
-            parcel->setPageSize(9); //512B
-            parcel->setMaxPages(64 * 1024 * 2); // 128K pages
-
-            parcel->create();
-            LOG("OK");
-            delete parcel;
-        } else {
-            LOG("Unknown Version");
-        }
 
     } else if(args.size() > 0 && args[0] == "modify"){
         if(args.size() < 3){
@@ -61,33 +43,6 @@ int mainwrap(int argc, char **argv){
             return EXIT_FAILURE;
         }
         LOG("Modifying Options of ZParcel " << args[1]);
-        ZFile file(args[1], ZFile::READWRITE);
-        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
-        parcel->open();
-
-        if(args[2] == "addfield"){
-            if(args.size() != 5){
-                LOG("Usage: modify <file> addfield <name> <type>");
-                return EXIT_FAILURE;
-            }
-            ZString name = args[3];
-            LOG("Adding New Field to ZParcel " << args[1]);
-            ZParcel4Parser::fieldtype type = ZParcel::nameToType(name);
-            ZParcel4Parser::fieldid id = parcel->addField(name, type);
-            if(id){
-                LOG("Created field " << id << " - " << name << " : " << type);
-                LOG("OK");
-            } else {
-                ELOG("Error creating field \"" << name << " : " << args[3]);
-                LOG("ERROR");
-            }
-        } else {
-            LOG("Usage: modify <file> <command>");
-            LOG("Commands:");
-            LOG("    addfield <name> <type>");
-        }
-
-        delete parcel;
 
     } else if(args.size() > 0 && args[0] == "list"){
         if(args.size() != 2){
@@ -95,14 +50,6 @@ int mainwrap(int argc, char **argv){
             return EXIT_FAILURE;
         }
         LOG("Listing Records in ZParcel " << args[1]);
-        ZFile file(args[1], ZFile::READWRITE);
-        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
-        parcel->open();
-
-        LOG("Page Size: " << parcel->getPageSize());
-        LOG("Max Pages: " << parcel->getMaxPages());
-
-        delete parcel;
 
     } else if(args.size() > 0 && args[0] == "add"){
         if(args.size() < 2){
@@ -110,57 +57,12 @@ int mainwrap(int argc, char **argv){
             return EXIT_FAILURE;
         }
         LOG("Adding Record to ZParcel " << args[1]);
-        ZFile file(args[1], ZFile::READWRITE);
-        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
-        parcel->open();
-
-        ZList<ZParcel4Parser::Field> fieldlist;
-        for(zu64 i = 2; i < args.size(); ++i){
-            ArZ pair = args[i].split("=");
-            if(pair.size() != 2)
-                ELOG("Format error in \"" << args[i] << '"');
-            ZString fieldname = pair[0];
-            ZString fieldvalue = pair[1];
-            ArZ fpair = fieldname.split(":");
-            if(pair.size() == 2){
-                fieldname = fpair[0];
-                ZParcel::objtype type = ZParcel::nameToType(fpair[1]);
-                // Check if field exists, create if not, check that types are the same
-            } else {
-                // Check if field exists
-
-            }
-            //LOG(fieldname << "(" << ZParcel4Parser::getFieldTypeName(ftype) << ") : " << pair[1]);
-            ZParcel4Parser::fieldid fid = parcel->getField(fieldname);
-            if(fid){
-                fieldlist.push({ fid, fieldvalue });
-            } else {
-                ELOG("Bad field \"" << fieldname << '"');
-            }
-        }
-
-        for(zu64 i = 0; i < fieldlist.size(); ++i){
-            LOG(fieldlist[i].id << " : " << fieldlist[i].data.size() << " bytes");
-        }
-
-        // Create record
-        ZUID uid = parcel->addRecord(fieldlist);
-        LOG("Added record " << uid.str());
-        LOG("OK");
-
-        delete parcel;
 
     } else if(args.size() > 0 && args[0] == "edit"){
         if(args.size() < 4){
             LOG("Usage: edit <file> <record> <field=value> [field=value] ..");
             return EXIT_FAILURE;
         }
-        LOG("Editing Record in ZParcel " << args[1]);
-        ZFile file(args[1], ZFile::READWRITE);
-        ZParcel4Parser *parcel = new ZParcel4Parser(&file);
-        parcel->open();
-
-        delete parcel;
 
     } else {
         LOG("Commands:");

@@ -7,18 +7,22 @@
 
 namespace LibChaos {
 
-ZDatagramSocket::ZDatagramSocket() : ZSocket(ZSocket::datagram){
+ZDatagramSocket::ZDatagramSocket() : ZSocket(ZSocket::DATAGRAM){
     allowRebind(true);
 }
 
-bool ZDatagramSocket::open(ZAddress port){
-    return ZSocket::open(port);
+bool ZDatagramSocket::open(){
+    return ZSocket::open();
 }
 void ZDatagramSocket::close(){
     ZSocket::close();
 }
 bool ZDatagramSocket::isOpen() const {
     return ZSocket::isOpen();
+}
+
+bool ZDatagramSocket::bind(ZAddress port){
+    return ZSocket::bind(port);
 }
 
 bool ZDatagramSocket::send(ZAddress destination, const ZBinary &data){

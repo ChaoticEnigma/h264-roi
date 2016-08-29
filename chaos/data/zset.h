@@ -15,7 +15,7 @@ namespace LibChaos {
 
 template <typename T> class ZSet {
 public:
-    enum { none = ZU64_MAX };
+    enum { NONE = ZU64_MAX };
 
     struct SetElement {
         zbyte flags; // Some flags for unset and deleted
@@ -228,7 +228,7 @@ private:
     }
 
 public:
-    class ZSetIterator : public ZConstSimplexIterator<T> {
+    class ZSetIterator : public ZSimplexConstIterator<T> {
     public:
         ZSetIterator(const ZSet<T> *set, SetElement *start_elem) : _set(set), _elem(start_elem){}
 

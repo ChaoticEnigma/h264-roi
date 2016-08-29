@@ -727,33 +727,20 @@ bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
 #else
 
-    int sig = 0;
-    switch(sigtype){
-    case interrupt:
-        sig = SIGINT;
-        break;
-    case abort:
-        sig = SIGABRT;
-        break;
-    case quit:
-        sig = SIGQUIT;
-        break;
-    case illegal:
-        sig = SIGILL;
-        break;
-    case segv:
-        sig = SIGSEGV;
-        break;
-    case terminate:
-        sig = SIGTERM;
-        break;
-    case fpe:
-        sig = SIGFPE;
-        break;
-    default:
-        return false;
-        break;
-    }
+    ZMap<zerror_signal, int> sigsmap = {
+        { INTERRUPT,    SIGINT },
+        { QUIT,         SIGQUIT },
+        { ILLEGAL,      SIGILL },
+        { ABORT,        SIGABRT },
+        { FPE,          SIGFPE },
+        { SEGV,         SIGSEGV },
+        { PIPE,         SIGPIPE },
+        { ALARM,        SIGALRM },
+        { TERMINATE,    SIGTERM },
+        { USR1,         SIGUSR1 },
+        { USR2,         SIGUSR2 },
+    };
+    int sig = sigsmap[sigtype];
 
     sigmap[sig] = { sigtype, handler };
 
@@ -785,7 +772,7 @@ bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 }
 
 bool registerInterruptHandler(signalHandler handler){
-    return registerSignalHandler(interrupt, handler);
+    return registerSignalHandler(INTERRUPT, handler);
 }
 
 #if PLATFORM == WINDOWS

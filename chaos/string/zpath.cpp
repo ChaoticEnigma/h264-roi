@@ -182,7 +182,7 @@ ZPath ZPath::parent(ZPath path){
     return path.parent();
 }
 
-// NOTE: Needs REWRITE
+// TODO: Needs REWRITE
 bool ZPath::childTo(ZPath path) const {
     // Get absolute and clean paths
     ZPath base = *this;

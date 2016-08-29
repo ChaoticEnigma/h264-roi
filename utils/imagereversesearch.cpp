@@ -23,7 +23,7 @@ size_t header_callback(char *buffer, size_t size, size_t nitems, void *userdata)
 
 int main(int argc, char **argv){
     try {
-    ZLog::formatStdout(ZLogSource::ALL, "%log%");
+    ZLog::logLevelStdOut(ZLogSource::ALL, "%log%");
 
     CURL *curl;
     CURLcode res;
@@ -65,7 +65,7 @@ int main(int argc, char **argv){
         long http_code = 0;
 
         ZString url = "http://e621.net/post/show.json?md5=" + mdhash;
-        LOG(files[i] << " " << url << " " << ZLog::noln);
+        LOG(files[i] << " " << url << " " << ZLog::NOLN);
 
         curl_easy_setopt(curl, CURLOPT_URL, url.cc());
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);

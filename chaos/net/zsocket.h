@@ -26,30 +26,48 @@ namespace LibChaos {
 class ZSocket {
 public:
     enum socket_type {
-        stream = SOCK_STREAM,
-        datagram = SOCK_DGRAM,
-        raw = SOCK_RAW
+        STREAM   = SOCK_STREAM,
+        DATAGRAM = SOCK_DGRAM,
+        RAW      = SOCK_RAW
     };
+
     struct SocketOptions {
         enum socketoption {
-            reuseaddr = 1,
-            recvtimeout = 2,
+            OPT_REUSEADDR   = 1,
+            OPT_RECVTIMEOUT = 2,
         };
     };
 
 public:
     ZSocket(socket_type type);
     ~ZSocket();
+    ZSocket(const ZSocket &socket) = delete;
 
-    bool open(ZAddress port);
+    //! Open the socket.
+    bool open();
+    //! Bind the socket to an address.
+    bool bind(ZAddress port);
+    //! Close the socket.
     void close();
+    //! Get if socket is open.
     bool isOpen() const;
 
     // UDP
+    /*! Send a datagram to \a destination with \a data.
+     * \return True on success.
+     */
     bool send(ZAddress destination, const ZBinary &data);
-    zu64 receive(ZAddress &sender, ZBinary &str);
+    /*! Receive a datagram, put the source address in \a sender, and datagram's data in \a data.
+     * \return Size of \a data.
+     */
+    zu64 receive(ZAddress &sender, ZBinary &data);
 
     // TCP
+    /*! Establish a stream connection with \a addr.
+     * \param[in]  addr     Remote address.
+     * \param[out] connfd   Connection socket.
+     * \param[out] connaddr Connection address.
+     */
     bool connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr);
     bool listen();
     bool accept(zsocktype &connfd, ZAddress &connaddr);
@@ -83,15 +101,23 @@ protected:
 private:
     static bool InitializeSockets();
     static void ShutdownSockets();
-    bool getSocket(zsocktype &fd, ZAddress addr);
+    bool getSocket(zsocktype &fd, int type, int proto);
+    static socklen_t getSockAddrLen(int family);
 
 private:
     static zu32 socket_count;
 
+    //! Socket file descriptor.
     zsocktype _socket;
+    //! Socket type.
     socket_type _type;
+    //! Socket address family.
+    ZAddress::address_family _family;
+    //! Socket data buffer.
     unsigned char *buffer;
+    //! Socket buffer size.
     zu32 buffersize;
+
     bool reuseaddr;
     ZAddress _bound;
     ZException error;

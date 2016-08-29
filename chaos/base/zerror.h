@@ -14,14 +14,18 @@ namespace LibChaos {
 namespace ZError {
 
     enum zerror_signal {
-        unknown = 0,
-        interrupt = 1,  // SIGINT
-        abort = 2,      // SIGABRT
-        quit = 3,       // SIGQUIT
-        illegal = 4,    // SIGILL
-        segv = 5,       // SIGSEGV
-        terminate = 6,  // SIGTERM
-        fpe = 7,        // SIGFPE
+        UNKNOWN = 0,
+        INTERRUPT,  // SIGINT
+        QUIT,       // SIGQUIT
+        ILLEGAL,    // SIGILL
+        ABORT,      // SIGABRT
+        FPE,        // SIGFPE
+        SEGV,       // SIGSEGV
+        PIPE,       // SIGPIPE
+        ALARM,      // SIGALRM
+        TERMINATE,  // SIGTERM
+        USR1,       // SIGUSR1
+        USR2,       // SIGUSR2
     };
 
     typedef void (*signalHandler)(zerror_signal);
@@ -47,6 +51,7 @@ namespace ZError {
     int getSocketErrorCode();
     ZString getSystemError();
 
+    // TODO: getStackTrace should make an array of TraceFrameInfo structures with more information.
     ArZ getStackTrace(unsigned trim = 1);
 
     // private

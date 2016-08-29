@@ -276,37 +276,60 @@ ZImage::fileformat ZImage::checkImageFormat(const ZBinary &data){
     }
 }
 
-void ZImage::setFormat(fileformat format){
+bool ZImage::isFormatSupported(ZImage::fileformat format){
+    switch(format){
+    case BMP:   return true;
+    case PPM:   return true;
+#ifdef LIBCHAOS_HAS_PNG
+    case PNG:   return true;
+#endif
+#ifdef LIBCHAOS_HAS_JPEG
+    case JPEG:  return true;
+#endif
+#ifdef LIBCHAOS_HAS_WEBP
+    case WEBP:  return true;
+#endif
+    default:    return false;
+    }
+}
+
+bool ZImage::setFormat(fileformat format){
     if(format != _format){
         delete _backend;
         _format = format;
+
         switch(_format){
         case BMP:
             _backend = new ZBMP(this);
-            break;
+            return true;
         case PPM:
             _backend = new ZPPM(this);
-            break;
+            return true;
 #ifdef LIBCHAOS_HAS_PNG
         case PNG:
             _backend = new ZPNG(this);
-            break;
+            return true;
 #endif
 #ifdef LIBCHAOS_HAS_JPEG
         case JPEG:
             _backend = new ZJPEG(this);
-            break;
+            return true;
 #endif
 #ifdef LIBCHAOS_HAS_WEBP
         case WEBP:
             _backend = new ZWebP(this);
-            break;
+            return true;
 #endif
-        default:
+        case NONE:
             _backend = nullptr;
-            break;
+            return true;
+        default:
+            _format = NONE;
+            _backend = nullptr;
+            return false;
         }
     }
+    return true;
 }
 
 void ZImage::decodeFormat(const ZBinary &data){
@@ -317,7 +340,6 @@ void ZImage::decodeFormat(const ZBinary &data){
         setFormat(format);
     }
 
-    // TODO: Reference-count ZBinary
     ZBinary tmp = data;
     if(_backend){
         bool ok = _backend->decode(&tmp);

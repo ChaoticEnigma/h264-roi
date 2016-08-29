@@ -1,18 +1,117 @@
-#include "test.h"
-#include "zstreamsocket.h"
-#include "zerror.h"
+#include "tests.h"
 #include "zfile.h"
+#include "zdatagramsocket.h"
+#include "zstreamsocket.h"
+//#include <unistd.h>
+#include <signal.h>
+#include <stdio.h>
+
+#include "zerror.h"
+
+namespace LibChaosTest {
 
 static bool run = true;
 
-void stopHandler2(ZError::zerror_signal sig){
+void stopHandler(ZError::zerror_signal sig){
     run = false;
+    TASSERT(false);
 }
 
-int tcp_test(){
+void udp_client(){
+    LOG("=== UDP Socket Test...");
+    ZError::registerInterruptHandler(stopHandler);
+    ZError::registerSignalHandler(ZError::TERMINATE, stopHandler);
+
+    ZDatagramSocket sock;
+    if(!sock.open()){
+        ELOG("Socket Open Fail");
+        TASSERT(false);
+    }
+    LOG("Sending...");
+
+    ZAddress addr("127.0.0.1", 8998);
+
+    ZString dat = "Hello World out There! ";
+    zu64 count = 0;
+
+    for(zu64 i = 0; run && i < 5000; ++i){
+        ZString str = dat + ZString::ItoS(i);
+        ZBinary data((const unsigned char *)str.cc(), str.size());
+        if(sock.send(addr, data)){
+            LOG("to " << addr.debugStr() << " (" << data.size() << "): \"" << data << "\"");
+            ZAddress sender;
+            ZBinary recvdata;
+            if(sock.receive(sender, recvdata)){
+                LOG("from " << sender.str() << " (" << recvdata.size() << "): \"" << recvdata << "\"");
+                count++;
+            } else {
+                continue;
+            }
+        } else {
+            LOG("failed to send to " << addr.debugStr());
+        }
+        ZThread::usleep(500000);
+    }
+
+    TLOG("Sent " << count);
+    sock.close();
+}
+
+void udp_server(){
+    LOG("=== UDP Socket Server Test...");
+    ZError::registerInterruptHandler(stopHandler);
+    ZError::registerSignalHandler(ZError::TERMINATE, stopHandler);
+
+    ZDatagramSocket sock;
+    ZAddress bind(8998);
+    DLOG(bind.debugStr());
+    if(!sock.open()){
+        ELOG("Socket Open Fail " + sock.getError().what());
+        TASSERT(false);
+    }
+    if(!sock.bind(bind)){
+        ELOG("Socket Bind Fail " + sock.getError().what());
+        TASSERT(false);
+    }
+
+    //sock.setBlocking(false);
+
+    //int out;
+    //int len = sizeof(out);
+    //getsockopt(sock.getHandle(), SOL_SOCKET, SO_REUSEADDR, &out, (socklen_t*)&len);
+    //LOG(out);
+
+    LOG("Listening...");
+    //sock.listen(receivedGram);
+
+    zu64 count = 0;
+
+    while(run){
+        ZAddress sender;
+        ZBinary data;
+        if(sock.receive(sender, data)){
+            LOG("from " << sender.str() << " (" << data.size() << "): \"" << data << "\"");
+            count++;
+            ZAddress addr = sender;
+            if(sock.send(addr, data)){
+                LOG("to " << addr.debugStr() << " (" << data.size() << "): \"" << data << "\"");
+            } else {
+                LOG("failed to send to " << addr.str());
+            }
+        } else {
+            LOG("error receiving message: " << ZError::getSystemError());
+            continue;
+        }
+    }
+
+    TLOG("Received " << count);
+    sock.close();
+}
+
+void tcp_client(){
     LOG("=== TCP Socket Test...");
-    ZError::registerInterruptHandler(stopHandler2);
-    ZError::registerSignalHandler(ZError::terminate, stopHandler2);
+    ZError::registerInterruptHandler(stopHandler);
+    ZError::registerSignalHandler(ZError::TERMINATE, stopHandler);
 
     ZStreamSocket sock;
 
@@ -25,7 +124,7 @@ int tcp_test(){
     LOG("Connecting to " << addr.str());
     if(!sock.connect(addr, conn)){
         ELOG("Socket Connect Fail");
-        return 3;
+        TASSERT(false);
     }
     LOG("connected " << conn.other().str());
 
@@ -37,25 +136,23 @@ int tcp_test(){
     ZBinary data;
     conn.read(data);
     LOG("read (" << data.size() << "): \"" << data << "\"");
-
-    return 0;
 }
 
-int tcpserver_test(){
+void tcp_server(){
     LOG("=== TCP Socket Server Test...");
-    ZError::registerInterruptHandler(stopHandler2);
-    ZError::registerSignalHandler(ZError::terminate, stopHandler2);
+    ZError::registerInterruptHandler(stopHandler);
+    ZError::registerSignalHandler(ZError::TERMINATE, stopHandler);
 
     ZStreamSocket sock;
     ZAddress bind(8080);
     LOG(bind.debugStr());
-    if(!sock.open(bind)){
+    if(!sock.open()){
         ELOG("Socket Open Fail");
-        return 2;
+        TASSERT(false);
     }
     if(!sock.listen()){
         ELOG("Socket Listen Fail");
-        return 3;
+        TASSERT(false);
     }
 
     LOG("Listening...");
@@ -76,8 +173,6 @@ int tcpserver_test(){
         client.write(snddata);
         LOG("write (" << snddata.size() << "): \"" << ZString(snddata.printable().asChar()) << "\"");
     }
-
-    return 0;
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +195,6 @@ int tcpserver_test(){
 #include <signal.h>
 
 #define PORT "8080"  // the port users will be connecting to
-
 #define BACKLOG 10  // how many pending connections queue will hold
 
 void sigchld_handler(int s){
@@ -117,7 +211,7 @@ void *get_in_addr(struct sockaddr *sa){
     }
 }
 
-int tcpserver_test2(){
+void tcp_server_2(){
     int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address information
@@ -134,7 +228,7 @@ int tcpserver_test2(){
 
     if((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0){
         ELOG("getaddrinfo: " << gai_strerror(rv));
-        return 1;
+        TASSERT(false);
     }
 
     // loop through all the results and bind to the first we can
@@ -160,14 +254,14 @@ int tcpserver_test2(){
 
     if(p == NULL){
         ELOG("server: failed to bind");
-        return 2;
+        TASSERT(false);
     }
 
     freeaddrinfo(servinfo); // all done with this structure
 
     if(listen(sockfd, BACKLOG) == -1){
         ELOG("listen");
-        exit(1);
+        TASSERT(false);
     }
 
     sa.sa_handler = sigchld_handler; // reap all dead processes
@@ -175,7 +269,7 @@ int tcpserver_test2(){
     sa.sa_flags = SA_RESTART;
     if (sigaction(SIGCHLD, &sa, NULL) == -1) {
         ELOG("sigaction");
-        exit(1);
+        TASSERT(false);
     }
 
     LOG("server: waiting for connections...\n");
@@ -295,7 +389,7 @@ int tcpserver_test2(){
                     zu64 breakpos = bin.findFirst({0x0d, 0x0a, 0x0d, 0x0a});
                     LOG(breakpos);
 
-                    if(breakpos != ZBinary::none){
+                    if(breakpos != ZBinary::NONE){
                         ZBinary head = bin.getSub(0, breakpos);
                         head.nullTerm();
                         ZString header = head.printable().asChar();
@@ -331,21 +425,9 @@ int tcpserver_test2(){
         //}
         //close(new_fd);  // parent doesn't need this
     }
-
-    return 0;
 }
 
-#else
-
-int tcpserver_test2(){
-    return 0;
-}
-
-#endif
-
-#ifndef ZSOCKET_WINAPI
-
-int tcpserver_test3(){
+void tcp_server_3(){
     fd_set master;    // master file descriptor list
     fd_set read_fds;  // temp file descriptor list for select()
     int fdmax;        // maximum file descriptor number
@@ -409,14 +491,14 @@ int tcpserver_test3(){
 //        return 3;
 //    }
 
-    ZSocket listensock(ZSocket::stream);
-    if(!listensock.open(ZAddress(8080))){
+    ZSocket listensock(ZSocket::STREAM);
+    if(!listensock.open()){
         ELOG("Open fail");
-        return 5;
+        TASSERT(false);
     }
     if(!listensock.listen()){
         ELOG("Listen fail");
-        return 6;
+        TASSERT(false);
     }
 
     listener = listensock.getSocket();
@@ -434,7 +516,7 @@ int tcpserver_test3(){
         read_fds = master; // copy it
         if(select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1){
             ELOG("Select Error");
-            return 4;
+            TASSERT(false);
         }
 
         // run through the existing connections looking for data to read
@@ -485,14 +567,29 @@ int tcpserver_test3(){
             }
         }
     }
-
-    return 0;
 }
 
 #else
 
-int tcpserver_test3(){
-    return 0;
+void tcp_server_2(){
+
+}
+
+void tcp_server_3(){
+
 }
 
 #endif
+
+ZArray<Test> socket_tests(){
+    return {
+        { "udp-client",     udp_client,     false, {} },
+        { "udp-server",     udp_server,     false, {} },
+        { "tcp-client",     tcp_client,     false, {} },
+        { "tcp-server",     tcp_server,     false, {} },
+        { "tcp-server-2",   tcp_server_2,   false, {} },
+        { "tcp-server-3",   tcp_server_3,   false, {} },
+    };
+}
+
+}

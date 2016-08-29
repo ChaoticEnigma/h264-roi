@@ -20,22 +20,32 @@ static const ZMap<ZParcel::objtype, ZString> typetoname = {
     { ZParcel::BLOBOBJ,   "binary" },
 };
 
-struct BTreeNode {
-    ZUID uid;
+struct ParcelHeader {
+    zbyte sig[ZPARCEL_SIG_LEN];
+    zu8 version   : 8;
+    zu64 treehead : 64;
+    zu64 freehead : 64;
+};
+
+struct ParcelTreeNode {
+    ZUID uid; // 16 bytes
     zu64 lnode;
     zu64 rnode;
-    zu64 data;
-    zu64 size;
+    zu8 type;
 };
 
-struct FreeNode {
-    zu64 next;
+struct ParcelFreeNode {
     zu64 pos[4];
     zu64 len[4];
+    zu64 next;
 };
 
-ZParcel::ZParcel() : _version(UNKNOWN){
+// /////////////////////////////////////////////////////////////////////////////
 
+ZParcel::ZParcel() : _version(UNKNOWN){
+    LOG(sizeof(ParcelHeader));
+    LOG(sizeof(ParcelTreeNode));
+    LOG(sizeof(ParcelFreeNode));
 }
 
 ZParcel::~ZParcel(){
@@ -45,7 +55,7 @@ ZParcel::~ZParcel(){
 void ZParcel::create(ZPath path){
     _version = VERSION1;
     _file.open(path, ZFile::READWRITE | ZFile::TRUNCATE);
-    _file.write(ZPARCEL_SIG, ZPARCEL_SIG_LEN);
+    _file.write((const zbyte *)ZPARCEL_SIG, ZPARCEL_SIG_LEN);
     _file.writeu8(_version);
     // Freelist location
     _file.writebeu64(0);
@@ -57,7 +67,7 @@ bool ZParcel::open(ZPath file){
     _file.read(sig.raw(), sig.size());
     if(sig != ZBinary(ZPARCEL_SIG, ZPARCEL_SIG_LEN))
         return false;
-    _version = _file.readu8();
+    _version = (parceltype)_file.readu8();
     _freelist = _file.readbeu64();
     return true;
 }
@@ -78,7 +88,9 @@ void ZParcel::storeBool(ZUID id, bool bl){
 }
 
 void ZParcel::storeUint(ZUID id, zu64 num){
-    _storeObject(id, UINTOBJ, ZBinary().writebeu64(num));
+    ZBinary data;
+    data.writebeu64(num);
+    _storeObject(id, UINTOBJ, data);
 }
 
 void ZParcel::storeSint(ZUID id, zs64 num){
@@ -110,40 +122,49 @@ void ZParcel::storeFile(ZUID id, ZFile file){
 
 bool ZParcel::fetchBool(ZUID id){
 
+    return false;
 }
 
 zu64 ZParcel::fetchUint(ZUID id){
 
+    return 0;
 }
 
 zs64 ZParcel::fetchSint(ZUID id){
 
+    return 0;
 }
 
 double ZParcel::fetchFloat(ZUID id){
 
+    return 0;
 }
 
 ZUID ZParcel::fetchZUID(ZUID id){
 
+    return ZUID();
 }
 
 ZString ZParcel::fetchString(ZUID id){
 
+    return ZString();
 }
 
 ZBinary ZParcel::fetchBlob(ZUID id){
 
+    return ZBinary();
 }
 
 ZFile ZParcel::fetchFile(ZUID id){
 
+    return ZFile();
 }
 
 // /////////////////////////////////////////////////////////////////////////////
 
 ZParcel::objtype ZParcel::getType(ZUID id){
 
+    return NULLOBJ;
 }
 
 ZString ZParcel::typeName(objtype type){
@@ -152,7 +173,7 @@ ZString ZParcel::typeName(objtype type){
 
 // /////////////////////////////////////////////////////////////////////////////
 
-void ZParcel::_storeObject(ZUID id, ZParcel::objtype type, ZBinary &data){
+void ZParcel::_storeObject(ZUID id, ZParcel::objtype type, const ZBinary &data){
 
 }
 

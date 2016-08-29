@@ -28,15 +28,15 @@ namespace LibChaos {
 
 typedef zu64 ztid;
 
-// ZMutex Class
-// WARNING: Relatively untested
-// Recursize mutual exclusion object
-// Only the thread that locked a mutex is normally allowed to unlock it
-// Any thread may lock an unlocked mutex
-// If a thread tries to lock a mutex multiple times, it must unlock it as many times for other threads to lock it
-
-// Uses a pthread_mutex_t on POSIX
-// **** Uses a Critical Section on Windows
+/*! Cross-thread shared resource access synchronization controller.
+ *  \warning Relatively untested.
+ *  Recursize mutual exclusion object.
+ *  Only the thread that locked a mutex is normally allowed to unlock it.
+ *  Any thread may lock an unlocked mutex.
+ *  If a thread tries to lock a mutex multiple times, it must unlock it as many times for other threads to lock it.
+ *  Uses a pthread_mutex_t on POSIX.
+ *  Uses a Critical Section on Windows.
+*/
 class ZMutex {
 public:
     ZMutex();
@@ -113,6 +113,7 @@ private:
 
 // //////////////////////////////////////////////////////////////////////////////
 
+//! Scope-controller ZMutex wrapper.
 class ZCriticalSection {
 public:
     ZCriticalSection(ZMutex *mutex) : _mutex(mutex){

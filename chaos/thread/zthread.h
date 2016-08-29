@@ -30,6 +30,7 @@ struct ZThreadArg {
     std::atomic<bool> *_stop;
 };
 
+//! Cross-platform/API thread handle abstraction.
 class ZThread {
 public:
     typedef void *(*funcType)(void *);
@@ -56,9 +57,9 @@ public:
     void detach();
 
     static void yield();
-    static void sleep(zu64 seconds);
-    static void msleep(zu64 milliseconds);
-    static void usleep(zu64 microseconds);
+    static void sleep(zu32 seconds);
+    static void msleep(zu32 milliseconds);
+    static void usleep(zu32 microseconds);
 
     void setCopyable();
 

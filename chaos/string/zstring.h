@@ -29,58 +29,81 @@ class ZString;
 typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
-typedef char zstring_chartype;
-
 /*! UTF-8 contiguous string container.
- *  Wide characters are narrowed and encoded in UTF-8.
- *  Internal array is always null terminated.
+ *  Parses UTF-8, UTF-16, or UTF-32 strings and encodes parsed code points in normalized UTF-8.
+ *  Since unicode normalization can only be done on real unicode code points, invalid code unit sequences
+ *  and code points will be discarded. Non-unicode bytes in input will also be discarded.
+ *
+ *  Internal buffer will always be valid null-terminated UTF-8 representing a sequence of valid Unicode code points.
  */
-class ZString : public ZAccessor<zstring_chartype> {
+class ZString : public ZAccessor<char> {
 public:
-    typedef zstring_chartype chartype;
-    enum {
-        none = ZU64_MAX
-    };
+    typedef zu32 codepoint;
+    typedef zbyte codeunit8;
+    typedef zu16 codeunit16;
+    typedef zu32 codeunit32;
+    typedef codeunit8 codeunit;
+
+    enum { NONE = ZU64_MAX };
 
 public:
-    //! Default constructor with optional user-allocator argument.
-    ZString(ZAllocator<chartype> *alloc = new ZAllocator<chartype>);
-
-    ~ZString();
+    //! Default constructor with optional user allocator.
+    ZString(ZAllocator<codeunit> *alloc = new ZAllocator<codeunit>);
 
     //! Copy constructor.
     ZString(const ZString &other);
 
-    // Assumed UTF-8
-    ZString(const chartype *str); // Null-terminated C-string
-    ZString(const chartype *ptr, zu64 length);
-    ZString(const ZArray<chartype> &array); // ZArray<char>
+    //! Destructor.
+    ~ZString();
 
-    // std strings
-    // Assumed UTF-8
+    //! Construct from UTF-8 null-terminated C-string.
+    ZString(const char *str, zu64 max = ZU64_MAX);
+    //! Construct from UTF-8 character array.
+    ZString(const ZArray<char> &array);
+
+    //! Get pointer to data as C-string.
+    inline char *c() const { return reinterpret_cast<char*>(_data); }
+    //! Get constant pointer to data as C-string.
+    inline const char *cc() const { return reinterpret_cast<const char*>(_data); }
+
+    //! Construct from UTF-8 zero-terminated bytes.
+    ZString(const zbyte *str, zu64 max = ZU64_MAX);
+    //! Construct from UTF-8 byte array.
+    ZString(const ZArray<zbyte> &array);
+
+    //! Get pointer to raw bytes.
+    inline zbyte *bytes(){ return reinterpret_cast<zbyte*>(_data); }
+    //! Get constant pointer to raw bytes.
+    inline const zbyte *bytes() const { return reinterpret_cast<const zbyte*>(_data); }
+
+    //! Get reference to byte \a i.
+    inline zbyte &byte(zu64 i){ return bytes()[i]; }
+    //! Get constant reference to byte \a i.
+    inline const zbyte &byte(zu64 i) const { return bytes()[i]; }
+
+    //! Construct from UTF-8 STL string.
     ZString(std::string str);
+
+    //! Get UTF-8 STL string.
     std::string str() const;
 
-    // Null-terminated wide string
-    // Assumed UTF-16
-    ZString(const wchar_t *wstr);
-    ZString(const wchar_t *wstr, zu64 length);
-    ZString(const ZArray<wchar_t> &array); //  ZArray<wchar_t>
+    //! Construct from UTF-16 null-terminated wide C-string.
+    ZString(const wchar_t *wstr, zu64 max = ZU64_MAX);
+    //! Construct from UTF-16 wide character array.
+    ZString(const ZArray<wchar_t> &array);
 
-    // std wide strings
-    // Assumed UTF-16 and converted to UTF-8
+    //! Construct from UTF-16 STL wide string.
     ZString(std::wstring wstr);
+
+    //! Get UTF-16 STL wide string.
     std::wstring wstr() const;
 
-    // Pointer to data
-    inline chartype *c() const { return _data; }
-    inline const chartype *cc() const { return _data; }
+    //! Construct string filled with \a ch to length \a len.
+    ZString(char ch, zu64 len = 1);
 
-    // Fill constructor
-    ZString(chartype ch, zu64 len = 1);
-
-    // Interger to string
-    static ZString ItoS(zu64 num, zu8 base = 10, zu64 pad = 0);
+    //! Get string representation of unsigned integer \a num with \a base, padded to \a pad characters, using uppercase letters if \a upper.
+    static ZString ItoS(zu64 num, zu8 base = 10, zu64 pad = 0, bool upper = false);
+    //! Get string representation of signed integer \a num with \a base.
     static ZString ItoS(zs64 num, zu8 base = 10);
 
     ZString(zuc num) : ZString((zull)num){}
@@ -249,29 +272,37 @@ public:
     ZString &label(const ZString &label, const ZString &value);
     ZString &label(const AsArZ &values);
 
-    //! Pad string to minimum \a length with \a ch.
-    ZString &pad(chartype ch, zu64 length);
+    //! Pad left of string to minimum \a length with \a ch.
+    ZString &lpad(char ch, zu64 length);
+    //! Pad right of string to minimum \a length with \a ch.
+    ZString &rpad(char ch, zu64 length);
+    //! Alias for rpad().
+    ZString &pad(char ch, zu64 length){ return rpad(ch, length); }
 
     //! Strip occurences of \a target from beginning of string.
-    ZString &stripFront(chartype target);
+    ZString &stripFront(char target);
     //! Strip occurences of \a target from beginning of \a str.
-    static ZString stripFront(ZString str, chartype target);
+    static ZString stripFront(ZString str, char target);
 
     //! Strip occurences of \a target from end of string.
-    ZString &stripBack(chartype target);
+    ZString &stripBack(char target);
     //! Strip occurences of \a target from end of \a str.
-    static ZString stripBack(ZString str, chartype target);
+    static ZString stripBack(ZString str, char target);
 
     //! Strip occurences of \a target from beginning and end of string.
-    ZString &strip(chartype target);
+    ZString &strip(char target);
     //! Strip occurences of \a target from beginning and end of \a str.
-    static ZString strip(ZString str, chartype target);
+    static ZString strip(ZString str, char target);
 
     ZString removeWhitespace();
 
-    // Convert UPPERCASE characters to lowercase equivalents in <str>
+    //! Convert uppercase ASCII characters to lowercase ASCII equivalents.
     ZString &toLower();
     static ZString toLower(ZString str);
+
+    //! Convert lowercase ASCII characters to uppercase ASCII equivalents.
+    ZString &toUpper();
+    static ZString toUpper(ZString str);
 
     // What is this for...?
     ZString &duplicate(zu64 iterate);
@@ -281,10 +312,10 @@ public:
     // Explode a string into any array of substrings
     // All explode functions will treat consecutive delimiters as one delimitier
     // Delimiters at the beginning or end of a string are discarded
-    ArZ explode(chartype delim) const;
+    ArZ explode(char delim) const;
     ArZ strExplode(const ZString &delim) const;
-    ArZ quotedExplode(chartype delim) const;
-    ArZ escapedExplode(chartype delim) const;
+    ArZ quotedExplode(char delim) const;
+    ArZ escapedExplode(char delim) const;
     ArZ explodeList(unsigned nargs, ...) const;
     //ArZ explode();
 
@@ -298,9 +329,22 @@ public:
     ZString &fmtarg(ZString str);
     ZString &operator%(ZString str){ return fmtarg(str); }
 
-    static bool charIsAlphabetic(chartype ch);
+    static bool charIsAlphabetic(char ch);
 
     static bool alphaTest(ZString str1, ZString str2);
+
+    //! Parse UTF-8 string at \a units and replace this string with normalized UTF-8.
+    void parseUTF8(const codeunit8 *units, zu64 max);
+    //! Parse UTF-16 string at \a units and replace this string with normalized UTF-8.
+    void parseUTF16(const codeunit16 *units, zu64 max);
+    //! Parse UTF-32 string at \a units and replace this string with normalized UTF-8.
+    void parseUTF32(const codeunit32 *units, zu64 max);
+
+    //! Get debug information on a UTF-8 string.
+    static void debugUTF8(const codeunit *bytes);
+
+    //! Get a unicode character reference string from a code point.
+    static ZString codePointStr(zu64 cp);
 
     //! Allow ZString to be used with std streams.
     friend std::ostream &operator<<(std::ostream &lhs, ZString rhs);
@@ -315,53 +359,67 @@ public:
     //! Number of bytes (code units).
     inline zu64 realSize() const { return _realsize; }
 
-    //! Get pointer to raw bytes.
-    inline const zbyte *bytes() const { return reinterpret_cast<zbyte*>(_data); }
-
     //! Number of *characters* (code points).
     zu64 length() const;
 
     // On empty string, will return null terminator
     //! Get reference to the first character.
-    inline chartype &first(){ return _data[0]; }
+    inline char &first(){ return c()[0]; }
     //! Get const reference to the first character.
-    inline const chartype &first() const { return _data[0]; }
+    inline const char &first() const { return cc()[0]; }
     //! Get reference to the last character.
-    inline chartype &last(){ return _data[size() - 1]; }
+    inline char &last(){ return c()[size() - 1]; }
     //! Get const reference to the last character.
-    inline const chartype &last() const { return _data[size() - 1]; }
+    inline const char &last() const { return cc()[size() - 1]; }
 
     // ZAccessor interface
     //! Get reference to character at \a i.
-    char &at(zu64 i){ return _data[i]; }
+    inline char &at(zu64 i){ return c()[i]; }
     //! Get constant reference to character at \a i.
-    const char &at(zu64 i) const { return _data[i]; }
+    inline const char &at(zu64 i) const { return cc()[i]; }
+
     char *raw(){ return c(); }
     const char *raw() const { return cc(); }
     inline zu64 size() const { return _size; }
 
 private:
-    // Resize buffer (IMPORTANT: memory is only allocated and initialized here)
+    //! Resize buffer. (IMPORTANT: memory is only allocated and initialized here)
     void _reserve(zu64 size);
+    //! Resize container.
     void _resize(zu64 len);
-    static bool _charIsWhitespace(chartype ch);
+
+    static bool _charIsWhitespace(char ch);
+    /*! Replace first occurrence of \a before with \a after starting at \a startpos.
+     *  \return Index of the next character after replacement.
+     */
     zu64 _strReplace(const ZString &before, const ZString &after, zu64 startpos);
 
-    // Unicode Encoding
-    void fromUtf16(std::wstring wstr);
-    std::wstring toUtf16() const;
+    //! Append a UTF-8 encoded code point to the container.
+    void _appendCodePoint(codepoint cp);
+    static void _appendUTF16(std::wstring &str, codepoint cp);
 
-    static bool isUtf8(ZString str);
+    //! Decode the next UTF-8 code point.
+    static codepoint _nextUTF8(const codeunit8 **units, zu64 *maxunits);
+    //! Decode the next UTF-16 code point.
+    static codepoint _nextUTF16(const codeunit16 **units, zu64 *maxunits);
+    //! Decode the next UTF-32 code point.
+    static codepoint _nextUTF32(const codeunit32 **units, zu64 *maxunits);
+
+    //! Determine if \a str is valid UTF-8.
+    static bool isUTF8(const char *str);
+
+    //! Normalize UTF-8 in this string container.
+    void unicode_normalize();
 
 private:
     //! Allocator.
-    ZAllocator<chartype> *_alloc;
+    ZAllocator<codeunit> *_alloc;
     //! Length of string in bytes.
     zu64 _size;
     //! Size of real buffer.
     zu64 _realsize;
     //! String buffer.
-    chartype *_data;
+    codeunit *_data;
 };
 
 inline ZString operator+(const ZString &lhs, const ZString &rhs){

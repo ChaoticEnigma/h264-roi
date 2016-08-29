@@ -109,8 +109,6 @@ public:
     static zu64 copy(ZPath src, ZPath dest);
     static bool rename(ZPath old, ZPath newfl);
 
-    static bool removeDir(ZPath path);
-
     // Path-related functions
     static bool exists(ZPath path);
 
@@ -122,10 +120,13 @@ public:
     //! Creates all directories in path before last path part, if they don't exist.
     static bool createDirsTo(ZPath path);
 
+    //! Removes a directory if it exists.
+    static bool removeDir(ZPath path);
+
     //! List files in a directory, recursize by default.
-    static ZArray<ZPath> listFiles(ZPath dir, bool recurse = true);
+    static ZArray<ZPath> listFiles(ZPath dir, bool recurse = false);
     //! List directories in a directory, non-recursive by default.
-    static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false, bool hidden = false);
+    static ZArray<ZPath> listDirs(ZPath dir, bool recurse = false, bool hidden = true);
 
     static zu64 dirSize(ZPath dir);
 

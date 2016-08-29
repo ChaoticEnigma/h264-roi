@@ -2,9 +2,9 @@
 IF(NOT DISABLE_ZPNG)
     # Find zlib and libpng
     FIND_PATH(ZLIB_INCLUDE   NAMES zlib.h)
-    FIND_LIBRARY(ZLIB_LIB    NAMES libzlibstatic.a libz.a)
+    FIND_LIBRARY(ZLIB_LIB    NAMES libzlibstatic.a libz.a libz.so)
     FIND_PATH(LIBPNG_INCLUDE NAMES png.h)
-    FIND_LIBRARY(LIBPNG_LIB  NAMES libpng.a)
+    FIND_LIBRARY(LIBPNG_LIB  NAMES libpng.a libpng.so)
 
     IF(ZLIB_LIB AND ZLIB_INCLUDE AND LIBPNG_LIB AND LIBPNG_INCLUDE)
         SET(LIBCHAOS_WITH_PNG TRUE)
@@ -18,7 +18,9 @@ ENDIF()
 IF(NOT DISABLE_ZJPEG)
     # Find libjpeg
     FIND_PATH(LIBJPEG_INCLUDE NAMES jpeglib.h)
-    FIND_LIBRARY(LIBJPEG_LIB  NAMES libturbojpeg.a libjpeg.a)
+    FIND_LIBRARY(LIBJPEG_LIB  NAMES libjpeg.a libjpeg.so)
+    # Apparently libjpeg-turbo is not binary-compatible with libjpeg
+    #FIND_LIBRARY(LIBJPEG_LIB  NAMES libturbojpeg.a libjpeg.a libturbojpeg.so libjpeg.so)
 
     IF(LIBJPEG_LIB AND LIBJPEG_INCLUDE)
         SET(LIBCHAOS_WITH_JPEG TRUE)
@@ -32,7 +34,7 @@ ENDIF()
 IF(NOT DISABLE_ZWEBP)
     # Find libwebp
     FIND_PATH(LIBWEBP_INCLUDE NAMES webp/decode.h webp/encode.h)
-    FIND_LIBRARY(LIBWEBP_LIB NAMES libwebp.a)
+    FIND_LIBRARY(LIBWEBP_LIB  NAMES libwebp.a libwebp.so)
 
     IF(LIBWEBP_INCLUDE AND LIBWEBP_LIB)
         SET(LIBCHAOS_WITH_WEBP TRUE)

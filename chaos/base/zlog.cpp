@@ -16,14 +16,14 @@ namespace LibChaos {
 std::atomic<bool> ZLog::_init(false);
 ZLogWorker *ZLog::worker = nullptr;
 
-ZLog::ZLog(zlog_source source) : job(new LogJob), stdiolog(false), newline(true), rawlog(false), /*synclog(false),*/ noqueue(false){
-    job->source = source;
+ZLog::ZLog(zlog_level source) : job(new LogJob), stdiolog(false), newline(true), rawlog(false), /*synclog(false),*/ noqueue(false){
+    job->level = source;
     job->time = ZTime::now();
     job->clock = ZClock();
     job->thread = ZThread::thisTid();
 }
 
-ZLog::ZLog(ZLog::zlog_source source, ZString prefile, ZString preline, ZString prefunc) : ZLog(source){
+ZLog::ZLog(zlog_level source, ZString prefile, ZString preline, ZString prefunc) : ZLog(source){
     job->file = prefile;
     job->line = preline;
     job->func = prefunc;
@@ -59,20 +59,20 @@ void ZLog::flushLog(bool final){
 }
 
 ZLog &ZLog::operator<<(zlog_flag flag){
-    if(flag == flush){
+    if(flag == FLUSH){
         flushLog(false);
-    } else if(flag == newln){
+    } else if(flag == NEWLN){
         log("\n");
-    } else if(flag == flushln){
+    } else if(flag == FLUSHLN){
         log("\n");
         flushLog(false);
-    } else if(flag == noln){
+    } else if(flag == NOLN){
         newline = false;
-    } else if(flag == raw){
+    } else if(flag == RAW){
         rawlog = true;
-    } else if(flag == stdio){
+    } else if(flag == STDIO){
         stdiolog = true;
-    } else if(flag == this_thread){
+    } else if(flag == THIS_THREAD){
         noqueue = true;
     }
     return *this;
@@ -136,7 +136,7 @@ ZString ZLog::genLogFileName(ZString prefix){
     time_t raw;
     char buffer[20];
     time(&raw);
-    strftime(buffer, 20, "%m-%d-%y_%H-%M-%S", localtime(&raw));
+    strftime(buffer, 20, "%Y-%m-%d_%H.%M.%S", localtime(&raw));
     ZString out(prefix);
     out << buffer << ".log";
     return out;
@@ -156,16 +156,6 @@ void ZLog::deInit(){
         worker->stop();
         delete worker;
     }
-}
-
-void ZLog::formatStdout(zlog_source type, ZString fmt){
-    ZLogWorker::formatStdout(type, fmt);
-}
-void ZLog::formatStderr(zlog_source type, ZString fmt){
-    ZLogWorker::formatStderr(type, fmt);
-}
-void ZLog::addLogFile(ZPath pth, zlog_source type, ZString fmt){
-    ZLogWorker::addLogFile(pth, type, fmt);
 }
 
 }

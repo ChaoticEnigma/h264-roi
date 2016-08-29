@@ -1,5 +1,5 @@
 # configure_build.cmake
-# Configure build options
+# Configure Build Options
 
 SET(COMPILER_GCC        0x11)
 SET(COMPILER_MINGW      0x12)
@@ -39,22 +39,22 @@ ELSE()
     SET(LIBCHAOS_UNKNOWN_TOOLCHAIN TRUE)
 ENDIF()
 
-IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU")         # GNU
+IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU")             ## GNU
     IF(LIBCHAOS_PLATFORM_WINDOWS OR
-       LIBCHAOS_PLATFORM_CYGWIN)                # MinGW
+       LIBCHAOS_PLATFORM_CYGWIN)                    ## MinGW
         SET(LIBCHAOS_COMPILER ${COMPILER_MINGW})
         SET(LIBCHAOS_COMPILER_NAME "MinGW")
         SET(LIBCHAOS_COMPILER_MINGW TRUE)
-    ELSE()                                      # GCC
+    ELSE()                                          ## GCC
         SET(LIBCHAOS_COMPILER ${COMPILER_GCC})
         SET(LIBCHAOS_COMPILER_NAME "GNU")
         SET(LIBCHAOS_COMPILER_GCC TRUE)
     ENDIF()
-ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")   # Clang
+ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")       ## Clang
     SET(LIBCHAOS_COMPILER ${COMPILER_CLANG})
     SET(LIBCHAOS_COMPILER_NAME "Clang")
     SET(LIBCHAOS_COMPILER_CLANG TRUE)
-ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")    # MS Visual C++
+ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")        ## MS Visual C++
     SET(LIBCHAOS_COMPILER ${COMPILER_MSVC})
     SET(LIBCHAOS_COMPILER_NAME "MSVC")
     SET(LIBCHAOS_COMPILER_MSVC TRUE)
@@ -93,37 +93,40 @@ IF(LIBCHAOS_COMPILER_MINGW)
     SET(CXXGNU "${CXXGNU} -mwin32 -mwindows -static-libgcc -static-libstdc++")
 ENDIF()
 
+# Check CMake build type
+IF(CMAKE_BUILD_TYPE MATCHES "Debug")
+    SET(DEBUG TRUE)
+ELSEIF(CMAKE_BUILD_TYPE MATCHES "Release")
+    SET(RELEASE TRUE)
+ELSEIF(DEBUG)
+    SET(CMAKE_BUILD_TYPE "Debug")
+ELSEIF(RELEASE)
+    SET(CMAKE_BUILD_TYPE "Release")
+ENDIF()
+
 # Set variables for build type
-IF(RELEASE) # Release
-    SET(CXXF "${CXXF} -D_LIBCHAOS_BUILD_RELEASE")
-    SET(CXXGNU "${CXXGNU} -O3")
-    SET(CXXVC "${CXXVC} /GL /MD")
-    SET(BUILD_STRING "${BUILD_STRING} Release")
-    SET(LIBCHAOS_BUILD_RELEASE TRUE)
-ELSEIF(DEBUG) # Debug
+IF(DEBUG) # Debug
     SET(CXXF "${CXXF} -D_LIBCHAOS_BUILD_DEBUG")
-    SET(CXXGNU "${CXXGNU} -g")
-    SET(CXXVC "${CXXVC} /Zi /MDd")
     IF(EXTRA_WARNINGS)
         SET(BUILD_STRING "${BUILD_STRING} DebugV")
     ELSE()
         SET(BUILD_STRING "${BUILD_STRING} Debug")
     ENDIF()
     SET(LIBCHAOS_BUILD_DEBUG TRUE)
+ELSEIF(RELEASE) # Release
+    SET(CXXF "${CXXF} -D_LIBCHAOS_BUILD_RELEASE")
+    SET(BUILD_STRING "${BUILD_STRING} Release")
+    SET(LIBCHAOS_BUILD_RELEASE TRUE)
 ELSE() # Normal
     SET(BUILD_STRING "${BUILD_STRING} Normal")
 ENDIF()
 
 SET(CONFIGURE_BUILD_STRING ${BUILD_STRING})
 
+# Assemble compile flags
 IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
-#    IF(LIBCHAOS_COMPILER_GCC)
-#        SET(CXXGNU "${CXXGNU} -std=c++14")
-#    ELSE()
-        SET(CXXGNU "${CXXGNU} -std=c++11")
-#    ENDIF()
-
-    IF(DEBUG) # Enable gratuitous warnings on debug build
+    # Enable gratuitous warnings on debug build
+    IF(DEBUG)
         SET(CXXGNU "${CXXGNU} -Wall -Wextra -Wpedantic")
         #SET(CXXGNU "${CXXGNU} -fms-extensions")
         #SET(CXXF "${CXXF} -Wbloody_everything") # Some day...
@@ -133,18 +136,19 @@ IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
         SET(CXXGNU "${CXXGNU} -Winit-self  -Wredundant-decls -Wundef -Woverloaded-virtual") # Declarationss
         SET(CXXGNU "${CXXGNU} -Wmissing-include-dirs -Wctor-dtor-privacy -Wdisabled-optimization")
 
-        IF(${LIBCHAOS_COMPILER} STREQUAL ${COMPILER_CLANG})
-            # Clang options
-        ELSE()
+        # GCC only warnings
+        IF(NOT LIBCHAOS_COMPILER_CLANG)
             SET(CXXGNU "${CXXGNU} -Wlogical-op -Wnoexcept -Wstrict-null-sentinel")
         ENDIF()
 
+        # Disabled warnings
         SET(CXXF "${CXXF} -Wshadow") # Some warnings are too verbose to be useful
-        SET(CXXGNU "${CXXGNU} -Wno-unused-parameter -Wno-unused") # Disabled Warnings
+        SET(CXXGNU "${CXXGNU} -Wno-unused-parameter -Wno-unused")
         IF(NOT COMPILER_MINGW)
             SET(CXXGNU "${CXXGNU} -Wno-comment") # Not recognized on MinGW
         ENDIF()
 
+        # Extra warnings
         IF(EXTRA_WARNINGS)
             IF(LIBCHAOS_COMPILER_CLANG)
                 SET(CXXGNU "${CXXGNU} -Weverything") # Enable all diagnostics
@@ -155,8 +159,10 @@ IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
         ENDIF()
     ENDIF()
 
+    # Forced errors
     SET(CXXGNU "${CXXGNU} -Werror=return-type") # Should be errors
 
+    # Compiler-specific
     IF(LIBCHAOS_COMPILER_CLANG)
         SET(CXXGNU "${CXXGNU} -Wno-nested-anon-types") # Clang warns about nested anonymous types
     ENDIF()
@@ -164,8 +170,6 @@ IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
     SET(CXXF "${CXXF} ${CXXGNU}")
 
 ELSEIF(LIBCHAOS_COMPILER_MSVC)
-    #SET(CXXVC "${CXXVC} /MD")
-
     SET(LINKVC "/ignore:4221") # LNK4221: File does not define any public symbols
     SET(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} ${LINKVC}")
     SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINKVC}")

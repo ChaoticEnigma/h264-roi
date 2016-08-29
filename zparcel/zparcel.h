@@ -142,7 +142,7 @@ public:
 
 private:
     //! Store an object.
-    void _storeObject(ZUID id, objtype type, ZBinary &data);
+    void _storeObject(ZUID id, objtype type, const ZBinary &data);
     //! Get reader at payload offset.
     ZReader *_getReader(ZUID id);
 

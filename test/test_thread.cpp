@@ -1,9 +1,18 @@
-#include "test.h"
+#include "tests.h"
 
 #include "zthread.h"
 #include "zmutex.h"
 #include "zlock.h"
-//#include <unistd.h>
+
+#if PLATFORM == WINDOWS
+    #include <windows.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <assert.h>
+    #include <iostream>
+#endif
+
+namespace LibChaosTest {
 
 void *thread_func(void * /*zarg*/){
     //ZThreadArg *arg = (ZThreadArg*)zarg;
@@ -12,6 +21,7 @@ void *thread_func(void * /*zarg*/){
     LOG("waited 2 " << ZThread::thisTid());
     return NULL;
 }
+
 void *thread_func2(void *zarg){
     ZThreadArg *arg = (ZThreadArg*)zarg;
     LOG("running " << ZThread::thisTid());
@@ -25,7 +35,7 @@ void *thread_func2(void *zarg){
     return NULL;
 }
 
-int thread_test(){
+void thread(){
     LOG("=== Thread Test...");
     /*
     LOG("this text " << ZThread::thisTid());
@@ -46,31 +56,11 @@ int thread_test(){
     LOG("stopped " << thr2.tid());
     thr2.join();
     LOG("joined " << thr2.tid());
-    return 0;
 }
-
-//
-//
-//
-
-/**
- * @author Jeff Tanner, Seattle, jeff_tanner@earthlink.net
- *
- * Update volatile global variable until maximum value
- * is reached using critical sections.
- */
 
 #if PLATFORM == WINDOWS
 
-//#include "stdafx.h"
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <iostream>
-//using namespace std;
-
-ZMutex mutex;
+ZMutex gmutex;
 CRITICAL_SECTION gCS; // shared structure
 
 const int gcMaxCount = 10;
@@ -81,7 +71,7 @@ DWORD threadLoop(void *name){
         TLOG((char *)name << " entering critical Section...");
 //        EnterCriticalSection(&gCS);
 //        mutex.lock();
-        ZLock lock(mutex);
+        ZLock lock(gmutex);
         if(gCount < gcMaxCount){
             TLOG((char *)name << " in critical Section");
             gCount++;
@@ -104,7 +94,7 @@ HANDLE CreateChild(const char *name){
     return hThread;
 }
 
-int mutex_test(){
+void mutex(){
     HANDLE hT[4];
     InitializeCriticalSection(&gCS);
 
@@ -126,13 +116,21 @@ int mutex_test(){
     CloseHandle(hT[3]);
 
     DeleteCriticalSection(&gCS);
-    return 0;
 }
 
 #else
 
-int mutex_test(){
-    return 0;
+void mutex(){
+
 }
 
 #endif
+
+ZArray<Test> thread_tests(){
+    return {
+        { "thread", thread, false, {} },
+        { "mutex",  mutex,  false, {} },
+    };
+}
+
+}

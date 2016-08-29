@@ -48,7 +48,7 @@ public:
     uuidtype getType() const;
 
     //! Get hexadecimal UUID string.
-    ZString str() const;
+    ZString str(bool separate = true, ZString delim = "-") const;
     //! Get binary container object.
     ZBinary bin() const;
     //! Get pointer to raw 16-octet UUID.
@@ -59,8 +59,8 @@ public:
     static zu64 getTimestamp();
     //! Get all MAC addresses.
     static ZList<ZBinary> getMACAddresses();
-    //! Get an acceptable MAC address.
-    static ZBinary getMACAddress();
+    //! Get an acceptable MAC address. Caches the first found for quick lookup.
+    static ZBinary getMACAddress(bool cache = false);
 
 private:
     //! Check if MAC address is acceptable.

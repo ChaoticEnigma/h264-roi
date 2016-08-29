@@ -1,8 +1,10 @@
-#include "test.h"
+#include "tests.h"
 #include "zmap.h"
 #include "zset.h"
 
-int hash_test(){
+namespace LibChaosTest {
+
+void hash(){
     int data1 = -34563;
     zu64 hash1 = ZHash<int>(data1).hash();
     LOG(data1 << " " << hash1);
@@ -24,7 +26,6 @@ int hash_test(){
         TASSERT(hash3a == hash3b)
     };
 
-
     ZString data2 = "hashdata";
     ZString data3 = "hashdata1";
     ZString data4 = "hashdata2";
@@ -32,11 +33,9 @@ int hash_test(){
     hf(data2);
     hf(data3);
     hf(data4);
-
-    return 0;
 }
 
-int map_test(){
+void map(){
     ZMap<ZString, zu64> map1;
     map1.add("test1", 11);
     map1.add("test2", 22);
@@ -108,11 +107,9 @@ int map_test(){
     LOG("Forward Iterator: " << map2.size());
     auto i2f = map2.begin();
     test_forward_iterator(&i2f, map2.size());
-
-    return 0;
 }
 
-int set_test(){
+void set(){
     ZString str1 = "one";
     ZString str2 = "two";
     ZString str3 = "three";
@@ -140,6 +137,14 @@ int set_test(){
     LOG("Forward Iterator: " << set2.size());
     auto i2f = set1.begin();
     test_forward_iterator(&i2f, set2.size());
+}
 
-    return 0;
+ZArray<Test> hash_tests(){
+    return {
+        { "hash",   hash,   true, {} },
+        { "map",    map,    true, {} },
+        { "set",    set,    true, {} },
+    };
+}
+
 }

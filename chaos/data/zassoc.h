@@ -15,9 +15,7 @@ namespace LibChaos {
  */
 template <class K, class T> class ZAssoc {
 public:
-    enum {
-        none = ZU64_MAX
-    };
+    enum { NONE = ZU64_MAX };
 
 public:
     struct Data {
@@ -168,7 +166,7 @@ public:
             if(_data[i].key == test)
                 return i;
         }
-        return none;
+        return NONE;
     }
 
     bool exists(K test) const {

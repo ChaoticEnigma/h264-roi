@@ -186,14 +186,18 @@ public:
     //! Get the format of a formatted image.
     static fileformat checkImageFormat(const ZBinary &data);
 
+    static bool isFormatSupported(fileformat format);
+
     //! Get the image file format.
     fileformat getFormat() const { return _format; }
+
     /*! Set the image file format and backend.
+     *  \return true if requested format is supported, otherwise false.
      *  Creates a YImageBackend subclass instance.
      *  Only reconstructs the backend instance if the format changes.
      *  The same backend instance can be used to decode / encode multiple images.
      */
-    void setFormat(fileformat format);
+    bool setFormat(fileformat format);
 
     //! Decoce an image from formatted \a data.
     void decodeFormat(const ZBinary &data);
