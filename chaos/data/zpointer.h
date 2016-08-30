@@ -7,28 +7,29 @@
 #define ZPOINTER_H
 
 #include "ztypes.h"
-#include "zexception.h"
 
 namespace LibChaos {
 
 // TEST: ZPointer NEEDS EXTENSIVE TESTING
 /*! Shared pointer class.
- *  Wraps a pointer to an arbitrary object, deletes it when the last Pointer to it is destroyed. \n
- *  Note that all Pointers to the same object point to the *same object*, and can change the common object. \n
+ *  Wraps a pointer to an arbitrary object, deletes it when the last ZPointer to it is destroyed. \n
+ *  Note that all ZPointers to the same object point to the *same object*, and can change the common object. \n
  *  \n
  *  Implementation: \n
- *  Each Pointer has a pointer to a struct that contains the data pointer and an integer with a references count. \n
- *  This same struct is shared by all the Pointers for the same object. \n
- *  When a new Pointers is copied or assigned a struct, the refernce count is incremented. \n
- *  When a Pointer is destroyed, the reference count is decremented. \n
- *  If a Pointer is the last reference to the object, the object is deleted when the Pointer is destroyed or re-assigned. \n
+ *  Each ZPointer has a pointer to a struct that contains the data pointer and an integer with a references count. \n
+ *  This same struct is shared by all the ZPointers for the same object. \n
+ *  When a new ZPointer is copied or assigned a struct, the refernce count is incremented. \n
+ *  When a ZPointer is destroyed, the reference count is decremented. \n
+ *  If a ZPointer is the last reference to the object, the object is deleted when the ZPointer is destroyed or re-assigned. \n
  */
 template <typename T> class ZPointer {
 public:
     //! Empty container.
     ZPointer() : _data(nullptr){}
 
-    //! Take ownership of the pointer.
+    /*! Take ownership of a pointer.
+     *  \warning \p ptr MUST be destructible by only the delete operator.
+     */
     ZPointer(T *ptr) : ZPointer(){
         if(ptr != nullptr){
             _data = new PointerData;
@@ -38,8 +39,9 @@ public:
         }
     }
 
-    //! Acquire shared ownership of other contained pointer.
-    // NOTE: Other ZPointer object is not modified, but the data struct is
+    /*! Acquire shared ownership of other contained pointer.
+     *  \note Other ZPointer object is not modified, but the data struct is.
+     */
     ZPointer(const ZPointer &other) : _data(other._data){
         _increment();
     }
@@ -81,22 +83,25 @@ public:
         other._data = data;
     }
 
-    // Check if this is the only Pointer to the object
+    //! Check if this is the only ZPointer to the object.
     bool unique() const {
-        return (count() == 0);
+        return (count() == 1);
     }
 
-    // Count number of other Pointers to the object
+    //! Count total number of ZPointer to the object.
     zu64 count() const {
-        return (_data == nullptr ? 0 : _data->count - 1);
+        return (_data == nullptr ? 0 : _data->count);
     }
 
-    //! Get pointer to shared object.
+    /*! Get pointer to shared object.
+     *  \return nullptr if no object owned.
+     */
     T *ptr() const {
         if(_data == nullptr)
-            throw ZException("ZPointer ptr: attempt to get pointer from object without ownership");
+            return nullptr;
         return _data->ptr;
     }
+    //! Shorthand for pointer to shared object.
     inline T *operator->(){ return ptr(); }
 
 private:

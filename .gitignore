@@ -11,4 +11,5 @@
 # Vim
 *.swp
 tags
+.tags
 

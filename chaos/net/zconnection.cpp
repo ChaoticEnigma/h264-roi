@@ -20,11 +20,11 @@
 
 namespace LibChaos {
 
-ZConnection::ZConnection() : ZSocket(stream), buffer(nullptr){
+ZConnection::ZConnection() : ZSocket(STREAM), buffer(nullptr){
 
 }
 
-ZConnection::ZConnection(zsocktype fd, ZAddress addr) : ZSocket(stream, fd), _addr(addr), buffer(nullptr){
+ZConnection::ZConnection(zsocktype fd, ZAddress addr) : ZSocket(STREAM, fd), _addr(addr), buffer(nullptr){
 
 }
 

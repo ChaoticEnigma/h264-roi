@@ -1,6 +1,15 @@
-#include "test.h"
+#include "tests.h"
 
-int sandbox(){
+namespace LibChaosTest {
 
-    return 0;
+void sandbox(){
+
+}
+
+ZArray<Test> sandbox_tests(){
+    return {
+        { "sandbox", sandbox, false, {} }
+    };
+}
+
 }

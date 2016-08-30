@@ -18,9 +18,11 @@ public:
 public:
     ZDatagramSocket();
 
-    bool open(ZAddress port);
+    bool open();
     void close();
     bool isOpen() const;
+
+    bool bind(ZAddress port);
 
     void setReadBuffer(zu64 size);
 

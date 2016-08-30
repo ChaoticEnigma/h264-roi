@@ -12,7 +12,7 @@
 #include <cstring>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <string>
+//#include <string>
 
 #if COMPILER == GCC || COMPILER == MINGW || COMPILER == CLANG
     #include <dirent.h>
@@ -486,7 +486,7 @@ bool ZFile::makeDir(ZPath dir){
         else
             return false;
     } else {
-        return CreateDirectory(dir.str('\\').wstr().c_str(), NULL) != 0;
+        return (CreateDirectory(dir.str('\\').wstr().c_str(), NULL) != 0);
     }
 #else
     struct stat flstat;
@@ -525,7 +525,7 @@ bool ZFile::createDirsTo(ZPath dir){
 ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
     ZArray<ZPath> files;
     if(!isDir(dir)){
-        return files;
+        return ZArray<ZPath>();
     }
 #ifdef ZFILE_WINAPI
     WIN32_FIND_DATA finddata;
@@ -554,10 +554,11 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
                 continue;
             ZPath flnm = dir + drnt->d_name;
             struct stat st;
-            lstat(flnm.str().cc(), &st);
+            if(lstat(flnm.str().cc(), &st) != 0)
+                continue;
             if(S_ISDIR(st.st_mode)){
                 if(recurse)
-                    files.concat(listFiles(flnm));
+                    files.append(listFiles(flnm, recurse));
             } else {
                 files.push(flnm.getAbsolute());
             }
@@ -599,12 +600,12 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse, bool hidden){
                 continue;
             ZPath flnm = dir + drnt->d_name;
             struct stat st;
-            lstat(flnm.str().cc(), &st);
+            if(lstat(flnm.str().cc(), &st) != 0)
+                continue;
             if(S_ISDIR(st.st_mode)){
                 dirs.push(flnm.getAbsolute());
-                if(recurse){
-                    dirs.concat(listDirs(flnm)); // Unsafe, stack overflow possibility
-                }
+                if(recurse)
+                    dirs.append(listDirs(flnm, recurse, hidden)); // Unsafe, stack overflow possibility
             }
         }
         closedir(dr);

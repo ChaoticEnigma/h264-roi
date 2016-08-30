@@ -10,6 +10,7 @@
 
 namespace LibChaos {
 
+//! ZLock locks a mutex when constructed, and unlocks it when destroyed.
 class ZLock {
 public:
     ZLock(ZMutex &mutex) : _mutex(&mutex){

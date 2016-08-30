@@ -8,6 +8,7 @@
 
 #include "zsocket.h"
 #include "zconnection.h"
+#include "zpointer.h"
 
 namespace LibChaos {
 
@@ -17,15 +18,17 @@ class ZStreamSocket : private ZSocket {
 public:
     ZStreamSocket();
 
-    bool open(ZAddress port);
+    bool open();
     void close();
     bool isOpen() const;
+
+    bool bind(ZAddress port);
 
     void setReadBuffer(zu64 size);
 
     bool connect(ZAddress addr, ZConnection &conn);
     bool listen();
-    bool accept(ZConnection &conn);
+    ZPointer<ZConnection> accept();
 
     zsocktype getSocket() const {
         return ZSocket::getSocket();

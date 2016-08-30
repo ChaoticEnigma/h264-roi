@@ -49,28 +49,28 @@ IF(NOT LIBCHAOS_UTIL_EXTENSION_FIXER)
     SET(LIBCHAOS_UTIL_EXTENSION_FIXER_ALL EXCLUDE_FROM_ALL)
 ENDIF()
 ADD_EXECUTABLE(extensionfixer ${LIBCHAOS_UTIL_EXTENSION_FIXER_ALL} ${LibChaosUtils_ExtensionFixer_SOURCES})
-TARGET_LINK_LIBRARIES(extensionfixer chaos)
+LibChaos_Configure_Target(extensionfixer)
 
 # Audiobook Sorter
 IF(NOT LIBCHAOS_UTIL_AUDIOBOOK_SORTER)
     SET(LIBCHAOS_UTIL_AUDIOBOOK_SORTER_ALL EXCLUDE_FROM_ALL)
 ENDIF()
 ADD_EXECUTABLE(audiobooksorter ${LIBCHAOS_UTIL_AUDIOBOOK_SORTER_ALL} ${LibChaosUtils_AudiobookSorter_SOURCES})
-TARGET_LINK_LIBRARIES(audiobooksorter chaos)
+LibChaos_Configure_Target(audiobooksorter)
 
 # Duplicate Finder
 IF(NOT LIBCHAOS_UTIL_DUPLICATE_FINDER)
     SET(LIBCHAOS_UTIL_DUPLICATE_FINDER_ALL EXCLUDE_FROM_ALL)
 ENDIF()
 ADD_EXECUTABLE(duplicatefinder ${LIBCHAOS_UTIL_DUPLICATE_FINDER_ALL} ${LibChaosUtils_DuplicateFinder_SOURCES})
-TARGET_LINK_LIBRARIES(duplicatefinder chaos)
+LibChaos_Configure_Target(duplicatefinder)
 
 # Image Library Manager
 IF(NOT LIBCHAOS_UTIL_IMAGE_LIBRARY_MANAGER)
     SET(LIBCHAOS_UTIL_IMAGE_LIBRARY_MANAGER_ALL EXCLUDE_FROM_ALL)
 ENDIF()
-ADD_EXECUTABLE(imagelibrarymanger ${LIBCHAOS_UTIL_IMAGE_LIBRARY_MANAGER_ALL} ${LibChaosUtils_ImageLibraryManager_SOURCES})
-TARGET_LINK_LIBRARIES(imagelibrarymanger chaos)
+ADD_EXECUTABLE(imagelibrarymanager ${LIBCHAOS_UTIL_IMAGE_LIBRARY_MANAGER_ALL} ${LibChaosUtils_ImageLibraryManager_SOURCES})
+LibChaos_Configure_Target(imagelibrarymanager)
 
 # Image Reverse Search
 IF(NOT LIBCHAOS_UTIL_IMAGE_REVERSE_SEARCH)
@@ -78,6 +78,5 @@ IF(NOT LIBCHAOS_UTIL_IMAGE_REVERSE_SEARCH)
 ENDIF()
 ADD_DEFINITIONS(-DCURL_STATICLIB)
 ADD_EXECUTABLE(imagereversesearch ${LIBCHAOS_UTIL_IMAGE_REVERSE_SEARCH_ALL} ${LibChaosUtils_ImageReverseSearch_SOURCES})
-#TARGET_LINK_LIBRARIES(imagereversesearch chaos ssl ssh2 ssh2dll crypto z rtmp curl curldll)
-TARGET_LINK_LIBRARIES(imagereversesearch chaos crypto ssl z curl)
-#SET_TARGET_PROPERTIES(imagereversesearch PROPERTIES LINK_FLAGS -Wl,-static)
+LibChaos_Configure_Target(imagereversesearch)
+TARGET_LINK_LIBRARIES(imagereversesearch crypto ssl z curl)

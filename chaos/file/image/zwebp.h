@@ -9,6 +9,7 @@
 
 namespace LibChaos {
 
+//! WebP encoder/decoder, libwebp wrapper.
 class ZWebP : public YImageBackend {
 public:
     ZWebP(ZImage *image);

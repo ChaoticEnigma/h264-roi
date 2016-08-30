@@ -14,23 +14,15 @@
 #include <algorithm>
 // Variable arguments lists
 #include <cstdarg>
-
-#if PLATFORM == MACOSX
-    #include <math.h>
-#endif
+// pow
+#include <math.h>
 
 #include "zlog.h"
 
 namespace LibChaos {
 
-ZString::ZString(ZAllocator<chartype> *alloc) : _alloc(alloc), _size(0), _realsize(0), _data(nullptr){
+ZString::ZString(ZAllocator<codeunit> *alloc) : _alloc(alloc), _size(0), _realsize(0), _data(nullptr){
     clear(); // Empty string with null terminator
-}
-
-ZString::~ZString(){
-    if(_data != nullptr)
-        _alloc->dealloc(_data);
-    delete _alloc;
 }
 
 ZString::ZString(const ZString &other) : ZString(){
@@ -39,67 +31,83 @@ ZString::ZString(const ZString &other) : ZString(){
         _alloc->rawcopy(other._data, _data, other._size);
 }
 
-ZString::ZString(const chartype *str) : ZString(){
-    if(str != nullptr){
-        zu64 i = 0;
-        while(str[i] != 0)
-            ++i;
-        ZString filled(str, i);
-        swap(filled);
-    }
+ZString::~ZString(){
+    _alloc->dealloc(_data);
+    delete _alloc;
 }
 
-ZString::ZString(const ZString::chartype *ptr, zu64 length) : ZString(){
-    _resize(length);
-    if(length && ptr)
-        _alloc->rawcopy(ptr, _data, length);
+ZString::ZString(const char *str, zu64 max) : ZString(){
+    parseUTF8((const codeunit*)str, max);
 }
 
-ZString::ZString(const ZArray<ZString::chartype> &array) : ZString(array.raw(), array.size()){
-
+ZString::ZString(const ZArray<char> &array) : ZString(array.raw()){
+    // Forwarded
 }
 
-ZString::ZString(std::string str) : ZString(str.c_str(), str.size()){}
+ZString::ZString(const codeunit *str, zu64 max) : ZString(){
+    parseUTF8(str, max);
+}
+
+ZString::ZString(const ZArray<codeunit> &array) : ZString(array.raw()){
+    // Forwarded
+}
+
+ZString::ZString(std::string str) : ZString(str.c_str()){
+    // Forwarded
+}
 
 std::string ZString::str() const {
-    return std::string(_data, size());
+    return std::string(cc(), size());
 }
 
-ZString::ZString(const wchar_t *wstr) : ZString(){
-    fromUtf16(wstr);
+ZString::ZString(const wchar_t *wstr, zu64 max) : ZString(){
+    ZArray<codeunit16> units;
+    for(zu64 i = 0; i < max && *wstr; ++i){
+        units.push((codeunit16)(*wstr & 0xFFFF));
+        ++wstr;
+    }
+    parseUTF16(units.raw(), units.size());
 }
 
-ZString::ZString(const wchar_t *wstr, zu64 length) : ZString(){
-    fromUtf16(std::wstring(wstr, length));
+ZString::ZString(const ZArray<wchar_t> &array) : ZString(array.raw()){
+    // Forwarded
 }
 
-ZString::ZString(const ZArray<wchar_t> &array) : ZString(array.raw(), array.size()){
-
-}
-
-ZString::ZString(std::wstring wstr) : ZString(){
-    fromUtf16(wstr);
+ZString::ZString(std::wstring wstr) : ZString(wstr.c_str()){
+    // Forwarded
 }
 
 std::wstring ZString::wstr() const {
-    return toUtf16();
+    std::wstring str;
+    zu64 max = size();
+    const codeunit *units = _data;
+    // Read and add code points
+    while(max && *units){
+        _appendUTF16(str, _nextUTF8(&units, &max));
+    }
+    return str;
 }
 
-ZString::ZString(ZString::chartype ch, zu64 len) : ZString(){
+ZString::ZString(char ch, zu64 len) : ZString(){
     _resize(len);
-    if(len)
-        for(zu64 i = 0; i < len; ++i)
-            _data[i] = ch;
+    if(len){
+        for(zu64 i = 0; i < len; ++i){
+            at(i) = ch;
+        }
+    }
 }
 
-ZString ZString::ItoS(zu64 value, zu8 base, zu64 pad){
+ZString ZString::ItoS(zu64 value, zu8 base, zu64 pad, bool upper){
     ZString buffer;
     if(base < 2 || base > 16)
         return buffer;
     buffer._reserve(35);
     zu64 quotient = value;
+    const char *digits = "0123456789abcdef";
+    if(upper)
+        digits = "0123456789ABCDEF";
     do {
-        buffer += "0123456789abcdef"[ZMath::abs((zs64)(quotient % base))];
+        buffer += digits[ZMath::abs((zs64)(quotient % base))];
         quotient /= base;
     } while(quotient);
     buffer.reverse();
@@ -245,7 +253,9 @@ ZString &ZString::substr(zu64 pos, zu64 len){
     if(pos < size()){
         len = MIN(len, size() - pos);
         // Construct new string from range and assign
-        assign(ZString(_data + pos, len));
+        _alloc->rawmove(_data + pos, _data, len);
+        _resize(len);
+        //assign(ZString(_data + pos, len));
     } else {
         clear();
     }
@@ -259,7 +269,7 @@ ZString ZString::substr(ZString str, zu64 pos, zu64 len){
 }
 
 ZString &ZString::substr(zu64 pos){
-    substr(pos, none);
+    substr(pos, NONE);
     return *this;
 }
 
@@ -310,7 +320,7 @@ ZString &ZString::reverse(){
     buff._resize(size());
     // Copy characters in reverse order
     for(zu64 i = size(), j = 0; i > 0; --i, ++j){
-        buff[j] = _data[i-1];
+        buff[j] = at(i-1);
     }
     // Swap buffers
     swap(buff);
@@ -357,7 +367,7 @@ bool ZString::beginsWith(const ZString &test, bool ignorews) const {
                 return true;
             started = true;
             ++j;
-        } else if(_charIsWhitespace(_data[i])){
+        } else if(_charIsWhitespace(at(i))){
             if(started)
                 return false;
         } else {
@@ -385,17 +395,20 @@ zu64 ZString::findFirst(const ZString &find, zu64 start) const {
         for(zu64 i = start; i < size(); ++i){
             if(_data[i] == find[j]){
                 if(j == 0)
+                    // Find started
                     startpos = i;
                 ++j;
                 if(j == find.size())
+                    // Find complete
                     return startpos;
             } else if(j != 0){
-                --i;
+                // Restart find after startpos
+                i = startpos;
                 j = 0;
             }
         }
     }
-    return none;
+    return NONE;
 }
 
 zu64 ZString::findFirst(const ZString &str, const ZString &find, zu64 start){
@@ -436,15 +449,16 @@ ZString ZString::replaceFirst(ZString str, const ZString &before, const ZString 
 }
 
 ZString &ZString::replace(const ZString &before, const ZString &after, zu64 max){
+    // No replacement to do
     if(before.size() > size() || before == after)
         return *this;
 
-    bool unlim = max == 0 ? true : false;
     zu64 count = 0;
-    zu64 last = 0;
-    while(unlim || count < max){
-        last = _strReplace(before, after, last);
-        if(last == none)
+    zu64 next = 0;
+    while(max == 0 || count < max){
+        // Replace first occurrence
+        next = _strReplace(before, after, next);
+        if(next == NONE)
             break;
         ++count;
     }
@@ -462,7 +476,7 @@ ZString &ZString::replaceRecursive(const ZString &before, const ZString &after, 
     bool unlim = max == 0 ? true : false;
     zu64 count = 0;
     while(unlim || count < max){
-        if(_strReplace(before, after, 0) == none)
+        if(_strReplace(before, after, 0) == NONE)
             break;
         ++count;
     }
@@ -615,13 +629,20 @@ ZString &ZString::label(const AsArZ &values){
     return *this;
 }
 
-ZString &ZString::pad(chartype ch, zu64 len){
+ZString &ZString::lpad(char ch, zu64 len){
+    if(len > size())
+        prepend(ZString(ch, len - size()));
+    return *this;
+
+}
+
+ZString &ZString::rpad(char ch, zu64 len){
     if(len > size())
         append(ZString(ch, len - size()));
     return *this;
 }
 
-ZString &ZString::stripFront(ZString::chartype target){
+ZString &ZString::stripFront(char target){
     zu64 clen = 0;
     for(zu64 i = 0; i < size(); ++i){
         if(_data[i] == target)
@@ -634,11 +655,11 @@ ZString &ZString::stripFront(ZString::chartype target){
     return *this;
 }
 
-ZString ZString::stripFront(ZString str, ZString::chartype target){
+ZString ZString::stripFront(ZString str, char target){
     return str.stripFront(target);
 }
 
-ZString &ZString::stripBack(ZString::chartype target){
+ZString &ZString::stripBack(char target){
     zu64 clen = 0;
     for(zu64 i = 0; i < size(); ++i){
         zu64 curr = size() - 1 - i;
@@ -652,24 +673,24 @@ ZString &ZString::stripBack(ZString::chartype target){
     return *this;
 }
 
-ZString ZString::stripBack(ZString str, ZString::chartype target){
+ZString ZString::stripBack(ZString str, char target){
     return str.stripBack(target);
 }
 
-ZString &ZString::strip(chartype target){
+ZString &ZString::strip(char target){
     stripFront(target);
     stripBack(target);
     return *this;
 }
 
-ZString ZString::strip(ZString str, chartype target){
+ZString ZString::strip(ZString str, char target){
     return str.strip(target);
 }
 
 ArZ ZString::split(ZString delim) const {
     ArZ out;
     zu64 pos = findFirst(*this, delim);
-    if(pos == none){
+    if(pos == NONE){
         out.push(*this);
         return out;
     }
@@ -813,16 +834,26 @@ ZString ZString::removeWhitespace(){
 
 ZString &ZString::toLower(){
     for(zu64 i = 0; i < size(); ++i){
-        // Custom tolower()
-        //if((int)tmp[i] >= 65 && (int)tmp[i] <= 90)
-        //    tmp[i] = (char)((int)tmp[i] + 32);
-        _data[i] = tolower(_data[i]);
+        if(65 <= _data[i] && _data[i] <= 90)
+            _data[i] += 32;
     }
     return *this;
 }
 
 ZString ZString::toLower(ZString str){
     return str.toLower();
+}
+
+ZString &ZString::toUpper(){
+    for(zu64 i = 0; i < size(); ++i){
+        if(97 <= _data[i] && _data[i] <= 122)
+            _data[i] -= 32;
+    }
+    return *this;
+}
+
+ZString ZString::toUpper(ZString str){
+    return str.toUpper();
 }
 
 ZString &ZString::duplicate(zu64 iter){
@@ -859,7 +890,7 @@ ZString ZString::format(ZString fmtstr, ZList<ZString> args){
     return fmtstr.format(args);
 }
 
-bool ZString::charIsAlphabetic(chartype ch){
+bool ZString::charIsAlphabetic(char ch){
     return (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122);
 }
 
@@ -879,7 +910,7 @@ bool ZString::alphaTest(ZString str1, ZString str2){
 void ZString::swap(ZString &other){
     zu64 size = _size;
     zu64 realsize = _realsize;
-    chartype *data = _data;
+    codeunit *data = _data;
     _size = other._size;
     _realsize = other._realsize;
     _data = other._data;
@@ -901,7 +932,7 @@ void ZString::_reserve(zu64 size){
     if(size > _realsize || _data == nullptr){ // Only reallocate if new size is larger than buffer
         // TEST: newsize, but always leave extra space for null terminator, but don't count null terminator in realsize
         zu64 newsize = MAX(_realsize * 2, size);
-        chartype *buff = _alloc->alloc(newsize + 1); // New size + null terminator
+        codeunit *buff = _alloc->alloc(newsize + 1); // New size + null terminator
         _alloc->rawcopy(_data, buff, _size); // Copy data to new buffer
         // Update new buffer size
         _realsize = newsize;
@@ -917,15 +948,16 @@ void ZString::_resize(zu64 len){
     _data[_size] = 0; // Always null terminate
 }
 
-bool ZString::_charIsWhitespace(chartype ch){
+bool ZString::_charIsWhitespace(char ch){
     return ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t';
 }
 
 zu64 ZString::_strReplace(const ZString &before, const ZString &after, zu64 startpos){
-    zu64 pos = findFirst(before, startpos);
-    if(pos != none)
-        substitute(pos, before.size(), after);
-    return pos;
+    zu64 pos = this->findFirst(before, startpos);
+    if(pos == NONE)
+        return NONE;
+    this->substitute(pos, before.size(), after);
+    return pos + after.size();
 }
 
 // ///////////////////////////////////////////////////////////////////////////////

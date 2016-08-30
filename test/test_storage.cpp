@@ -1,8 +1,10 @@
-#include "test.h"
+#include "tests.h"
 #include "zstorage.h"
 #include "zdefaultstorage.h"
 
-int storage_test(){
+namespace LibChaosTest {
+
+void storage(){
     ZStorage *stor = new ZDefaultStorage;
 
     auto print = [&](){
@@ -60,6 +62,12 @@ int storage_test(){
     print();
 
     delete stor;
+}
 
-    return 0;
+ZArray<Test> storage_tests(){
+    return {
+        { "storage", storage, true, { "allocator-char" } },
+    };
+}
+
 }

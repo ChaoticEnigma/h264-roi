@@ -10,83 +10,75 @@
 #include "zexception.h"
 #include <atomic>
 
-#define ZLOG_DEBUG_DEPTH 100
-
 #define ZLOG_PREFILE LibChaos::ZPath(__FILE__).last()
 #define ZLOG_PRELINE LibChaos::ZString(__LINE__)
 #define ZLOG_PREFUNC LibChaos::ZString(__FUNCTION__)
 
-#if LIBCHAOS_BUILD == LIBCHAOS_RELEASE
-    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLogSource::NORMAL) << A
-    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::DEBUG) << A
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::ERRORS) << A
-    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL) << LibChaos::ZLog::raw << A
-    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL) << LibChaos::ZLog::this_thread << A
-    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL) << LibChaos::ZLog::stdio << A
+#if LIBCHAOS_BUILD == LIBCHAOS_DEBUG
+    // All context information provided on debug build
+    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLog::DEBUG, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
+#elif LIBCHAOS_BUILD == LIBCHAOS_RELEASE
+    // Debug logging disabled on release build
+    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO) << A
+    #define DLOG(A)
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS) << A
 #else
-    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLogSource::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
-    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::DEBUG, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLogSource::ERRORS, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
-    #define RLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::raw << A
-    #define TLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::this_thread << A
-    #define OLOG(A) LibChaos::ZLog(LibChaos::ZLogSource::NORMAL, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << LibChaos::ZLog::stdio << A
+    // Default logging on normal build
+    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO) << A
+    #define DLOG(A) LibChaos::ZLog(LibChaos::ZLog::DEBUG) << A
+    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS) << A
 #endif
-#define ORLOG(A) OLOG(LibChaos::ZLog::raw << A)
+
+#define RLOG(A)  LOG(LibChaos::ZLog::RAW << A)
+#define TLOG(A)  LOG(LibChaos::ZLog::THIS_THREAD << A)
+#define OLOG(A)  LOG(LibChaos::ZLog::STDIO << A)
 
 #define IF_LOG(A, B, C, D) if(A){ LOG( B << C ); } else { LOG( B << D ); }
 #define IF_DLOG(A, B, C, D) if(A){ DLOG( B << C ); } else { DLOG( B << D ); }
 
 namespace LibChaos {
 
-struct ZLogInfo {
-    enum info_type {
-        FILE = 1,
-        LINE = 2,
-        FUNCTION = 3,
-        CLOCK = 4,
-        DATE = 5,
-        TIME = 6,
-        THREAD = 7
-    };
-
-    ZLogInfo(info_type logtype, ZString loginfo) : type(logtype), info(loginfo){}
-
-    info_type type;
-    ZString info;
-};
-
-//! Logging provider.
+//! Formats a log entry and queues it with a ZLogWorker.
 class ZLog {
 public:
-    typedef ZLogSource::zlog_source zlog_source;
     typedef ZLogWorker::LogJob LogJob;
+    typedef int zlog_level;
+
+    // Log level
+    enum {
+        ERRORS   = 1,
+        WARNING = 2,
+        INFO    = 3,
+        VERBOSE = 4,
+        DEBUG   = 5,
+    };
 
     enum zlog_flag {
         // Actions
-        flush = 1,          // Flush log immediately
-        newln = 2,          // Append newline to buffer
-        flushln = 3,        // Append newline and flush log
+        FLUSH       = 1,    // Flush log immediately
+        NEWLN       = 2,    // Append newline to buffer
+        FLUSHLN     = 3,    // Append newline and flush log
 
         // Format Modifers
-        noln = 4,           // Disable automatic newlines for this object
-        raw = 5,            // This object will log without formatting
+        NOLN        = 4,    // Disable automatic newlines for this object
+        RAW         = 5,    // This object will log without formatting
 
         // Target Modifiers
-        stdio = 9,          // Current instance outputs only to stdout
+        STDIO       = 9,    // Current instance outputs only to stdout
 
         // Sequence Modifiers
-        this_thread = 12    // Log immediately from this thread, block until done
+        THIS_THREAD = 12,   // Log immediately from this thread, block until done
     };
 
-    ZLog(zlog_source source = ZLogSource::NORMAL);
-    ZLog(zlog_source source, ZString prefile, ZString preline, ZString prefunc);
+    ZLog(zlog_level source = ZLog::INFO);
+    ZLog(zlog_level source, ZString prefile, ZString preline, ZString prefunc);
 
     ~ZLog();
 
     ZLog &operator<<(zlog_flag);
     ZLog &log(ZString logtext);
-
-    ZLog &operator<<(ZLogInfo info);
 
     inline ZLog &operator<<(ZString text){ return log(text); } // Base overload
     inline ZLog &operator<<(const char *text){ return log(text); }
@@ -107,8 +99,10 @@ public:
     inline ZLog &operator<<(double num){ return log(ZString(num)); }
     inline ZLog &operator<<(bool tf){ return log(tf ? "true" : "false"); }
 
+    //! Concat \a text to buffer with prepended space.
     inline ZLog &operator,(ZString text){ return log(" ").log(text); } // Base overload
 
+    //! Get log object buffer and clear object.
     ZString pullBuffer();
 
     static ZString getThread();
@@ -117,9 +111,12 @@ public:
     static void init();
     static void deInit();
 
-    static void formatStdout(zlog_source type, ZString fmt);
-    static void formatStderr(zlog_source type, ZString fmt);
-    static void addLogFile(ZPath, zlog_source type, ZString fmt);
+    //! Set the standard output format string for \a level.
+    static inline void logLevelStdOut(zlog_level level, ZString fmt){ ZLogWorker::logLevelStdOut(level, fmt); }
+    //! Set the standard error format string for \a level.
+    static inline void logLevelStdErr(zlog_level level, ZString fmt){ ZLogWorker::logLevelStdErr(level, fmt); }
+    //! Set the file output format string for \a level on \a file.
+    static inline void logLevelFile(zlog_level level, ZPath file, ZString fmt){ ZLogWorker::logLevelFile(level, file, fmt); }
 
 private:
     void flushLog(bool final);

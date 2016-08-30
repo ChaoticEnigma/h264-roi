@@ -80,4 +80,13 @@ ZBinary ZRandom::generate(zu64 size){
     return buffer;
 }
 
+bool ZRandom::chance(double probability){
+    probability = MAX(probability, 0.0f);
+    probability = MIN(probability, 1.0f);
+    if(probability == 0.0f)
+        return false;
+    zu64 rand = genzu();
+    return ((double)rand / (double)ZU64_MAX) <= probability;
+}
+
 }

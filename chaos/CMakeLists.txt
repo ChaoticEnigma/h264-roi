@@ -120,7 +120,7 @@ SET(LibChaos_SOURCES
     string/zpath.cpp
     string/zstring.h
     string/zstring.cpp
-    string/zstring-encode.cpp
+    string/zstring-unicode.cpp
     string/zxml.h
     string/zxml.cpp
 
@@ -227,6 +227,9 @@ ENDIF()
 ### =================== BUILD =================== ###
 
 ADD_LIBRARY(chaos ${LIBCHAOS_LINK} ${LibChaos_HEADERS} ${LibChaos_SOURCES})
+SET_PROPERTY(TARGET chaos PROPERTY CXX_STANDARD 14)
+SET_PROPERTY(TARGET chaos PROPERTY CXX_STANDARD_REQUIRED 11)
+SET_PROPERTY(TARGET chaos PROPERTY COMPILE_FLAGS ${LIBCHAOS_CXX_FLAGS})
 
 IF(LIBCHAOS_WITH_PNG)
     TARGET_LINK_LIBRARIES(chaos ${LIBPNG_LIB} ${ZLIB_LIB})

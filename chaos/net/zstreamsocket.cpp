@@ -7,12 +7,12 @@
 
 namespace LibChaos {
 
-ZStreamSocket::ZStreamSocket() : ZSocket(ZSocket::stream){
+ZStreamSocket::ZStreamSocket() : ZSocket(ZSocket::STREAM){
 
 }
 
-bool ZStreamSocket::open(ZAddress port){
-    return ZSocket::open(port);
+bool ZStreamSocket::open(){
+    return ZSocket::open();
 }
 
 void ZStreamSocket::close(){
@@ -21,6 +21,10 @@ void ZStreamSocket::close(){
 
 bool ZStreamSocket::isOpen() const {
     return ZSocket::isOpen();
+}
+
+bool ZStreamSocket::bind(ZAddress port){
+    return ZSocket::bind(port);
 }
 
 bool ZStreamSocket::connect(ZAddress addr, ZConnection &conn){
@@ -35,12 +39,14 @@ bool ZStreamSocket::listen(){
     return ZSocket::listen();
 }
 
-bool ZStreamSocket::accept(ZConnection &conn){
+ZPointer<ZConnection> ZStreamSocket::accept(){
     zsocktype connfd;
     ZAddress connaddr;
     bool ret = ZSocket::accept(connfd, connaddr);
-    conn = ZConnection(connfd, connaddr);
-    return ret;
+    if(ret)
+        return ZPointer<ZConnection>(new ZConnection(connfd, connaddr));
+    else
+        return nullptr;
 }
 
 }

@@ -12,6 +12,7 @@
 
 namespace LibChaos {
 
+//! PPM encoder/decoder.
 class ZPPM : public YImageBackend {
 public:
     ZPPM(ZImage *image) : _image(image){}

@@ -26,9 +26,7 @@ typedef zbyte zbinary_bytetype;
 class ZBinary : public ZAccessor<zbinary_bytetype>, public ZPosition, public ZReader, public ZWriter {
 public:
     typedef zbinary_bytetype bytetype;
-    enum {
-        none = ZU64_MAX
-    };
+    enum { NONE = ZU64_MAX };
 
 public:
     ZBinary(ZAllocator<zbyte> *alloc = new ZAllocator<zbyte>) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0), _rwpos(0){}
@@ -56,6 +54,8 @@ public:
     }
     ZBinary(ZString str) : ZBinary((const zbyte *)str.cc(), str.size()){}
 
+    //! Copy constructor.
+    // TODO: Reference-count ZBinary
     ZBinary(const ZBinary &other) : ZBinary(other._data, other._size){
         // _rwpos is not copied
     }
@@ -64,6 +64,7 @@ public:
         clear();
         delete _alloc;
     }
+
     void clear(){
         _size = 0;
         _realsize = 0;
@@ -107,6 +108,7 @@ public:
         _size = size;
     }
 
+    ZBinary &fill(bytetype dat);
     ZBinary &fill(bytetype dat, zu64 size);
 
     ZBinary &concat(const ZBinary &other);
@@ -131,6 +133,24 @@ public:
 
     ZBinary &nullTerm();
     ZBinary printable() const;
+
+    /*! Format bytes as hexadecimal digits.
+     *  \param groupsize The number of bytes between spaces.
+     *  \param linesize The number of groups on each line.
+     *  \param upper Uppercase hexadecimal.
+     */
+    ZString strBytes(zu16 groupsize = 0, zu16 linesize = 0, bool upper = false) const;
+
+    /*! Format bytes as hexdump.
+     *  \param groupsize The number of bytes between spaces.
+     *  \param linesize The number of groups on each line.
+     *  \param upper Uppercase hexadecimal.
+     *  \param offset Value to start offset at.
+     */
+    ZString dumpBytes(zu16 groupsize = 4, zu16 linesize = 4, bool upper = false, zu64 offset = 0) const;
+
+    //! Get single-character printable representation of a byte.
+    static ZString displayByte(zbyte byte);
 
     const char *asChar() const {
         return (char *)_data;

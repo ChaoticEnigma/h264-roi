@@ -18,29 +18,18 @@
 #include "zclock.h"
 
 // Default Log formats
-#define LOGONLY "%log%"
-#define TIMELOG "%time% - %log%"
-#define TIMETHREAD "%time% %thread% - %log%"
-#define DETAILLOG "%time% %thread% %function% (%file%:%line%) - %log%"
+#define LOGONLY     "%log%"
+#define TIMELOG     "%time% - %log%"
+#define TIMETHREAD  "%time% %thread% - %log%"
+#define DETAILLOG   "%time% %thread% %function% (%file%:%line%) - %log%"
 
 namespace LibChaos {
 
-namespace ZLogSource {
-    enum zlog_source {
-        NORMAL = 1,
-        DEBUG = 2,
-        ERRORS = 3,
-        ALL = 4
-    };
-}
-
-//! Asynchronous ZLog log formatter / writer.
+//! ZLog entry handler, processor, formatter, writer.
 class ZLogWorker {
 public:
-    typedef ZLogSource::zlog_source zlog_source;
-
     struct LogJob {
-        zlog_source source;
+        int level;
 
         ZTime time;
         ZClock clock;
@@ -67,12 +56,16 @@ public:
     void queue(LogJob *job);
     static void doLog(LogJob *job);
 
-    static void formatStdout(zlog_source type, ZString fmt);
-    static void formatStderr(zlog_source type, ZString fmt);
-    static void addLogFile(ZPath, zlog_source type, ZString fmt);
+    static void logLevelStdOut(int type, ZString fmt);
+    static void logLevelStdErr(int level, ZString fmt);
+    static void logLevelFile(int level, ZPath file, ZString fmt);
+
+    static void setStdOutEnable(bool set);
+    static void setStdErrEnable(bool set);
+
 private:
-    static void *zlogWorker(void *);
-    static void sigHandle(int);
+    static void *zlogWorker(ZThreadArg *zarg);
+    static void sigHandle(int sig);
 
     static ZString getThread(ztid thread);
     static ZString makeLog(const LogJob *job, ZString fmt);

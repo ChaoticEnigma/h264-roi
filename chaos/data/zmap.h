@@ -33,7 +33,7 @@ namespace LibChaos {
  */
 template <typename K, typename T> class ZMap {
 public:
-    enum { none = ZU64_MAX };
+    enum { NONE = ZU64_MAX };
 public:
     typedef zu64 maphash;
 
@@ -262,6 +262,7 @@ public:
             // Re-map old entries
             while(current != nullptr){
                 // Find first empty slot
+                bool next = false;
                 for(zu64 j = 0; j < _realsize; ++j){
                     zu64 pos = _getPos(current->hash, j);
                     if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
@@ -276,10 +277,12 @@ public:
                         _kalloc.rawmove(&(current->key), &(_data[pos].key));
                         _talloc.rawmove(&(current->value), &(_data[pos].value));
                         current = current->next;
+                        next = true;
                         break;
                     }
-                    throw ZException("Could not add entry in hash table resize");
                 }
+                if(!next)
+                    throw ZException("Could not add entry in hash table resize");
             }
             // Destroy old table
             _alloc->dealloc(olddata);
@@ -288,7 +291,7 @@ public:
 
     // TODO: ZMap erase
     void erase(K test){
-
+        throw ZException("Unimplemented");
     }
 
     //! Get an array of the keys in the map.
@@ -332,7 +335,7 @@ private:
     }
 
 public:
-    class ZMapIterator : public ZConstSimplexIterator<K> {
+    class ZMapIterator : public ZSimplexConstIterator<K> {
     public:
         ZMapIterator(const ZMap<K,T> *map, MapElement *start_elem) : _map(map), _elem(start_elem){}
 

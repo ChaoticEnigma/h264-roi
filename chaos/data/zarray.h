@@ -24,32 +24,17 @@ namespace LibChaos {
  */
 template <typename T> class ZArray : public YIndexedAccess<T>, public YPushPopAccess<T> {
 public:
-    enum {
-        none = ZU64_MAX
-    };
+    enum { NONE = ZU64_MAX };
 
     class ZArrayIterator;
 
 public:
+    //! ZArray default constructor, optional user allocator.
     ZArray(ZAllocator<T> *alloc = new ZAllocator<T>) : _alloc(alloc), _data(nullptr), _size(0), _realsize(0){
         reserve(ZARRAY_INITIAL_CAPACITY);
     }
-    ZArray(const T *raw, zu64 size) : ZArray(){
-        reserve(size);
-        for(zu64 i = 0; i < size; ++i)
-            _alloc->construct(&_data[i], raw[i]);
-        _size = size;
-    }
-    ZArray(const T &first) : ZArray(){
-        _alloc->construct(_data, first);
-        _size = 1;
-    }
-    ZArray(const ZArray<T> &other) : ZArray(){
-        reserve(other._size);
-        for(zu64 i = 0; i < other._size; ++i)
-            _alloc->construct(&_data[i], other[i]);
-        _size = other._size;
-    }
+
+    //! ZArray initializer list constructor.
     ZArray(std::initializer_list<T> ls) : ZArray(){
         reserve(ls.size());
         zu64 i = 0;
@@ -60,15 +45,38 @@ public:
         _size = ls.size();
     }
 
+    //! ZArray size constructor.
+    ZArray(zu64 size) : ZArray(){
+        resize(size);
+    }
+
+    //! ZArray buffer constructor.
+    ZArray(const T *raw, zu64 size) : ZArray(){
+        reserve(size);
+        for(zu64 i = 0; i < size; ++i)
+            _alloc->construct(&_data[i], raw[i]);
+        _size = size;
+    }
+
+    //! ZArray copy constructor.
+    ZArray(const ZArray<T> &other) : ZArray(){
+        reserve(other._size);
+        for(zu64 i = 0; i < other._size; ++i)
+            _alloc->construct(&_data[i], other[i]);
+        _size = other._size;
+    }
+
+    //! ZArray destructor.
     ~ZArray(){
         clear();
         delete _alloc;
     }
 
+    //! Destroy all elements in array.
     void clear(){
         _alloc->destroy(_data, _size); // Destroy objects
-        _alloc->dealloc(_data); // Delete memory
         _size = 0;
+        _alloc->dealloc(_data); // Delete memory
         _data = nullptr;
     }
 
@@ -231,7 +239,7 @@ public:
             if(_data[i] == test)
                 return i;
         }
-        return none;
+        return NONE;
     }
 
     //

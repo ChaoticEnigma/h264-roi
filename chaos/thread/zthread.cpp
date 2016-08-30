@@ -19,73 +19,83 @@
     #include <thread>
 #endif
 
-namespace LibChaos {
-
-bool ZThreadArg::stop(){
-    return (bool)*_stop;
-}
-
-ZThread::ZThread() :  _thread(0), _stop(false), _alive(false), _copyable(false){
-
-}
-ZThread::ZThread(funcType func) : ZThread(){
-    run(func);
-}
-ZThread::ZThread(funcType func, void *argptr) : ZThread(){
-    run(func, argptr);
-}
-ZThread::ZThread(const ZThread &other) : _thread(other._thread), _param(other._param), _stop((bool)other._stop),
-                                         _return(other._return), _alive(other._alive), _copyable(other._copyable){
-
-}
-
-ZThread::~ZThread(){
-    if (!_copyable){
-        detach();
-    }
-}
-
 #ifdef ZTHREAD_WINTHREADS
 
 #if COMPILER == MSVC
-DWORD _stdcall ZThread::entry_win(LPVOID ptr){
+DWORD _stdcall entry_win(LPVOID ptr){
 #else
-DWORD ZThread::entry_win(LPVOID ptr){
+DWORD entry_win(LPVOID ptr){
 #endif
     ZThread *thr = (ZThread *)ptr;
+    thr->_setThreadAlive(true);
     thr->_param.funcptr(&thr->_param.zarg); // Run function
-    thr->_alive = false;
+    thr->_setThreadAlive(false);
     return 0;
 }
 
 #else
 
-void *ZThread::entry_posix(void *ptr){
-    ZThread *thr = (ZThread*)ptr;
-    void *ret = thr->_param.funcptr(&thr->_param.zarg);
-    //pthread_exit(ret);
-    thr->_alive = false;
+void *entry_posix(void *ptr){
+    using namespace LibChaos;
+    ZThread::zthreadparam *param = (ZThread::zthreadparam *)ptr;
+
+    param->mutex.lock();
+    if(param->handle)
+        param->handle->_setThreadAlive(true);
+    param->mutex.unlock();
+
+    // Run thread function
+    void *ret = param->func(&param->zarg);
+
+    param->mutex.lock();
+    if(param->handle)
+        param->handle->_setThreadAlive(false);
+    param->mutex.unlock();
+
     return ret;
 }
 
 #endif
 
-bool ZThread::run(funcType func){
-    return run(func, NULL);
+namespace LibChaos {
+
+bool ZThreadArg::stop(){
+    return _stop;
 }
-bool ZThread::run(funcType func, void *argptr){
-    _param.zarg._stop = &_stop;
-    _param.funcptr = func;
-    _param.zarg.arg = argptr;
+
+ZThread::ZThread() : _thread(0), _param(nullptr), _alive(false), _copyable(false){
+
+}
+
+ZThread::ZThread(funcType func) : ZThread(){
+    run(func);
+}
+
+ZThread::ZThread(funcType func, void *user) : ZThread(){
+    run(func, user);
+}
+
+ZThread::~ZThread(){
+    detach();
+}
+
+bool ZThread::run(funcType func){
+    return run(func, nullptr);
+}
+
+bool ZThread::run(funcType func, void *user){
+    _param = new zthreadparam;
+    _param->zarg._stop = false;
+    _param->func = func;
+    _param->zarg.arg = user;
 
 #ifdef ZTHREAD_WINTHREADS
-    _thread = CreateThread(NULL, 0, entry_win, this, 0, NULL);
+    _thread = CreateThread(NULL, 0, entry_win, _param, 0, NULL);
     if(_thread == NULL)
         return false;
 #else
-    _return = pthread_create(&_thread, NULL, entry_posix, this);
-    //std::cout << "create " << ret << std::endl;
-    if(_return != 0)
+    int ret = pthread_create(&_thread, NULL, entry_posix, _param);
+    if(ret != 0)
         return false;
 #endif
     return true;
@@ -97,9 +107,10 @@ void *ZThread::join(){
         WaitForSingleObject(_thread, INFINITE);
     return NULL;
 #else
-    void *retval = NULL;
-    if(_alive)
-        _return = pthread_join(_thread, &retval);
+    void *retval = nullptr;
+    if(_thread && _alive){
+        pthread_join(_thread, &retval);
+    }
     return retval;
 #endif
 }
@@ -111,15 +122,21 @@ void ZThread::kill(){
         _alive = false;
     }
 #else
-    if(_alive){
-        _return = pthread_cancel(_thread);
+    if(_thread && _alive){
+        pthread_cancel(_thread);
+        _param->mutex.lock();
+        _param->handle = nullptr;
+        _param->mutex.unlock();
         _alive = false;
+        _thread = 0;
     }
 #endif
 }
 
 void ZThread::stop(){
-    _stop = true;
+    if(_param){
+        _param->zarg._stop = true;
+    }
 }
 
 void ZThread::detach(){
@@ -127,8 +144,14 @@ void ZThread::detach(){
     if(_alive)
         CloseHandle(_thread);
 #else
-    if(_alive)
-        _return = pthread_detach(_thread);
+    if(_thread && _alive){
+        pthread_detach(_thread);
+        _param->mutex.lock();
+        _param->handle = nullptr;
+        _param->mutex.unlock();
+        _alive = false;
+        _thread = 0;
+    }
 #endif
 }
 
@@ -146,7 +169,7 @@ void ZThread::yield(){
 #endif
 }
 
-void ZThread::sleep(zu64 seconds){
+void ZThread::sleep(zu32 seconds){
 #ifdef ZTHREAD_WINTHREADS
     Sleep((DWORD)(seconds * 1000));
 #else
@@ -154,7 +177,7 @@ void ZThread::sleep(zu64 seconds){
 #endif
 }
 
-void ZThread::msleep(zu64 milliseconds){
+void ZThread::msleep(zu32 milliseconds){
 #ifdef ZTHREAD_WINTHREADS
     Sleep((DWORD)milliseconds);
 #else
@@ -162,10 +185,10 @@ void ZThread::msleep(zu64 milliseconds){
 #endif
 }
 
-void ZThread::usleep(zu64 microseconds){
+void ZThread::usleep(zu32 microseconds){
 #ifdef ZTHREAD_WINTHREADS
     LARGE_INTEGER ft;
-    ft.QuadPart = (10 * microseconds); // Convert to 100 nanosecond interval, negative value indicates relative time
+    ft.QuadPart = (10 * (LONGLONG)microseconds); // Convert to 100 nanosecond interval, negative value indicates relative time
     HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
     SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
     WaitForSingleObject(timer, INFINITE);
@@ -175,15 +198,8 @@ void ZThread::usleep(zu64 microseconds){
 #endif
 }
 
-void ZThread::setCopyable(){
-    _copyable = true;
-}
-
 ztid ZThread::tid(){
     return (ztid)_thread;
-}
-bool ZThread::alive(){
-    return _alive;
 }
 
 ztid ZThread::thisTid(){
@@ -192,6 +208,14 @@ ztid ZThread::thisTid(){
 #else
     return (ztid)pthread_self();
 #endif
+}
+
+bool ZThread::alive(){
+    return _alive;
+}
+
+void ZThread::_setThreadAlive(bool alive){
+    _alive = alive;
 }
 
 }

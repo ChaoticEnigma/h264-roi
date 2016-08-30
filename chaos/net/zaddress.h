@@ -17,6 +17,7 @@
     #include <winsock2.h>
     #define IPV4_MAX 16
     #define IPV6_MAX 46
+    typedef int socklen_t;
 #else
     #if PLATFORM == MACOSX
         #include <sys/types.h>
@@ -40,8 +41,8 @@ protected:
 
 protected:
     int _family;
-    int _type;
-    int _protocol;
+    //int _type;
+    //int _protocol;
 
     ZString _name;
 
@@ -71,21 +72,24 @@ protected:
     zport _port;
 };
 
+struct SockAddr;
+
 class ZAddress : private ZAddressData {
 public:
     enum address_family {
-        ipv4 = AF_INET,
-        ipv6 = AF_INET6,
-        hostname = AF_UNSPEC,
-        unix = AF_UNIX
+        NAME = AF_UNSPEC,
+        UNIX = AF_UNIX,
+        IPV4 = AF_INET,
+        IPV6 = AF_INET6,
     };
 
     enum protocol_type {
-        ip = IPPROTO_IP,
-        tcp = IPPROTO_TCP,
-        udp = IPPROTO_UDP
+        IP  = IPPROTO_IP,
+        TCP = IPPROTO_TCP,
+        UDP = IPPROTO_UDP,
     };
 
+public:
     ZAddress();
     ZAddress(ZString str);
     ZAddress(ZString str, zport port);
@@ -98,58 +102,61 @@ public:
     ZAddress(const sockaddr_storage *);
     ZAddress(const sockaddr *sa);
 
-    ZAddress &operator=(ZAddress rhs);
-
     ~ZAddress();
 
-    inline bool operator==(const ZAddress &rhs) const {
-        if(     this->_family == rhs._family &&
-                this->_type == rhs._type &&
-                this->_protocol == rhs._protocol &&
-                this->_name == rhs._name &&
-                this->_v6_parts.first == rhs._v6_parts.first &&
-                this->_v6_parts.second == rhs._v6_parts.second &&
-                this->_port == rhs._port
-            )
-            return true;
-        return false;
-    }
+    ZAddress &operator=(ZAddress rhs);
+
+    bool operator==(const ZAddress &rhs) const;
     inline bool operator!=(const ZAddress &rhs) const {
         return !operator==(rhs);
     }
 
-    zport port() const;
+    zport port() const {
+        return _port;
+    }
     void setPort(zport port){
         _port = port;
     }
 
-    int family() const;
+    int family() const {
+        return _family;
+    }
     bool isName() const {
-        return _family == hostname;
+        return _family == NAME;
     }
+    ZString familyStr() const;
 
-    int type() const {
-        return _type;
-    }
-    void setType(int set){
-        _type = set;
-    }
+//    int type() const {
+//        return _type;
+//    }
+//    void setType(int set){
+//        _type = set;
+//    }
+//    ZString typeStr() const;
 
-    int protocol() const {
-        return _protocol;
-    }
-    void setProtocol(int set){
-        _protocol = set;
-    }
+//    int protocol() const {
+//        return _protocol;
+//    }
+//    void setProtocol(int set){
+//        _protocol = set;
+//    }
+//    ZString protocolStr() const;
 
+    //! Get string representation of address.
     ZString str() const;
 
-    static ZArray<ZAddress> lookUp(ZAddress name);
+    static ZList<SockAddr> lookUp(ZAddress name);
 
+    /*! Populate a sockaddr_storage struct with the necessary values from this ZAddress.
+     *  \note \a ptr is zeroed before population.
+     */
     bool populate(sockaddr_storage *ptr) const;
+    socklen_t getSockAddrLen() const;
 
+    //! Get a string describing the address in the form [addr]:port,family,type,protocol.
     ZString debugStr() const {
-        return ZString() + '[' + str() + "]:" + _port + ',' + _family + '-' + _type + '-' + _protocol;
+        //return ZString() + '[' + str() + "]:" + port() + ',' + family() + '-' + type() + '-' + protocol();
+        return ZString() + '[' + str() + "]:" + port() + ',' + familyStr();
     }
 
 private:
@@ -157,6 +164,12 @@ private:
     bool parseIP(int, ZString);
 
     //static ZString strIP(int af, const void *ptr);
+};
+
+struct SockAddr {
+    ZAddress addr;
+    int type;
+    int proto;
 };
 
 }
