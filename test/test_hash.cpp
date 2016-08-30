@@ -107,6 +107,13 @@ void map(){
     LOG("Forward Iterator: " << map2.size());
     auto i2f = map2.begin();
     test_forward_iterator(&i2f, map2.size());
+
+    LOG("Keys:");
+    ZArray<ZString> keys = map1.keys();
+    for(auto it = keys.begin(); it.more(); ++it){
+        LOG(*it);
+    }
+    TASSERT(keys.size() == map1.size());
 }
 
 void set(){
@@ -142,8 +149,8 @@ void set(){
 ZArray<Test> hash_tests(){
     return {
         { "hash",   hash,   true, {} },
-        { "map",    map,    true, {} },
-        { "set",    set,    true, {} },
+        { "map",    map,    true, { "hash" } },
+        { "set",    set,    true, { "hash" } },
     };
 }
 

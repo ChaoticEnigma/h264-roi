@@ -298,7 +298,7 @@ public:
     ZArray<K> keys() const {
         ZArray<K> keys;
         for(auto it = begin(); it.more(); ++it){
-            keys.append(*it);
+            keys.push(*it);
         }
         return keys;
     }

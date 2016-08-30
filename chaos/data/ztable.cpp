@@ -35,8 +35,8 @@ ZArray<ZString> ZTable::getColumn(ZString name){
     return column;
 }
 
-ZMap<ZString> ZTable::getRecord(zu64 row){
-    ZMap<ZString> map;
+ZMap<ZString, ZString> ZTable::getRecord(zu64 row){
+    ZMap<ZString, ZString> map;
     for(auto it = _columns.begin(); it.more(); ++it){
         map[*it] = _records[row][_columns[*it]];
     }

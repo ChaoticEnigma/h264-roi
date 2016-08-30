@@ -23,7 +23,7 @@ public:
     //! Get an array of fields in \a column.
     ZArray<ZString> getColumn(ZString name);
     //! Get a map of column names to fields in \a row.
-    ZMap<ZString> getRecord(zu64 row);
+    ZMap<ZString, ZString> getRecord(zu64 row);
 
 private:
     ZMap<ZString, zu64> _columns;

@@ -158,19 +158,17 @@ void tcp_server(){
     LOG("Listening...");
 
     while(run){
-        ZConnection client;
-        if(!sock.accept(client))
-            continue;
+        ZPointer<ZConnection> client = sock.accept();
 
-        LOG("accept " << client.other().debugStr());
+        LOG("accept " << client->other().debugStr());
 
         ZBinary data;
-        client.read(data);
+        client->read(data);
         LOG("read (" << data.size() << "): \"" << ZString(data.printable().asChar()) << "\"");
 
         ZString str = "hello back there!";
         ZBinary snddata((const unsigned char *)str.cc(), str.size());
-        client.write(snddata);
+        client->write(snddata);
         LOG("write (" << snddata.size() << "): \"" << ZString(snddata.printable().asChar()) << "\"");
     }
 }
