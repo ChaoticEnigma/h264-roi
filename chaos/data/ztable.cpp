@@ -15,7 +15,8 @@ ZArray<ZString> &ZTable::record(zu64 row){
 }
 
 void ZTable::addColumn(ZString name){
-    _columns[name] = _columns.size();
+    zu64 num = _columns.size();
+    _columns[name] = num;
     for(zu64 i = 0; i < _records.size(); ++i){
         _records[i].resize(_columns.size());
     }

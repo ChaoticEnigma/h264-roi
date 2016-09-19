@@ -19,6 +19,7 @@ SET(LibChaos_Test_SOURCES
     test_list.cpp
     test_iterator.cpp
 
+    test_table.cpp
     test_graph.cpp
 
     test_string.cpp
