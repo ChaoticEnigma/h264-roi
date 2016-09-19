@@ -50,7 +50,7 @@ ZThread::~ZThread(){
 #if COMPILER == MSVC
 DWORD _stdcall ZThread::entry_win(LPVOID ptr){
 #else
-DWORD ZThread::entry_win(LPVOID ptr){
+DWORD __attribute__((__stdcall__)) ZThread::entry_win(LPVOID ptr){
 #endif
     ZThread *thr = (ZThread *)ptr;
     thr->_param.funcptr(&thr->_param.zarg); // Run function

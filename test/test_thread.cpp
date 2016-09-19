@@ -66,7 +66,7 @@ CRITICAL_SECTION gCS; // shared structure
 const int gcMaxCount = 10;
 volatile int gCount = 0;
 
-DWORD threadLoop(void *name){
+DWORD __attribute__((__stdcall__)) threadLoop(void *name){
     while(true){
         TLOG((char *)name << " entering critical Section...");
 //        EnterCriticalSection(&gCS);

@@ -72,7 +72,7 @@ private:
 #if COMPILER == MSVC
     static DWORD _stdcall entry_win(LPVOID ptr);
 #else
-    static DWORD entry_win(LPVOID ptr);
+    static DWORD __attribute__((__stdcall__)) entry_win(LPVOID ptr);
 #endif
 #else
     static void *entry_posix(void *ptr);
