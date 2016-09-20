@@ -99,7 +99,7 @@ ZString ZClock::clockStr(timespec cl){
     secs = secs - (mins * 60);
     int hrs = mins / 60;
     mins = mins - (hrs * 60);
-    return ZString::ItoS((zu64)hrs, 10, 2) + ":" + ZString::ItoS((zu64)mins, 10, 2) + ":" + ZString::ItoS((zu64)secs, 10, 2) + ":" + ZString::ItoS((zu64)msecs, 10, 3);
+    return ZString::ItoS((zu64)hrs, 10, 2) + ":" + ZString::ItoS((zu64)mins, 10, 2) + ":" + ZString::ItoS((zu64)secs, 10, 2) + "." + ZString::ItoS((zu64)msecs, 10, 3);
 }
 
 }
