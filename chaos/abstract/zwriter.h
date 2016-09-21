@@ -38,10 +38,10 @@ public:
             }
             // Write
             zu64 written = write(buffer, readsize);
-            totalwritten += written;
             if(written != readsize){
                 break;
             }
+            totalwritten += written;
         }
         delete[] buffer;
         return totalwritten;

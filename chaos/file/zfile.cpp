@@ -32,19 +32,41 @@
 
 namespace LibChaos {
 
+ZFile::ZFile(zfile_special type) : _data(new ZFileData){
+    _data->type = type;
+    switch(type){
+        case REGULAR:
+            // Regular file
+            _data->options = readbit;
 #ifdef ZFILE_WINAPI
-ZFile::ZFile() : _data(new ZFileData){
-    _data->options = 0 | readbit;
-    _data->handle = NULL;
-}
+            _data->handle = NULL;
 #else
-ZFile::ZFile() : _data(new ZFileData){
-    _data->options = 0 | readbit;
-    _data->file = NULL;
-}
+            _data->file = NULL;
 #endif
+            break;
 
-ZFile::ZFile(ZPath name, zu16 mode) : ZFile(){
+        case STDIN:
+            // Standard input
+            _data->file = stdin;
+            _data->options = readbit;
+            break;
+        case STDOUT:
+            // Standard output
+            _data->file = stdout;
+            _data->options = writebit;
+            break;
+        case STDERR:
+            // Standard error
+            _data->file = stderr;
+            _data->options = writebit;
+            break;
+
+        default:
+            break;
+    }
+}
+
+ZFile::ZFile(ZPath name, zu16 mode) : ZFile(REGULAR){
     open(name, mode);
 }
 
@@ -74,6 +96,7 @@ bool ZFile::open(ZPath path){
     }
 
 #ifdef ZFILE_WINAPI
+
     DWORD access = 0;
     if(_data->options & readbit)
         access |= GENERIC_READ;
@@ -105,8 +128,8 @@ bool ZFile::open(ZPath path){
         return false;
     }
 
-    return true;
 #else
+
     // Set flags
     ZString modech;
     if(_data->options & readwritebits){ // read / write
@@ -136,8 +159,9 @@ bool ZFile::open(ZPath path){
         return false;
     }
 
-    return true;
 #endif
+
+    return true;
 }
 
 bool ZFile::open(ZPath path, zu16 mode){

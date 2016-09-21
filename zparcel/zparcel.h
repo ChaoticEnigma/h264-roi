@@ -153,10 +153,13 @@ public:
      * \exception ZException Object does not exist.
      * \exception ZException Object has wrong type.
      */
-    ZString fetchFile(ZUID id);
+    ZString fetchFile(ZUID id, zu64 *offset = nullptr, zu64 *size = nullptr);
 
     //! Get type of parcel object.
     objtype getType(ZUID id);
+
+    //! Get the ZFile handle for the parcel.
+    ZFile getHandle() { return _file; }
 
     //! Get string name of object type.
     static ZString typeName(objtype type);

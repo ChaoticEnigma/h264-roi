@@ -198,7 +198,7 @@ ZParcel::objerr ZParcel::storeBlob(ZUID id, ZBinary blob){
 
 ZParcel::objerr ZParcel::storeFile(ZUID id, ZPath path){
     // Get relative path
-    ZString name = path.relativeTo(ZPath(_file.path()).parent()).str();
+    ZString name = ZPath(path).relativeTo(ZPath(_file.path()).parent()).str();
 
     // Open file
     ZFile file(path, ZFile::READ);
@@ -302,31 +302,37 @@ ZBinary ZParcel::fetchBlob(ZUID id){
     return bin;
 }
 
-ZString ZParcel::fetchFile(ZUID id){
+ZString ZParcel::fetchFile(ZUID id, zu64 *offset, zu64 *size){
     ObjectInfo info;
     _getObjectInfo(id, info);
     if(info.type != FILEOBJ)
         throw ZException("fetchFile called for wrong Object type");
     _file.seek(info.offset);
+
     zu64 total = _file.readbeu64();
     zu16 strlen = _file.readbeu16();
-    zu64 size = total - strlen - 2;
+    zu64 flsize = total - strlen - 2;
 
     ZBinary strbin;
     _file.read(strbin, strlen);
     ZString name(strbin.raw(), strlen);
 
-    ZFile file(name, ZFile::WRITE);
+//    ZFile file(name, ZFile::WRITE);
 
     // Dump payload
-    ZBinary buff;
-    zu64 len = 0;
-    _file.seek(info.offset + 8 + 2 + strlen);
-    while(len < size){
-        buff.clear();
-        size = size - _file.read(buff, MIN(1 << 15, size));
-        ZASSERT(file.write(buff), "write failed");
-    }
+//    ZBinary buff;
+//    zu64 len = 0;
+//    _file.seek(info.offset + 8 + 2 + strlen);
+//    while(len < size){
+//        buff.clear();
+//        size = size - _file.read(buff, MIN(1 << 15, size));
+//        ZASSERT(file.write(buff), "write failed");
+//    }
+
+    if(offset != nullptr)
+        *offset = info.offset + 8 + 2 + strlen;
+    if(size != nullptr)
+        *size = flsize;
 
     return name;
 }

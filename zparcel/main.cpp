@@ -43,14 +43,14 @@ int mainwrap(int argc, char **argv){
     cmdstr.substr(0, cmdstr.size() - 1);
     argstr.substr(0, argstr.size() - 1);
 
-    LOG("ZParcel Command: \"" << argstr << "\"");
+//    LOG("ZParcel Command: \"" << argstr << "\"");
 
     if(args.size() > 0 && args[0] == "create"){
         if(args.size() != 2){
-            LOG("Usage: create <file>");
+            ELOG("Usage: create <file>");
             return EXIT_FAILURE;
         }
-        LOG("Creating new ZParcel " << args[1]);
+//        LOG("Creating new ZParcel " << args[1]);
 
         ZParcel parcel;
         bool ok = parcel.create(ZString(args[1]));
@@ -58,60 +58,86 @@ int mainwrap(int argc, char **argv){
 
     } else if(args.size() > 0 && args[0] == "list"){
         if(args.size() != 2){
-            LOG("Usage: list <file>");
+            ELOG("Usage: list <file>");
             return EXIT_FAILURE;
         }
-        LOG("Listing Objects in ZParcel " << args[1]);
+//        LOG("Listing Objects in ZParcel " << args[1]);
 
     } else if(args.size() > 0 && args[0] == "store"){
         if(args.size() != 5){
-            LOG("Usage: store <file> <id> <type> <value>");
+            ELOG("Usage: store <file> <id> <type> <value>");
             return EXIT_FAILURE;
         }
-        LOG("Storing Object in ZParcel " << args[1]);
+//        LOG("Storing Object in ZParcel " << args[1]);
 
         ZParcel parcel;
         bool ok = parcel.open(ZString(args[1]));
-        if(ok){
-            LOG(args[2]);
-            ZString type = args[3];
-            if(type == "null"){
-                parcel.storeNull(ZUID(args[2]));
-            } else if(type == "bool"){
-                parcel.storeBool(ZUID(args[2]), (ZString(args[4]) == "true" ? true : false));
-            } else if(type == "uint"){
-                parcel.storeUint(ZUID(args[2]), ZString(args[4]).tozu64());
-            } else if(type == "int" ||
-                      type == "sint"){
-                parcel.storeSint(ZUID(args[2]), ZString(args[4]).tint());
-            } else if(type == "float" ||
-                      type == "double"){
-                parcel.storeFloat(ZUID(args[2]), ZString(args[4]).toFloat());
-            } else if(type == "uid" ||
-                      type == "uuid" ||
-                      type == "zuid"){
-                parcel.storeZUID(ZUID(args[2]), ZUID(args[4]));
-            } else if(type == "str" ||
-                      type == "string"){
-                parcel.storeString(ZUID(args[2]), ZString(args[4]));
-            } else if(type == "bin" ||
-                      type == "blob" ||
-                      type == "binary"){
-                ZBinary bin;
-                ZFile::readBinary(ZString(args[4]), bin);
-                parcel.storeBlob(ZUID(args[2]), bin);
-            } else if(type == "file"){
-                parcel.storeFile(ZUID(args[2]), ZString(args[4]));
-            } else {
-                ELOG("Unknown type");
-            }
-        } else {
+        if(!ok){
             ELOG("Failed to open");
+            return EXIT_FAILURE;
         }
+
+        ZUID uid = args[2];
+        if(uid == ZUID_NIL){
+            ELOG("Invalid UUID");
+            return EXIT_FAILURE;
+        }
+
+        ZString type = args[3];
+        ZString value = args[4];
+        ZParcel::objerr err;
+
+        if(type == "null"){
+            err = parcel.storeNull(uid);
+
+        } else if(type == "bool"){
+            err = parcel.storeBool(uid, (value == "true" ? true : false));
+
+        } else if(type == "uint"){
+            err = parcel.storeUint(uid, value.tozu64());
+
+        } else if(type == "int" ||
+                  type == "sint"){
+            err = parcel.storeSint(uid, value.tint());
+
+        } else if(type == "float" ||
+                  type == "double"){
+            err = parcel.storeFloat(uid, value.toFloat());
+
+        } else if(type == "uid" ||
+                  type == "uuid" ||
+                  type == "zuid"){
+            err = parcel.storeZUID(uid, value);
+
+        } else if(type == "str" ||
+                  type == "string"){
+            err = parcel.storeString(uid, value);
+
+        } else if(type == "bin" ||
+                  type == "blob" ||
+                  type == "binary"){
+            ZBinary bin;
+            ZFile::readBinary(value, bin);
+            err = parcel.storeBlob(uid, bin);
+
+        } else if(type == "file"){
+            err = parcel.storeFile(uid, value);
+
+        } else {
+            ELOG("Unknown type");
+            return EXIT_FAILURE;
+        }
+
+        if(err != ZParcel::OK){
+            ELOG("Failed to store: " << err);
+            return EXIT_FAILURE;
+        }
+
+        LOG(uid.str() << " OK");
 
     } else if(args.size() > 0 && args[0] == "fetch"){
         if(args.size() != 3){
-            LOG("Usage: fetch <file> <id>");
+            ELOG("Usage: fetch <file> <id>");
             return EXIT_FAILURE;
         }
 //        LOG("Fetching Object from ZParcel " << args[1]);
@@ -143,9 +169,23 @@ int mainwrap(int argc, char **argv){
                 case ZParcel::BLOBOBJ:
                     LOG(parcel.fetchBlob(ZUID(args[2])));
                     break;
-                case ZParcel::FILEOBJ:
-                    LOG(parcel.fetchFile(ZUID(args[2])));
+                case ZParcel::FILEOBJ: {
+                    zu64 offset;
+                    zu64 size;
+                    ZString name = parcel.fetchFile(ZUID(args[2]), &offset, &size);
+                    ZFile pfile = parcel.getHandle();
+                    pfile.seek(offset);
+
+                    ZFile file(ZFile::STDOUT);
+                    ZBinary buff;
+                    zu64 len = 0;
+                    while(len < size){
+                        buff.clear();
+                        size = size - pfile.read(buff, MIN(1 << 15, size));
+                        ZASSERT(file.write(buff), "write failed");
+                    }
                     break;
+                }
                 default:
                     ELOG("Unknown type");
                     return EXIT_FAILURE;
@@ -158,10 +198,10 @@ int mainwrap(int argc, char **argv){
 
     } else if(args.size() > 0 && args[0] == "edit"){
         if(args.size() != 4){
-            LOG("Usage: edit <file> <id> <value>");
+            ELOG("Usage: edit <file> <id> <value>");
             return EXIT_FAILURE;
         }
-        LOG("Editing Object in ZParcel " << args[1]);
+//        LOG("Editing Object in ZParcel " << args[1]);
 
     } else {
         LOG("Commands:");

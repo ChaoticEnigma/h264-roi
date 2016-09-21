@@ -29,6 +29,13 @@ namespace LibChaos {
  */
 class ZFile : public ZPosition, public ZReader, public ZWriter {
 public:
+    enum zfile_special {
+        REGULAR,
+        STDIN,
+        STDOUT,
+        STDERR,
+    };
+
     enum zfile_mode {
         READ        = 0x01,     //!< Set to allow reading.
         WRITE       = 0x02,     //!< Set to allow writing (implies create)
@@ -38,7 +45,7 @@ public:
     };
 
 public:
-    ZFile();
+    ZFile(zfile_special type = REGULAR);
     ZFile(ZPath path, zu16 mode = READ);
     ~ZFile();
 
@@ -130,6 +137,7 @@ private:
     };
 
     struct ZFileData {
+        zfile_special type;
         zu16 options;
         ZPath path;
 #ifdef ZFILE_WINAPI
