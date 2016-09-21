@@ -67,7 +67,7 @@ INCLUDE(cmake/ConfigureTarget.cmake)
 ## Tools
 
 # LibChaos Test
-ADD_SUBDIRECTORY(test)
+ADD_SUBDIRECTORY(tests)
 
 # LibChaos Utils
 ADD_SUBDIRECTORY(utils)
