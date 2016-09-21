@@ -48,15 +48,11 @@ ZMutex cachelock;
 ZBinary cachemac;
 
 /*! Generates an RFC 4122 compliant UUID of \a type.
- *  Default is time-based UUID (type 1).
+ *  If type is not a supported type id, ZUID will be initialized to nil uuid.
  */
 ZUID::ZUID(uuidtype type){
-    if(type == NIL){
-        // Nil UUID
-        for(zu8 i = 0; i < 16; ++i){
-            _id_octets[i] = 0;
-        }
-
+    if(type == UNINIT){
+        // Uninitialized, for internal use.
     } else if(type == TIME){
         // Version 1 UUID: Time-Clock-MAC
         zuidlock.lock();
@@ -127,9 +123,12 @@ ZUID::ZUID(uuidtype type){
 
         _id_octets[8] &= 0x3F; // 0b00111111 // Clear the 2 highest bits of the 9th byte
         _id_octets[8] |= 0x80; // 0b10000000 // Insert UUID variant "10x"
-
     } else {
-        ELOG("Invalid ZUID type");
+
+        // Default Nil UUID
+        for(zu8 i = 0; i < 16; ++i){
+            _id_octets[i] = 0;
+        }
     }
 }
 
@@ -145,12 +144,21 @@ ZUID::ZUID(ZString str){
     }
 }
 
+int ZUID::compare(const ZUID &uid){
+    return ::memcmp(_id_octets, uid._id_octets, 16);
+}
+
 bool ZUID::operator==(const ZUID &uid){
-    return ::memcmp(_id_octets, uid._id_octets, 16) == 0;
+    return compare(uid) == 0;
 }
 
 bool ZUID::operator<(const ZUID &uid){
-    return ::memcmp(_id_octets, uid._id_octets, 16) < 0;
+    return compare(uid) < 0;
+}
+
+ZUID &ZUID::fromRaw(zbyte *bytes){
+    ::memcpy(_id_octets, bytes, 16);
+    return *this;
 }
 
 ZUID::uuidtype ZUID::getType() const {

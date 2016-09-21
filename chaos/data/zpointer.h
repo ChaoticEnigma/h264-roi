@@ -102,7 +102,7 @@ public:
         return _data->ptr;
     }
     //! Shorthand for pointer to shared object.
-    inline T *operator->(){ return ptr(); }
+    inline T *operator->() const { return ptr(); }
 
 private:
     void _increment(){

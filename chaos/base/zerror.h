@@ -10,6 +10,9 @@
 #include "zarray.h"
 #include "zstring.h"
 
+//#define ZASSERT(A)      ZError::zassert(A)
+#define ZASSERT(A, B)   ZError::zassert(A, B)
+
 namespace LibChaos {
 namespace ZError {
 

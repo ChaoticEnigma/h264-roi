@@ -154,14 +154,14 @@ public:
 
     // Big-endian Signed
     //! Write 16-bit big-endian signed integer.
-    void writebes16(zu16 num){
+    void writebes16(zs16 num){
         zbyte tmp[2];
         tmp[0] = (num >> 8) & 0xFF;
         tmp[1] = num & 0xFF;
         write(tmp, 2);
     }
     //! Write 32-bit big-endian signed integer.
-    void writebes32(zu32 num){
+    void writebes32(zs32 num){
         zbyte tmp[4];
         tmp[0] = (num >> 24) & 0xFF;
         tmp[1] = (num >> 16) & 0xFF;
@@ -170,7 +170,7 @@ public:
         write(tmp, 4);
     }
     //! Write 64-bit big-endian signed integer.
-    void writebes64(zu64 num){
+    void writebes64(zs64 num){
         zbyte tmp[8];
         tmp[0] = (num >> 56) & 0xFF;
         tmp[1] = (num >> 48) & 0xFF;
