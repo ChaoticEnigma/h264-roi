@@ -23,7 +23,7 @@ size_t header_callback(char *buffer, size_t size, size_t nitems, void *userdata)
 
 int main(int argc, char **argv){
     try {
-    ZLog::logLevelStdOut(ZLogSource::ALL, "%log%");
+    ZLog::logLevelStdOut(ZLog::INFO, "%log%");
 
     CURL *curl;
     CURLcode res;

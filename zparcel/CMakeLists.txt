@@ -36,7 +36,7 @@ INCLUDE_DIRECTORIES(
 
 ### =================== BUILD =================== ###
 
-ADD_EXECUTABLE(zparcel ${LIBCHAOS_ZPARCEL_ALL} ${ZParcel_SOURCES})
+ADD_EXECUTABLE(zparcel ${ZParcel_SOURCES})
 LibChaos_Configure_Target(zparcel)
 
 ### =================== TESTS =================== ###
