@@ -1,5 +1,5 @@
 
-FUNCTION(GatherSources)
+FUNCTION(CollectSources)
     GET_PROPERTY(LibChaosAllSources GLOBAL PROPERTY LibChaosAllSources)
     FOREACH(SRC ${ARGV})
         SET(LibChaosAllSources ${LibChaosAllSources} ${CMAKE_CURRENT_SOURCE_DIR}/${SRC})
@@ -7,7 +7,7 @@ FUNCTION(GatherSources)
     SET_PROPERTY(GLOBAL PROPERTY LibChaosAllSources ${LibChaosAllSources})
 ENDFUNCTION()
 
-FUNCTION(GatherIncludes)
+FUNCTION(CollectIncludes)
     SET(IncludeProp ${PROJECT_NAME}Include)
     GET_PROPERTY(Include GLOBAL PROPERTY ${IncludeProp})
     FOREACH(DIR ${ARGN})

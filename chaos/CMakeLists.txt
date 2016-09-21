@@ -175,7 +175,7 @@ SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
 SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
 SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
 
-GatherSources(
+CollectSources(
     ${LibChaos_HEADERS}
     ${LibChaos_SOURCES}
     ${LibChaos_PNG_SOURCES}
@@ -199,7 +199,7 @@ SET(LibChaos_INCLUDE
     thread
 )
 
-GatherIncludes(${LibChaos_INCLUDE})
+CollectIncludes(${LibChaos_INCLUDE})
 
 # Include Directories
 INCLUDE_DIRECTORIES(

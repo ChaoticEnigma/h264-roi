@@ -45,11 +45,11 @@ INCLUDE_DIRECTORIES(
 ### =================== BUILD =================== ###
 
 # Extension Fixer
-ADD_EXECUTABLE(extensionfixer ${LibChaosUtils_ExtensionFixer_SOURCES})
+ADD_EXECUTABLE(extensionfixer EXCLUDE_FROM_ALL ${LibChaosUtils_ExtensionFixer_SOURCES})
 LibChaos_Configure_Target(extensionfixer)
 
 # Audiobook Sorter
-ADD_EXECUTABLE(audiobooksorter ${LibChaosUtils_AudiobookSorter_SOURCES})
+ADD_EXECUTABLE(audiobooksorter EXCLUDE_FROM_ALL ${LibChaosUtils_AudiobookSorter_SOURCES})
 LibChaos_Configure_Target(audiobooksorter)
 
 # Duplicate Finder
@@ -57,11 +57,11 @@ ADD_EXECUTABLE(duplicatefinder EXCLUDE_FROM_ALL ${LibChaosUtils_DuplicateFinder_
 LibChaos_Configure_Target(duplicatefinder)
 
 # Image Library Manager
-ADD_EXECUTABLE(imagelibrarymanager ${LibChaosUtils_ImageLibraryManager_SOURCES})
+ADD_EXECUTABLE(imagelibrarymanager EXCLUDE_FROM_ALL ${LibChaosUtils_ImageLibraryManager_SOURCES})
 LibChaos_Configure_Target(imagelibrarymanager)
 
 # Image Reverse Search
 ADD_DEFINITIONS(-DCURL_STATICLIB)
-ADD_EXECUTABLE(imagereversesearch ${LibChaosUtils_ImageReverseSearch_SOURCES})
+ADD_EXECUTABLE(imagereversesearch EXCLUDE_FROM_ALL ${LibChaosUtils_ImageReverseSearch_SOURCES})
 LibChaos_Configure_Target(imagereversesearch)
 TARGET_LINK_LIBRARIES(imagereversesearch crypto ssl z curl)

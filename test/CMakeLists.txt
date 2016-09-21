@@ -43,7 +43,7 @@ SET(LibChaos_Test_SOURCES
 ### =================== CONFIG =================== ###
 
 # Export Properties
-GatherSources(${LibChaos_Test_HEADERS} ${LibChaos_Test_PNG_SOURCES})
+CollectSources(${LibChaos_Test_HEADERS} ${LibChaos_Test_PNG_SOURCES})
 
 # Include Directories
 GET_PROPERTY(LibChaos_Include GLOBAL PROPERTY LibChaosInclude)
