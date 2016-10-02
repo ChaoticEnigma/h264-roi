@@ -16,27 +16,37 @@ class ZParcel {
 public:
     enum parceltype {
         UNKNOWN = 0,
-        VERSION1,
+        VERSION1,       //!< Type 1 parcel. No pages, payload in tree node.
         MAX_PARCELTYPE,
     };
 
     enum {
         NULLOBJ = 0,
-        BOOLOBJ,
-        UINTOBJ,
-        SINTOBJ,
-        FLOATOBJ,
-        ZUIDOBJ,
-        STRINGOBJ,
-        BLOBOBJ,
-        FILEOBJ,
+        BOOLOBJ,        //!< Boolean object. 1-bit.
+        UINTOBJ,        //!< Unsigned integer object. 64-bit.
+        SINTOBJ,        //!< Signed integer object. 64-bit.
+        FLOATOBJ,       //!< Floating point number object. Double precision.
+        ZUIDOBJ,        //!< UUID object.
+        STRINGOBJ,      //!< String object.
+        BLOBOBJ,        //!< Binary blob object.
+        FILEOBJ,        //!< File object. Includes embedded filename and file content.
+        /*! User-defined object types can be created by subclassing ZParcel and defining new types starting with MAX_OBJTYPE.
+         *  Example:
+         *  \code
+         *  enum {
+         *      CUSTOM1 = MAX_OBJTYPE,
+         *      CUSTOM2,
+         *  };
+         *  \endcode
+         */
         MAX_OBJTYPE,
     };
 
     typedef zu8 objtype;
 
-    enum objerr {
+    enum parcelerror {
         OK = 0,         //!< No error.
+        ERR_OPEN,       //!< Error opening file.
         ERR_SEEK,       //!< Error seeking file.
         ERR_READ,       //!< Error reading file.
         ERR_WRITE,      //!< Error writing file.
@@ -46,10 +56,12 @@ public:
         ERR_TRUNC,      //!< Payload is truncated by end of file.
         ERR_TREE,       //!< Bad tree structure.
         ERR_FREELIST,   //!< Bad freelist structure.
+        ERR_SIG,        //!< Bad file signature.
+        ERR_VERSION,    //!< Bad file header version.
     };
 
     struct ObjectInfo {
-        objerr error;
+        parcelerror error;
         objtype type;
         zu64 offset;
         zu64 length;
@@ -63,51 +75,52 @@ public:
      *  This will overwrite an existing file.
      *  \exception ZException Failed to create file.
      */
-    bool create(ZPath file);
+    parcelerror create(ZPath file);
 
     /*! Open existing parcel.
      *  \exception ZException Failed to open file.
      */
-    bool open(ZPath file);
+    parcelerror open(ZPath file);
+
     //! Close file handles.
     void close();
 
     /*! Store null in parcel.
      *  \exception ZException Parcel not open.
      */
-    objerr storeNull(ZUID id);
+    parcelerror storeNull(ZUID id);
     /*! Store bool in parcel.
      *  \exception ZException Parcel not open.
      */
-    objerr storeBool(ZUID id, bool bl);
+    parcelerror storeBool(ZUID id, bool bl);
     /*! Store unsigned int in parcel.
      *  \exception ZException Parcel not open.
      */
-    objerr storeUint(ZUID id, zu64 num);
+    parcelerror storeUint(ZUID id, zu64 num);
     /*! Store signed int in parcel.
      *  \exception ZException Parcel not open.
      */
-    objerr storeSint(ZUID id, zs64 num);
+    parcelerror storeSint(ZUID id, zs64 num);
     /*! Store float in parcel.
      *  \exception ZException Parcel not open.
      */
-    objerr storeFloat(ZUID id, double num);
+    parcelerror storeFloat(ZUID id, double num);
     /*! Store ZUID in parcel.
      *  \exception ZException Parcel not open.
      */
-    objerr storeZUID(ZUID id, ZUID uid);
+    parcelerror storeZUID(ZUID id, ZUID uid);
     /*! Store string in parcel.
      *  \exception ZException Parcel not open.
      */
-    objerr storeString(ZUID id, ZString str);
+    parcelerror storeString(ZUID id, ZString str);
     /*! Store blob in parcel.
      *  \exception ZException Parcel not open.
      */
-    objerr storeBlob(ZUID id, ZBinary blob);
+    parcelerror storeBlob(ZUID id, ZBinary blob);
     /*! Store file reference in parcel.
      *  \exception ZException Parcel not open.
      */
-    objerr storeFile(ZUID id, ZPath path);
+    parcelerror storeFile(ZUID id, ZPath path);
 
     /*! Fetch bool from parcel.
      *  \exception ZException Parcel not open.
@@ -176,7 +189,7 @@ protected:
      *  If \a trailsize > 0, indicates the number of bytes that should be reserved in the payload,
      *  beyond the size of \a data.
      */
-    objerr _storeObject(ZUID id, objtype type, const ZBinary &data, zu64 trailsize = 0);
+    parcelerror _storeObject(ZUID id, objtype type, const ZBinary &data, zu64 trailsize = 0);
     //! Get object info struct.
     void _getObjectInfo(ZUID id, ObjectInfo &info);
 

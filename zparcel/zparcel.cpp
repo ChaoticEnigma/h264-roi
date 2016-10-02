@@ -117,41 +117,41 @@ ZParcel::~ZParcel(){
     close();
 }
 
-bool ZParcel::create(ZPath file){
+ZParcel::parcelerror ZParcel::create(ZPath file){
     _version = VERSION1;
     _file.open(file, ZFile::READWRITE | ZFile::TRUNCATE);
     if(!_file.isOpen())
-        return false;
+        return ERR_OPEN;
 
     _treehead = ZU64_MAX;
     _freelist = ZU64_MAX;
     _tail = ZPARCEL_HEADER_LEN;
 
     if(!_writeHeader(0))
-        return false;
-    return true;
+        return ERR_WRITE;
+    return OK;
 }
 
-bool ZParcel::open(ZPath file){
+ZParcel::parcelerror ZParcel::open(ZPath file){
     _file.open(file, ZFile::READWRITE);
     if(!_file.isOpen())
-        return false;
+        return ERR_OPEN;
 
     ParcelHeader header;
     _file.seek(0);
     if(!header.read(_file))
-        return false;
+        return ERR_READ;
     if(::memcmp(header.sig, ZPARCEL_SIG, ZPARCEL_SIG_LEN) != 0)
-        return false;
+        return ERR_SIG;
     if(header.version >= MAX_PARCELTYPE)
-        return false;
+        return ERR_VERSION;
 
     _version = (parceltype)header.version;
     _treehead = header.treehead;
     _freelist = header.freehead;
     _tail = header.tailptr;
 
-    return true;
+    return OK;
 }
 
 void ZParcel::close(){
@@ -160,55 +160,55 @@ void ZParcel::close(){
 
 // /////////////////////////////////////////////////////////////////////////////
 
-ZParcel::objerr ZParcel::storeNull(ZUID id){
+ZParcel::parcelerror ZParcel::storeNull(ZUID id){
     _storeObject(id, NULLOBJ, ZBinary());
     return OK;
 }
 
-ZParcel::objerr ZParcel::storeBool(ZUID id, bool bl){
+ZParcel::parcelerror ZParcel::storeBool(ZUID id, bool bl){
     ZBinary data(1);
     data[0] = (bl ? 1 : 0);
     _storeObject(id, BOOLOBJ, data);
     return OK;
 }
 
-ZParcel::objerr ZParcel::storeUint(ZUID id, zu64 num){
+ZParcel::parcelerror ZParcel::storeUint(ZUID id, zu64 num){
     ZBinary data;
     data.writebeu64(num);
     _storeObject(id, UINTOBJ, data);
     return OK;
 }
 
-ZParcel::objerr ZParcel::storeSint(ZUID id, zs64 num){
+ZParcel::parcelerror ZParcel::storeSint(ZUID id, zs64 num){
     ZBinary data;
     data.writebes64(num);
     _storeObject(id, SINTOBJ, data);
     return OK;
 }
 
-ZParcel::objerr ZParcel::storeFloat(ZUID id, double num){
+ZParcel::parcelerror ZParcel::storeFloat(ZUID id, double num){
     ZBinary data;
     data.writedouble(num);
     _storeObject(id, FLOATOBJ, data);
     return OK;
 }
 
-ZParcel::objerr ZParcel::storeZUID(ZUID id, ZUID uid){
+ZParcel::parcelerror ZParcel::storeZUID(ZUID id, ZUID uid){
     _storeObject(id, ZUIDOBJ, uid.bin());
     return OK;
 }
 
-ZParcel::objerr ZParcel::storeString(ZUID id, ZString str){
+ZParcel::parcelerror ZParcel::storeString(ZUID id, ZString str){
     _storeObject(id, STRINGOBJ, ZBinary(str.bytes(), str.size()));
     return OK;
 }
 
-ZParcel::objerr ZParcel::storeBlob(ZUID id, ZBinary blob){
+ZParcel::parcelerror ZParcel::storeBlob(ZUID id, ZBinary blob){
     _storeObject(id, BLOBOBJ, blob);
     return OK;
 }
 
-ZParcel::objerr ZParcel::storeFile(ZUID id, ZPath path){
+ZParcel::parcelerror ZParcel::storeFile(ZUID id, ZPath path){
     // Get relative path
     ZString name = ZPath(path).relativeTo(ZPath(_file.path()).parent()).str();
 
@@ -388,7 +388,7 @@ zu64 ZParcel::_objectSize(ZParcel::objtype type, zu64 size){
     }
 }
 
-ZParcel::objerr ZParcel::_storeObject(ZUID id, objtype type, const ZBinary &data, zu64 trailsize){
+ZParcel::parcelerror ZParcel::_storeObject(ZUID id, objtype type, const ZBinary &data, zu64 trailsize){
     ParcelTreeNode newnode;
     newnode.uid = id;
     newnode.type = type;

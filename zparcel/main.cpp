@@ -52,9 +52,14 @@ int mainwrap(int argc, char **argv){
         }
 //        LOG("Creating new ZParcel " << args[1]);
 
+        ZPath file = ZString(args[1]);
         ZParcel parcel;
-        bool ok = parcel.create(ZString(args[1]));
-        LOG("Create: " << ok);
+        ZParcel::parcelerror err = parcel.create(file);
+        if(err == ZParcel::OK){
+            LOG("OK - Create " << file);
+        } else {
+            LOG("FAIL - Create");
+        }
 
     } else if(args.size() > 0 && args[0] == "list"){
         if(args.size() != 2){
@@ -85,7 +90,7 @@ int mainwrap(int argc, char **argv){
 
         ZString type = args[3];
         ZString value = args[4];
-        ZParcel::objerr err;
+        ZParcel::parcelerror err;
 
         if(type == "null"){
             err = parcel.storeNull(uid);
