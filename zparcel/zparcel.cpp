@@ -1,3 +1,8 @@
+/*******************************************************************************
+**                                  LibChaos                                  **
+**                                 zparcel.cpp                                **
+**                          See COPYRIGHT and LICENSE                         **
+*******************************************************************************/
 #include "zparcel.h"
 #include "zmap.h"
 #include "zlog.h"
@@ -7,9 +12,12 @@
 #define ZPARCEL_SIG_LEN 7
 
 #define ZPARCEL_HEADER_LEN (ZPARCEL_SIG_LEN + 1 + 8 + 8 + 8)
-
 #define ZPARCEL_NODE_LEN (16 + 8 + 8 + 1 + 4)
+
 #define ZPARCEL_FREE_NODE_COUNT 4
+#define ZPARCEL_MAX_DEPTH 1000
+
+#define CHECK_COMMON(STR) if(_state != OPEN){ throw ZException(ZString(STR) + ": parcel not open"); }
 
 namespace LibChaos {
 
@@ -22,6 +30,23 @@ static const ZMap<ZParcel::objtype, ZString> typetoname = {
     { ZParcel::STRINGOBJ, "string" },
     { ZParcel::FILEOBJ,   "file" },
     { ZParcel::BLOBOBJ,   "binary" },
+};
+
+static const ZMap<ZParcel::parcelerror, ZString> errtostr = {
+    { ZParcel::OK,              "OK" },
+    { ZParcel::ERR_OPEN,        "Error opening file" },
+    { ZParcel::ERR_SEEK,        "Error seeking in file" },
+    { ZParcel::ERR_READ,        "Error reading file" },
+    { ZParcel::ERR_WRITE,       "Error writing file" },
+    { ZParcel::ERR_EXISTS,      "Object exists" },
+    { ZParcel::ERR_NOEXIST,     "Object does not exist" },
+    { ZParcel::ERR_BADCRC,      "CRC mismatch" },
+    { ZParcel::ERR_TRUNC,       "Payload is truncated by end of file" },
+    { ZParcel::ERR_TREE,        "Bad tree structure" },
+    { ZParcel::ERR_FREELIST,    "Bad freelist structure" },
+    { ZParcel::ERR_SIG,         "Bad file signature" },
+    { ZParcel::ERR_VERSION,     "Bad file header version" },
+    { ZParcel::ERR_MAX_DEPTH,   "Exceeded maximum tree depth" },
 };
 
 struct ParcelHeader {
@@ -129,6 +154,8 @@ ZParcel::parcelerror ZParcel::create(ZPath file){
 
     if(!_writeHeader(0))
         return ERR_WRITE;
+
+    _state = OPEN;
     return OK;
 }
 
@@ -151,6 +178,7 @@ ZParcel::parcelerror ZParcel::open(ZPath file){
     _freelist = header.freehead;
     _tail = header.tailptr;
 
+    _state = OPEN;
     return OK;
 }
 
@@ -160,85 +188,108 @@ void ZParcel::close(){
 
 // /////////////////////////////////////////////////////////////////////////////
 
+bool ZParcel::exists(ZUID id){
+    ObjectInfo info;
+    parcelerror err = _getObjectInfo(id, info);
+    if(err != ZParcel::OK)
+        return false;
+    return true;
+}
+
+ZParcel::objtype ZParcel::getType(ZUID id){
+    ObjectInfo info;
+    parcelerror err = _getObjectInfo(id, info);
+    if(err != ZParcel::OK)
+        return UNKNOWNOBJ;
+    return info.type;
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+
 ZParcel::parcelerror ZParcel::storeNull(ZUID id){
-    _storeObject(id, NULLOBJ, ZBinary());
-    return OK;
+    CHECK_COMMON(__FUNCTION__);
+    return _storeObject(id, NULLOBJ, ZBinary());
 }
 
 ZParcel::parcelerror ZParcel::storeBool(ZUID id, bool bl){
+    CHECK_COMMON(__FUNCTION__);
     ZBinary data(1);
     data[0] = (bl ? 1 : 0);
-    _storeObject(id, BOOLOBJ, data);
-    return OK;
+    return _storeObject(id, BOOLOBJ, data);
 }
 
 ZParcel::parcelerror ZParcel::storeUint(ZUID id, zu64 num){
+    CHECK_COMMON(__FUNCTION__);
     ZBinary data;
     data.writebeu64(num);
-    _storeObject(id, UINTOBJ, data);
-    return OK;
+    return _storeObject(id, UINTOBJ, data);
 }
 
 ZParcel::parcelerror ZParcel::storeSint(ZUID id, zs64 num){
+    CHECK_COMMON(__FUNCTION__);
     ZBinary data;
     data.writebes64(num);
-    _storeObject(id, SINTOBJ, data);
-    return OK;
+    return _storeObject(id, SINTOBJ, data);
 }
 
 ZParcel::parcelerror ZParcel::storeFloat(ZUID id, double num){
+    CHECK_COMMON(__FUNCTION__);
     ZBinary data;
     data.writedouble(num);
-    _storeObject(id, FLOATOBJ, data);
-    return OK;
+    return _storeObject(id, FLOATOBJ, data);
 }
 
 ZParcel::parcelerror ZParcel::storeZUID(ZUID id, ZUID uid){
-    _storeObject(id, ZUIDOBJ, uid.bin());
-    return OK;
+    CHECK_COMMON(__FUNCTION__);
+    return _storeObject(id, ZUIDOBJ, uid.bin());
 }
 
 ZParcel::parcelerror ZParcel::storeString(ZUID id, ZString str){
-    _storeObject(id, STRINGOBJ, ZBinary(str.bytes(), str.size()));
-    return OK;
+    CHECK_COMMON(__FUNCTION__);
+    return _storeObject(id, STRINGOBJ, ZBinary(str.bytes(), str.size()));
 }
 
 ZParcel::parcelerror ZParcel::storeBlob(ZUID id, ZBinary blob){
-    _storeObject(id, BLOBOBJ, blob);
-    return OK;
+    CHECK_COMMON(__FUNCTION__);
+    return _storeObject(id, BLOBOBJ, blob);
 }
 
 ZParcel::parcelerror ZParcel::storeFile(ZUID id, ZPath path){
+    CHECK_COMMON(__FUNCTION__);
     // Get relative path
     ZString name = ZPath(path).relativeTo(ZPath(_file.path()).parent()).str();
 
     // Open file
-    ZFile file(path, ZFile::READ);
-    if(!file.isOpen())
-        return ERR_READ;
+    ZFile infile(path, ZFile::READ);
+    if(!infile.isOpen())
+        return ERR_OPEN;
     // Get filesize
-    zu64 filesize = file.fileSize();
+    zu64 filesize = infile.fileSize();
 
     // Add node with filename
     ZBinary bin;
     bin.writebeu16(name.size());
     bin.write(name.bytes(), name.size());
-    _storeObject(id, FILEOBJ, bin, filesize);
+    parcelerror err = _storeObject(id, FILEOBJ, bin, filesize);
+    if(err != OK)
+        return err;
 
     // Get offset
     ObjectInfo info;
-    _getObjectInfo(id, info);
+    err = _getObjectInfo(id, info);
+    if(err != OK)
+        return err;
 
     // Write payload
     zu64 poff = info.offset + 8 + 2 + name.size();
-    if(_file.seek(poff) == poff)
+    if(_file.seek(poff) != poff)
         return ERR_SEEK;
     ZBinary buff;
-    while(!file.atEnd()){
+    while(!infile.atEnd()){
         buff.clear();
-        if(file.read(buff, 1 << 15))
+        if(infile.read(buff, 1 << 15) == 0)
             return ERR_READ;
-        if(_file.write(buff))
+        if(_file.write(buff) == 0)
             return ERR_WRITE;
     }
     return OK;
@@ -247,8 +298,11 @@ ZParcel::parcelerror ZParcel::storeFile(ZUID id, ZPath path){
 // /////////////////////////////////////////////////////////////////////////////
 
 bool ZParcel::fetchBool(ZUID id){
+    CHECK_COMMON(__FUNCTION__);
     ObjectInfo info;
-    _getObjectInfo(id, info);
+    parcelerror err = _getObjectInfo(id, info);
+    if(err != OK)
+        throw ZException("fetchBool: object could not be fetched");
     if(info.type != BOOLOBJ)
         throw ZException("fetchBool called for wrong Object type");
     _file.seek(info.offset);
@@ -256,6 +310,7 @@ bool ZParcel::fetchBool(ZUID id){
 }
 
 zu64 ZParcel::fetchUint(ZUID id){
+    CHECK_COMMON(__FUNCTION__);
     ObjectInfo info;
     _getObjectInfo(id, info);
     if(info.type != UINTOBJ)
@@ -265,6 +320,7 @@ zu64 ZParcel::fetchUint(ZUID id){
 }
 
 zs64 ZParcel::fetchSint(ZUID id){
+    CHECK_COMMON(__FUNCTION__);
     ObjectInfo info;
     _getObjectInfo(id, info);
     if(info.type != SINTOBJ)
@@ -274,6 +330,7 @@ zs64 ZParcel::fetchSint(ZUID id){
 }
 
 double ZParcel::fetchFloat(ZUID id){
+    CHECK_COMMON(__FUNCTION__);
     ObjectInfo info;
     _getObjectInfo(id, info);
     if(info.type != FLOATOBJ)
@@ -283,6 +340,7 @@ double ZParcel::fetchFloat(ZUID id){
 }
 
 ZUID ZParcel::fetchZUID(ZUID id){
+    CHECK_COMMON(__FUNCTION__);
     ObjectInfo info;
     _getObjectInfo(id, info);
     if(info.type != ZUIDOBJ)
@@ -294,6 +352,7 @@ ZUID ZParcel::fetchZUID(ZUID id){
 }
 
 ZString ZParcel::fetchString(ZUID id){
+    CHECK_COMMON(__FUNCTION__);
     ObjectInfo info;
     _getObjectInfo(id, info);
     if(info.type != STRINGOBJ)
@@ -306,6 +365,7 @@ ZString ZParcel::fetchString(ZUID id){
 }
 
 ZBinary ZParcel::fetchBlob(ZUID id){
+    CHECK_COMMON(__FUNCTION__);
     ObjectInfo info;
     _getObjectInfo(id, info);
     if(info.type != ZUIDOBJ)
@@ -318,6 +378,7 @@ ZBinary ZParcel::fetchBlob(ZUID id){
 }
 
 ZString ZParcel::fetchFile(ZUID id, zu64 *offset, zu64 *size){
+    CHECK_COMMON(__FUNCTION__);
     ObjectInfo info;
     _getObjectInfo(id, info);
     if(info.type != FILEOBJ)
@@ -354,14 +415,18 @@ ZString ZParcel::fetchFile(ZUID id, zu64 *offset, zu64 *size){
 
 // /////////////////////////////////////////////////////////////////////////////
 
-ZParcel::objtype ZParcel::getType(ZUID id){
-    ObjectInfo info;
-    _getObjectInfo(id, info);
-    return info.type;
+ZString ZParcel::typeName(objtype type){
+    if(typetoname.contains(type))
+        return typetoname[type];
+    else
+        return "Unknown Type";
 }
 
-ZString ZParcel::typeName(objtype type){
-    return typetoname[type];
+ZString ZParcel::errorStr(parcelerror err){
+    if(errtostr.contains(err))
+        return errtostr[err];
+    else
+        return "Unknown Error";
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -379,11 +444,12 @@ zu64 ZParcel::_objectSize(ZParcel::objtype type, zu64 size){
             return ZPARCEL_NODE_LEN + 10;
         case ZUIDOBJ:
             return ZPARCEL_NODE_LEN + 16;
+
         case STRINGOBJ:
         case BLOBOBJ:
         case FILEOBJ:
-            // User defined types must have a 64-bit length at the beginning of the payload.
         default:
+            // Variable-size and user-defined types must have a 64-bit length at the beginning of the payload.
             return ZPARCEL_NODE_LEN + 8 + size;
     }
 }
@@ -404,7 +470,7 @@ ZParcel::parcelerror ZParcel::_storeObject(ZUID id, objtype type, const ZBinary 
     // Selected freelist entry
     ParcelFreeNode fnode;
     // Selected freelist entry index
-    int fi;
+    int fi = -1;
 
     // Search the free list
     zu64 fnext = _freelist;
@@ -429,12 +495,13 @@ ZParcel::parcelerror ZParcel::_storeObject(ZUID id, objtype type, const ZBinary 
         // Tree head is uninitialzied
         _treehead = offset;
         // Rewrite header with new tree head
-        if(_writeHeader(0))
+        if(!_writeHeader(0))
             return ERR_WRITE;
     } else {
         // Search tree
+        bool found = false;
         ParcelTreeNode node;
-        while(true){
+        for(zu64 d = 0; d < ZPARCEL_MAX_DEPTH; ++d){
             if(_file.seek(next) != next){
                 // Cannot seek next offset
                 return ERR_TREE;
@@ -445,13 +512,17 @@ ZParcel::parcelerror ZParcel::_storeObject(ZUID id, objtype type, const ZBinary 
             int cmp = node.uid.compare(id);
             if(cmp < 0){
                 if(node.rnode == ZU64_MAX){
+                    // Hit a leaf
                     node.rnode = offset;
+                    found = true;
                     break;
                 }
                 next = node.rnode;
             } else if(cmp > 0){
                 if(node.lnode == ZU64_MAX){
+                    // Hit a leaf
                     node.lnode = offset;
+                    found = true;
                     break;
                 }
                 next = node.lnode;
@@ -460,21 +531,26 @@ ZParcel::parcelerror ZParcel::_storeObject(ZUID id, objtype type, const ZBinary 
                 return ERR_EXISTS;
             }
         }
+        // Loop ended without finding tree leaf
+        if(!found)
+            return ERR_MAX_DEPTH;
 
         // Rewrite the previous node
         node.crc = 0;
-//        if(_file.seek(next) != next)
-//            return ERR_TREE;
+        if(_file.seek(next) != next)
+            return ERR_TREE;
         if(!node.write(_file))
             return ERR_WRITE;
     }
 
-    // Update freelist entry
-    fnode.len[fi] -= size;
-    if(_file.seek(fnext) != fnext)
-        return ERR_SEEK;
-    if(!fnode.write(_file))
-        return ERR_WRITE;
+    if(fi >= 0){
+        // Update freelist entry
+        fnode.len[fi] -= size;
+        if(_file.seek(fnext) != fnext)
+            return ERR_SEEK;
+        if(!fnode.write(_file))
+            return ERR_WRITE;
+    }
 
     // Write the node
     newnode.crc = 0;
@@ -498,20 +574,24 @@ ZParcel::parcelerror ZParcel::_storeObject(ZUID id, objtype type, const ZBinary 
     return OK;
 }
 
-void ZParcel::_getObjectInfo(ZUID id, ObjectInfo &info){
+ZParcel::parcelerror ZParcel::_getObjectInfo(ZUID id, ObjectInfo &info){
+    // Check cache
+    if(_cache.contains(id)){
+        info = _cache[id];
+        return OK;
+    }
+
     // Search the tree
     zu64 next = _treehead;
     ParcelTreeNode node;
-    while(true){
+    for(zu64 d = 0; d < ZPARCEL_MAX_DEPTH; ++d){
         if(next == ZU64_MAX){
             // Hit bottom of tree
-            info.error = ERR_NOEXIST;
-            break;
+            return ERR_NOEXIST;
         }
         if(_file.seek(next) != next){
             // Cannot seek next offset
-            info.error = ERR_TREE;
-            break;
+            return ERR_TREE;
         }
 
         node.read(_file);
@@ -524,13 +604,15 @@ void ZParcel::_getObjectInfo(ZUID id, ObjectInfo &info){
         } else {
             // Get the object info
             // TODO: Check Object length and CRC
-            info.error = OK;
             info.type = node.type;
             info.offset = next + ZPARCEL_NODE_LEN;
             info.length = _objectSize(info.type, _file.readbeu64());
-            break;
+            // Add to cache
+            _cache.add(id, info);
+            return OK;
         }
     }
+    return ERR_MAX_DEPTH;
 }
 
 bool ZParcel::_writeHeader(zu64 offset){
@@ -541,7 +623,8 @@ bool ZParcel::_writeHeader(zu64 offset){
     header.freehead = _freelist;
     header.tailptr = _tail;
 
-    ZASSERT(_file.seek(offset) == offset, "Seek failed");
+    if(_file.seek(offset) != offset)
+        return false;
     if(!header.write(_file))
         return false;
     return true;

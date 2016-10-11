@@ -12,6 +12,7 @@
 #include "zlist.h"
 
 #define ZUID_NIL LibChaos::ZUID(LibChaos::ZUID::NIL)
+#define ZUID_SIZE 16
 
 namespace LibChaos {
 
@@ -76,9 +77,12 @@ private:
 
 private:
     //! UUID octets.
-    zoctet _id_octets[16];
+    zoctet _id_octets[ZUID_SIZE];
 };
 
-}
+// ZUID specialization ZHash
+ZHASH_USER_SPECIALIAZATION(ZUID, (const ZUID &uid), (uid.raw(), ZUID_SIZE), {})
+
+} // namespace LibChaos
 
 #endif // ZUID_H

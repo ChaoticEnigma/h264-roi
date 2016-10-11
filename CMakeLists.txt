@@ -61,9 +61,6 @@ IF(LIBCHAOS_UI)
     ADD_SUBDIRECTORY(ui)
 ENDIF()
 
-# Configure Target Macro
-INCLUDE(cmake/ConfigureTarget.cmake)
-
 ## Tools
 
 # LibChaos Test

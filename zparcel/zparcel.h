@@ -1,3 +1,8 @@
+/*******************************************************************************
+**                                  LibChaos                                  **
+**                                  zparcel.h                                 **
+**                          See COPYRIGHT and LICENSE                         **
+*******************************************************************************/
 #ifndef ZPARCEL_H
 #define ZPARCEL_H
 
@@ -6,6 +11,7 @@
 #include "zbinary.h"
 #include "zpath.h"
 #include "zfile.h"
+#include "zmap.h"
 
 namespace LibChaos {
 
@@ -18,6 +24,12 @@ public:
         UNKNOWN = 0,
         VERSION1,       //!< Type 1 parcel. No pages, payload in tree node.
         MAX_PARCELTYPE,
+    };
+
+    enum parcelstate {
+        OPEN,
+        CLOSED,
+        LOCKED,
     };
 
     enum {
@@ -40,6 +52,7 @@ public:
          *  \endcode
          */
         MAX_OBJTYPE,
+        UNKNOWNOBJ = 255,
     };
 
     typedef zu8 objtype;
@@ -58,10 +71,10 @@ public:
         ERR_FREELIST,   //!< Bad freelist structure.
         ERR_SIG,        //!< Bad file signature.
         ERR_VERSION,    //!< Bad file header version.
+        ERR_MAX_DEPTH,  //!< Exceeded maximum tree depth.
     };
 
     struct ObjectInfo {
-        parcelerror error;
         objtype type;
         zu64 offset;
         zu64 length;
@@ -84,6 +97,11 @@ public:
 
     //! Close file handles.
     void close();
+
+    //! Check if \a id exists in the parcel.
+    bool exists(ZUID id);
+    //! Get type of parcel object.
+    objtype getType(ZUID id);
 
     /*! Store null in parcel.
      *  \exception ZException Parcel not open.
@@ -174,16 +192,17 @@ public:
      */
     ZString fetchFile(ZUID id, zu64 *offset = nullptr, zu64 *size = nullptr);
 
-    //! Get type of parcel object.
-    objtype getType(ZUID id);
-
     //! Get the ZFile handle for the parcel.
     ZFile getHandle() { return _file; }
 
     //! Get string name of object type.
     static ZString typeName(objtype type);
+    //! Get string for error.
+    static ZString errorStr(parcelerror err);
 
 protected:
+    //! Compute the size of an object node payload.
+    zu64 _objectSize(objtype type, zu64 size);
     /*! Store a new object with \a id and \a type.
      *  The contents of \a data are written into the payload of the new object.
      *  If \a trailsize > 0, indicates the number of bytes that should be reserved in the payload,
@@ -191,20 +210,20 @@ protected:
      */
     parcelerror _storeObject(ZUID id, objtype type, const ZBinary &data, zu64 trailsize = 0);
     //! Get object info struct.
-    void _getObjectInfo(ZUID id, ObjectInfo &info);
+    parcelerror _getObjectInfo(ZUID id, ObjectInfo &info);
 
 private:
-    //! Get the size of an object node a payload.
-    zu64 _objectSize(objtype type, zu64 size);
     //! Write a copy of the file header at \a offset.
     bool _writeHeader(zu64 offset);
 
 private:
+    parcelstate _state;
     ZFile _file;
     parceltype _version;
     zu64 _treehead;
     zu64 _freelist;
     zu64 _tail;
+    ZMap<ZUID, ObjectInfo> _cache;
 };
 
 } // namespace LibChaos

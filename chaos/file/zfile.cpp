@@ -6,6 +6,7 @@
 #include "zfile.h"
 
 #include "zlog.h"
+#include "zerror.h"
 #include "zexception.h"
 
 #include <stdlib.h>
@@ -28,7 +29,7 @@
     #define V 2
 #endif
 
-#define ZFILE_COPY_BUFFER_SIZE 32 * 1024
+#define ZFILE_COPY_BUFFER_SIZE (32 * 1024)
 
 namespace LibChaos {
 
@@ -360,11 +361,11 @@ zu64 ZFile::fileSize(ZPath path){
     return file.fileSize();
 }
 
-zu64 ZFile::readBinary(ZPath file, ZBinary &out){
-    if(isDir(file))
-        throw ZException("ZFile: file is directory: " + file.str());
+zu64 ZFile::readBinary(ZPath path, ZBinary &out){
+    if(isDir(path))
+        throw ZException("ZFile: file is directory: " + path.str());
 
-    FILE *fp = fopen(file.str().cc(), "rb");
+    FILE *fp = fopen(path.str().cc(), "rb");
     if(fp == NULL)
         throw ZException("ZFile: fopen error");
 
@@ -758,6 +759,14 @@ zu64 ZFile::fileHash(ZPath path){
     zu64 hash = XXH64_digest(state);
     XXH64_freeState(state);
     return hash;
+}
+
+int ZFile::getError(){
+    return ZError::getSystemErrorCode();
+}
+
+ZString ZFile::getErrorString(){
+    return ZError::getSystemError();
 }
 
 }

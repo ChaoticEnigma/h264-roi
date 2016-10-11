@@ -94,9 +94,12 @@ public:
 #endif
 
 public:
-    static zu64 readBinary(ZPath name, ZBinary &out);
-    static zu64 writeBinary(ZPath name, const ZBinary &data);
+    //! Read contents of file at \a path into \a out.
+    static zu64 readBinary(ZPath path, ZBinary &out);
+    //! Write contents of \a data to file at \a path.
+    static zu64 writeBinary(ZPath path, const ZBinary &data);
 
+    //! Read contents of file at \a path as string.
     static ZString readString(ZPath path);
 
     static zu64 copy(ZPath src, ZPath dest);
@@ -124,6 +127,11 @@ public:
     static zu64 dirSize(ZPath dir);
 
     static zu64 fileHash(ZPath path);
+
+    //! Get system error code.
+    static int getError();
+    //! Get system error string.
+    static ZString getErrorString();
 
 private:
     typedef void *HANDLE;

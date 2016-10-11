@@ -115,8 +115,8 @@ ZUID::ZUID(uuidtype type){
     } else if(type == RANDOM){
         // Randomly generated Version 4 UUID
         ZRandom randgen;
-        ZBinary random = randgen.generate(16);
-        random.read(_id_octets, 16);
+        ZBinary random = randgen.generate(ZUID_SIZE);
+        random.read(_id_octets, ZUID_SIZE);
 
         _id_octets[6] &= 0x0F; // 0b00001111 // Clear the 4 highest bits of the 7th byte
         _id_octets[6] |= 0x40; // 0b01000000 // Insert UUID version 4
@@ -126,7 +126,7 @@ ZUID::ZUID(uuidtype type){
     } else {
 
         // Default Nil UUID
-        for(zu8 i = 0; i < 16; ++i){
+        for(zu8 i = 0; i < ZUID_SIZE; ++i){
             _id_octets[i] = 0;
         }
     }
@@ -136,16 +136,16 @@ ZUID::ZUID(ZString str){
     str.replace("-", "");
     str.replace(":", "");
     if(str.size() == 32 && str.isInteger(16)){
-        for(zu64 i = 0; i < 16; ++i)
+        for(zu64 i = 0; i < ZUID_SIZE; ++i)
             _id_octets[i] = (zu8)ZString::substr(str, i*2, 2).tozu64(16);
     } else {
-        for(zu8 i = 0; i < 16; ++i)
+        for(zu8 i = 0; i < ZUID_SIZE; ++i)
             _id_octets[i] = 0;
     }
 }
 
 int ZUID::compare(const ZUID &uid){
-    return ::memcmp(_id_octets, uid._id_octets, 16);
+    return ::memcmp(_id_octets, uid._id_octets, ZUID_SIZE);
 }
 
 bool ZUID::operator==(const ZUID &uid){
@@ -157,7 +157,7 @@ bool ZUID::operator<(const ZUID &uid){
 }
 
 ZUID &ZUID::fromRaw(zbyte *bytes){
-    ::memcpy(_id_octets, bytes, 16);
+    ::memcpy(_id_octets, bytes, ZUID_SIZE);
     return *this;
 }
 
@@ -175,7 +175,7 @@ ZUID::uuidtype ZUID::getType() const {
 
 ZString ZUID::str(bool separate, ZString delim) const {
     ZString uid;
-    for(zu8 i = 0; i < 16; ++i)
+    for(zu8 i = 0; i < ZUID_SIZE; ++i)
         uid += ZString::ItoS(_id_octets[i], 16, 2);
     if(separate){
         uid.insert(8, delim);
@@ -187,7 +187,7 @@ ZString ZUID::str(bool separate, ZString delim) const {
 }
 
 ZBinary ZUID::bin() const {
-    return ZBinary(_id_octets, 16);
+    return ZBinary(_id_octets, ZUID_SIZE);
 }
 
 zu64 ZUID::getTimestamp(){

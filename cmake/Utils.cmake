@@ -1,4 +1,14 @@
+## Utility Functions and Macros
 
+# Configure TARGET with LibChaos compile options
+MACRO(LibChaos_Configure_Target TARGET)
+    SET_PROPERTY(TARGET ${TARGET} PROPERTY CXX_STANDARD 14)
+    SET_PROPERTY(TARGET ${TARGET} PROPERTY CXX_STANDARD_REQUIRED 11)
+    SET_PROPERTY(TARGET ${TARGET} PROPERTY COMPILE_FLAGS ${LIBCHAOS_CXX_FLAGS})
+    TARGET_LINK_LIBRARIES(${TARGET} chaos)
+ENDMACRO()
+
+# Add each argument to the global source list
 FUNCTION(CollectSources)
     GET_PROPERTY(LibChaosAllSources GLOBAL PROPERTY LibChaosAllSources)
     FOREACH(SRC ${ARGV})
@@ -7,6 +17,7 @@ FUNCTION(CollectSources)
     SET_PROPERTY(GLOBAL PROPERTY LibChaosAllSources ${LibChaosAllSources})
 ENDFUNCTION()
 
+# Add each argument to the global include list
 FUNCTION(CollectIncludes)
     SET(IncludeProp ${PROJECT_NAME}Include)
     GET_PROPERTY(Include GLOBAL PROPERTY ${IncludeProp})
@@ -16,6 +27,7 @@ FUNCTION(CollectIncludes)
     SET_PROPERTY(GLOBAL PROPERTY ${IncludeProp} ${Include})
 ENDFUNCTION()
 
+# Download a file at URL to FILE in build dir
 FUNCTION(DownloadFile URL FILE)
     SET(PATH ${CMAKE_CURRENT_BINARY_DIR}/${FILE})
     IF(NOT EXISTS "${PATH}")
@@ -24,6 +36,7 @@ FUNCTION(DownloadFile URL FILE)
     ENDIF()
 ENDFUNCTION()
 
+# Download a tar.* archive at URL and extract to ARCHIVE in build dir
 FUNCTION(DownloadArchive URL ARCHIVE)
     SET(PATH ${CMAKE_CURRENT_BINARY_DIR}/${ARCHIVE})
     IF(NOT EXISTS "${PATH}")

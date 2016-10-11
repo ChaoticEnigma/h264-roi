@@ -1,3 +1,8 @@
+/*******************************************************************************
+**                                  LibChaos                                  **
+**                              zparcel/main.cpp                              **
+**                          See COPYRIGHT and LICENSE                         **
+*******************************************************************************/
 #include "main.h"
 #include "zexception.h"
 #include "zlog.h"
@@ -58,7 +63,7 @@ int mainwrap(int argc, char **argv){
         if(err == ZParcel::OK){
             LOG("OK - Create " << file);
         } else {
-            LOG("FAIL - Create");
+            LOG("FAIL - " << ZParcel::errorStr(err));
         }
 
     } else if(args.size() > 0 && args[0] == "list"){
@@ -75,22 +80,23 @@ int mainwrap(int argc, char **argv){
         }
 //        LOG("Storing Object in ZParcel " << args[1]);
 
-        ZParcel parcel;
-        bool ok = parcel.open(ZString(args[1]));
-        if(!ok){
-            ELOG("Failed to open");
-            return EXIT_FAILURE;
-        }
-
         ZUID uid = args[2];
-        if(uid == ZUID_NIL){
-            ELOG("Invalid UUID");
-            return EXIT_FAILURE;
-        }
-
         ZString type = args[3];
         ZString value = args[4];
+
+        if(uid == ZUID_NIL){
+            ELOG("FAIL - Invalid UUID");
+            return EXIT_FAILURE;
+        }
+
+        ZParcel parcel;
         ZParcel::parcelerror err;
+
+        err = parcel.open(ZString(args[1]));
+        if(err != ZParcel::OK){
+            ELOG("FAIL - " << ZParcel::errorStr(err));
+            return EXIT_FAILURE;
+        }
 
         if(type == "null"){
             err = parcel.storeNull(uid);
@@ -129,16 +135,16 @@ int mainwrap(int argc, char **argv){
             err = parcel.storeFile(uid, value);
 
         } else {
-            ELOG("Unknown type");
+            ELOG("FAIL - Unknown type");
             return EXIT_FAILURE;
         }
 
         if(err != ZParcel::OK){
-            ELOG("Failed to store: " << err);
+            ELOG("FAIL - Failed to store: " << ZParcel::errorStr(err));
             return EXIT_FAILURE;
         }
 
-        LOG(uid.str() << " OK");
+        LOG("OK " << uid.str());
 
     } else if(args.size() > 0 && args[0] == "fetch"){
         if(args.size() != 3){
@@ -148,11 +154,18 @@ int mainwrap(int argc, char **argv){
 //        LOG("Fetching Object from ZParcel " << args[1]);
 
         ZParcel parcel;
-        bool ok = parcel.open(ZString(args[1]));
-        if(ok){
+        ZParcel::parcelerror err = parcel.open(ZString(args[1]));
+        if(err == ZParcel::OK){
 //            LOG(args[2]);
             ZParcel::objtype type = parcel.getType(ZUID(args[2]));
+            if(type == ZParcel::UNKNOWNOBJ){
+                ELOG("FAIL - Bad object type");
+                return EXIT_FAILURE;
+            }
             switch(type){
+                case ZParcel::NULLOBJ:
+                    LOG("NULL");
+                    break;
                 case ZParcel::BOOLOBJ:
                     LOG(parcel.fetchBool(ZUID(args[2])));
                     break;
@@ -192,12 +205,12 @@ int mainwrap(int argc, char **argv){
                     break;
                 }
                 default:
-                    ELOG("Unknown type");
+                    ELOG("Unknown type: " << ZParcel::typeName(type));
                     return EXIT_FAILURE;
                     break;
             }
         } else {
-            ELOG("Failed to open");
+            ELOG("Failed to open: " << ZParcel::errorStr(err));
             return EXIT_FAILURE;
         }
 
