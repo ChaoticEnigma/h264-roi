@@ -287,6 +287,7 @@ ZParcel::parcelerror ZParcel::storeFile(ZUID id, ZPath path){
     ZBinary buff;
     while(!infile.atEnd()){
         buff.clear();
+        // Read 2^15 block
         if(infile.read(buff, 1 << 15) == 0)
             return ERR_READ;
         if(_file.write(buff) == 0)
@@ -630,4 +631,4 @@ bool ZParcel::_writeHeader(zu64 offset){
     return true;
 }
 
-}
+} // namespace LibChaos

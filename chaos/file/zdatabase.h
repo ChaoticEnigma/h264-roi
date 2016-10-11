@@ -7,6 +7,7 @@
 #define DATABASE_H
 
 #include "zstring.h"
+#include "zpath.h"
 #include "zassoc.h"
 
 #define SQLITE_CUSTOM
@@ -16,15 +17,18 @@ namespace LibChaos {
 
 typedef ZAssoc<ZString, AsArZ> SqlRows;
 
-class Database {
+//! SQLite3 interface wrapper class.
+class ZDatabase {
 public:
-    Database();
-    Database(ZString file);
-    ~Database();
+    ZDatabase();
+    ZDatabase(ZPath file);
+    ~ZDatabase();
 
-    void open(ZString file);
-    bool ok();
+    bool open(ZPath file);
     void close();
+    bool ok();
+
+    int execute(ZString sql);
 
     int select_rows();
     int select_rows(ZString stmt);
@@ -36,26 +40,28 @@ public:
     int rows();
 
     ZString lastError();
-    Database &operator<<(ZString query_part);
+    ZDatabase &operator<<(ZString query_part);
     ZString get_query();
     void clear_query();
 
-    sqlite3 *raw(){ return db; }
+    sqlite3 *handle(){ return _db; }
 
+public:
     int sel_callback(int num_fields, char **p_fields, char **p_col_names); // For internal use
+
 private:
-    sqlite3 *db;
+    sqlite3 *_db;
+    int rc;
+    ZString last_error;
+    ZString query_buffer;
+    short format;
+
     int row_count;
     SqlRows records;
-    ZString last_error;
-    short format;
     int tmp_record_id;
-    ZString query_buffer;
-    int rc;
 };
 
-typedef Database ZDatabase;
-typedef Database ZDB;
+typedef ZDatabase ZDB;
 
 } // namespace LibChaos
 

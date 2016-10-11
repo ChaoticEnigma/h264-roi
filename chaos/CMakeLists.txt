@@ -51,8 +51,8 @@ SET(LibChaos_SOURCES
     data/zset.h
     data/zstack.h
 
-    file/database.h
-    #file/database.cpp
+    file/zdatabase.h
+    file/zdatabase.cpp
     file/yimagebackend.h
     file/zbitmap.h
     file/zfile.h
@@ -78,7 +78,7 @@ SET(LibChaos_SOURCES
     lib/fnv-5.0.3/hash_64a.c
     #lib/nowide_standalone/src/iostream.cpp
     lib/sqlite3.h
-    #lib/sqlite3.c
+    lib/sqlite3.c
     lib/xxhash.c
 
     math/zexpression.h

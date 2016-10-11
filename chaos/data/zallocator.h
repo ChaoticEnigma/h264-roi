@@ -78,6 +78,7 @@ public:
      *  Calls object copy constructor.
      *  \param src must point to at least \p count T's.
      *  \param dest must point to memory large enough to hold at least \p count T's.
+     *  \param count is the number of T's to copy, default 1.
      */
     virtual void copy(const T *src, T *dest, zu64 count = 1){
         for(zu64 i = 0; i < count; ++i){
