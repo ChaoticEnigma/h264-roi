@@ -294,6 +294,15 @@ public:
         throw ZException("Unimplemented");
     }
 
+    //! Get an array of the keys in the map.
+    ZArray<K> keys() const {
+        ZArray<K> keys;
+        for(auto it = begin(); it.more(); ++it){
+            keys.push(*it);
+        }
+        return keys;
+    }
+
     bool isEmpty() const {
         return (_data == nullptr) || _size == 0;
     }

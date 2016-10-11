@@ -50,6 +50,8 @@ SET(LibChaos_SOURCES
     data/zqueue.h
     data/zset.h
     data/zstack.h
+    data/ztable.h
+    data/ztable.cpp
 
     file/zdatabase.h
     file/zdatabase.cpp
