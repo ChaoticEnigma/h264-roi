@@ -29,7 +29,7 @@ void uid(){
     ZUID uid5(ZUID::TIME);
     ZUID uid6(ZUID::RANDOM);
 
-    LOG(PAD("Default (time):") << uid1.str());
+    LOG(PAD("Default (nil):") << uid1.str());
     LOG(PAD("String:")         << uid2.str());
     LOG(PAD("String (fail):")  << uid3.str() << " " << uidstr3);
     LOG(PAD("Nil:")            << uid4.str());
