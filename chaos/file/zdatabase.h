@@ -8,6 +8,7 @@
 
 #include "zstring.h"
 #include "zpath.h"
+#include "ztable.h"
 #include "zassoc.h"
 
 #define SQLITE_CUSTOM
@@ -15,50 +16,50 @@
 
 namespace LibChaos {
 
-typedef ZAssoc<ZString, AsArZ> SqlRows;
-
 //! SQLite3 interface wrapper class.
 class ZDatabase {
+public:
+    class Prepared;
+
 public:
     ZDatabase();
     ZDatabase(ZPath file);
     ~ZDatabase();
 
+    //! Open database \p file.
     bool open(ZPath file);
+    //! Close database.
     void close();
+    //! Check if database is open.
     bool ok();
 
-    int execute(ZString sql);
+    Prepared prepare(ZString sql);
 
-    int select_rows();
-    int select_rows(ZString stmt);
-    int select_cols();
-    int select_cols(ZString stmt);
-    bool sql_stmt(ZString stmt);
-
-    SqlRows result();
-    int rows();
-
-    ZString lastError();
-    ZDatabase &operator<<(ZString query_part);
-    ZString get_query();
-    void clear_query();
+    //! Execute an SQL query.
+    int execute(ZString sql, ZTable &result);
 
     sqlite3 *handle(){ return _db; }
 
 public:
-    int sel_callback(int num_fields, char **p_fields, char **p_col_names); // For internal use
+    //! Prepared statement wrapper.
+    class Prepared {
+        friend class ZDatabase;
+    private:
+        Prepared(sqlite3_stmt *stmt);
+
+    public:
+        ~Prepared();
+        //! Bind a value to a named SQL parameter.
+        int bind(ZString name, ZString value);
+        //! Execute the prepared statement.
+        int execute(ZTable &result);
+
+    private:
+        sqlite3_stmt *_stmt;
+    };
 
 private:
     sqlite3 *_db;
-    int rc;
-    ZString last_error;
-    ZString query_buffer;
-    short format;
-
-    int row_count;
-    SqlRows records;
-    int tmp_record_id;
 };
 
 typedef ZDatabase ZDB;
