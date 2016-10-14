@@ -18,17 +18,18 @@ class ZStreamSocket : private ZSocket {
 public:
     ZStreamSocket();
 
-    bool open();
     void close();
     bool isOpen() const;
 
-    bool bind(ZAddress port);
+    //! Open a stream connection.
+    bool connect(ZAddress addr, ZConnection &conn);
+
+    //! Open, bind and listen on a stream socket.
+    bool listen(ZAddress bindaddr);
+    //! Accept a new connection on the socket.
+    ZPointer<ZConnection> accept();
 
     void setReadBuffer(zu64 size);
-
-    bool connect(ZAddress addr, ZConnection &conn);
-    bool listen();
-    ZPointer<ZConnection> accept();
 
     zsocktype getSocket() const {
         return ZSocket::getSocket();

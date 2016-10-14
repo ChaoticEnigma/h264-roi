@@ -126,7 +126,7 @@ void tcp_client(){
         ELOG("Socket Connect Fail");
         TASSERT(false);
     }
-    LOG("connected " << conn.other().str());
+    LOG("connected " << conn.peer().str());
 
     ZString str = "hi connection!";
     ZBinary snddata((const unsigned char *)str.cc(), str.size());
@@ -162,7 +162,7 @@ void tcp_server(){
         if(!sock.accept(client))
             continue;
 
-        LOG("accept " << client.other().debugStr());
+        LOG("accept " << client.peer().debugStr());
 
         ZBinary data;
         client.read(data);

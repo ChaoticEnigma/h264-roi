@@ -97,6 +97,11 @@ public:
         }
     }
 
+    //! Zero the bytes of \p dest.
+    static void zero(T *dest, zu64 count = 1){
+        ::memset(dest, 0, count * sizeof(T));
+    }
+
 public:
     //! Copy block of memory with \p size from \p src to \p dest.
     static void memcopy(const void *src, void *dest, zu64 size){

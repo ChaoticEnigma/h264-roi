@@ -32,7 +32,7 @@ public:
         ZSocket::setBufferSize(size);
     }
 
-    ZAddress other();
+    ZAddress peer();
 
     zsocktype getSocket() const {
         return ZSocket::getSocket();
@@ -43,8 +43,7 @@ public:
     }
 
 private:
-    ZAddress _addr;
-
+    ZAddress _peeraddr;
     unsigned char *buffer;
 };
 

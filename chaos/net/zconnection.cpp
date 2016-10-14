@@ -24,7 +24,7 @@ ZConnection::ZConnection() : ZSocket(STREAM), buffer(nullptr){
 
 }
 
-ZConnection::ZConnection(zsocktype fd, ZAddress addr) : ZSocket(STREAM, fd), _addr(addr), buffer(nullptr){
+ZConnection::ZConnection(zsocktype fd, ZAddress addr) : ZSocket(STREAM, fd), _peeraddr(addr), buffer(nullptr){
 
 }
 
@@ -49,8 +49,8 @@ bool ZConnection::write(const ZBinary &data){
     return ZSocket::write(data);
 }
 
-ZAddress ZConnection::other(){
-    return _addr;
+ZAddress ZConnection::peer(){
+    return _peeraddr;
 }
 
 }

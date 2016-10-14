@@ -99,7 +99,7 @@ public:
     //ZAddress(zu32 add, zport port);
     ZAddress(zport port);
 
-    ZAddress(const sockaddr_storage *);
+    ZAddress(const sockaddr_storage *addr, socklen_t len);
     ZAddress(const sockaddr *sa);
 
     ~ZAddress();

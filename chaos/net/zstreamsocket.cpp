@@ -11,20 +11,12 @@ ZStreamSocket::ZStreamSocket() : ZSocket(ZSocket::STREAM){
 
 }
 
-bool ZStreamSocket::open(){
-    return ZSocket::open();
-}
-
 void ZStreamSocket::close(){
     ZSocket::close();
 }
 
 bool ZStreamSocket::isOpen() const {
     return ZSocket::isOpen();
-}
-
-bool ZStreamSocket::bind(ZAddress port){
-    return ZSocket::bind(port);
 }
 
 bool ZStreamSocket::connect(ZAddress addr, ZConnection &conn){
@@ -35,8 +27,12 @@ bool ZStreamSocket::connect(ZAddress addr, ZConnection &conn){
     return ret;
 }
 
-bool ZStreamSocket::listen(){
-    return ZSocket::listen();
+bool ZStreamSocket::listen(ZAddress bindaddr){
+    if(!ZSocket::bind(bindaddr))
+        return false;
+    if(!ZSocket::listen())
+        return false;
+    return true;
 }
 
 ZPointer<ZConnection> ZStreamSocket::accept(){

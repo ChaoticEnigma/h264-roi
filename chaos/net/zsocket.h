@@ -23,6 +23,7 @@ namespace LibChaos {
     typedef int zsocktype;
 #endif
 
+//! Network socket abstraction.
 class ZSocket {
 public:
     enum socket_type {
@@ -34,7 +35,7 @@ public:
     struct SocketOptions {
         enum socketoption {
             OPT_REUSEADDR   = 1,
-            OPT_RECVTIMEOUT = 2,
+            OPT_RECVTIMEOUT,
         };
     };
 
@@ -44,13 +45,14 @@ public:
     ZSocket(const ZSocket &socket) = delete;
 
     //! Open the socket.
-    bool open();
-    //! Bind the socket to an address.
-    bool bind(ZAddress port);
+    bool open(int family, int type, int proto);
     //! Close the socket.
     void close();
     //! Get if socket is open.
     bool isOpen() const;
+
+    //! Open and bind the socket to an address.
+    bool bind(ZAddress port);
 
     // UDP
     /*! Send a datagram to \a destination with \a data.
@@ -105,6 +107,7 @@ private:
     static socklen_t getSockAddrLen(int family);
 
 private:
+    //! Total socket count.
     static zu32 socket_count;
 
     //! Socket file descriptor.

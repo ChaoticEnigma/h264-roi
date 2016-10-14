@@ -52,7 +52,9 @@ public:
     //! Create thread and run \a func with \a user data.
     ZThread(funcType func, void *user);
 
+    // Delete copy constructor
     ZThread(const ZThread &other) = delete;
+    // Delete assignment operator
     ZThread &operator=(const ZThread &other) = delete;
 
     ~ZThread();
