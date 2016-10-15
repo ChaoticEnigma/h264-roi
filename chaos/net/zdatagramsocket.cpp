@@ -11,9 +11,6 @@ ZDatagramSocket::ZDatagramSocket() : ZSocket(ZSocket::DATAGRAM){
     allowRebind(true);
 }
 
-bool ZDatagramSocket::open(){
-    return ZSocket::open();
-}
 void ZDatagramSocket::close(){
     ZSocket::close();
 }

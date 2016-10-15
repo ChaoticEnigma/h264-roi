@@ -114,17 +114,26 @@ ZAddress::ZAddress(zport port) : ZAddressData(IPV4, 0, 0, port){
     memset(_v6_addr, 0, 16);
 }
 
-ZAddress::ZAddress(const sockaddr_storage *ptr) : ZAddressData(IPV4, 0, 0, 0){
-    if(ptr->ss_family == IPV4){
-        const sockaddr_in *v4 = (const sockaddr_in *)ptr;
-        _family = v4->sin_family;
-        memcpy(_v4_addr, &(v4->sin_addr), sizeof(v4->sin_addr));
-        _port = v4->sin_port;
-    } else if(ptr->ss_family == IPV6){
-        const sockaddr_in6 *v6 = (const sockaddr_in6 *)ptr;
-        _family = v6->sin6_family;
-        memcpy(_v6_addr, &(v6->sin6_addr), sizeof(v6->sin6_addr));
-        _port = v6->sin6_port;
+ZAddress::ZAddress(const sockaddr_storage *addr, socklen_t len) : ZAddressData(IPV4, 0, 0, 0){
+    if(addr->ss_family == IPV4){
+        if(len >= sizeof(sockaddr_in)){
+            const sockaddr_in *v4 = (const sockaddr_in *)addr;
+            _family = v4->sin_family;
+            memcpy(_v4_addr, &(v4->sin_addr), sizeof(v4->sin_addr));
+            _port = v4->sin_port;
+        } else {
+            ELOG("sockaddr too small");
+        }
+
+    } else if(addr->ss_family == IPV6){
+        if(len >= sizeof(sockaddr_in6)){
+            const sockaddr_in6 *v6 = (const sockaddr_in6 *)addr;
+            _family = v6->sin6_family;
+            memcpy(_v6_addr, &(v6->sin6_addr), sizeof(v6->sin6_addr));
+            _port = v6->sin6_port;
+        } else {
+            ELOG("sockaddr too small");
+        }
     }
 }
 
@@ -233,7 +242,7 @@ ZList<SockAddr> ZAddress::lookUp(ZAddress addr){
 
     int status;
     addrinfo *result;
-    if((status = getaddrinfo(aptr, sptr, &hints, &result)) != 0){
+    if((status = ::getaddrinfo(aptr, sptr, &hints, &result)) != 0){
         ELOG("ZSocket: getaddrinfo for " << name << " " << (zuint)addr.port() << ": " << status <<": " << gai_strerror(status));
         return ZList<SockAddr>();
     }
@@ -247,7 +256,7 @@ ZList<SockAddr> ZAddress::lookUp(ZAddress addr){
         //      p->ai_canonname // Offical service name
 
         SockAddr sockaddr;
-        ZAddress newaddr((sockaddr_storage *)p->ai_addr);
+        ZAddress newaddr((const sockaddr_storage *)p->ai_addr, p->ai_addrlen);
         newaddr.setPort(addr.port());
         sockaddr.addr = newaddr;
         sockaddr.type = p->ai_socktype;

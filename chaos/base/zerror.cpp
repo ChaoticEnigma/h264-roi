@@ -608,7 +608,9 @@ addr2line_parts addr2line(ZPath program, const void *addr){
 ArZ getStackTrace(unsigned trim){
     ArZ trace;
     void *buffer[256];
+    // Get backtrace
     int nptrs = backtrace(buffer, 256);
+    // Get sybmol names for backtrace
     char **strings = backtrace_symbols(buffer, nptrs);
     if(strings != NULL){
         ArZ strs;
@@ -678,8 +680,15 @@ ArZ getStackTrace(unsigned trim){
 void fatalSignalHandler(int sig){
     ELOG("Fatal Error: signal " << sig);
 
-    ZException trace(ZString("Fatal Error: signal ") << sig);
-    trace.logStackTrace();
+    // Try to log a stack trace
+    // Drop the top three frames in the trace:
+    //  ZError::getStackTrace
+    //  ZError::fatalSignalHnadler
+    //  libc signal handler
+    ArZ trace = ZError::getStackTrace(3);
+    for(zu64 i = 0; i < trace.size(); ++i){
+        ELOG(ZLog::RAW << trace[i] << ZLog::NEWLN);
+    }
 
     exit(sig);
 }

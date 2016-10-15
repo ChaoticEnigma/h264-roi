@@ -18,7 +18,6 @@ public:
 public:
     ZDatagramSocket();
 
-    bool open();
     void close();
     bool isOpen() const;
 

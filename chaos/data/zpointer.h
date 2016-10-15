@@ -58,6 +58,14 @@ public:
         release();
     }
 
+    /*! Get a pointer to this pointer, and increment the reference count,
+     *  so the object is not destroyed until this pointer is release()d.
+     */
+    ZPointer<T> *touch(){
+        _increment();
+        return this;
+    }
+
     /*! Release the shared pointer.
      *  If this is the only object with shared ownership of the pointer,
      *  delete it, otherwise decrement the reference count.
@@ -96,13 +104,13 @@ public:
     /*! Get pointer to shared object.
      *  \return nullptr if no object owned.
      */
-    T *ptr() const {
+    T *get() const {
         if(_data == nullptr)
             return nullptr;
         return _data->ptr;
     }
     //! Shorthand for pointer to shared object.
-    inline T *operator->(){ return ptr(); }
+    inline T *operator->(){ return get(); }
 
 private:
     void _increment(){

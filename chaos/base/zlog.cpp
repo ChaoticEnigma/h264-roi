@@ -84,36 +84,6 @@ ZLog &ZLog::log(ZString logtext){
     return *this;
 }
 
-ZLog &ZLog::operator<<(ZLogInfo in){
-    if(job){
-        switch(in.type){
-            case ZLogInfo::FILE:
-                job->file = in.info;
-                break;
-            case ZLogInfo::LINE:
-                job->line = in.info;
-                break;
-            case ZLogInfo::FUNCTION:
-                job->func = in.info;
-                break;
-
-            case ZLogInfo::TIME:
-    //            job->file = in.info;
-                break;
-            case ZLogInfo::CLOCK:
-    //            job->line = in.info;
-                break;
-            case ZLogInfo::THREAD:
-    //            job->func = in.info;
-                break;
-
-            default:
-                break;
-        }
-    }
-    return *this;
-}
-
 ZLog &ZLog::operator<<(ZBinary bin){
     ZString text;
     for(zu64 i = 0; i < bin.size(); ++i){
