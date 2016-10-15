@@ -11,6 +11,9 @@ ZDatagramSocket::ZDatagramSocket() : ZSocket(ZSocket::DATAGRAM){
     allowRebind(true);
 }
 
+bool ZDatagramSocket::open(){
+    return ZSocket::open(ZAddress::IPV6, ZSocket::DATAGRAM, 0);
+}
 void ZDatagramSocket::close(){
     ZSocket::close();
 }

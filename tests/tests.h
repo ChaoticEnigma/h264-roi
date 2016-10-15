@@ -35,6 +35,7 @@ ZArray<Test> path_tests();
 ZArray<Test> json_tests();
 
 ZArray<Test> hash_tests();
+ZArray<Test> table_tests();
 ZArray<Test> graph_tests();
 ZArray<Test> misc_tests();
 ZArray<Test> number_tests();

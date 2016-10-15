@@ -145,13 +145,12 @@ public:
     //! Get string representation of address.
     ZString str() const;
 
-    static ZList<SockAddr> lookUp(ZAddress name);
-
     /*! Populate a sockaddr_storage struct with the necessary values from this ZAddress.
      *  \note \a ptr is zeroed before population.
      */
     bool populate(sockaddr_storage *ptr) const;
-    socklen_t getSockAddrLen() const;
+    //! Get the size of the sockaddr struct corresponding to this address.
+    socklen_t getSockLen() const;
 
     //! Get a string describing the address in the form [addr]:port,family,type,protocol.
     ZString debugStr() const {
@@ -160,16 +159,10 @@ public:
     }
 
 private:
-    void parseAny(ZString);
-    bool parseIP(int, ZString);
+    void _parseAny(ZString str);
+    bool _parseIP(int af, ZString str);
 
     //static ZString strIP(int af, const void *ptr);
-};
-
-struct SockAddr {
-    ZAddress addr;
-    int type;
-    int proto;
 };
 
 }

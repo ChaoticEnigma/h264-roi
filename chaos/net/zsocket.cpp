@@ -13,16 +13,35 @@
     #include <winsock2.h>
     #include <ws2tcpip.h>
 #else
-    #include <sys/socket.h>
-    #include <netinet/in.h>
     #include <fcntl.h>
     #include <unistd.h>
     #include <string.h>
+    #include <netdb.h>
+    #include <sys/socket.h>
+    #include <netinet/in.h>
     #if PLATFORM == MACOSX
         #include <sys/uio.h>
         #include <unistd.h>
     #endif
 #endif
+
+
+bool InitializeSockets(){
+#ifdef ZSOCKET_WINAPI
+    WSADATA WsaData;
+    if(WSAStartup(MAKEWORD(2,2), &WsaData) != 0){
+        ELOG("ZSocket: WSAStartup Failed to Initialize Sockets");
+        return false;
+    }
+#endif
+    return true;
+}
+
+void ShutdownSockets(){
+#ifdef ZSOCKET_WINAPI
+    WSACleanup();
+#endif
+}
 
 namespace LibChaos {
 
@@ -66,11 +85,12 @@ void ZSocket::close(){
         ::close(_socket);
 #endif
         _socket = 0;
-    }
 
-    --socket_count;
-    if(socket_count <= 0)
-        ShutdownSockets();
+        // Shutdown sockets if needed
+        --socket_count;
+        if(socket_count <= 0)
+            ShutdownSockets();
+    }
 }
 
 bool ZSocket::isOpen() const {
@@ -78,9 +98,12 @@ bool ZSocket::isOpen() const {
 }
 
 bool ZSocket::bind(ZAddress addr){
-    // Loop up address/hostname
+    // Close any existing socket
+    close();
+
+    // Look up address/hostname
     bool ok = false;
-    ZList<SockAddr> addrs = ZAddress::lookUp(addr);
+    ZList<SockAddr> addrs = lookupAddr(addr, _type);
     for(zu64 i = 0; i < addrs.size(); ++i){
         SockAddr saddr = addrs.front();
 
@@ -98,15 +121,15 @@ bool ZSocket::bind(ZAddress addr){
 
         // Try to bind socket
         sockaddr_storage addrstorage;
-        addrs.front().addr.populate(&addrstorage);
-        if(::bind(_socket, (const sockaddr *)&addrstorage, getSockAddrLen(addrs.front().addr.family())) != 0){
-            ELOG("ZSocket: failed to bind " +  addrs.front().addr.debugStr() + " - error " + ZError::getSystemError());
+        saddr.addr.populate(&addrstorage);
+        if(::bind(_socket, (const sockaddr *)&addrstorage, saddr.addr.getSockLen()) != 0){
+            ELOG("ZSocket: failed to bind " +  saddr.addr.debugStr() + " - error " + ZError::getSystemError());
             close();
             addrs.rotate();
             continue;
         }
         ok = true;
-        _bound = addrs.front().addr;
+        _bound = saddr.addr;
         DLOG("Bound socket " << _socket);
         break;
     }
@@ -129,15 +152,15 @@ bool ZSocket::send(ZAddress dest, const ZBinary &data){
 
     sockaddr_storage addrstorage;
     //dest.setType(_type);
-    dest = ZAddress::lookUp(dest).front().addr;
+    dest = lookupAddr(dest, _type).front().addr;
     dest.populate(&addrstorage);
 
 #if COMPILER == MSVC
-    long sent = ::sendto(_socket, (const char *)data.raw(), (int)data.size(), 0, (const sockaddr *)&addrstorage, getSockAddrLen(dest.family()));
+    long sent = ::sendto(_socket, (const char *)data.raw(), (int)data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());
 #elif COMPILER == MINGW
-    long sent = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, getSockAddrLen(dest.family()));
+    long sent = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());
 #else
-    long sent = ::sendto(_socket, data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, getSockAddrLen(dest.family()));
+    long sent = ::sendto(_socket, data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());
 #endif
 
     if(sent < 0)
@@ -179,7 +202,7 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
         return false;
     }
     bool ok = false;
-    ZList<SockAddr> addrs = ZAddress::lookUp(addr);
+    ZList<SockAddr> addrs = lookupAddr(addr, _type);
     for(zu64 i = 0; i < addrs.size(); ++i){
         if(!open(addrs.front().addr.family(), addrs.front().type, addrs.front().proto)){
             addrs.rotate();
@@ -189,7 +212,7 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
         ZAddress caddr = addrs.front().addr;
         sockaddr_storage addrstorage;
         caddr.populate(&addrstorage);
-        if(::connect(_socket, (const sockaddr *)&addrstorage, getSockAddrLen(caddr.family())) != 0){
+        if(::connect(_socket, (const sockaddr *)&addrstorage, caddr.getSockLen()) != 0){
             ELOG("ZSocket: connect error " + ZError::getSystemError());
             close();
             addrs.rotate();
@@ -370,30 +393,54 @@ void ZSocket::setBufferSize(zu32 size){
     buffersize = size;
 }
 
-bool ZSocket::InitializeSockets(){
-#ifdef ZSOCKET_WINAPI
-    WSADATA WsaData;
-    if(WSAStartup(MAKEWORD(2,2), &WsaData) != 0){
-        ELOG("ZSocket: WSAStartup Failed to Initialize Sockets");
-        return false;
+ZList<ZSocket::SockAddr> ZSocket::lookupAddr(ZAddress addr, int type){
+    addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    //hints.ai_family = AF_UNSPEC; // Redundant
+    //hints.ai_socktype = addr.type();
+    hints.ai_socktype = type;
+
+    ZString name = addr.str();
+    const char *aptr = name.isEmpty() ? NULL : name.cc();
+
+    ZString serv = ZString::ItoS((zu64)addr.port());
+    const char *sptr = serv.isEmpty() ? NULL : serv.cc();
+
+    int status;
+    addrinfo *result;
+    if((status = ::getaddrinfo(aptr, sptr, &hints, &result)) != 0){
+        ELOG("ZSocket: getaddrinfo for " << name << " " << (zuint)addr.port() << ": " << status <<": " << gai_strerror(status));
+        return ZList<SockAddr>();
     }
-#endif
-    return true;
-}
 
-void ZSocket::ShutdownSockets(){
-#ifdef ZSOCKET_WINAPI
-    WSACleanup();
-#endif
-}
+    ZList<SockAddr> addrs;
+    for(addrinfo *p = result; p != NULL; p = p->ai_next){
+        // Other data:
+        //      p->ai_family    // Family (AF_INET, AF_INET6)
+        //      p->ai_socktype  // Socket type (SOCK_STREAM, SOCK_DGRAM)
+        //      p->ai_protocol
+        //      p->ai_canonname // Offical service name
 
-socklen_t ZSocket::getSockAddrLen(int family){
-    if(family == AF_INET)
-        return sizeof(sockaddr_in);
-    else if(family == AF_INET6)
-        return sizeof(sockaddr_in6);
-    else
-        return 0;
+        ZAddress newaddr((const sockaddr_storage *)p->ai_addr, p->ai_addrlen);
+        newaddr.setPort(addr.port());
+        SockAddr sockaddr;
+        sockaddr.addr = newaddr;
+        sockaddr.type = p->ai_socktype;
+        sockaddr.proto = p->ai_protocol;
+//        newaddr.setType(p->ai_socktype);
+//        newaddr.setProtocol(p->ai_protocol);
+
+        //inet_ntop(p->ai_family, addr, ipstr, INET6_ADDRSTRLEN);
+        //ZAddress newaddr(ipstr);
+
+//        if(!addrs.contains(newaddr))
+//            addrs.push(newaddr);
+
+        addrs.push(sockaddr);
+    }
+
+    freeaddrinfo(result); // free the linked list
+    return addrs;
 }
 
 }

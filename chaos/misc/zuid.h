@@ -12,6 +12,7 @@
 #include "zlist.h"
 
 #define ZUID_NIL LibChaos::ZUID(LibChaos::ZUID::NIL)
+#define ZUID_SIZE 16
 
 namespace LibChaos {
 
@@ -25,21 +26,32 @@ public:
         TIME,
         //! Randomly-generated Version 4 UUID.
         RANDOM,
+        //! Uninitialized UUID. For internal use.
+        UNINIT,
         //! Error value.
         UNKNOWN,
     };
 
 public:
     //! Generate new UUID of \a type.
-    ZUID(uuidtype type = TIME);
+    ZUID(uuidtype type = NIL);
     /*! Parse existing UUID string.
      *  String must contain 32 hexadecimal characters,
      *  ignoring any number of '-' or ':' characters in string.
      */
     ZUID(ZString str);
 
+    //! Compare two ZUIDs, -1, 0 or 1.
+    int compare(const ZUID &uid);
+
     //! Compare UUIDs.
     bool operator==(const ZUID &uid);
+
+    //! Algebraic comparison for ZUID trees.
+    bool operator<(const ZUID &uid);
+
+    //! Read 16 bytes into this UUID.
+    ZUID &fromRaw(zbyte *bytes);
 
     //! Get the type of the UUID.
     uuidtype getType() const;
@@ -65,9 +77,12 @@ private:
 
 private:
     //! UUID octets.
-    zoctet _id_octets[16];
+    zoctet _id_octets[ZUID_SIZE];
 };
 
-}
+// ZUID specialization ZHash
+ZHASH_USER_SPECIALIAZATION(ZUID, (const ZUID &uid), (uid.raw(), ZUID_SIZE), {})
+
+} // namespace LibChaos
 
 #endif // ZUID_H

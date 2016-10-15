@@ -165,7 +165,8 @@ ZString ZBinary::dumpBytes(zu16 groupsize, zu16 linesize, bool upper, zu64 offse
         ZString asc;
         for(zu64 j = i - (i % linelen); j < i; ++j)
             asc += displayByte(_data[j]);
-        str += ZString(' ', linelen * 2 + linesize - (i % linelen) * 2 - (i % linelen) / groupsize) + ZString("| ") + asc + "\n";
+        str += ZString(' ', (linelen - (i % linelen)) * 2 + linesize - (i % linelen) / groupsize);
+        str += ZString("| ") + asc + ZString(' ', linelen - (i % linelen)) + "\n";
     }
     if(linesize == 0 || size() == 0)
         str += "\n";

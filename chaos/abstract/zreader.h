@@ -148,6 +148,33 @@ public:
                ((zu64)tmp[6] << 8)  |
                ((zu64)tmp[7]));
     }
+
+    // Floating point
+    // Implementation may change
+    //! Read single-precision floating point number.
+    float readfloat(){
+        zbyte tmp[4] = {0};
+        read(tmp, 4);
+        zu32 raw = ((zu32)tmp[0] << 24) |
+                   ((zu32)tmp[1] << 16) |
+                   ((zu32)tmp[2] << 8)  |
+                   ((zu32)tmp[3]);
+        return *(float *)&raw;
+    }
+    //! Read double-precision floating point number.
+    double readdouble(){
+        zbyte tmp[8] = {0};
+        read(tmp, 8);
+        zu64 raw = ((zu64)tmp[0] << 56) |
+                   ((zu64)tmp[1] << 48) |
+                   ((zu64)tmp[2] << 40) |
+                   ((zu64)tmp[3] << 32) |
+                   ((zu64)tmp[4] << 24) |
+                   ((zu64)tmp[5] << 16) |
+                   ((zu64)tmp[6] << 8)  |
+                   ((zu64)tmp[7]);
+        return *(double *)&raw;
+    }
 };
 
 }

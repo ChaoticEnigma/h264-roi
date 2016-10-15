@@ -6,6 +6,7 @@
 #include "zfile.h"
 
 #include "zlog.h"
+#include "zerror.h"
 #include "zexception.h"
 
 #include <stdlib.h>
@@ -28,65 +29,93 @@
     #define V 2
 #endif
 
-#define ZFILE_COPY_BUFFER_SIZE 32 * 1024
+#define ZFILE_COPY_BUFFER_SIZE (32 * 1024)
 
 namespace LibChaos {
 
+ZFile::ZFile(zfile_special type) : _data(new ZFileData){
+    _data->type = type;
+    switch(type){
+        case REGULAR:
+            // Regular file
+            _data->options = readbit;
 #ifdef ZFILE_WINAPI
-ZFile::ZFile() : _options(0 | readbit), _handle(NULL){}
+            _data->handle = NULL;
 #else
-ZFile::ZFile() : _options(0 | readbit), _file(NULL){}
+            _data->file = NULL;
 #endif
+            break;
 
-ZFile::ZFile(ZPath name, zu16 mode) : ZFile(){
+        case STDIN:
+            // Standard input
+            _data->file = stdin;
+            _data->options = readbit;
+            break;
+        case STDOUT:
+            // Standard output
+            _data->file = stdout;
+            _data->options = writebit;
+            break;
+        case STDERR:
+            // Standard error
+            _data->file = stderr;
+            _data->options = writebit;
+            break;
+
+        default:
+            break;
+    }
+}
+
+ZFile::ZFile(ZPath name, zu16 mode) : ZFile(REGULAR){
     open(name, mode);
 }
 
-ZFile::ZFile(const ZFile &){
-    throw ZException("Someone tried to copy a ZFile");
-}
-
 ZFile::~ZFile(){
-    close();
+    // If last reference, close
+    if(_data.unique())
+        close();
 }
 
 bool ZFile::open(ZPath path){
-    // Close previous file, if any
-    close();
-    _path = path;
+    if(isOpen())
+        return false;
+
+    _data->path = path;
 
     // Must open for read or write or both
-    if(!(_options & readbit) && !(_options & writebit))
+    if(!(_data->options & readbit) && !(_data->options & writebit))
         return false;
 
     // If we're not allowed to create
-    if(!(_options & createbit)){
+    if(!(_data->options & createbit)){
         // Make sure the file exists
-        if(!isFile(_path)){
+        if(!isFile(_data->path)){
             // Fail if it doesn't
             return false;
         }
     }
 
 #ifdef ZFILE_WINAPI
+
     DWORD access = 0;
-    if(_options & readbit)
+    if(_data->options & readbit)
         access |= GENERIC_READ;
-    if(_options & writebit)
+    if(_data->options & writebit)
         access |= GENERIC_WRITE;
 
     DWORD share = 0;
-    if(_options & readbit && !(_options & writebit))
+    if(_data->options & readbit && !(_data->options & writebit))
         share = FILE_SHARE_READ; // Share read access if only reading
 
     DWORD create;
-    if(_options & createbit){
-        if(_options & apptruncbit)
+    if(_data->options & createbit){
+        if(_data->options & apptruncbit)
             create = CREATE_ALWAYS; // Always create new empty file
         else
             create = OPEN_ALWAYS; // Always open a file, create if not exists
     } else {
-        if(_options & apptruncbit)
+        if(_data->options & apptruncbit)
             create = TRUNCATE_EXISTING; // Truncate exiting file
         else
             create = OPEN_EXISTING; // Open file only if it exists
@@ -94,35 +123,46 @@ bool ZFile::open(ZPath path){
 
     DWORD attr = FILE_ATTRIBUTE_NORMAL;
 
-    _handle = CreateFile(_path.str('\\').wstr().c_str(), access, share, NULL, create, attr, NULL);
-    if(_handle == INVALID_HANDLE_VALUE){
-        _handle = NULL;
+    _handle = CreateFile(_data->path.str('\\').wstr().c_str(), access, share, NULL, create, attr, NULL);
+    if(_data->handle == INVALID_HANDLE_VALUE){
+        _data->handle = NULL;
         return false;
     }
 
-    return true;
 #else
+
     // Set flags
     ZString modech;
-    if(_options & readwritebits){ // read / write
-        if(_options & createbit)
-            modech += "w+";
-        else
+    if(_data->options & readwritebits){ // read / write
+        if(_data->options & createbit){ // create if doesn't exist
+            if(_data->options & truncbit){ // truncate
+                modech += "w+";
+            } else {
+                // Do not truncate if already exists
+                if(isFile(_data->path)){
+                    modech += "r+";
+                } else {
+                    modech += "w+";
+                }
+            }
+        } else {
             modech += "r+";
-    } else if(_options & readbit){ // read
+        }
+    } else if(_data->options & readbit){ // read
         modech += "r";
-    } else if(_options & writebit){ // write
+    } else if(_data->options & writebit){ // write
         modech += "w";
     }
     modech += "b"; // binary
 
-    _file = fopen(_path.str().cc(), modech.cc());
-    if(_file == NULL){
+    _data->file = fopen(_data->path.str().cc(), modech.cc());
+    if(_data->file == NULL){
         return false;
     }
 
-    return true;
 #endif
+
+    return true;
 }
 
 bool ZFile::open(ZPath path, zu16 mode){
@@ -131,34 +171,35 @@ bool ZFile::open(ZPath path, zu16 mode){
 }
 
 void ZFile::setMode(zu16 mode){
-    _options = 0;
+    _data->options = 0;
+    // Read set
     if(mode & READ){
-        _options |= readbit;
+        _data->options |= readbit;
     }
 
+    // Write set
     if(mode & WRITE){
-        if(mode & NOCREATE){
-            _options |= writebit;
-        } else {
-            _options |= writebit;
-            _options |= createbit;
+        _data->options |= writebit;
+        // Create not disabled
+        if(!(mode & NOCREATE)){
+            _data->options |= createbit;
         }
     }
 
-    // If append not set and truncate set
-    if(!(mode & APPEND) && mode & TRUNCATE)
-        _options |= apptruncbit;
+    // Truncate set
+    if(mode & TRUNCATE)
+        _data->options |= truncbit;
 }
 
 bool ZFile::close(){
     if(!isOpen())
         return true;
 #ifdef ZFILE_WINAPI
-    bool ret = CloseHandle(_handle) != 0;
-    _handle = NULL;
+    bool ret = CloseHandle(_data->handle) != 0;
+    _data->handle = NULL;
 #else
-    bool ret = (fclose(_file) == 0);
-    _file = NULL;
+    bool ret = (fclose(_data->file) == 0);
+    _data->file = NULL;
 #endif
     return ret;
 }
@@ -170,11 +211,11 @@ zu64 ZFile::tell() const {
     LARGE_INTEGER distance;
     distance.QuadPart = 0;
     LARGE_INTEGER newpos;
-    SetFilePointerEx(_handle, distance, &newpos, FILE_CURRENT);
+    SetFilePointerEx(_data->handle, distance, &newpos, FILE_CURRENT);
     return (zu64)newpos.QuadPart;
 #else
     // Tell file pointer position
-    long pos = ftell(_file);
+    long pos = ftell(_data->file);
     return (pos > 0 ? (zu64)pos : 0);
 #endif
 }
@@ -184,11 +225,11 @@ zu64 ZFile::seek(zu64 pos){
     LARGE_INTEGER distance;
     distance.QuadPart = (long long)pos;
     LARGE_INTEGER newpos;
-    SetFilePointerEx(_handle, distance, &newpos, FILE_BEGIN);
+    SetFilePointerEx(_data->handle, distance, &newpos, FILE_BEGIN);
     return (zu64)newpos.QuadPart;
 #else
     // Seek file pointer to position
-    fseek(_file, (long)pos, SEEK_SET);
+    fseek(_data->file, (long)pos, SEEK_SET);
     return tell();
  #endif
 }
@@ -198,7 +239,7 @@ bool ZFile::atEnd() const {
     return tell() >= fileSize();
 #else
     // Check if file pointer is at end of file
-    return feof(_file);
+    return feof(_data->file);
 #endif
 }
 
@@ -209,39 +250,41 @@ zu64 ZFile::available() const{
 
 zu64 ZFile::read(zbyte *dest, zu64 size){
     // Check file is open and has read bit set
-    if(!isOpen() || !(_options & readbit))
+    if(!isOpen() || !(_data->options & readbit))
         return 0;
 #ifdef ZFILE_WINAPI
     DWORD read;
-    bool ret = ReadFile(_handle, dest, size, &read, NULL) != 0;
+    bool ret = ReadFile(_data->handle, dest, size, &read, NULL) != 0;
     if(!ret)
         return 0;
     return (zu64)read;
 #else
-    return fread(dest, sizeof(zbyte), size, _file);
+    return fread(dest, sizeof(zbyte), size, _data->file);
 #endif
 }
 
 // ZWriter
 zu64 ZFile::write(const zbyte *src, zu64 size){
     // Check file is open and has write bit set
-    if(!isOpen() || !(_options & writebit))
+    if(!isOpen() || !(_data->options & writebit))
         return 0;
 #ifdef ZFILE_WINAPI
     DWORD write;
-    bool ret = WriteFile(_handle, src, size, &write, NULL) != 0;
+    bool ret = WriteFile(_data->handle, src, size, &write, NULL) != 0;
     if(!ret)
         return 0;
     return (zu64)write;
 #else
-    return fwrite(src, sizeof(zbyte), size, _file);
+    return fwrite(src, sizeof(zbyte), size, _data->file);
 #endif
 }
 
 zu64 ZFile::read(ZBinary &out, zu64 size){
     if(out.size() < size)
         out.resize(size);
-    return read(out.raw(), size);
+    zu64 len = read(out.raw(), size);
+    out.resize(len);
+    return len;
 }
 
 zu64 ZFile::write(const ZBinary &data){
@@ -254,7 +297,7 @@ zu64 ZFile::write(const ZString &str){
 
 bool ZFile::remove(){
     close();
-    remove(_path);
+    remove(_data->path);
     return true;
 }
 bool ZFile::remove(ZPath file){
@@ -280,15 +323,15 @@ bool ZFile::resizeFile(zu64 size){
     LARGE_INTEGER dist;
     dist.QuadPart = (LONGLONG)size;
     LARGE_INTEGER pos;
-    if(SetFilePointerEx(_handle, dist, &pos, FILE_BEGIN) == 0)
+    if(SetFilePointerEx(_data->handle, dist, &pos, FILE_BEGIN) == 0)
         return false;
     if(dist.QuadPart != pos.QuadPart)
         return false;
-    if(SetEndOfFile(_handle) == 0)
+    if(SetEndOfFile(_data->handle) == 0)
         return false;
     return true;
 #else
-    int fd = fileno(_file);
+    int fd = fileno(_data->file);
     if(ftruncate(fd, (long long)size) != 0)
         return false;
     return true;
@@ -298,18 +341,18 @@ bool ZFile::resizeFile(zu64 size){
 zu64 ZFile::fileSize() const {
 #ifdef ZFILE_WINAPI
     // Check file is open and has read bit set
-    if(!isOpen() || !(_options & readbit))
+    if(!isOpen() || !(_data->options & readbit))
         return 0;
     LARGE_INTEGER lint;
-    if(!GetFileSizeEx(_handle, &lint))
+    if(!GetFileSizeEx(_data->handle, &lint))
         return 0;
     return (zu64)lint.QuadPart;
 #else
     if(!isOpen())
         return 0;
-    fseek(_file, 0, SEEK_END);
-    zu64 flsz = (zu64)ftell(_file);
-    fseek(_file, 0, SEEK_SET);
+    fseek(_data->file, 0, SEEK_END);
+    zu64 flsz = (zu64)ftell(_data->file);
+    fseek(_data->file, 0, SEEK_SET);
     return flsz;
 #endif
 }
@@ -318,11 +361,11 @@ zu64 ZFile::fileSize(ZPath path){
     return file.fileSize();
 }
 
-zu64 ZFile::readBinary(ZPath file, ZBinary &out){
-    if(isDir(file))
-        throw ZException("ZFile: file is directory: " + file.str());
+zu64 ZFile::readBinary(ZPath path, ZBinary &out){
+    if(isDir(path))
+        throw ZException("ZFile: file is directory: " + path.str());
 
-    FILE *fp = fopen(file.str().cc(), "rb");
+    FILE *fp = fopen(path.str().cc(), "rb");
     if(fp == NULL)
         throw ZException("ZFile: fopen error");
 
@@ -716,6 +759,14 @@ zu64 ZFile::fileHash(ZPath path){
     zu64 hash = XXH64_digest(state);
     XXH64_freeState(state);
     return hash;
+}
+
+int ZFile::getError(){
+    return ZError::getSystemErrorCode();
+}
+
+ZString ZFile::getErrorString(){
+    return ZError::getSystemError();
 }
 
 }

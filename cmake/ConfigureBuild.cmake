@@ -1,5 +1,4 @@
-# configure_build.cmake
-# Configure Build Options
+## Configure Build Options
 
 SET(COMPILER_GCC        0x11)
 SET(COMPILER_MINGW      0x12)

@@ -48,7 +48,7 @@ public:
 
     // Log level
     enum {
-        ERRORS   = 1,
+        ERRORS  = 1,
         WARNING = 2,
         INFO    = 3,
         VERBOSE = 4,

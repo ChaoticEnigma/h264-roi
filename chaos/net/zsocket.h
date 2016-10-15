@@ -39,6 +39,12 @@ public:
         };
     };
 
+    struct SockAddr {
+        ZAddress addr;
+        int type;
+        int proto;
+    };
+
 public:
     ZSocket(socket_type type);
     ~ZSocket();
@@ -48,7 +54,7 @@ public:
     bool open(int family, int type, int proto);
     //! Close the socket.
     void close();
-    //! Get if socket is open.
+    //! Check if socket is open.
     bool isOpen() const;
 
     //! Open and bind the socket to an address.
@@ -78,12 +84,19 @@ public:
 
     bool setSocketOption(SocketOptions::socketoption option, int value);
 
-    // Default is blocking
+    /*! Set whether socket should be blocking or non-blocking.
+     *  Default is blocking.
+     */
     bool setBlocking(bool block = true);
-    // Default is non-rebind
+    /*! Set whether socket should allow rebinding.
+     *  This option can only take effect before binding.
+     *  Default is no-rebind.
+     */
     void allowRebind(bool rebind = false);
 
     void setBufferSize(zu32 size);
+
+    static ZList<SockAddr> lookupAddr(ZAddress addr, int type);
 
     zsocktype getSocket() const {
         return _socket;
@@ -98,13 +111,8 @@ public:
     }
 
 protected:
+    //! Construct ZSocket from already opened socket.
     ZSocket(socket_type type, zsocktype fd);
-
-private:
-    static bool InitializeSockets();
-    static void ShutdownSockets();
-    bool getSocket(zsocktype &fd, int type, int proto);
-    static socklen_t getSockAddrLen(int family);
 
 private:
     //! Total socket count.
@@ -126,6 +134,6 @@ private:
     ZException error;
 };
 
-}
+} // namespace LibChaos
 
 #endif // ZSOCKET_H

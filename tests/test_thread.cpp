@@ -22,12 +22,12 @@ void *thread_func(void * /*zarg*/){
     return NULL;
 }
 
-void *thread_func2(void *zarg){
-    ZThreadArg *arg = (ZThreadArg*)zarg;
+void *thread_func2(ZThreadArg *zarg){
+    void *arg = zarg->arg;
     LOG("running " << ZThread::thisTid());
-    LOG((const char *)arg->arg << ", " << arg->stop());
+    LOG((const char *)arg << ", " << zarg->stop());
     int i = 0;
-    while(!arg->stop()){
+    while(!zarg->stop()){
         LOG("loop" << ++i << " in " << ZThread::thisTid());
         ZThread::usleep(1000000);
     }

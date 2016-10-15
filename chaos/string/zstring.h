@@ -197,11 +197,11 @@ public:
     bool endsWith(ZString test) const;
 
     /*! Get location of of first occurrence of \a find in string after \a start.
-     *  \return Index of first character of \a find if found, else \ref none.
+     *  \return Index of first character of \a find if found, else \ref NONE.
      */
     zu64 findFirst(const ZString &find, zu64 start = 0) const;
     /*! Get location of of first occurrence of \a find in \a str after \a start.
-     *  \return Index of first character of \a find if found, else \ref none.
+     *  \return Index of first character of \a find if found, else \ref NONE.
      */
     static zu64 findFirst(const ZString &str, const ZString &find, zu64 start = 0);
 

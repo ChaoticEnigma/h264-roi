@@ -1,5 +1,6 @@
+## Configure Doxygen CMake Targets
 
-# Find Doxygen tool.
+# Find Doxygen
 FIND_PACKAGE(Doxygen)
 
 IF(DOXYGEN_FOUND)
@@ -44,7 +45,7 @@ IF(DOXYGEN_FOUND)
         )
     ENDIF()
 
-    # Find Latex tool.
+    # Find Latex tool
     FIND_PACKAGE(LATEX)
 
     IF(LATEX_FOUND)
