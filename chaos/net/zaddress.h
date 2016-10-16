@@ -36,7 +36,7 @@ typedef zu16 zport;
 
 class ZAddressData {
 protected:
-    ZAddressData(int fam, int typ, int pro, zport port);
+    ZAddressData(int fam, zport port);
     ZAddressData(const ZAddressData &other);
 
 protected:
@@ -72,8 +72,9 @@ protected:
     zport _port;
 };
 
-struct SockAddr;
-
+/*! Network address container.
+ *  \ingroup Network
+ */
 class ZAddress : private ZAddressData {
 public:
     enum address_family {
@@ -95,8 +96,6 @@ public:
     ZAddress(ZString str, zport port);
     ZAddress(int protocol, ZString str);
 
-    //ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zport port);
-    //ZAddress(zu32 add, zport port);
     ZAddress(zport port);
 
     ZAddress(const sockaddr_storage *addr, socklen_t len);
@@ -161,10 +160,8 @@ public:
 private:
     void _parseAny(ZString str);
     bool _parseIP(int af, ZString str);
-
-    //static ZString strIP(int af, const void *ptr);
 };
 
-}
+} // namespace LibChaos
 
 #endif // ZADDRESS_H

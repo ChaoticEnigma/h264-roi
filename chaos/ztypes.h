@@ -10,6 +10,14 @@
  *  ztypes header file.
  */
 
+/*! \defgroup String LibChaos Strings
+ *  String processing classes.
+ *  \defgroup Thread LibChaos Threads
+ *  Thread management classes.
+ *  \defgroup Network LibChaos Networking
+ *  Network and socket abstraction classes.
+ */
+
 // Git Describe
 #define LIBCHAOS_DESCRIBE _LIBCHAOS_DESCRIBE
 
@@ -240,6 +248,6 @@ static const char *LibChaosDescribe(){
     return LIBCHAOS_DESCRIBE;
 }
 
-}
+} // namespace LibChaos
 
 #endif // ZTYPES_H

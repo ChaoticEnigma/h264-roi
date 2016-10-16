@@ -16,6 +16,9 @@
 
 namespace LibChaos {
 
+/*! Thread notification controller.
+ *  \ingroup Thread
+ */
 class ZCondition {
 public:
     ZCondition();
@@ -60,6 +63,6 @@ private:
 #endif
 };
 
-}
+} // namespace LibChaos
 
 #endif // ZCONDITION_H

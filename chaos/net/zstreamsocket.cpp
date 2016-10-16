@@ -11,14 +11,6 @@ ZStreamSocket::ZStreamSocket() : ZSocket(ZSocket::STREAM){
 
 }
 
-void ZStreamSocket::close(){
-    ZSocket::close();
-}
-
-bool ZStreamSocket::isOpen() const {
-    return ZSocket::isOpen();
-}
-
 bool ZStreamSocket::connect(ZAddress addr, ZConnection &conn){
     zsocktype connfd;
     ZAddress connaddr;

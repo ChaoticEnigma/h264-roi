@@ -37,7 +37,7 @@ bool ZJPEG::isJPEG(const ZBinary &data){
         cinfo.err = jpeg_std_error(&jerr);
         jerr.error_exit = error_exit;
         jpeg_create_decompress(&cinfo);
-        jpeg_mem_src(&cinfo, (zbyte *)data.raw(), data.size());
+        jpeg_mem_src(&cinfo, (const zbyte *)data.raw(), data.size());
         int status = jpeg_read_header(&cinfo, TRUE);
         jpeg_destroy_decompress(&cinfo);
         return (status == JPEG_HEADER_OK);

@@ -5,9 +5,9 @@
 *******************************************************************************/
 #include "zsocket.h"
 #include "zaddress.h"
-#include "zlog.h"
-#include "zexception.h"
 #include "zerror.h"
+#include "zexception.h"
+#include "zlog.h"
 
 #ifdef ZSOCKET_WINAPI
     #include <winsock2.h>
@@ -19,6 +19,7 @@
     #include <netdb.h>
     #include <sys/socket.h>
     #include <netinet/in.h>
+    #include <errno.h>
     #if PLATFORM == MACOSX
         #include <sys/uio.h>
         #include <unistd.h>
@@ -67,6 +68,8 @@ bool ZSocket::open(int family, int type, int proto){
 
     _family = (ZAddress::address_family)family;
     _type = (ZSocket::socket_type)type;
+
+    // Create socket
     _socket = ::socket(_family, _type, proto);
     if(_socket <= 0){
         ELOG("ZSocket::open failed to create socket: " + ZError::getSystemError());
@@ -78,7 +81,7 @@ bool ZSocket::open(int family, int type, int proto){
 
 void ZSocket::close(){
     if(isOpen()){
-        LOG("Closing socket " << _socket);
+        DLOG("ZSocket::close socket " << _socket);
 #ifdef ZSOCKET_WINAPI
         ::closesocket(_socket);
 #else
@@ -108,7 +111,7 @@ bool ZSocket::bind(ZAddress addr){
         SockAddr saddr = addrs.front();
 
         // Try address
-        DLOG("ZSocket::open Trying " + saddr.addr.debugStr());
+        DLOG("ZSocket::bind Trying " + saddr.addr.debugStr());
         if(!open(saddr.addr.family(), saddr.type, saddr.proto)){
             addrs.rotate();
             continue;
@@ -123,82 +126,28 @@ bool ZSocket::bind(ZAddress addr){
         sockaddr_storage addrstorage;
         saddr.addr.populate(&addrstorage);
         if(::bind(_socket, (const sockaddr *)&addrstorage, saddr.addr.getSockLen()) != 0){
-            ELOG("ZSocket: failed to bind " +  saddr.addr.debugStr() + " - error " + ZError::getSystemError());
+            ELOG("ZSocket::bind failed to bind " +  saddr.addr.debugStr() + " - error " + ZError::getSystemError());
             close();
             addrs.rotate();
             continue;
         }
         ok = true;
         _bound = saddr.addr;
-        DLOG("Bound socket " << _socket);
+        DLOG("ZSocket::bind Bound socket " << _socket);
         break;
     }
 
     // Could not bind socket with any available addres
     if(!ok){
-        ELOG("ZSocket: could not create and bind socket on any address");
+        ELOG("ZSocket::bind could not create and bind socket on any address");
         return false;
     }
     return true;
 }
 
-bool ZSocket::send(ZAddress dest, const ZBinary &data){
-    if(!isOpen()){
-        ELOG("ZSocket: socket is not open");
-        return false;
-    }
-    if(data.size() > ZSOCKET_UDP_MAX)
-        return false;
-
-    sockaddr_storage addrstorage;
-    //dest.setType(_type);
-    dest = lookupAddr(dest, _type).front().addr;
-    dest.populate(&addrstorage);
-
-#if COMPILER == MSVC
-    long sent = ::sendto(_socket, (const char *)data.raw(), (int)data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());
-#elif COMPILER == MINGW
-    long sent = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());
-#else
-    long sent = ::sendto(_socket, data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());
-#endif
-
-    if(sent < 0)
-        ELOG("ZSocket::send sendto error " + ZError::getSystemError());
-    return (zu64)sent == data.size();
-}
-
-zu64 ZSocket::receive(ZAddress &sender, ZBinary &data){
-    if(!isOpen()){
-        ELOG("ZSocket: socket is not open");
-        return 0;
-    }
-    if(buffer == NULL)
-        buffer = new unsigned char[ZSOCKET_UDP_BUFFER];
-    //memset(buffer, 0, ZSOCKET_BUFFER);
-    sockaddr_storage from;
-    socklen_t fromlen = sizeof(from);
-#ifdef ZSOCKET_WINAPI
-    long received = ::recvfrom(_socket, (char *)buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromlen);
-#else
-    long received = ::recvfrom(_socket, buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr *)&from, &fromlen);
-#endif
-    if(received < 0){
-        ELOG("ZSocket:receive error - " + ZError::getSystemError());
-        return 0;
-    } else if(received == 0){
-        return 0;
-    } else {
-        sender = ZAddress(&from, fromlen);
-        //sender = ZAddress(ntohl(from.sin_addr.s_addr), ntohs(from.sin_port));
-        data = ZBinary(buffer, (zu64)received);
-        return (zu64)received;
-    }
-}
-
 bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
     if(isOpen()){
-        ELOG("ZSocket: socket already open");
+        ELOG("ZSocket::connect socket already open");
         return false;
     }
     bool ok = false;
@@ -208,7 +157,7 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
             addrs.rotate();
             continue;
         }
-        LOG("Got socket for " << addrs.front().addr.debugStr());
+        DLOG("ZSocket::connect Got socket for " << addrs.front().addr.debugStr());
         ZAddress caddr = addrs.front().addr;
         sockaddr_storage addrstorage;
         caddr.populate(&addrstorage);
@@ -247,7 +196,7 @@ bool ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
         return false;
     }
 
-    DLOG("Accepted socket " << client << " on " << _socket);
+    DLOG("ZSocket::accept socket " << client << " on " << _socket);
 
     connfd = client;
     ZAddress client_addr(&from, fromlen);
@@ -255,55 +204,125 @@ bool ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
     return true;
 }
 
-zu64 ZSocket::read(ZBinary &data){
+ZSocket::socketerror ZSocket::read(ZBinary &data){
     if(!isOpen()){
         ELOG("ZSocket: socket is not open");
-        return 0;
+        return ERR_NOTOPEN;
     }
-
     if(!data.size()){
-        return 0;
+        return ERR_BUFFER;
     }
 
 #if COMPILER == MSVC
-    long bytes = ::recv(_socket, (char *)data.raw(), (int)data.size(), 0);
+    long ret = ::recv(_socket, (char *)data.raw(), (int)data.size(), 0);
 #elif COMPILER == MINGW
-    long bytes = ::recv(_socket, (char *)data.raw(), data.size(), 0);
+    long ret = ::recv(_socket, (char *)data.raw(), data.size(), 0);
 #else
-    long bytes = ::read(_socket, data.raw(), data.size());
+    long ret = ::read(_socket, data.raw(), data.size());
 #endif
 
-    if(bytes <= -1){
+    if(ret == 0){
+        return DONE;
+    } else if(ret < 0){
+        int err = ZError::getSocketErrorCode();
+        if(err == EAGAIN || err == EWOULDBLOCK){
+            return AGAIN;
+        }
         ELOG("ZSocket: read error: " + ZError::getSystemError());
-        return 0;
+        return ERR_READ;
     }
 
-    return (zu64)bytes;
+    data.resize((zu64)ret);
+    return OK;
 }
 
-bool ZSocket::write(const ZBinary &data){
+ZSocket::socketerror ZSocket::write(const ZBinary &data){
     if(!isOpen()){
-        ELOG("ZConnection: socket is not open");
-        return false;
+        ELOG("ZSocket: socket is not open");
+        return ERR_NOTOPEN;
     }
-    if(data.size() <= 0){
-        ELOG("ZConnection: empty write data");
-        return false;
+    if(!data.size()){
+        return ERR_BUFFER;
     }
 
 #if COMPILER == MSVC
-    long bytes = ::send(_socket, (const char *)data.raw(), (int)data.size(), 0);
+    long ret = ::send(_socket, (const char *)data.raw(), (int)data.size(), 0);
 #elif COMPILER == MINGW
-    long bytes = ::send(_socket, (const char *)data.raw(), data.size(), 0);
+    long ret = ::send(_socket, (const char *)data.raw(), data.size(), 0);
 #else
-    long bytes = ::write(_socket, data.raw(), data.size());
+    long ret = ::write(_socket, data.raw(), data.size());
 #endif
 
-    if(bytes <= 0){
+    if(ret == 0){
+        return DONE;
+    } else if(ret < 0){
+        int err = ZError::getSocketErrorCode();
+        if(err == EAGAIN || err == EWOULDBLOCK){
+            return AGAIN;
+        }
         ELOG("ZSocket: write error: " + ZError::getSystemError());
-        return false;
+        return ERR_WRITE;
     }
-    return true;
+
+    return OK;
+}
+
+ZSocket::socketerror ZSocket::send(ZAddress dest, const ZBinary &data){
+    if(!isOpen()){
+        ELOG("ZSocket: socket is not open");
+        return ERR_NOTOPEN;
+    }
+    if(data.size() == 0 || data.size() > ZSOCKET_UDP_MAX)
+        return ERR_BUFFER;
+
+    sockaddr_storage addrstorage;
+    //dest.setType(_type);
+    //dest = lookupAddr(dest, _type).front().addr;
+    dest.populate(&addrstorage);
+
+#if COMPILER == MSVC
+    long ret = ::sendto(_socket, (const char *)data.raw(), (int)data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());
+#elif COMPILER == MINGW
+    long ret = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());
+#else
+    long ret = ::sendto(_socket, data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());
+#endif
+
+    if(ret < 0){
+        ELOG("ZSocket::send sendto error " + ZError::getSystemError());
+        return ERR_WRITE;
+    }
+
+    return OK;
+}
+
+ZSocket::socketerror ZSocket::receive(ZAddress &sender, ZBinary &data){
+    if(!isOpen()){
+        ELOG("ZSocket: socket is not open");
+        return ERR_NOTOPEN;
+    }
+    if(buffer == NULL)
+        buffer = new unsigned char[ZSOCKET_UDP_BUFFER];
+
+    sockaddr_storage from;
+    socklen_t fromlen = sizeof(from);
+
+#ifdef ZSOCKET_WINAPI
+    long ret = ::recvfrom(_socket, (char *)buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr*)&from, &fromlen);
+#else
+    long ret = ::recvfrom(_socket, buffer, ZSOCKET_UDP_BUFFER, 0, (sockaddr *)&from, &fromlen);
+#endif
+
+    if(ret == 0){
+        return DONE;
+    } else if(ret < 0){
+        ELOG("ZSocket:receive error - " + ZError::getSystemError());
+        return ERR_READ;
+    }
+
+    sender = ZAddress(&from, fromlen);
+    data = ZBinary(buffer, (zu64)ret);
+    return OK;
 }
 
 bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
@@ -361,18 +380,22 @@ bool ZSocket::setBlocking(bool set){
     if(!isOpen())
         return false;
 #ifdef ZSOCKET_WINAPI
+    // Set or unset nonblocking option
     DWORD opt = set ? 0 : 1;
     if(ioctlsocket(_socket, (long)FIONBIO, &opt) != 0){
         ELOG("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
         return false;
     }
 #else
+    // Get socket flags
     int flags = fcntl(_socket, F_GETFL, 0);
     if(flags < 0){
         ELOG("ZSocket: failed to get socket flags error: " + ZError::getSystemError());
         return false;
     }
-    flags = set ? (flags &~ O_NONBLOCK) : (flags | O_NONBLOCK);
+    // Set or unset nonblocking flag
+    flags = (!set) ? (flags | O_NONBLOCK) : (flags & (~O_NONBLOCK));
+    // Set socket flags
     if(fcntl(_socket, F_SETFL, flags) != 0){
         ELOG("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
         return false;
@@ -383,7 +406,7 @@ bool ZSocket::setBlocking(bool set){
 
 void ZSocket::allowRebind(bool set){
     if(isOpen())
-        setSocketOption(SocketOptions::OPT_REUSEADDR, (int)set);
+        setSocketOption(SocketOptions::OPT_REUSEADDR, set ? 1 : 0);
     reuseaddr = set;
 }
 
@@ -397,7 +420,6 @@ ZList<ZSocket::SockAddr> ZSocket::lookupAddr(ZAddress addr, int type){
     addrinfo hints;
     memset(&hints, 0, sizeof(hints));
     //hints.ai_family = AF_UNSPEC; // Redundant
-    //hints.ai_socktype = addr.type();
     hints.ai_socktype = type;
 
     ZString name = addr.str();
@@ -427,14 +449,6 @@ ZList<ZSocket::SockAddr> ZSocket::lookupAddr(ZAddress addr, int type){
         sockaddr.addr = newaddr;
         sockaddr.type = p->ai_socktype;
         sockaddr.proto = p->ai_protocol;
-//        newaddr.setType(p->ai_socktype);
-//        newaddr.setProtocol(p->ai_protocol);
-
-        //inet_ntop(p->ai_family, addr, ipstr, INET6_ADDRSTRLEN);
-        //ZAddress newaddr(ipstr);
-
-//        if(!addrs.contains(newaddr))
-//            addrs.push(newaddr);
 
         addrs.push(sockaddr);
     }

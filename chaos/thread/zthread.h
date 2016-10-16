@@ -31,7 +31,9 @@ struct ZThreadArg {
     std::atomic<bool> _stop;
 };
 
-//! Cross-platform thread handle abstraction.
+/*! Cross-platform thread handle abstraction.
+ *  \ingroup Thread
+ */
 class ZThread {
 public:
     typedef void *(*funcType)(ZThreadArg *);

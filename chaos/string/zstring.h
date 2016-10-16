@@ -30,6 +30,7 @@ typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
 /*! UTF-8 contiguous string container.
+ *  \ingroup String
  *  Parses UTF-8, UTF-16, or UTF-32 strings and encodes parsed code points in normalized UTF-8.
  *  Since unicode normalization can only be done on real unicode code points, invalid code unit sequences
  *  and code points will be discarded. Non-unicode bytes in input will also be discarded.

@@ -21,7 +21,9 @@ namespace LibChaos {
 class ZPath;
 typedef ZArray<ZPath> ArP;
 
-//! Platform-aware path manipulation and storage.
+/*! Platform-aware path manipulation and storage.
+ *  \ingroup String
+ */
 class ZPath {
 public:
     ZPath();

@@ -29,6 +29,7 @@ namespace LibChaos {
 typedef zu64 ztid;
 
 /*! Cross-thread shared resource access synchronization controller.
+ *  \ingroup Thread
  *  \warning Relatively untested.
  *  Recursize mutual exclusion object.
  *  Only the thread that locked a mutex is normally allowed to unlock it.

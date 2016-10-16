@@ -12,39 +12,39 @@
 
 namespace LibChaos {
 
-// For TCP sockets
-// Paired with ZConnection
+/*! TCP interface for ZSocket.
+ *  \ingroup Network
+ */
 class ZStreamSocket : private ZSocket {
 public:
     ZStreamSocket();
 
-    void close();
-    bool isOpen() const;
+    // Functions imported from ZSocket
+    using ZSocket::close;
+    using ZSocket::isOpen;
+
+    using ZSocket::read;
+    using ZSocket::write;
+
+    using ZSocket::allowRebind;
+    using ZSocket::setBlocking;
+    using ZSocket::setBufferSize;
+    using ZSocket::getBoundAddress;
+    using ZSocket::getSocket;
+    using ZSocket::getError;
 
     //! Open a stream connection.
     bool connect(ZAddress addr, ZConnection &conn);
 
     //! Open, bind and listen on a stream socket.
     bool listen(ZAddress bindaddr);
+
     //! Accept a new connection on the socket.
     ZPointer<ZConnection> accept();
 
     void setReadBuffer(zu64 size);
-
-    zsocktype getSocket() const {
-        return ZSocket::getSocket();
-    }
-
-    ZAddress getBoundAddress() const {
-        return ZSocket::getBoundAddress();
-    }
-
-    ZException getError() const {
-        return ZSocket::getError();
-    }
-
 };
 
-}
+} // namespace LibChaos
 
 #endif // ZSTREAMSOCKET_H

@@ -7,46 +7,43 @@
 #define ZCONNECTION_H
 
 #include "ztypes.h"
-#include "zaddress.h"
-#include "zbinary.h"
-#include "zstring.h"
 #include "zsocket.h"
+#include "zaddress.h"
 
 namespace LibChaos {
 
-// For TCP connections
+/*! TCP connection abstraction of ZSocket.
+ *  \ingroup Network
+ */
 class ZConnection : private ZSocket {
 public:
+    //! Construct unopened connection.
     ZConnection();
+    //! Construct from opened socket connected to addr.
     ZConnection(zsocktype fd, ZAddress addr);
-
+    //! Destructor will close the connection socket.
     ~ZConnection();
 
-    void close();
-    bool isOpen() const;
+    // Functions imported from ZSocket
+    using ZSocket::close;
+    using ZSocket::isOpen;
 
-    zu64 read(ZBinary &str);
-    bool write(const ZBinary &data);
+    using ZSocket::read;
+    using ZSocket::write;
 
-    void setBufferSize(zu32 size){
-        ZSocket::setBufferSize(size);
-    }
+    using ZSocket::setBlocking;
+    using ZSocket::setBufferSize;
+    using ZSocket::getSocket;
+    using ZSocket::getError;
 
+    //! Get the address of the peer.
     ZAddress peer();
-
-    zsocktype getSocket() const {
-        return ZSocket::getSocket();
-    }
-
-    ZException getError() const {
-        return ZSocket::getError();
-    }
 
 private:
     ZAddress _peeraddr;
     unsigned char *buffer;
 };
 
-}
+} // namespace LibChaos
 
 #endif // ZCONNECTION_H

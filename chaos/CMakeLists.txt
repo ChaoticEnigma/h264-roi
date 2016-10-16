@@ -132,6 +132,7 @@ SET(LibChaos_SOURCES
     thread/zmutex.cpp
     thread/zthread.h
     thread/zthread.cpp
+    thread/zworkqueue.h
 )
 
 SET(LibChaos_PNG_SOURCES
