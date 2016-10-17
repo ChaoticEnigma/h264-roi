@@ -536,18 +536,39 @@ ArZ getStackTrace(unsigned trim){
 
 #elif PLATFORM == MACOSX
 
-ArZ getStackTrace(unsigned trim){
-    ArZ trace;
-    const int maxframes = 128;
-    void *callstack[maxframes]; // Maximum 128 stack frames
-    int frames = backtrace(callstack, maxframes); // Get call stack
-    char **stackstrs = backtrace_symbols(callstack, frames); // Get call stack symbol names
-    for(int i = 0; i < frames; ++i){
-        trace.push(stackstrs[i]);
-        //printf("%s\n", strs[i]);
+ZArray<TraceFrame> getStackTrace(unsigned trim){
+    ZArray<TraceFrame> trace;
+    void *buffer[256];
+
+    // Get the backtrace
+    int nptrs = backtrace(buffer, 256);
+
+    // Get sybmol names for backtrace
+    char **strings = backtrace_symbols(buffer, nptrs);
+    if(strings != NULL){
+        ArZ strs;
+        for(int i = (int)trim; i < nptrs; ++i){
+            strs.push(strings[i]);
+        }
+        for(zu64 i = 0; i < strs.size(); ++i){
+            ZString tmp = strs[i];
+
+            TraceFrame frame;
+            frame.i = i;
+            frame.addr = (zu64)buffer[i + trim];
+            frame.line = 0;
+
+            ArZ tok = tmp.split(' ');
+            if(tok.size() == 6){
+                frame.exec = tok[1];
+                frame.symbol = tok[3];
+                frame.offset = tok[5];
+            }
+
+            trace.push(frame);
+        }
+        free(strings);
     }
-    free(stackstrs);
-    trace.popFrontCount(trim);
     return trace;
 }
 
@@ -560,6 +581,7 @@ struct backtrace_parts {
     ZString func_addr;
     ZString addr;
 };
+
 struct addr2line_parts {
     ZString symbol;
     ZString name;
@@ -675,13 +697,27 @@ ZArray<TraceFrame> getStackTrace(unsigned trim){
 ZString traceFrameStr(const TraceFrame &frame){
     ZString str;
     str << frame.i << " - ";
-    str << frame.exec.last() << " ";
+
+    if(frame.exec.isEmpty())
+        str << "?? ";
+    else
+        str << frame.exec.last() << " ";
+
     str << "[0x" << ZString::ItoS(frame.addr, 16) << "] ";
-    if(frame.name == "??")
-        str << frame.symbol << " + " << frame.offset << " @ ";
+
+    if(frame.name.isEmpty() || frame.name == "??")
+        if(frame.symbol.isEmpty())
+            str << "?? + ?? @ ";
+        else
+            str << frame.symbol << " + " << frame.offset << " @ ";
     else
         str << frame.name << " + " << frame.offset << " @ ";
-    str << frame.file.last() << " : " << frame.line;
+
+    if(frame.file.isEmpty())
+        str << "?? : 0";
+    else
+        str << frame.file.last() << " : " << frame.line;
+
     return str;
 }
 
