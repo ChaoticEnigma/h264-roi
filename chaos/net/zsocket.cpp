@@ -48,7 +48,9 @@ namespace LibChaos {
 
 zu32 ZSocket::socket_count = 0;
 
-ZSocket::ZSocket(socket_type type) : _socket(0), _type(type), buffer(nullptr), buffersize(1024), reuseaddr(false){
+unsigned char *buffer = nullptr;
+
+ZSocket::ZSocket(socket_type type) : _socket(0), _type(type), _reuseaddr(false){
 
 }
 
@@ -118,7 +120,7 @@ bool ZSocket::bind(ZAddress addr){
         }
 
         // Set SO_REUSEADDR option if requested
-        if(reuseaddr){
+        if(_reuseaddr){
             setSocketOption(SocketOptions::OPT_REUSEADDR, 1);
         }
 
@@ -394,6 +396,11 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
     return true;
 }
 
+void ZSocket::setAllowRebind(bool set){
+    setSocketOption(SocketOptions::OPT_REUSEADDR, set ? 1 : 0);
+    _reuseaddr = set;
+}
+
 bool ZSocket::setBlocking(bool set){
     if(!isOpen())
         return false;
@@ -420,18 +427,6 @@ bool ZSocket::setBlocking(bool set){
     }
 #endif
     return true;
-}
-
-void ZSocket::allowRebind(bool set){
-    if(isOpen())
-        setSocketOption(SocketOptions::OPT_REUSEADDR, set ? 1 : 0);
-    reuseaddr = set;
-}
-
-void ZSocket::setBufferSize(zu32 size){
-    if(buffersize != size)
-        delete[] buffer;
-    buffersize = size;
 }
 
 ZList<ZSocket::SockAddr> ZSocket::lookupAddr(ZAddress addr, int type){

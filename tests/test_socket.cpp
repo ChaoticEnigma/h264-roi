@@ -66,11 +66,11 @@ void udp_server(){
     ZAddress bind(8998);
     DLOG(bind.debugStr());
     if(!sock.open()){
-        ELOG("Socket Open Fail " + sock.getError().what());
+        ELOG("Socket Open Fail");
         TASSERT(false);
     }
     if(!sock.bind(bind)){
-        ELOG("Socket Bind Fail " + sock.getError().what());
+        ELOG("Socket Bind Fail");
         TASSERT(false);
     }
 
@@ -154,7 +154,8 @@ void tcp_server(){
     LOG("Listening...");
 
     while(run){
-        ZPointer<ZConnection> client = sock.accept();
+        ZPointer<ZConnection> client;
+        sock.accept(client);
 
         LOG("accept " << client->peer().debugStr());
 

@@ -26,12 +26,10 @@ public:
     using ZSocket::read;
     using ZSocket::write;
 
-    using ZSocket::allowRebind;
+    using ZSocket::setAllowRebind;
     using ZSocket::setBlocking;
-    using ZSocket::setBufferSize;
     using ZSocket::getBoundAddress;
     using ZSocket::getSocket;
-    using ZSocket::getError;
 
     //! Open a stream connection.
     bool connect(ZAddress addr, ZConnection &conn);
@@ -40,7 +38,7 @@ public:
     bool listen(ZAddress bindaddr);
 
     //! Accept a new connection on the socket.
-    ZPointer<ZConnection> accept();
+    socketerror accept(ZPointer<ZConnection> &conn);
 
     void setReadBuffer(zu64 size);
 };

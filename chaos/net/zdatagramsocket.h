@@ -31,10 +31,8 @@ public:
     using ZSocket::receive;
 
     using ZSocket::setBlocking;
-    using ZSocket::setBufferSize;
     using ZSocket::getBoundAddress;
     using ZSocket::getSocket;
-    using ZSocket::getError;
 
     void setReadBuffer(zu64 size);
 

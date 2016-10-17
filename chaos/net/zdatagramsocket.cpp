@@ -8,7 +8,7 @@
 namespace LibChaos {
 
 ZDatagramSocket::ZDatagramSocket() : ZSocket(ZSocket::DATAGRAM){
-    allowRebind(true);
+    setAllowRebind(true);
 }
 
 bool ZDatagramSocket::open(){

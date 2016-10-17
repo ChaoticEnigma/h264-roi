@@ -32,9 +32,7 @@ public:
     using ZSocket::write;
 
     using ZSocket::setBlocking;
-    using ZSocket::setBufferSize;
     using ZSocket::getSocket;
-    using ZSocket::getError;
 
     //! Get the address of the peer.
     ZAddress peer();

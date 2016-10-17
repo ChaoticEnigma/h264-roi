@@ -27,14 +27,16 @@ bool ZStreamSocket::listen(ZAddress bindaddr){
     return true;
 }
 
-ZPointer<ZConnection> ZStreamSocket::accept(){
+ZSocket::socketerror ZStreamSocket::accept(ZPointer<ZConnection> &conn){
     zsocktype connfd;
     ZAddress connaddr;
-    bool ret = ZSocket::accept(connfd, connaddr);
-    if(ret)
-        return ZPointer<ZConnection>(new ZConnection(connfd, connaddr));
-    else
-        return nullptr;
+    socketerror ret = ZSocket::accept(connfd, connaddr);
+    if(ret == OK){
+        conn = new ZConnection(connfd, connaddr);
+    } else {
+        conn = nullptr;
+    }
+    return ret;
 }
 
 }

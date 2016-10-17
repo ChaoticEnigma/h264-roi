@@ -80,9 +80,9 @@ public:
     //! \{
 
     /*! Establish a stream connection with \a addr.
-     * \param[in]  addr     Remote address.
-     * \param[out] connfd   Connection socket.
-     * \param[out] connaddr Connection address.
+     *  \param[in]  addr     Remote address.
+     *  \param[out] connfd   Connection socket.
+     *  \param[out] connaddr Connection address.
      */
     bool connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr);
 
@@ -118,12 +118,12 @@ public:
     //! \{
 
     /*! Send a datagram to \a destination with \a data.
-     * \return True on success.
+     *  \return True on success.
      */
     socketerror send(ZAddress destination, const ZBinary &data);
 
     /*! Receive a datagram, put the source address in \a sender, and datagram's data in \a data.
-     * \return Size of \a data.
+     *  \return Size of \a data.
      */
     socketerror receive(ZAddress &sender, ZBinary &data);
 
@@ -132,31 +132,24 @@ public:
     //! Set a socket option.
     bool setSocketOption(SocketOptions::socketoption option, int value);
 
-    /*! Set whether socket should be blocking or non-blocking.
-     *  Default is blocking.
-     */
-    bool setBlocking(bool block = true);
     /*! Set whether socket should allow rebinding.
      *  This option can only take effect before binding.
      *  Default is no-rebind.
      */
-    void allowRebind(bool rebind = false);
+    void setAllowRebind(bool rebind = false);
 
-    void setBufferSize(zu32 size);
+    /*! Set whether socket should be blocking or non-blocking.
+     *  Default is blocking.
+     */
+    bool setBlocking(bool block = true);
 
+    //! Look up an address for a list of candidate socket addresses.
     static ZList<SockAddr> lookupAddr(ZAddress addr, int type);
 
-    zsocktype getSocket() const {
-        return _socket;
-    }
-
-    ZAddress getBoundAddress() const {
-        return _bound;
-    }
-
-    ZException getError() const {
-        return error;
-    }
+    //! Get underlying socket handle.
+    inline zsocktype getSocket() const { return _socket; }
+    //! Get the bound address.
+    inline ZAddress getBoundAddress() const { return _bound; }
 
 protected:
     //! Construct ZSocket from already opened socket.
@@ -172,14 +165,10 @@ private:
     socket_type _type;
     //! Socket address family.
     ZAddress::address_family _family;
-    //! Socket data buffer.
-    unsigned char *buffer;
-    //! Socket buffer size.
-    zu32 buffersize;
-
-    bool reuseaddr;
+    //! Whether reused address options should be set.
+    bool _reuseaddr;
+    //! Socket bound address.
     ZAddress _bound;
-    ZException error;
 };
 
 } // namespace LibChaos

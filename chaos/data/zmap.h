@@ -141,10 +141,14 @@ public:
                         _talloc.destroy(&(_data[pos].value));
                         _data[pos].flags &= ~ZMAP_ENTRY_VALID; // Unset valid bit
                         _data[pos].flags |= ZMAP_ENTRY_DELETED; // Set deleted bit
-                        if(_data[pos].prev) _data[pos].prev->next = _data[pos].next; // Point prev element to next
-                        if(_data[pos].next) _data[pos].next->prev = _data[pos].prev; // Point next element to prev
-                        if(_head == _data + pos) _head = _data[pos].next; // Move head if necessary
-                        if(_tail == _data + pos) _tail = _data[pos].prev; // Move tail if necessary
+                        if(_data[pos].prev)
+                            _data[pos].prev->next = _data[pos].next; // Point prev element to next
+                        if(_data[pos].next)
+                            _data[pos].next->prev = _data[pos].prev; // Point next element to prev
+                        if(_head == _data + pos)
+                            _head = _data[pos].next; // Move head if necessary
+                        if(_tail == _data + pos)
+                            _tail = _data[pos].prev; // Move tail if necessary
                         --_size;
                         break;
                     }
