@@ -48,6 +48,7 @@ public:
         ERR_NOTOPEN,    //!< Socket is not open.
         ERR_READ,       //!< Read error.
         ERR_WRITE,      //!< Write error.
+        ERR_ACCEPT,     //!< Accept error.
         ERR_BUFFER,     //!< No buffer.
     };
 
@@ -89,7 +90,7 @@ public:
     bool listen();
 
     //! Accept a TCP connection on the socket.
-    bool accept(zsocktype &connfd, ZAddress &connaddr);
+    socketerror accept(zsocktype &connfd, ZAddress &connaddr);
 
     /*! Read from the socket into \p data.
      *  Will read up to the size of \p data, so \p data must be resized first.

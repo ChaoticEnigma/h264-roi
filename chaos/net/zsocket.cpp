@@ -187,21 +187,31 @@ bool ZSocket::listen(){
     return true;
 }
 
-bool ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
-    sockaddr_storage from;
-    socklen_t fromlen = sizeof(from);
-    zsocktype client = ::accept(_socket, (struct sockaddr *)&from, &fromlen);
-    if(client <= 0){
-        ELOG("ZSocket: failed to accept socket: " + ZError::getSystemError());
-        return false;
+ZSocket::socketerror ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
+    if(!isOpen()){
+        ELOG("ZSocket: socket is not open");
+        return ERR_NOTOPEN;
     }
 
-    DLOG("ZSocket::accept socket " << client << " on " << _socket);
+    sockaddr_storage from;
+    socklen_t fromlen = sizeof(from);
 
-    connfd = client;
-    ZAddress client_addr(&from, fromlen);
-    connaddr = client_addr;
-    return true;
+    int ret = ::accept(_socket, (struct sockaddr *)&from, &fromlen);
+
+    if(ret < 0){
+        int err = ZError::getSocketErrorCode();
+        if(err == EAGAIN || err == EWOULDBLOCK){
+            return AGAIN;
+        }
+        ELOG("ZSocket:accept failed: " + ZError::getSystemError());
+        return ERR_ACCEPT;
+    }
+
+    DLOG("ZSocket::accept socket " << ret << " on " << _socket);
+
+    connfd = ret;
+    connaddr = ZAddress(&from, fromlen);
+    return OK;
 }
 
 ZSocket::socketerror ZSocket::read(ZBinary &data){
@@ -289,6 +299,10 @@ ZSocket::socketerror ZSocket::send(ZAddress dest, const ZBinary &data){
 #endif
 
     if(ret < 0){
+        int err = ZError::getSocketErrorCode();
+        if(err == EAGAIN || err == EWOULDBLOCK){
+            return AGAIN;
+        }
         ELOG("ZSocket::send sendto error " + ZError::getSystemError());
         return ERR_WRITE;
     }
@@ -316,6 +330,10 @@ ZSocket::socketerror ZSocket::receive(ZAddress &sender, ZBinary &data){
     if(ret == 0){
         return DONE;
     } else if(ret < 0){
+        int err = ZError::getSocketErrorCode();
+        if(err == EAGAIN || err == EWOULDBLOCK){
+            return AGAIN;
+        }
         ELOG("ZSocket:receive error - " + ZError::getSystemError());
         return ERR_READ;
     }
