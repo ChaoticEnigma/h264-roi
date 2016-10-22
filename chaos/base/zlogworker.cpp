@@ -62,7 +62,7 @@ ZLogWorker::~ZLogWorker(){
 }
 
 void ZLogWorker::run(){
-    work.run(zlogWorker);
+    work.exec(zlogWorker);
 }
 
 void ZLogWorker::stop(){ // Must NEVER be called by log worker thread
@@ -79,7 +79,7 @@ void ZLogWorker::queue(LogJob *job){
     jobcondition.signal();
 }
 
-void *ZLogWorker::zlogWorker(ZThreadArg *zarg){
+void *ZLogWorker::zlogWorker(ZThread::ZThreadArg zarg){
     ZQueue<LogJob*> tmp;
     while(true){
         jobmutex.lock(); // Lock mutex

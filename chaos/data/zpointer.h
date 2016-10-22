@@ -80,8 +80,8 @@ public:
                 // Decrement reference count
                 _decrement();
             }
+            _data = nullptr;
         }
-        _data = nullptr;
     }
 
     //! Swap contained pointer with another shared pointer object.
