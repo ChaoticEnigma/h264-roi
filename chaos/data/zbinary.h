@@ -147,7 +147,7 @@ public:
      *  \param upper Uppercase hexadecimal.
      *  \param offset Value to start offset at.
      */
-    ZString dumpBytes(zu16 groupsize = 4, zu16 linesize = 4, bool upper = false, zu64 offset = 0) const;
+    ZString dumpBytes(zu16 groupsize = 4, zu16 linesize = 4, zu64 offset = 0, bool upper = false) const;
 
     //! Get single-character printable representation of a byte.
     static ZString displayByte(zbyte byte);

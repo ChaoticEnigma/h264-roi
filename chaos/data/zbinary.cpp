@@ -144,7 +144,7 @@ ZString ZBinary::strBytes(zu16 groupsize, zu16 linesize, bool upper) const {
     return str;
 }
 
-ZString ZBinary::dumpBytes(zu16 groupsize, zu16 linesize, bool upper, zu64 offset) const{
+ZString ZBinary::dumpBytes(zu16 groupsize, zu16 linesize, zu64 offset, bool upper) const{
     const zu64 linelen = (zu64)groupsize * linesize;
     ZString str;
     str += ZString::ItoS(offset, 16, 4) + "  ";
