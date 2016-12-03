@@ -118,10 +118,24 @@ public:
     ZString(zull num) : ZString(ItoS((zu64)num, 10)){}
     ZString(zsll num) : ZString(ItoS((zs64)num, 10)){}
 
-    // To integer
+    /*! Determine if string is an integer.
+     */
     bool isInteger(zu8 base = 10) const;
     int tint() const;
-    zu64 tozu64(zu8 fromBase = 10) const;
+
+    /*! Parse string as a signed integer.
+     *  Supports up to base 16.
+     *  Returns 0 on failure.
+     *  Returns ZS64_MAX on overflow.
+     */
+    zs64 toSint(zu8 base = 10) const;
+
+    /*! Parse string as an unsigned integer.
+     *  Supports up to base 16.
+     *  Returns 0 on failure.
+     *  Returns ZU64_MAX on overflow.
+     */
+    zu64 toUint(zu8 base = 10) const;
 
     // To floating point
     bool isFloat() const;

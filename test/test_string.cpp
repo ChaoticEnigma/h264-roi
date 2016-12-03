@@ -197,22 +197,22 @@ void string_number(){
     TASSERT(itos2 == "-ef7d4");
 
     ZString numstr1 = "3345";
-    zu64 num1 = numstr1.tozu64();
+    zu64 num1 = numstr1.toUint();
     LOG(numstr1 << " " << num1);
     TASSERT(num1 == 3345);
 
     ZString numstr2 = "546567867864512";
-    zu64 num2 = numstr2.tozu64();
+    zu64 num2 = numstr2.toUint();
     LOG(numstr2 << " " << num2);
     TASSERT(num2 == 546567867864512);
 
     ZString numstr3 = "FF";
-    zu64 num3 = numstr3.tozu64(16);
+    zu64 num3 = numstr3.toUint(16);
     LOG(numstr3 << " " << num3);
     TASSERT(num3 == 0xFF);
 
     ZString numstr4 = "ad562f";
-    zu64 num4 = numstr4.tozu64(16);
+    zu64 num4 = numstr4.toUint(16);
     LOG(numstr4 << " " << num4);
     TASSERT(num4 == 0xAD562F);
 

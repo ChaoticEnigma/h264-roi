@@ -109,9 +109,7 @@ ZString ZString::ItoS(zu64 value, zu8 base, zu64 pad, bool upper){
         return buffer;
     buffer._reserve(35);
     zu64 quotient = value;
-    const char *digits = "0123456789abcdef";
-    if(upper)
-        digits = "0123456789ABCDEF";
+    const char *digits = (upper ? "0123456789ABCDEF" : "0123456789abcdef");
     do {
         buffer += digits[ZMath::abs((zs64)(quotient % base))];
         quotient /= base;
@@ -129,16 +127,20 @@ ZString ZString::ItoS(zs64 value, zu8 base){
 bool ZString::isInteger(zu8 base) const {
     if(isEmpty())
         return false;
-    if(base > 16) // Only supports up to hexadecimal
+    // Only supports up to hexadecimal
+    if(base < 2 || base > 16)
         return false;
-    const char *digits = "0123456789abcdef";
-    for(zu64 i = 0; i < size(); ++i){
-        bool yes = false;
-        for(zu8 j = 0; j < base; ++j){
-            if(tolower(operator[](i)) == digits[j])
-                yes = true;
-        }
-        if(!yes)
+
+    zu64 i = 0;
+    // Skip hexadecimal prefix
+    if(base == 16 && beginsWith("0x"))
+        i+=2;
+
+    for(; i < size(); ++i){
+        char ch = tolower(at(i));
+        if(i == 0 && ch == '-')
+            continue;
+        if((ch < '0' || ch > '9') && (ch < 'a' || ch > 'z'))
             return false;
     }
     return true;
@@ -148,15 +150,43 @@ int ZString::tint() const {
     return atoi(cc());
 }
 
-zu64 ZString::tozu64(zu8 base) const {
+zs64 ZString::toSint(zu8 base) const {
+    zu64 unum;
+    if(beginsWith("-")){
+        unum = ZString::substr(*this, 1).toUint();
+        if((zs64)unum < 0)
+            return ZS64_MIN;
+        return -(zs64)unum;
+    } else {
+        unum = toUint();
+        if((zs64)unum < 0)
+            return ZS64_MAX;
+        return (zs64)unum;
+    }
+}
+
+zu64 ZString::toUint(zu8 base) const {
     if(!isInteger(base))
-        return ZU64_MAX;
-    ZString tmp = reverse(*this);
+        return 0;
+    // Only supports up to hexadecimal
+    if(base < 2 || base > 16)
+        return false;
+
+    ZString tmp = *this;
+    // Skip hexadecimal prefix
+    if(base == 16 && tmp.beginsWith("0x"))
+        tmp.substr(2);
+    tmp.reverse();
     zu64 out = 0;
     for(zu64 i = 0; i < tmp.size(); ++i){
         char ch = tolower(tmp[i]);
-        char digit = (ch < 58 ? (ch - 48) : (ch - 97 + 10));
-        out += ((zu64)(digit) * (zu64)pow(base, i));
+        if((ch < '0' || ch > '9') && (ch < 'a' || ch > 'z'))
+            return 0;
+        char digit = (ch < 58 ? (ch - '0') : (ch - 'a' + 10));
+        zu64 add = ((zu64)(digit) * (zu64)pow(base, i));
+        if(out + add < out)
+            return ZU64_MAX;
+        out += add;
     }
     return out;
 }
