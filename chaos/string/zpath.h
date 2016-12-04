@@ -74,6 +74,7 @@ public:
     //! Get absolute representation of this, based on present working directory.
     ZPath &getAbsolute();
 
+    ZString getName() const;
     ZString getExtension() const;
 
     // Hackish path repair crap, meant to make path system-specific valid

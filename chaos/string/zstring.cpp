@@ -851,7 +851,7 @@ ArZ ZString::explodeList(unsigned nargs, ...) const {
 }
 #undef VAARGTYPE
 
-ZString ZString::compound(ArZ parts, ZString delim){
+ZString ZString::join(ArZ parts, ZString delim){
     ZString name;
     for(zu64 i = 0; i < parts.size(); ++i){
         name += parts[i];

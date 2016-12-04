@@ -323,9 +323,10 @@ public:
 
     ArZ split(ZString delim) const;
 
-    // Explode a string into any array of substrings
-    // All explode functions will treat consecutive delimiters as one delimitier
-    // Delimiters at the beginning or end of a string are discarded
+    /*! Explode a string into an array of substrings.
+     *  All explode functions will treat consecutive delimiters as one delimitier.
+     *  Delimiters at the beginning or end of a string are discarded.
+     */
     ArZ explode(char delim) const;
     ArZ strExplode(const ZString &delim) const;
     ArZ quotedExplode(char delim) const;
@@ -333,7 +334,8 @@ public:
     ArZ explodeList(unsigned nargs, ...) const;
     //ArZ explode();
 
-    static ZString compound(ArZ parts, ZString delim);
+    //! Join an array of strings into one string a delimiter.
+    static ZString join(ArZ parts, ZString delim);
 
     //! Format string with a variable number arguments in \a args.
     ZString &format(ZList<ZString> args);
