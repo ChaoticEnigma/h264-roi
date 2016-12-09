@@ -26,16 +26,11 @@ DWORD _stdcall entry_win(LPVOID ptr){
 #else
 DWORD entry_win(LPVOID ptr){
 #endif
-    ZThread *thr = (ZThread *)ptr;
-    thr->_setThreadAlive(true);
-    thr->_param.funcptr(&thr->_param.zarg); // Run function
-    thr->_setThreadAlive(false);
-    return 0;
-}
 
 #else
-
 void *entry_posix(void *ptr){
+#endif
+
     using namespace LibChaos;
     ZThread::zthreadparam *param = (ZThread::zthreadparam *)ptr;
 
@@ -52,10 +47,12 @@ void *entry_posix(void *ptr){
         param->handle->_setThreadAlive(false);
     param->mutex.unlock();
 
+#ifdef ZTHREAD_WINTHREADS
+    return 0;
+#else
     return ret;
-}
-
 #endif
+}
 
 namespace LibChaos {
 
