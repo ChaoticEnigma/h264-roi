@@ -70,7 +70,7 @@ private:
     static ZString getThread(ztid thread);
     static ZString makeLog(const LogJob *job, ZString fmt);
 
-    ZThread work;
+    ZThread worker;
 };
 
 } // namespace LibChaos

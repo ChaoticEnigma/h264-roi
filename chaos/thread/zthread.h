@@ -28,21 +28,41 @@ namespace LibChaos {
  */
 class ZThread {
 public:
-    struct zthreadparam;
+    class ZThreadContainer {
+        friend class ZThread;
+    private:
+        /*! Overloadable thread run method.
+         *  The default method calls the external callback.
+         */
+        virtual void *run(void *arg) = 0;
 
-    struct ZThreadArg {
+    public:
+        //! Check whether the thread should stop.
+        bool stop() const;
+
+    private:
+        std::atomic<bool> _stop;
+    };
+
+    class ZThreadArg {
+        friend class ZThread;
+        friend class ZThreadCallback;
+    public:
+        bool stop() const { return tc->stop(); }
+    public:
         void *arg;
-        std::atomic<bool> stop;
-        ZThread *thread;
-        zthreadparam param;
+    private:
+        ZThreadContainer *tc;
     };
 
     typedef zu64 ztid;
     typedef void *(*funcType)(ZThreadArg);
 
 public:
+    ZThread(ZThreadContainer *threadcont);
+
     //! Create thread and run \a func with \a user data.
-    ZThread(funcType func = nullptr, void *arg = nullptr);
+    ZThread(funcType func);
 
     // Delete copy constructor
     ZThread(const ZThread &other) = delete;
@@ -93,14 +113,8 @@ public:
     static void usleep(zu32 microseconds);
 
 private:
-    /*! Overloadable thread run method.
-     *  The default method calls the external callback.
-     */
-    virtual void *run(ZThreadArg arg);
-
-private:
     //! Common thread entry point.
-    void *_entry_common();
+    void *_entry_common(void *ptr);
 
 #ifdef ZTHREAD_WINTHREADS
 #if COMPILER == MSVC
@@ -113,10 +127,14 @@ private:
 #endif
 
 private:
-    struct zthreadparam {
-        ZThread *handle;
-        ZMutex mutex;
-        std::atomic<bool> stop;
+    class ZThreadCallback : public ZThreadContainer {
+        friend class ZThreadArg;
+    public:
+        ZThreadCallback(funcType f) : func(f){}
+
+        void *run(void *arg);
+
+        funcType func;
     };
 
 private:
@@ -126,11 +144,7 @@ private:
 #else
     pthread_t _thread;
 #endif
-
-    funcType _userfunc;
-    void *_userarg;
-
-    zthreadparam *_param;
+    ZThreadContainer *_container;
     std::atomic<bool> _alive;
 };
 

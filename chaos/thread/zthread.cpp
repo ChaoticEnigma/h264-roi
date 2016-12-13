@@ -21,31 +21,42 @@
 
 namespace LibChaos {
 
-ZThread::ZThread(funcType func, void *arg) : _thread(0), _userfunc(func), _userarg(arg), _param(nullptr), _alive(false){
+bool ZThread::ZThreadContainer::stop() const{
+    return _stop;
+}
+
+void *ZThread::ZThreadCallback::run(void *arg){
+    // Default run() executes callback
+    if(arg){
+        ZThreadArg zarg;
+        zarg.arg = arg;
+        zarg.tc = this;
+        return func(zarg);
+    }
+    return nullptr;
+}
+
+ZThread::ZThread(ZThreadContainer *threadcont) : _thread(0), _container(threadcont), _alive(false){
+
+}
+
+ZThread::ZThread(funcType func) : ZThread(new ZThreadCallback(func)){
 
 }
 
 ZThread::~ZThread(){
+    // Detach thread handle
     detach();
-    // Unset the handle pointer on the param
-    _param->mutex.lock();
-    _param->handle = nullptr;
-    _param->mutex.unlock();
 }
 
 bool ZThread::exec(void *user){
-    _userarg = user;
-
-    _param = new zthreadparam;
-    _param->handle = this;
-
 #ifdef ZTHREAD_WINTHREADS
-    _thread = CreateThread(NULL, 0, _entry_win, _param, 0, NULL);
+    _thread = CreateThread(NULL, 0, _entry_win, user, 0, NULL);
     if(_thread == NULL)
         return false;
 #else
     // Start thread
-    int ret = ::pthread_create(&_thread, NULL, _entry_posix, _param);
+    int ret = ::pthread_create(&_thread, NULL, _entry_posix, user);
     if(ret != 0){
         _thread = 0;
         return false;
@@ -88,8 +99,8 @@ void ZThread::kill(){
 }
 
 void ZThread::stop(){
-    if(_param){
-        _param->stop = true;
+    if(_container){
+        _container->_stop = true;
     }
 }
 
@@ -165,20 +176,11 @@ void ZThread::usleep(zu32 microseconds){
 #endif
 }
 
-void *ZThread::run(ZThreadArg arg){
-    // Always running on executing thread
-    // Default run() executes callback
-    if(_userfunc)
-        return _userfunc(arg);
+void *ZThread::_entry_common(void *ptr){
+    if(_container){
+        return _container->run(ptr);
+    }
     return nullptr;
-}
-
-void *ZThread::_entry_common(){
-    ZThreadArg arg;
-    arg.arg = _userarg;
-    arg.thread = this;
-    arg.stop = false;
-    return run(arg);
 }
 
 #ifdef ZTHREAD_WINTHREADS
@@ -188,6 +190,12 @@ DWORD _stdcall ZThread::_entry_win(LPVOID ptr){
 #else
 DWORD ZThread::_entry_win(LPVOID ptr){
 #endif
+    // Now running on executing thread
+    if(ptr){
+        _return = ((ZThread *)ptr)->_entry_common(ptr);
+    }
+    return 0;
+
     // Now running on executing thread
     ZThread *thr = (ZThread *)ptr;
     // Thread alive
@@ -203,10 +211,11 @@ DWORD ZThread::_entry_win(LPVOID ptr){
 
 void *ZThread::_entry_posix(void *ptr){
     // Now running on executing thread
-    if(ptr)
-        return ((ZThread *)ptr)->_entry_common();
-    else
+    if(ptr){
+        return ((ZThread *)ptr)->_entry_common(ptr);
+    } else {
         return nullptr;
+    }
 }
 
 #endif

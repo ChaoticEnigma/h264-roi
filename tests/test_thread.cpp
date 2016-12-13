@@ -22,12 +22,12 @@ void *thread_func(void * /*zarg*/){
     return NULL;
 }
 
-void *thread_func2(ZThreadArg *zarg){
-    void *arg = zarg->arg;
+void *thread_func2(ZThread::ZThreadArg zarg){
+    void *arg = zarg.arg;
     LOG("running " << ZThread::thisTid());
-    LOG((const char *)arg << ", " << zarg->stop());
+    LOG((const char *)arg << ", " << zarg.stop());
     int i = 0;
-    while(!zarg->stop()){
+    while(!zarg.stop()){
         LOG("loop" << ++i << " in " << ZThread::thisTid());
         ZThread::usleep(1000000);
     }
@@ -48,7 +48,8 @@ void thread(){
     */
 
     ZString txt = "hello there from here";
-    ZThread thr2(thread_func2, txt.c());
+    ZThread thr2(thread_func2);
+    thr2.exec(txt.c());
     LOG("thread " << thr2.tid() << " created");
     ZThread::sleep(5);
     LOG("waited 5 " << ZThread::thisTid());
