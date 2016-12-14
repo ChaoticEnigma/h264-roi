@@ -50,6 +50,7 @@ public:
         ERR_WRITE,      //!< Write error.
         ERR_ACCEPT,     //!< Accept error.
         ERR_BUFFER,     //!< No buffer.
+        ERR_MAX,
     };
 
     struct SockAddr {
@@ -150,6 +151,8 @@ public:
     inline zsocktype getSocket() const { return _socket; }
     //! Get the bound address.
     inline ZAddress getBoundAddress() const { return _bound; }
+
+    static ZString errorStr(socketerror err);
 
 protected:
     //! Construct ZSocket from already opened socket.

@@ -47,8 +47,18 @@ void ShutdownSockets(){
 namespace LibChaos {
 
 zu32 ZSocket::socket_count = 0;
-
 unsigned char *buffer = nullptr;
+
+ZString socketerrors[ZSocket::ERR_MAX] = {
+    "No Error",
+    "Nothing to read/write",
+    "Socket operation would block",
+    "Socket is not open",
+    "Read error",
+    "Write error",
+    "Accept error",
+    "Invalid buffer",
+};
 
 ZSocket::ZSocket(socket_type type) : _socket(0), _type(type), _reuseaddr(false){
 
@@ -468,6 +478,10 @@ ZList<ZSocket::SockAddr> ZSocket::lookupAddr(ZAddress addr, int type){
 
     freeaddrinfo(result); // free the linked list
     return addrs;
+}
+
+ZString ZSocket::errorStr(ZSocket::socketerror err){
+    return socketerrors[err];
 }
 
 }
