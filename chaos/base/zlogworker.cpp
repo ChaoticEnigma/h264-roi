@@ -90,13 +90,13 @@ void *ZLogWorker::zlogWorker(ZThread::ZThreadArg zarg){
             }
 
             // Wait to be woken up with work to do
-            jobcondition.waitLock();
+            jobcondition.lock();
             while(jobs.isEmpty()){
                 jobmutex.unlock(); // Unlock while waiting so work can be queued
                 jobcondition.wait();
                 jobmutex.lock(); // Lock again before jobs.empty() check
             }
-            jobcondition.waitUnlock();
+            jobcondition.unlock();
         }
         jobs.swap(tmp); // Swap queues
         jobmutex.unlock(); // Done with jobs

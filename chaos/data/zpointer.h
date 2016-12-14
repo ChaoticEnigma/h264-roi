@@ -105,12 +105,17 @@ public:
      *  \return nullptr if no object owned.
      */
     T *get() const {
-        if(_data == nullptr)
-            return nullptr;
         return _data->ptr;
     }
     //! Shorthand for pointer to shared object.
-    inline T *operator->() const { return get(); }
+    inline T *operator->() const {
+        T *ptr = get();
+        if(ptr == nullptr){
+            // Burn it down
+            throw zexception("ZPointer: can't access null pointer");
+        }
+        return ptr;
+    }
 
 private:
     void _increment(){

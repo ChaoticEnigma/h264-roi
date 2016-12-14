@@ -29,9 +29,9 @@ public:
 
     void waitOnce();
 
-    void waitLock();
+    void lock();
     void wait();
-    void waitUnlock();
+    void unlock();
 
     void signal();
 

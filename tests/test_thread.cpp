@@ -12,6 +12,8 @@
     #include <iostream>
 #endif
 
+#define RET_MAGIC 0x5a5a5a5a
+
 namespace LibChaosTest {
 
 void *thread_func(void * /*zarg*/){
@@ -32,7 +34,7 @@ void *thread_func2(ZThread::ZThreadArg zarg){
         ZThread::usleep(1000000);
     }
     LOG("broke loop " << ZThread::thisTid());
-    return NULL;
+    return (void *)RET_MAGIC;
 }
 
 void thread(){
@@ -55,8 +57,9 @@ void thread(){
     LOG("waited 5 " << ZThread::thisTid());
     thr2.stop();
     LOG("stopped " << thr2.tid());
-    thr2.join();
+    void *ret = thr2.join();
     LOG("joined " << thr2.tid());
+    TASSERT((zu64)ret == RET_MAGIC);
 }
 
 #if PLATFORM == WINDOWS

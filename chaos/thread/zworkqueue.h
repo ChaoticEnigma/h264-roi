@@ -1,10 +1,10 @@
 #ifndef ZWORKQUEUE_H
 #define ZWORKQUEUE_H
 
-#include "ypushpopaccess.h"
 #include "zqueue.h"
 #include "zmutex.h"
 #include "zcondition.h"
+#include "zlog.h"
 
 namespace LibChaos {
 
@@ -16,26 +16,34 @@ public:
     ZWorkQueue(){}
 
     void addWork(const T &item){
-        _condtion.waitLock();
+        _condtion.lock();
+
         _queue.push(item);
+
+//        LOG("signal");
         _condtion.signal();
-        _condtion.waitUnlock();
+        _condtion.unlock();
     }
 
     T getWork(){
-        _condtion.waitLock();
-        while(_queue.size() == 0)
+        _condtion.lock();
+        while(_queue.size() == 0){
+//            LOG("block");
             _condtion.wait();
+        }
+
         T item = _queue.peek();
         _queue.pop();
-        _condtion.waitUnlock();
+
+//        LOG("done");
+        _condtion.unlock();
         return item;
     }
 
     zu64 size(){
-        _condtion.waitLock();
+        _condtion.lock();
         zu64 sz = _queue.size();
-        _condtion.waitUnlock();
+        _condtion.unlock();
         return sz;
     }
 

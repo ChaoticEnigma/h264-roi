@@ -21,7 +21,7 @@
 
 namespace LibChaos {
 
-bool ZThread::ZThreadContainer::stop() const{
+bool ZThread::ZThreadContainer::stop() const {
     return _stop;
 }
 
@@ -50,13 +50,17 @@ ZThread::~ZThread(){
 }
 
 bool ZThread::exec(void *user){
+    zthreadparam *param = new zthreadparam;
+    param->container = _container;
+    param->arg = user;
+
 #ifdef ZTHREAD_WINTHREADS
-    _thread = CreateThread(NULL, 0, _entry_win, user, 0, NULL);
+    _thread = CreateThread(NULL, 0, _entry_win, param, 0, NULL);
     if(_thread == NULL)
         return false;
 #else
     // Start thread
-    int ret = ::pthread_create(&_thread, NULL, _entry_posix, user);
+    int ret = ::pthread_create(&_thread, NULL, _entry_posix, param);
     if(ret != 0){
         _thread = 0;
         return false;
@@ -176,11 +180,17 @@ void ZThread::usleep(zu32 microseconds){
 #endif
 }
 
-void *ZThread::_entry_common(void *ptr){
-    if(_container){
-        return _container->run(ptr);
+void *ZThread::_entry_common(zthreadparam *param){
+    void *ret = nullptr;
+    if(param){
+        param->container->_stop = false;
+        param->container->_alive = true;
+        ret = param->container->run(param->arg);
+        param->container->_alive = false;
     }
-    return nullptr;
+    param->container->_alive = false;
+
+    return ret;
 }
 
 #ifdef ZTHREAD_WINTHREADS
@@ -191,19 +201,11 @@ DWORD _stdcall ZThread::_entry_win(LPVOID ptr){
 DWORD ZThread::_entry_win(LPVOID ptr){
 #endif
     // Now running on executing thread
-    if(ptr){
-        _return = ((ZThread *)ptr)->_entry_common(ptr);
+    zthreadparam *param = (zthreadparam *)ptr;
+    if(param){
+        void *ret = _entry_common(param);
+        delete param;
     }
-    return 0;
-
-    // Now running on executing thread
-    ZThread *thr = (ZThread *)ptr;
-    // Thread alive
-    param->handle->_alive = true;
-    // Run thread function
-    thr->_param.funcptr(&thr->_param.zarg);
-    // Thread dead
-    param->handle->_alive = false;
     return 0;
 }
 
@@ -211,8 +213,11 @@ DWORD ZThread::_entry_win(LPVOID ptr){
 
 void *ZThread::_entry_posix(void *ptr){
     // Now running on executing thread
-    if(ptr){
-        return ((ZThread *)ptr)->_entry_common(ptr);
+    zthreadparam *param = (zthreadparam *)ptr;
+    if(param){
+        void *ret = _entry_common(param);
+        delete param;
+        return ret;
     } else {
         return nullptr;
     }

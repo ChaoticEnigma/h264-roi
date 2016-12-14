@@ -42,6 +42,7 @@ public:
 
     private:
         std::atomic<bool> _stop;
+        std::atomic<bool> _alive;
     };
 
     class ZThreadArg {
@@ -113,8 +114,13 @@ public:
     static void usleep(zu32 microseconds);
 
 private:
+    struct zthreadparam {
+        ZThreadContainer *container;
+        void *arg;
+    };
+
     //! Common thread entry point.
-    void *_entry_common(void *ptr);
+    static void *_entry_common(zthreadparam *param);
 
 #ifdef ZTHREAD_WINTHREADS
 #if COMPILER == MSVC
