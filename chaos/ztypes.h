@@ -21,9 +21,9 @@
 // Git Describe
 #define LIBCHAOS_DESCRIBE _LIBCHAOS_DESCRIBE
 
-// Require C++
-#ifndef __cplusplus
-    #error LibChaos requires a C++ compiler!
+// Require C++11
+#if __cplusplus < 201103L
+    #error LibChaos requires a C++11 compiler!
 #endif
 
 // Warn if greater than C++14
