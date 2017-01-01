@@ -119,6 +119,7 @@ public:
 
     zu64 findFirst(const ZBinary &find) const;
 
+    ZBinary getSub(zu64 start) const { return getSub(start, size() - start); }
     ZBinary getSub(zu64 start, zu64 len) const;
 
     static ZBinary fromzu8(zu8 num);
