@@ -797,10 +797,18 @@ ZString getSystemError(){
 #if  PLATFORM == WINDOWS
     DWORD err = GetLastError();
 //    wchar_t *str = nullptr;
-    char *str = nullptr;
-    DWORD size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), str, 0, NULL);
-    ZString errstr(str, size);
-    LocalFree(str);
+//    TCHAR *str = nullptr;
+    TCHAR buffer[1024];
+    DWORD size = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+                               FORMAT_MESSAGE_IGNORE_INSERTS,
+                               NULL,
+                               err,
+                               MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                               buffer,
+                               1024,
+                               NULL);
+    ZString errstr(buffer, size);
+//    LocalFree(str);
     return ZString(err) + ": " + errstr;
 #else
     int err = errno;
