@@ -180,9 +180,7 @@ public:
         return size() - tell();
     }
     zu64 read(zbyte *dest, zu64 length);
-    zu64 read(ZBinary &dest, zu64 length){
-        return read(dest.raw(), length);
-    }
+    zu64 read(ZBinary &dest, zu64 length);
 
     ZBinary readSub(zu64 length){
         ZBinary bin(length);

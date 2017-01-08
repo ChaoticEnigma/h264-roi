@@ -188,6 +188,14 @@ zu64 ZBinary::read(zbyte *dest, zu64 length){
     return length;
 }
 
+zu64 ZBinary::read(ZBinary &dest, zu64 length){
+    if(dest.size() < length)
+        dest.resize(length);
+    zu64 len = read(dest.raw(), length);
+    dest.resize(len);
+    return len;
+}
+
 zu64 ZBinary::write(const zbyte *data, zu64 size){
     if(size > _size - _rwpos)
         resize(_rwpos + size);
