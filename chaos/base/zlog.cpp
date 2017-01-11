@@ -15,11 +15,12 @@ namespace LibChaos {
 
 std::atomic<bool> ZLog::_init(false);
 ZLogWorker *ZLog::worker = nullptr;
+ZClock ZLog::clock;
 
 ZLog::ZLog(zlog_level source) : job(new LogJob), stdiolog(false), newline(true), rawlog(false), /*synclog(false),*/ noqueue(false){
     job->level = source;
     job->time = ZTime::now();
-    job->clock = ZClock();
+    job->clock = ZClock(clock);
     job->thread = ZThread::thisTid();
 }
 
@@ -120,7 +121,7 @@ void ZLog::init(){
     }
 }
 
-void ZLog::deInit(){
+void ZLog::deinit(){
     if(_init){
         _init = false;
         worker->stop();
