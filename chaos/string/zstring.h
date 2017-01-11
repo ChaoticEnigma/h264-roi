@@ -56,36 +56,23 @@ public:
     //! Destructor.
     ~ZString();
 
+    // Specialized Constructors
+
+    //! Construct string filled with \a ch to length \a len.
+    ZString(char ch, zu64 len = 1);
+
     //! Construct from UTF-8 null-terminated C-string.
     ZString(const char *str, zu64 max = ZU64_MAX);
     //! Construct from UTF-8 character array.
     ZString(const ZArray<char> &array);
-
-    //! Get pointer to data as C-string.
-    inline char *c() const { return reinterpret_cast<char*>(_data); }
-    //! Get constant pointer to data as C-string.
-    inline const char *cc() const { return reinterpret_cast<const char*>(_data); }
 
     //! Construct from UTF-8 zero-terminated bytes.
     ZString(const zbyte *str, zu64 max = ZU64_MAX);
     //! Construct from UTF-8 byte array.
     ZString(const ZArray<zbyte> &array);
 
-    //! Get pointer to raw bytes.
-    inline zbyte *bytes(){ return reinterpret_cast<zbyte*>(_data); }
-    //! Get constant pointer to raw bytes.
-    inline const zbyte *bytes() const { return reinterpret_cast<const zbyte*>(_data); }
-
-    //! Get reference to byte \a i.
-    inline zbyte &byte(zu64 i){ return bytes()[i]; }
-    //! Get constant reference to byte \a i.
-    inline const zbyte &byte(zu64 i) const { return bytes()[i]; }
-
     //! Construct from UTF-8 STL string.
     ZString(std::string str);
-
-    //! Get UTF-8 STL string.
-    std::string str() const;
 
     //! Construct from UTF-16 null-terminated wide C-string.
     ZString(const wchar_t *wstr, zu64 max = ZU64_MAX);
@@ -94,17 +81,6 @@ public:
 
     //! Construct from UTF-16 STL wide string.
     ZString(std::wstring wstr);
-
-    //! Get UTF-16 STL wide string.
-    std::wstring wstr() const;
-
-    //! Construct string filled with \a ch to length \a len.
-    ZString(char ch, zu64 len = 1);
-
-    //! Get string representation of unsigned integer \a num with \a base, padded to \a pad characters, using uppercase letters if \a upper.
-    static ZString ItoS(zu64 num, zu8 base = 10, zu64 pad = 0, bool upper = false);
-    //! Get string representation of signed integer \a num with \a base.
-    static ZString ItoS(zs64 num, zu8 base = 10);
 
     ZString(zuc num) : ZString((zull)num){}
     ZString(zsc num) : ZString((zsll)num){}
@@ -118,9 +94,56 @@ public:
     ZString(zull num) : ZString(ItoS((zu64)num, 10)){}
     ZString(zsll num) : ZString(ItoS((zs64)num, 10)){}
 
+    // Construct from double with <places> decimal points, 0 means all
+    ZString(double flt, unsigned places = 0);
+
+    // Operators
+
+    // Assignment
+    ZString &assign(const ZString &other);
+    inline ZString &operator=(const ZString &rhs){ return assign(rhs); }
+
+    // Comparison
+    friend bool operator==(const ZString &lhs, const ZString &rhs);
+    friend bool operator!=(const ZString &lhs, const ZString &rhs);
+
+    // String Conversions
+
+    //! Get pointer to data as C-string.
+    inline char *c() const { return reinterpret_cast<char*>(_data); }
+    //! Get constant pointer to data as C-string.
+    inline const char *cc() const { return reinterpret_cast<const char*>(_data); }
+
+    //! Get pointer to raw bytes.
+    inline zbyte *bytes(){ return reinterpret_cast<zbyte*>(_data); }
+    //! Get constant pointer to raw bytes.
+    inline const zbyte *bytes() const { return reinterpret_cast<const zbyte*>(_data); }
+
+    //! Get reference to byte \a i.
+    inline zbyte &byte(zu64 i){ return bytes()[i]; }
+    //! Get constant reference to byte \a i.
+    inline const zbyte &byte(zu64 i) const { return bytes()[i]; }
+
+    //! Get UTF-8 STL string.
+    std::string str() const;
+
+    //! Get UTF-16 STL wide string.
+    std::wstring wstr() const;
+
+    zu64 readUTF16(codeunit16 *dest, zu64 maxsize) const;
+    zu64 readUTF32(codeunit32 *dest, zu64 maxsize) const;
+
+    // Numerical Conversions
+
+    //! Get string representation of unsigned integer \a num with \a base, padded to \a pad characters, using uppercase letters if \a upper.
+    static ZString ItoS(zu64 num, zu8 base = 10, zu64 pad = 0, bool upper = false);
+    //! Get string representation of signed integer \a num with \a base.
+    static ZString ItoS(zs64 num, zu8 base = 10);
+
     /*! Determine if string is an integer.
      */
     bool isInteger(zu8 base = 10) const;
+
     int tint() const;
 
     /*! Parse string as a signed integer.
@@ -140,17 +163,6 @@ public:
     // To floating point
     bool isFloat() const;
     float toFloat() const;
-
-    // Construct from double with <places> decimal points, 0 means all
-    ZString(double flt, unsigned places = 0);
-
-    // Assignment
-    ZString &assign(const ZString &other);
-    inline ZString &operator=(const ZString &rhs){ return assign(rhs); }
-
-    // Comparison
-    friend bool operator==(const ZString &lhs, const ZString &rhs);
-    friend bool operator!=(const ZString &lhs, const ZString &rhs);
 
     // Clear
     inline void clear(){ _resize(0); }
@@ -360,7 +372,7 @@ public:
     static void debugUTF8(const codeunit *bytes);
 
     //! Get a unicode character reference string from a code point.
-    static ZString codePointStr(zu64 cp);
+    static ZString codePointStr(codepoint cp);
 
     //! Allow ZString to be used with std streams.
     friend std::ostream &operator<<(std::ostream &lhs, ZString rhs);
@@ -413,6 +425,8 @@ private:
     //! Append a UTF-8 encoded code point to the container.
     void _appendCodePoint(codepoint cp);
     static void _appendUTF16(std::wstring &str, codepoint cp);
+
+    static zu8 _encodeUTF16(codeunit16 *units, codepoint cp);
 
     //! Decode the next UTF-8 code point.
     static codepoint _nextUTF8(const codeunit8 **units, zu64 *maxunits);

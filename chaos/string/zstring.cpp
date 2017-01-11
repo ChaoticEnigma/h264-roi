@@ -42,6 +42,19 @@ ZString::~ZString(){
     delete _alloc;
 }
 
+//
+// Specialized Constructors
+//
+
+ZString::ZString(char ch, zu64 len) : ZString(){
+    _resize(len);
+    if(len){
+        for(zu64 i = 0; i < len; ++i){
+            at(i) = ch;
+        }
+    }
+}
+
 ZString::ZString(const char *str, zu64 max) : ZString(){
     parseUTF8((const codeunit*)str, max);
 }
@@ -60,10 +73,6 @@ ZString::ZString(const ZArray<codeunit> &array) : ZString(array.raw()){
 
 ZString::ZString(std::string str) : ZString(str.c_str()){
     // Forwarded
-}
-
-std::string ZString::str() const {
-    return std::string(cc(), size());
 }
 
 ZString::ZString(const wchar_t *wstr, zu64 max) : ZString(){
@@ -85,6 +94,36 @@ ZString::ZString(std::wstring wstr) : ZString(wstr.c_str()){
     // Forwarded
 }
 
+ZString::ZString(double num, unsigned places) : ZString(){
+    std::stringstream stream;
+    stream << num;
+    if(places){
+        ArZ arr = ZString(stream.str()).split('.');
+        assign(arr[0] + '.' + arr[1].substr(0, places));
+    } else {
+        assign(stream.str());
+    }
+}
+
+//
+// Operators
+//
+
+ZString &ZString::assign(const ZString &other){
+    _resize(other.size());
+    if(other.size())
+        _alloc->rawcopy(other._data, _data, other.size());
+    return *this;
+}
+
+//
+// String Conversions
+//
+
+std::string ZString::str() const {
+    return std::string(cc(), size());
+}
+
 std::wstring ZString::wstr() const {
     std::wstring str;
     zu64 max = size();
@@ -96,14 +135,39 @@ std::wstring ZString::wstr() const {
     return str;
 }
 
-ZString::ZString(char ch, zu64 len) : ZString(){
-    _resize(len);
-    if(len){
-        for(zu64 i = 0; i < len; ++i){
-            at(i) = ch;
-        }
+zu64 ZString::readUTF16(codeunit16 *dest, zu64 maxsize) const {
+    zu64 max = size();
+    const codeunit *units = _data;
+    zu64 len = 0;
+    // Read and add code points
+    while(max && *units && maxsize >= 2){
+        zu8 sz = _encodeUTF16(dest, _nextUTF8(&units, &max));
+        // Increment len and dest, decrement maxsize
+        len += sz;
+        maxsize -= sz;
+        dest += sz;
     }
+    return len;
 }
+
+zu64 ZString::readUTF32(codeunit32 *dest, zu64 maxsize) const {
+    zu64 max = size();
+    const codeunit *units = _data;
+    zu64 len = 0;
+    // Read and add code points
+    while(max && *units){
+        codepoint cp = _nextUTF8(&units, &max);
+        dest[0] = cp;
+        len++;
+        maxsize--;
+        dest++;
+    }
+    return len;
+}
+
+//
+// Numerical Conversions
+//
 
 ZString ZString::ItoS(zu64 value, zu8 base, zu64 pad, bool upper){
     ZString buffer;
@@ -233,24 +297,6 @@ float ZString::toFloat() const {
     if(neg)
         out = -out;
     return out;
-}
-
-ZString::ZString(double num, unsigned places) : ZString(){
-    std::stringstream stream;
-    stream << num;
-    if(places){
-        ArZ arr = ZString(stream.str()).split('.');
-        assign(arr[0] + '.' + arr[1].substr(0, places));
-    } else {
-        assign(stream.str());
-    }
-}
-
-ZString &ZString::assign(const ZString &other){
-    _resize(other.size());
-    if(other.size())
-        _alloc->rawcopy(other._data, _data, other.size());
-    return *this;
 }
 
 //
