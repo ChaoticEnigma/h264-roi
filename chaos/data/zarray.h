@@ -7,11 +7,11 @@
 #define ZARRAY_H
 
 #include "ztypes.h"
-#include "zhash.h"
 #include "zallocator.h"
 #include "yindexedaccess.h"
 #include "ypushpopaccess.h"
 #include "ziterator.h"
+//#include "zhash.h"
 
 #include <initializer_list>
 

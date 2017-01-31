@@ -12,7 +12,7 @@
 #include "zarray.h"
 #include "zlist.h"
 #include "zassoc.h"
-#include "zhash.h"
+//#include "zhash.h"
 
 // Needed for std::ostream overload
 #include <iosfwd>
@@ -465,9 +465,6 @@ inline bool operator==(const ZString &lhs, const ZString &rhs){
 inline bool operator!=(const ZString &lhs, const ZString &rhs){
     return !operator==(lhs, rhs);
 }
-
-// ZString specialization ZHash
-ZHASH_USER_SPECIALIAZATION(ZString, (const ZString &str), (str.bytes(), str.size()), {})
 
 } // namespace LibChaos
 

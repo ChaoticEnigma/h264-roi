@@ -1,4 +1,5 @@
 #include "zbinary.h"
+#include "zerror.h"
 
 namespace LibChaos {
 

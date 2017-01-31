@@ -76,8 +76,8 @@ SET(LibChaos_SOURCES
     file/image/zwebp.h
 
     #lib/demangle.h
-    lib/fnv-5.0.3/fnv.h
-    lib/fnv-5.0.3/hash_64a.c
+    #lib/fnv-5.0.3/fnv.h
+    #lib/fnv-5.0.3/hash_64a.c
     #lib/nowide_standalone/src/iostream.cpp
     lib/sqlite3.h
     lib/sqlite3.c
@@ -220,6 +220,9 @@ ENDIF()
 IF(LIBCHAOS_WITH_WEBP)
     INCLUDE_DIRECTORIES(${LIBWEBP_INCLUDE})
 ENDIF()
+IF(LIBCHAOS_WITH_CRYPTO)
+    INCLUDE_DIRECTORIES(${LIBCRYPTO_INCLUDE})
+ENDIF()
 
 IF(IBERTY_DEMANGLE)
     ADD_DEFINITIONS(-DIBERTY_DEMANGLE)
@@ -240,6 +243,9 @@ IF(LIBCHAOS_WITH_JPEG)
 ENDIF()
 IF(LIBCHAOS_WITH_WEBP)
     TARGET_LINK_LIBRARIES(chaos ${LIBWEBP_LIB})
+ENDIF()
+IF(LIBCHAOS_WITH_CRYPTO)
+    TARGET_LINK_LIBRARIES(chaos ${LIBCRYPTO_LIB})
 ENDIF()
 
 IF(LIBCHAOS_PLATFORM_WINDOWS OR LIBCHAOS_PLATFORM_CYGWIN)

@@ -10,6 +10,7 @@
 #include "zstring.h"
 #include "zbinary.h"
 #include "zlist.h"
+#include "zhash.h"
 
 #define ZUID_NIL LibChaos::ZUID(LibChaos::ZUID::NIL)
 #define ZUID_SIZE 16

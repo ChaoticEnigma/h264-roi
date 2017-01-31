@@ -12,8 +12,9 @@
 #include "zposition.h"
 #include "zreader.h"
 #include "zwriter.h"
-#include "zerror.h"
-#include "zhash.h"
+#include "zstring.h"
+//#include "zerror.h"
+//#include "zhash.h"
 
 namespace LibChaos {
 
@@ -266,9 +267,6 @@ private:
     zu64 _realsize;
     zu64 _rwpos;
 };
-
-// ZBinary specialization ZHash
-ZHASH_USER_SPECIALIAZATION(ZBinary, (const ZBinary &bin), (bin.raw(), bin.size()), {})
 
 }
 

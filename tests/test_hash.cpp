@@ -1,4 +1,5 @@
 #include "tests.h"
+#include "zhash.h"
 #include "zmap.h"
 #include "zset.h"
 
@@ -10,25 +11,52 @@ void hash(){
     LOG(data1 << " " << hash1);
 
     auto hf = [](ZString data){
-        zu64 hash1a = ZHash<ZString>(data).hash();
-        zu64 hash1b = ZHash<ZString>(data).hash();
-        LOG("Default: " << data << " " << hash1a << " " << hash1b);
-        TASSERT(hash1a == hash1b);
+        {
+            zu64 hasha = ZHash<ZString, ZHashBase::SIMPLE64>(data).hash();
+            zu64 hashb = ZHash<ZString, ZHashBase::SIMPLE64>(data).hash();
+            LOG("Simple: " << data << " " << hasha << " " << hashb);
+            TASSERT(hasha == hashb);
+        }
 
-        zu64 hash2a = ZHash<ZString, ZHashBase::XXHASH64>(data).hash();
-        zu64 hash2b = ZHash<ZString, ZHashBase::XXHASH64>(data).hash();
-        LOG("XXHash: " << data << " " << hash2a << " " << hash2b);
-        TASSERT(hash2a == hash2b);
+        {
+            zu64 hasha = ZHash<ZString, ZHashBase::XXHASH64>(data).hash();
+            zu64 hashb = ZHash<ZString, ZHashBase::XXHASH64>(data).hash();
+            LOG("XXHash: " << data << " " << hasha << " " << hashb);
+            TASSERT(hasha == hashb);
+        }
 
-        zu64 hash3a = ZHash<ZString, ZHashBase::FNV64>(data).hash();
-        zu64 hash3b = ZHash<ZString, ZHashBase::FNV64>(data).hash();
-        LOG("FNVHash: " << data << " " << hash3a << " " << hash3b);
-        TASSERT(hash3a == hash3b)
+        {
+            zu64 hasha = ZHash<ZString, ZHashBase::FNV64>(data).hash();
+            zu64 hashb = ZHash<ZString, ZHashBase::FNV64>(data).hash();
+            LOG("FNVHash: " << data << " " << hasha << " " << hashb);
+            TASSERT(hasha == hashb)
+        }
+
+        {
+            zu32 hasha = ZHash<ZString, ZHashBase::CRC32>(data).hash();
+            zu32 hashb = ZHash<ZString, ZHashBase::CRC32>(data).hash();
+            LOG("CRC-32: " << data << " " << hasha << " " << hashb);
+            TASSERT(hasha == hashb)
+        }
+
+        {
+            ZBinary hasha = ZHash<ZString, ZHashBase::MD5>(data).hash();
+            ZBinary hashb = ZHash<ZString, ZHashBase::MD5>(data).hash();
+            LOG("MD5: " << data << " " << hasha << " " << hashb);
+            TASSERT(hasha == hashb)
+        }
+
+        {
+            ZBinary hasha = ZHash<ZString, ZHashBase::SHA1>(data).hash();
+            ZBinary hashb = ZHash<ZString, ZHashBase::SHA1>(data).hash();
+            LOG("SHA-1: " << data << " " << hasha << " " << hashb);
+            TASSERT(hasha == hashb)
+        }
     };
 
-    ZString data2 = "hashdata";
-    ZString data3 = "hashdata1";
-    ZString data4 = "hashdata2";
+    ZString data2 = "LibChaos";
+    ZString data3 = "Archon";
+    ZString data4 = "Zephyr";
 
     hf(data2);
     hf(data3);
