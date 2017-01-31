@@ -119,6 +119,7 @@ public:
 
     zu64 findFirst(const ZBinary &find) const;
 
+    ZBinary getSub(zu64 start) const { return getSub(start, size() - start); }
     ZBinary getSub(zu64 start, zu64 len) const;
 
     static ZBinary fromzu8(zu8 num);
@@ -147,7 +148,7 @@ public:
      *  \param upper Uppercase hexadecimal.
      *  \param offset Value to start offset at.
      */
-    ZString dumpBytes(zu16 groupsize = 4, zu16 linesize = 4, bool upper = false, zu64 offset = 0) const;
+    ZString dumpBytes(zu16 groupsize = 4, zu16 linesize = 4, zu64 offset = 0, bool upper = false) const;
 
     //! Get single-character printable representation of a byte.
     static ZString displayByte(zbyte byte);
@@ -179,9 +180,7 @@ public:
         return size() - tell();
     }
     zu64 read(zbyte *dest, zu64 length);
-    zu64 read(ZBinary &dest, zu64 length){
-        return read(dest.raw(), length);
-    }
+    zu64 read(ZBinary &dest, zu64 length);
 
     ZBinary readSub(zu64 length){
         ZBinary bin(length);

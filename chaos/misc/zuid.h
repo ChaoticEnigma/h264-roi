@@ -62,8 +62,6 @@ public:
     const zoctet *raw() const { return _id_octets; }
 
 public:
-    static ZUID make
-
     //! Get an acceptable timestamp.
     static zu64 getTimestamp();
     //! Get all MAC addresses.

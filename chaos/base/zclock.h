@@ -17,6 +17,8 @@ public:
     //! Create clock, started by default.
     ZClock();
 
+    ZClock(const ZClock &other);
+
     //! Start clock.
     void start();
     //! Stop clock.
@@ -24,7 +26,6 @@ public:
 
     bool running() const { return run; }
 
-    timespec diff() const;
 
     /*! Get clock in seconds.
      *  If clock is running, get time since clock started.
@@ -37,9 +38,20 @@ public:
 
     //! Return the clock start time.
     timespec getClockStart() const { return clock_a; }
+    //! Return the clock stop time.
+    timespec getClockStop() const { return clock_b; }
 
     //! Get time string from clock value.
     static ZString clockStr(timespec clock);
+
+    static ZString diffStr(timespec a, timespec b);
+
+private:
+    //! Diff from start to stop.
+    timespec diff() const;
+
+    //! Return current clock time.
+    timespec _getTime() const;
 
 private:
     bool run;

@@ -219,6 +219,16 @@ typedef zu64 zsize;
 #define ZU32_MAX ((zu32)0xFFFFFFFFUL)
 #define ZU64_MAX ((zu64)0xFFFFFFFFFFFFFFFFULL)
 
+#define ZS8_MAX  ((zs8) 0x7F)
+#define ZS16_MAX ((zs16)0x7FFFF)
+#define ZS32_MAX ((zs32)0x7FFFFFFFL)
+#define ZS64_MAX ((zs64)0x7FFFFFFFFFFFFFFFLL)
+
+#define ZS8_MIN  (-ZS8_MAX  - 1)
+#define ZS16_MIN (-ZS16_MAX - 1)
+#define ZS32_MIN (-ZS32_MAX - 1)
+#define ZS64_MIN (-ZS64_MAX - 1)
+
 // Check sizes
 static_assert(sizeof(zs8) == 1, "zs8 has incorrect size");
 static_assert(sizeof(zu8) == 1, "zu8 has incorrect size");
@@ -233,8 +243,8 @@ static_assert(sizeof(zs64) == 8, "zs64 has incorrect size");
 static_assert(sizeof(zu64) == 8, "zu64 has incorrect size");
 
 // Force 64-bit platform
-#ifdef FORCE_X64
-    static_assert(sizeof(void *) == 8, "void pointer is not 64-bit");
+#ifndef ALLOW_X32
+static_assert(sizeof(void *) == 8, "void pointer is not 64-bit");
 #endif
 
 //! Simple exception structure.

@@ -121,7 +121,6 @@ ZUID::ZUID(uuidtype type){
             break;
 
         case NAME_SHA:
-        case NAME:
             // Version 5 UUID: Namespace-Name-SHA
             break;
 
@@ -153,7 +152,7 @@ ZUID::ZUID(ZString str){
     str.replace(":", "");
     if(str.size() == 32 && str.isInteger(16)){
         for(zu64 i = 0; i < ZUID_SIZE; ++i)
-            _id_octets[i] = (zu8)ZString::substr(str, i*2, 2).tozu64(16);
+            _id_octets[i] = (zu8)ZString::substr(str, i*2, 2).toUint(16);
     } else {
         for(zu8 i = 0; i < ZUID_SIZE; ++i)
             _id_octets[i] = 0;

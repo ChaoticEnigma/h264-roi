@@ -251,6 +251,16 @@ ZPath &ZPath::getAbsolute(){
     return *this;
 }
 
+ZString ZPath::getName() const {
+    if(size() == 0)
+        return ZString();
+    ArZ parts = last().explode('.');
+    if(parts.size() == 1)
+        return last();
+    parts.popBack();
+    return ZString::join(parts, ".");
+}
+
 ZString ZPath::getExtension() const {
     if(size() == 0)
         return ZString();
@@ -308,7 +318,7 @@ ZString ZPath::str(ZString delim) const {
 //        data[i].replace(" ", "\\ ");
 //    }
 //#endif
-    return tmp + ZString::compound(_data, delim);
+    return tmp + ZString::join(_data, delim);
 }
 
 }

@@ -35,6 +35,7 @@ public:
             _data = new PointerData;
             _data->ptr = ptr;
             _data->count = 0;
+            _data->div = false;
             _increment();
         }
     }
@@ -74,7 +75,8 @@ public:
         if(_data != nullptr){
             if(unique()){
                 // Delete the object
-                delete _data->ptr;
+                if(!_data->div)
+                    delete _data->ptr;
                 delete _data;
             } else {
                 // Decrement reference count
@@ -82,6 +84,13 @@ public:
             }
             _data = nullptr;
         }
+    }
+
+    /*! Divorce the contained pointer from the container, so the pointer
+     *  will not be destroyed when all the containers release it.
+     */
+    void divorce(){
+        _data->div = true;
     }
 
     //! Swap contained pointer with another shared pointer object.
@@ -133,6 +142,8 @@ private:
         T *ptr;
         // Reference count
         zu64 count;
+        // Divorced
+        bool div;
     };
 
     PointerData *_data;

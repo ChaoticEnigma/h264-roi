@@ -214,7 +214,7 @@ void mergePackDir(ZPath srcdir, ZPath outdir){
     if(tmpfiles.isEmpty()){
         seq = 10001;
     } else {
-        seq = tmpfiles.back().last().findFirstBetween("(", ")").tozu64() + 1;
+        seq = tmpfiles.back().last().findFirstBetween("(", ")").toUint() + 1;
     }
 
     packDir(srcdir, seq);

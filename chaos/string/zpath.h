@@ -76,6 +76,7 @@ public:
     //! Get absolute representation of this, based on present working directory.
     ZPath &getAbsolute();
 
+    ZString getName() const;
     ZString getExtension() const;
 
     // Hackish path repair crap, meant to make path system-specific valid
@@ -123,9 +124,9 @@ public:
         this->doneHash();
     }
 };
-template <> class ZHash<ZPath, ZHashBase::defaultHash> : public ZHashMethod<ZHashBase::defaultHash> {
+template <> class ZHash<ZPath, ZHashBase::DEFAULT> : public ZHashMethod<ZHashBase::DEFAULT> {
 public:
-    ZHash(const ZPath &path) : ZHashMethod<ZHashBase::defaultHash>(){
+    ZHash(const ZPath &path) : ZHashMethod<ZHashBase::DEFAULT>(){
        ZString str = path.str();
        this->feedHash(str.bytes(), str.size());
        this->doneHash();

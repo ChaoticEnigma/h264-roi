@@ -15,13 +15,13 @@ void hash(){
         LOG("Default: " << data << " " << hash1a << " " << hash1b);
         TASSERT(hash1a == hash1b);
 
-        zu64 hash2a = ZHash<ZString, ZHashBase::xxHash64>(data).hash();
-        zu64 hash2b = ZHash<ZString, ZHashBase::xxHash64>(data).hash();
+        zu64 hash2a = ZHash<ZString, ZHashBase::XXHASH64>(data).hash();
+        zu64 hash2b = ZHash<ZString, ZHashBase::XXHASH64>(data).hash();
         LOG("XXHash: " << data << " " << hash2a << " " << hash2b);
         TASSERT(hash2a == hash2b);
 
-        zu64 hash3a = ZHash<ZString, ZHashBase::fnvHash64>(data).hash();
-        zu64 hash3b = ZHash<ZString, ZHashBase::fnvHash64>(data).hash();
+        zu64 hash3a = ZHash<ZString, ZHashBase::FNV64>(data).hash();
+        zu64 hash3b = ZHash<ZString, ZHashBase::FNV64>(data).hash();
         LOG("FNVHash: " << data << " " << hash3a << " " << hash3b);
         TASSERT(hash3a == hash3b)
     };
