@@ -51,88 +51,104 @@ ZBinary cachemac;
  *  If type is not a supported type id, ZUID will be initialized to nil uuid.
  */
 ZUID::ZUID(uuidtype type){
-    if(type == UNINIT){
-        // Uninitialized, for internal use.
-    } else if(type == TIME){
-        // Version 1 UUID: Time-Clock-MAC
-        zuidlock.lock();
+    switch(type){
+        case TIME: {
+            // Version 1 UUID: Time-Clock-MAC
+            zuidlock.lock();
 
-        // Get the time
-        zu64 utctime = getTimestamp();
-        zu32 utchi = (utctime >> 32);
-        zu32 utclo = (utctime & 0xFFFFFFFF);
+            // Get the time
+            zu64 utctime = getTimestamp();
+            zu32 utchi = (utctime >> 32);
+            zu32 utclo = (utctime & 0xFFFFFFFF);
 
-        // Write time
-        _id_octets[0] = (zu8)((utclo >> 24) & 0xFF); // time_lo
-        _id_octets[1] = (zu8)((utclo >> 16) & 0xFF);
-        _id_octets[2] = (zu8)((utclo >> 8)  & 0xFF);
-        _id_octets[3] = (zu8) (utclo        & 0xFF);
-        _id_octets[4] = (zu8)((utchi >> 8)  & 0xFF); // time_med
-        _id_octets[5] = (zu8) (utchi        & 0xFF);
-        _id_octets[6] = (zu8)((utchi >> 24) & 0xFF); // time_hi
-        _id_octets[7] = (zu8)((utchi >> 16) & 0xFF);
+            // Write time
+            _id_octets[0] = (zu8)((utclo >> 24) & 0xFF); // time_lo
+            _id_octets[1] = (zu8)((utclo >> 16) & 0xFF);
+            _id_octets[2] = (zu8)((utclo >> 8)  & 0xFF);
+            _id_octets[3] = (zu8) (utclo        & 0xFF);
+            _id_octets[4] = (zu8)((utchi >> 8)  & 0xFF); // time_med
+            _id_octets[5] = (zu8) (utchi        & 0xFF);
+            _id_octets[6] = (zu8)((utchi >> 24) & 0xFF); // time_hi
+            _id_octets[7] = (zu8)((utchi >> 16) & 0xFF);
 
-        // Write version
-        _id_octets[6] &= 0x0F; // 0b00001111 // Clear the 4 highest bits of the 7th byte
-        _id_octets[6] |= 0x10; // 0b00010000 // Insert UUID version 1
+            zu16 clock;
+            // Get MAC address, allow caching
+            ZBinary mac = getMACAddress(true);
 
-        zu16 clock;
-        // Get MAC address, allow caching
-        ZBinary mac = getMACAddress(true);
-
-        // Check previous clock value.
-        if(prevclock == 0){
-            // Initialize clock with random value.
-            ZRandom randgen;
-            ZBinary randomdat = randgen.generate(2);
-            clock = (randomdat[0] << 8) | randomdat[1];
-        } else {
-            // Increment clock if time is time has gone backwards or mac has changed.
-            clock = prevclock;
-            if(prevtime >= utctime || prevmac != mac){
-                ++clock;
+            // Check previous clock value.
+            if(prevclock == 0){
+                // Initialize clock with random value.
+                ZRandom randgen;
+                ZBinary randomdat = randgen.generate(2);
+                clock = (randomdat[0] << 8) | randomdat[1];
+            } else {
+                // Increment clock if time is time has gone backwards or mac has changed.
+                clock = prevclock;
+                if(prevtime >= utctime || prevmac != mac){
+                    ++clock;
+                }
             }
+
+            // Write clock
+            _id_octets[8] = (zu8)((clock >> 8)  & 0xFF);
+            _id_octets[9] = (zu8) (clock        & 0xFF);
+
+            // Write MAC
+            mac.read(_id_octets + 10, 6);
+
+            // Save these values
+            prevtime = utctime;
+            prevclock = clock;
+            prevmac = mac;
+
+            zuidlock.unlock();
+            break;
         }
 
-        // Write clock
-        _id_octets[8] = (zu8)((clock >> 8)  & 0xFF);
-        _id_octets[9] = (zu8) (clock        & 0xFF);
+        case RANDOM: {
+            // Version 4 UUID: Random
+            ZRandom randgen;
+            ZBinary random = randgen.generate(ZUID_SIZE);
+            random.read(_id_octets, ZUID_SIZE);
 
-        // Write variant
-        _id_octets[8] &= 0x3F; // 0b00111111 // Clear the 2 highest bits of the 9th byte
-        _id_octets[8] |= 0x80; // 0b10000000 // Insert UUID variant "10x"
-
-        // Write MAC
-        mac.read(_id_octets + 10, 6);
-
-        // Save these values
-        prevtime = utctime;
-        prevclock = clock;
-        prevmac = mac;
-
-        zuidlock.unlock();
-
-    } else if(type == RANDOM){
-        // Randomly generated Version 4 UUID
-        ZRandom randgen;
-        ZBinary random = randgen.generate(ZUID_SIZE);
-        random.read(_id_octets, ZUID_SIZE);
-
-        _id_octets[6] &= 0x0F; // 0b00001111 // Clear the 4 highest bits of the 7th byte
-        _id_octets[6] |= 0x40; // 0b01000000 // Insert UUID version 4
-
-        _id_octets[8] &= 0x3F; // 0b00111111 // Clear the 2 highest bits of the 9th byte
-        _id_octets[8] |= 0x80; // 0b10000000 // Insert UUID variant "10x"
-    } else {
-
-        // Default Nil UUID
-        for(zu8 i = 0; i < ZUID_SIZE; ++i){
-            _id_octets[i] = 0;
+            _id_octets[6] &= 0x0F;      // Clear the 4 highest bits of the 7th byte
+            _id_octets[6] |= (4 << 4);  // Insert UUID version 4
+            break;
         }
+
+        case NAME_MD5:
+            // Version 3 UUID: Namespace-Name-MD5
+            break;
+
+        case NAME_SHA:
+        case NAME:
+            // Version 5 UUID: Namespace-Name-SHA
+            break;
+
+        case UNINIT:
+            // Uninitialized, for internal use.
+            return;
+
+        case NIL:
+        default:
+            // Nil UUID
+            for(zu8 i = 0; i < ZUID_SIZE; ++i){
+                _id_octets[i] = 0;
+            }
+            return;
     }
+
+    // Write version
+    _id_octets[6] &= 0x0F;              // Clear the 4 highest bits of the 7th byte
+    _id_octets[6] |= ((int)type << 4);  // Insert UUID version 1
+
+    // Write variant
+    _id_octets[8] &= 0x3F;  // Clear the 2 highest bits of the 9th byte
+    _id_octets[8] |= 0x80;  // Insert UUID variant "10x"
 }
 
 ZUID::ZUID(ZString str){
+    str.replace(" ", "");
     str.replace("-", "");
     str.replace(":", "");
     if(str.size() == 32 && str.isInteger(16)){

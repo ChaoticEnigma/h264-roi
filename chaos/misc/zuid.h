@@ -20,16 +20,14 @@ namespace LibChaos {
 class ZUID {
 public:
     enum uuidtype {
-        //! Nil UUID (00000000-0000-0000-0000-000000000000).
-        NIL = 0,
-        //! Time-based Version 1 UUID.
-        TIME,
-        //! Randomly-generated Version 4 UUID.
-        RANDOM,
-        //! Uninitialized UUID. For internal use.
-        UNINIT,
-        //! Error value.
-        UNKNOWN,
+        NIL         = 0,    //!< Nil UUID (00000000-0000-0000-0000-000000000000).
+        TIME        = 1,    //!< Date-time-MAC-based Version 1 UUID.
+        RANDOM      = 4,    //!< Random-based Version 4 UUID.
+        NAME_MD5    = 3,    //!< Name-MD5-based Version 3 UUID.
+        NAME_SHA    = 5,    //!< Name-SHA-based Version 5 UUID.
+        NAME = NAME_SHA,    //!< Same as NAME_SHA.
+        UNINIT,             //!< Uninitialized UUID. For internal use.
+        UNKNOWN,            //!< Error value.
     };
 
 public:
@@ -37,7 +35,7 @@ public:
     ZUID(uuidtype type = NIL);
     /*! Parse existing UUID string.
      *  String must contain 32 hexadecimal characters,
-     *  ignoring any number of '-' or ':' characters in string.
+     *  any number of ' ', '-' or ':' characters are ignored.
      */
     ZUID(ZString str);
 
@@ -64,6 +62,8 @@ public:
     const zoctet *raw() const { return _id_octets; }
 
 public:
+    static ZUID make
+
     //! Get an acceptable timestamp.
     static zu64 getTimestamp();
     //! Get all MAC addresses.
