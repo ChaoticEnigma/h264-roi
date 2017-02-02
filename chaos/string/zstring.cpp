@@ -968,8 +968,20 @@ ZString ZString::format(ZString fmtstr, ZList<ZString> args){
     return fmtstr.format(args);
 }
 
+bool ZString::charIsNumeric(char ch){
+    return (ch >= '0' && ch <= '9');
+}
+
 bool ZString::charIsAlphabetic(char ch){
-    return (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122);
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+}
+
+bool ZString::charIsAlphanumeric(char ch){
+    return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+}
+
+bool ZString::charIsHexadecimal(char ch){
+    return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
 }
 
 bool ZString::alphaTest(ZString str1, ZString str2){

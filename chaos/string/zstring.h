@@ -358,7 +358,10 @@ public:
     ZString &fmtarg(ZString str);
     ZString &operator%(ZString str){ return fmtarg(str); }
 
+    static bool charIsNumeric(char ch);
     static bool charIsAlphabetic(char ch);
+    static bool charIsAlphanumeric(char ch);
+    static bool charIsHexadecimal(char ch);
 
     static bool alphaTest(ZString str1, ZString str2);
 

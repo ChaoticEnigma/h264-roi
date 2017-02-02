@@ -12,7 +12,7 @@
 #include "zlist.h"
 #include "zhash.h"
 
-#define ZUID_NIL LibChaos::ZUID(LibChaos::ZUID::NIL)
+#define ZUID_NIL LibChaos::ZUID()
 #define ZUID_SIZE 16
 
 namespace LibChaos {
@@ -32,8 +32,10 @@ public:
     };
 
 public:
+    //! Default NIL UUID.
+    ZUID();
     //! Generate new UUID of \a type.
-    ZUID(uuidtype type = NIL);
+    ZUID(uuidtype type, ZUID namespce = ZUID(), ZString name = ZString());
     /*! Parse existing UUID string.
      *  String must contain 32 hexadecimal characters,
      *  any number of ' ', '-' or ':' characters are ignored.
@@ -56,7 +58,7 @@ public:
     uuidtype getType() const;
 
     //! Get hexadecimal UUID string.
-    ZString str(bool separate = true, ZString delim = "-") const;
+    ZString str(ZString delim = "-") const;
     //! Get binary container object.
     ZBinary bin() const;
     //! Get pointer to raw 16-octet UUID.
@@ -73,6 +75,9 @@ public:
 private:
     //! Check if MAC address is acceptable.
     static bool validMAC(const zoctet *addr);
+
+    static ZBinary nameHashData(ZUID namesp, ZString name);
+    void nameHashSet(ZBinary hash);
 
 private:
     //! UUID octets.

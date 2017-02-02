@@ -23,11 +23,19 @@ void uid(){
 
     ZString uidstr3 = "abcdef0x-1234-5678-9012-fedcbaabcdef";
     ZUID uid3 = uidstr3;
+    LOG(uid3.str());
     TASSERT(uid3 == ZUID_NIL);
 
     ZUID uid4(ZUID::NIL);
     ZUID uid5(ZUID::TIME);
     ZUID uid6(ZUID::RANDOM);
+
+    ZUID ndns("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
+    ZString name = "www.znnxs.com";
+    ZUID uid7(ZUID::NAME_MD5, ndns, name);
+    ZUID uid8(ZUID::NAME_SHA, ndns, name);
+
+    TASSERT(ZUID(ZUID::NAME_MD5, ndns, "www.widgets.com").str() == "e902893a-9d22-3c7e-a7b8-d6e313b71d9f");
 
     LOG(PAD("Default (nil):") << uid1.str());
     LOG(PAD("String:")         << uid2.str());
@@ -35,6 +43,8 @@ void uid(){
     LOG(PAD("Nil:")            << uid4.str());
     LOG(PAD("Time:")           << uid5.str());
     LOG(PAD("Random:")         << uid6.str());
+    LOG(PAD("Name MD5:")       << uid7.str());
+    LOG(PAD("Name SHA1:")      << uid8.str());
 
     ZBinary mac = ZUID::getMACAddress();
     ZString macstr;

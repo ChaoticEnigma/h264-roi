@@ -47,11 +47,22 @@ ZMutex cachelock;
 //! Cached MAC address.
 ZBinary cachemac;
 
+ZUID::ZUID(){
+    // Nil UUID
+    for(zu8 i = 0; i < ZUID_SIZE; ++i){
+        _id_octets[i] = 0;
+    }
+}
+
 /*! Generates an RFC 4122 compliant UUID of \a type.
  *  If type is not a supported type id, ZUID will be initialized to nil uuid.
  */
-ZUID::ZUID(uuidtype type){
+ZUID::ZUID(uuidtype type, ZUID namespce, ZString name){
     switch(type){
+        case UNINIT:
+            // Uninitialized, for internal use.
+            return;
+
         case TIME: {
             // Version 1 UUID: Time-Clock-MAC
             zuidlock.lock();
@@ -110,23 +121,20 @@ ZUID::ZUID(uuidtype type){
             ZRandom randgen;
             ZBinary random = randgen.generate(ZUID_SIZE);
             random.read(_id_octets, ZUID_SIZE);
-
-            _id_octets[6] &= 0x0F;      // Clear the 4 highest bits of the 7th byte
-            _id_octets[6] |= (4 << 4);  // Insert UUID version 4
             break;
         }
 
-        case NAME_MD5:
+        case NAME_MD5: {
             // Version 3 UUID: Namespace-Name-MD5
+            nameHashSet(ZHash<ZBinary, ZHashBase::MD5>(nameHashData(namespce, name)).hash());
             break;
+        }
 
-        case NAME_SHA:
+        case NAME_SHA: {
             // Version 5 UUID: Namespace-Name-SHA
+            nameHashSet(ZHash<ZBinary, ZHashBase::SHA1>(nameHashData(namespce, name)).hash());
             break;
-
-        case UNINIT:
-            // Uninitialized, for internal use.
-            return;
+        }
 
         case NIL:
         default:
@@ -138,11 +146,11 @@ ZUID::ZUID(uuidtype type){
     }
 
     // Write version
-    _id_octets[6] &= 0x0F;              // Clear the 4 highest bits of the 7th byte
-    _id_octets[6] |= ((int)type << 4);  // Insert UUID version 1
+    _id_octets[6] &= 0x0F;
+    _id_octets[6] |= ((int)type << 4);  // Insert UUID version
 
     // Write variant
-    _id_octets[8] &= 0x3F;  // Clear the 2 highest bits of the 9th byte
+    _id_octets[8] &= 0x3F;
     _id_octets[8] |= 0x80;  // Insert UUID variant "10x"
 }
 
@@ -150,7 +158,14 @@ ZUID::ZUID(ZString str){
     str.replace(" ", "");
     str.replace("-", "");
     str.replace(":", "");
-    if(str.size() == 32 && str.isInteger(16)){
+    if(str.size() == 32){
+        for(zu64 i = 0; i < 32; ++i){
+            if(!ZString::charIsHexadecimal(str[i])){
+                for(zu8 j = 0; j < ZUID_SIZE; ++j)
+                    _id_octets[j] = 0;
+                return;
+            }
+        }
         for(zu64 i = 0; i < ZUID_SIZE; ++i)
             _id_octets[i] = (zu8)ZString::substr(str, i*2, 2).toUint(16);
     } else {
@@ -181,18 +196,22 @@ ZUID::uuidtype ZUID::getType() const {
     switch(type){
         case 1:
             return TIME;
+        case 3:
+            return NAME_MD5;
         case 4:
             return RANDOM;
+        case 5:
+            return NAME_SHA;
         default:
             return UNKNOWN;
     }
 }
 
-ZString ZUID::str(bool separate, ZString delim) const {
+ZString ZUID::str(ZString delim) const {
     ZString uid;
     for(zu8 i = 0; i < ZUID_SIZE; ++i)
         uid += ZString::ItoS(_id_octets[i], 16, 2);
-    if(separate){
+    if(!delim.isEmpty()){
         uid.insert(8, delim);
         uid.insert(8 + 1 + 4, delim);
         uid.insert(8 + 1 + 4 + 1 + 4, delim);
@@ -482,6 +501,40 @@ bool ZUID::validMAC(const zoctet *addr){
     // Locally administered address
     if(addr[0] & 0x02) return false;
     return true;
+}
+
+ZBinary ZUID::nameHashData(ZUID namesp, ZString name){
+    ZBinary ns = namesp.bin();
+    ZBinary data;
+    data.writebeu32(ns.readleu32());
+    data.writebeu16(ns.readleu16());
+    data.writebeu16(ns.readleu16());
+    data.write(ns.getSub(8, 8));
+    data.write(name.bytes(), name.size());
+    return data;
+}
+
+void ZUID::nameHashSet(ZBinary hash){
+    _id_octets[0] = hash[3];    // time-low
+    _id_octets[1] = hash[2];
+    _id_octets[2] = hash[1];
+    _id_octets[3] = hash[0];
+
+    _id_octets[4] = hash[5];    // time-mid
+    _id_octets[5] = hash[4];
+
+    _id_octets[6] = hash[7];    // time-high-and-version
+    _id_octets[7] = hash[6];
+
+    _id_octets[8]  = hash[8];
+    _id_octets[9]  = hash[9];
+
+    _id_octets[10] = hash[10];  // node
+    _id_octets[11] = hash[11];
+    _id_octets[12] = hash[12];
+    _id_octets[13] = hash[13];
+    _id_octets[14] = hash[14];
+    _id_octets[15] = hash[15];
 }
 
 }
