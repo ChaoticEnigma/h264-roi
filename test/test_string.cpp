@@ -138,35 +138,35 @@ void string_explode_compound(){
 
     ZString strarr = "this!will!!explode!";
     ArZ arr1 = strarr.explode('!');
-    ZString cmp1 = ZString::compound(arr1, "-");
+    ZString cmp1 = ZString::join(arr1, "-");
     LOG(cmp1);
     TASSERT(arr1.size() == 3 && arr1[0] == "this" && arr1[1] == "will" && arr1[2] == "explode");
     TASSERT(cmp1 == "this-will-explode");
 
     ZString strarr2 = "this!will!\"sort!of\"!explode\"strstr\"!";
     ArZ arr2 = strarr2.quotedExplode('!');
-    ZString cmp2 = ZString::compound(arr2, "-");
+    ZString cmp2 = ZString::join(arr2, "-");
     LOG(cmp2);
     TASSERT(arr2.size() == 5 && arr2[0] == "this" && arr2[1] == "will" && arr2[2] == "sort!of" && arr2[3] == "explode" && arr2[4] == "strstr");
     TASSERT(cmp2 == "this-will-sort!of-explode-strstr");
 
     ZString strarr3 = "\\!\\!!!this!will\\!also!!explode\"strstr\"!";
     ArZ arr3 = strarr3.escapedExplode('!');
-    ZString cmp3 = ZString::compound(arr3, "-");
+    ZString cmp3 = ZString::join(arr3, "-");
     LOG(cmp3);
     TASSERT(arr3.size() == 4 && arr3[0] == "\\!\\!" && arr3[1] == "this" && arr3[2] == "will\\!also" && arr3[3] == "explode\"strstr\"");
     TASSERT(cmp3 == "\\!\\!-this-will\\!also-explode\"strstr\"");
 
     ZString strarr4 = "this!.!will!.!explode!.!!.!differently\"strstr\"!.!";
     ArZ arr4 = strarr4.strExplode("!.!");
-    ZString cmp4 = ZString::compound(arr4, "---");
+    ZString cmp4 = ZString::join(arr4, "---");
     LOG(cmp4);
     TASSERT(arr4.size() == 4 && arr4[0] == "this" && arr4[1] == "will" && arr4[2] == "explode" && arr4[3] == "differently\"strstr\"");
     TASSERT(cmp4 == "this---will---explode---differently\"strstr\"");
 
     ZString strarr5 = "these!will.all!explode!";
     ArZ arr5 = strarr5.explodeList(2, '!', '.');
-    ZString cmp5 = ZString::compound(arr5, "-");
+    ZString cmp5 = ZString::join(arr5, "-");
     LOG(cmp5);
     TASSERT(arr5.size() == 4 && arr5[0] == "these" && arr5[1] == "will" && arr5[2] == "all" && arr5[3] == "explode");
     TASSERT(cmp5 == "these-will-all-explode");
@@ -197,22 +197,22 @@ void string_number(){
     TASSERT(itos2 == "-ef7d4");
 
     ZString numstr1 = "3345";
-    zu64 num1 = numstr1.tozu64();
+    zu64 num1 = numstr1.toUint();
     LOG(numstr1 << " " << num1);
     TASSERT(num1 == 3345);
 
     ZString numstr2 = "546567867864512";
-    zu64 num2 = numstr2.tozu64();
+    zu64 num2 = numstr2.toUint();
     LOG(numstr2 << " " << num2);
     TASSERT(num2 == 546567867864512);
 
     ZString numstr3 = "FF";
-    zu64 num3 = numstr3.tozu64(16);
+    zu64 num3 = numstr3.toUint(16);
     LOG(numstr3 << " " << num3);
     TASSERT(num3 == 0xFF);
 
     ZString numstr4 = "ad562f";
-    zu64 num4 = numstr4.tozu64(16);
+    zu64 num4 = numstr4.toUint(16);
     LOG(numstr4 << " " << num4);
     TASSERT(num4 == 0xAD562F);
 

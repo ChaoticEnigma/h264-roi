@@ -9,7 +9,7 @@ ZPath changeExtension(ZPath path, ZString ext){
     ArZ parts = path.last().explode('.');
     if(parts.size() > 1)
         parts.popBack();
-    path.last() = ZString::compound(parts, '.') << "." << ext;
+    path.last() = ZString::join(parts, '.') << "." << ext;
     return path;
 }
 

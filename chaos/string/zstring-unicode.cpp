@@ -125,7 +125,7 @@ void ZString::debugUTF8(const codeunit *bytes){
     }
 }
 
-ZString ZString::codePointStr(zu64 cp){
+ZString ZString::codePointStr(codepoint cp){
     return ZString("U+") + ZString::ItoS(cp,16,5,true);
 }
 
@@ -200,6 +200,22 @@ void ZString::_appendUTF16(std::wstring &str, codepoint cp){
         zu16 w2 = 0xDC00 | (up & 0x3FF);
         str.append(1, w1);
         str.append(1, w2);
+    }
+}
+
+zu8 ZString::_encodeUTF16(codeunit16 *units, codepoint cp){
+    // UTF-16: RFC-2781
+
+    if(cp < 0x10000){
+        units[0] = cp & 0xFFFF;
+        return 1;
+    } else {
+        zu32 up = cp - 0x10000;
+        zu16 w1 = 0xD800 | ((up >> 10) & 0x3FF);
+        zu16 w2 = 0xDC00 | (up & 0x3FF);
+        units[0] = w1;
+        units[1] = w2;
+        return 2;
     }
 }
 
@@ -435,7 +451,7 @@ bool ZString::isUTF8(const char *str){
 }
 
 void ZString::unicode_normalize(){
-
+    // TODO: UTF-8 Unicode Normalization
 }
 
 }

@@ -24,11 +24,11 @@ namespace LibChaos {
 class ZHashBase {
 public:
     enum hashMethod {
-        simpleHash64,
-        xxHash64,
-        fnvHash64,
-        crc32,
-        defaultHash = fnvHash64,
+        SIMPLE64,
+        XXHASH64,
+        FNV64,
+        CRC32,
+        DEFAULT = FNV64,
     };
 public:
     virtual ~ZHashBase(){}
@@ -83,7 +83,7 @@ template <ZHashBase::hashMethod> class ZHashMethod;
 
 // CRC-32 (32-bit)
 //! Hash method provider for 32-bit CRC.
-template <> class ZHashMethod<ZHashBase::crc32> : public ZHash32Base {
+template <> class ZHashMethod<ZHashBase::CRC32> : public ZHash32Base {
 public:
     ZHashMethod() : ZHash32Base(ZHASH_CRC32_INIT){}
     ZHashMethod(const zbyte *data, zu64 size) : ZHash32Base(crcHash32_hash(data, size)){}
@@ -95,7 +95,7 @@ protected:
 
 // Simple Hash (64-bit)
 //! Hash method provider for 64-bit simple hash.
-template <> class ZHashMethod<ZHashBase::simpleHash64> : public ZHash64Base {
+template <> class ZHashMethod<ZHashBase::SIMPLE64> : public ZHash64Base {
 public:
     ZHashMethod() : ZHash64Base(ZHASH_SIMPLEHASH_INIT){}
     ZHashMethod(const zbyte *data, zu64 size) : ZHash64Base(simpleHash64_hash(data, size)){}
@@ -107,7 +107,7 @@ protected:
 
 // FNV-1a Hash (64-bit)
 //! Hash method provider for 64-bit FNV-1a hash.
-template <> class ZHashMethod<ZHashBase::fnvHash64> : public ZHash64Base {
+template <> class ZHashMethod<ZHashBase::FNV64> : public ZHash64Base {
 public:
     ZHashMethod() : ZHash64Base(ZHASH_FNV1A_64_INIT){}
     ZHashMethod(const zbyte *data, zu64 size) : ZHash64Base(fnvHash64_hash(data, size)){}
@@ -119,7 +119,7 @@ protected:
 
 // XXH64 (64-bit)
 //! Hash method provider for 64-bit XXH64 hash.
-template <> class ZHashMethod<ZHashBase::xxHash64> : public ZHash64Base {
+template <> class ZHashMethod<ZHashBase::XXHASH64> : public ZHash64Base {
 public:
     ZHashMethod() : ZHash64Base(0), _state(xxHash64_init()){}
     ZHashMethod(const zbyte *data, zu64 size) : ZHash64Base(xxHash64_hash(data, size)), _state(nullptr){}
@@ -139,7 +139,7 @@ protected:
 
 // Base ZHash template <data type T, hash method M, SFINAE placeholder>
 //! Hash code generator template.
-template <typename T, ZHashBase::hashMethod M = ZHashBase::defaultHash, typename = void> class ZHash;
+template <typename T, ZHashBase::hashMethod M = ZHashBase::DEFAULT, typename = void> class ZHash;
 
 // zu64 specialization
 //! Hash code template specialization for zu64.
@@ -151,7 +151,7 @@ protected:
 };
 
 // enum specialization
-template <typename T> class ZHash<T, ZHashBase::defaultHash, typename std::enable_if<std::is_enum<T>::value>::type> : public ZHash<zu64> {
+template <typename T> class ZHash<T, ZHashBase::DEFAULT, typename std::enable_if<std::is_enum<T>::value>::type> : public ZHash<zu64> {
 public:
     ZHash(T data) : ZHash<zu64>((zu64)data){}
 };
@@ -186,9 +186,9 @@ template <ZHashBase::hashMethod M> class ZHash<TYPE, M> : public ZHashMethod<M> 
 public: \
     ZHash ARGS : ZHashMethod<M> CONSTRUCT IMPLEMENTATION \
 }; \
-template <> class ZHash<TYPE, ZHashBase::defaultHash> : public ZHashMethod<ZHashBase::defaultHash> { \
+template <> class ZHash<TYPE, ZHashBase::DEFAULT> : public ZHashMethod<ZHashBase::DEFAULT> { \
 public: \
-    ZHash ARGS : ZHashMethod<ZHashBase::defaultHash> CONSTRUCT IMPLEMENTATION \
+    ZHash ARGS : ZHashMethod<ZHashBase::DEFAULT> CONSTRUCT IMPLEMENTATION \
 };
 
 }

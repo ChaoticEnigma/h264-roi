@@ -36,6 +36,19 @@ ZString::~ZString(){
     delete _alloc;
 }
 
+//
+// Specialized Constructors
+//
+
+ZString::ZString(char ch, zu64 len) : ZString(){
+    _resize(len);
+    if(len){
+        for(zu64 i = 0; i < len; ++i){
+            at(i) = ch;
+        }
+    }
+}
+
 ZString::ZString(const char *str, zu64 max) : ZString(){
     parseUTF8((const codeunit*)str, max);
 }
@@ -56,17 +69,15 @@ ZString::ZString(std::string str) : ZString(str.c_str()){
     // Forwarded
 }
 
-std::string ZString::str() const {
-    return std::string(cc(), size());
-}
-
 ZString::ZString(const wchar_t *wstr, zu64 max) : ZString(){
-    ZArray<codeunit16> units;
-    for(zu64 i = 0; i < max && *wstr; ++i){
-        units.push((codeunit16)(*wstr & 0xFFFF));
-        ++wstr;
+    if(wstr && max){
+        ZArray<codeunit16> units;
+        for(zu64 i = 0; i < max && *wstr; ++i){
+            units.push((codeunit16)(*wstr & 0xFFFF));
+            ++wstr;
+        }
+        parseUTF16(units.raw(), units.size());
     }
-    parseUTF16(units.raw(), units.size());
 }
 
 ZString::ZString(const ZArray<wchar_t> &array) : ZString(array.raw()){
@@ -75,6 +86,36 @@ ZString::ZString(const ZArray<wchar_t> &array) : ZString(array.raw()){
 
 ZString::ZString(std::wstring wstr) : ZString(wstr.c_str()){
     // Forwarded
+}
+
+ZString::ZString(double num, unsigned places) : ZString(){
+    std::stringstream stream;
+    stream << num;
+    if(places){
+        ArZ arr = ZString(stream.str()).split('.');
+        assign(arr[0] + '.' + arr[1].substr(0, places));
+    } else {
+        assign(stream.str());
+    }
+}
+
+//
+// Operators
+//
+
+ZString &ZString::assign(const ZString &other){
+    _resize(other.size());
+    if(other.size())
+        _alloc->rawcopy(other._data, _data, other.size());
+    return *this;
+}
+
+//
+// String Conversions
+//
+
+std::string ZString::str() const {
+    return std::string(cc(), size());
 }
 
 std::wstring ZString::wstr() const {
@@ -88,14 +129,39 @@ std::wstring ZString::wstr() const {
     return str;
 }
 
-ZString::ZString(char ch, zu64 len) : ZString(){
-    _resize(len);
-    if(len){
-        for(zu64 i = 0; i < len; ++i){
-            at(i) = ch;
-        }
+zu64 ZString::readUTF16(codeunit16 *dest, zu64 maxsize) const {
+    zu64 max = size();
+    const codeunit *units = _data;
+    zu64 len = 0;
+    // Read and add code points
+    while(max && *units && maxsize >= 2){
+        zu8 sz = _encodeUTF16(dest, _nextUTF8(&units, &max));
+        // Increment len and dest, decrement maxsize
+        len += sz;
+        maxsize -= sz;
+        dest += sz;
     }
+    return len;
 }
+
+zu64 ZString::readUTF32(codeunit32 *dest, zu64 maxsize) const {
+    zu64 max = size();
+    const codeunit *units = _data;
+    zu64 len = 0;
+    // Read and add code points
+    while(max && *units){
+        codepoint cp = _nextUTF8(&units, &max);
+        dest[0] = cp;
+        len++;
+        maxsize--;
+        dest++;
+    }
+    return len;
+}
+
+//
+// Numerical Conversions
+//
 
 ZString ZString::ItoS(zu64 value, zu8 base, zu64 pad, bool upper){
     ZString buffer;
@@ -103,9 +169,7 @@ ZString ZString::ItoS(zu64 value, zu8 base, zu64 pad, bool upper){
         return buffer;
     buffer._reserve(35);
     zu64 quotient = value;
-    const char *digits = "0123456789abcdef";
-    if(upper)
-        digits = "0123456789ABCDEF";
+    const char *digits = (upper ? "0123456789ABCDEF" : "0123456789abcdef");
     do {
         buffer += digits[ZMath::abs((zs64)(quotient % base))];
         quotient /= base;
@@ -123,16 +187,20 @@ ZString ZString::ItoS(zs64 value, zu8 base){
 bool ZString::isInteger(zu8 base) const {
     if(isEmpty())
         return false;
-    if(base > 16) // Only supports up to hexadecimal
+    // Only supports up to hexadecimal
+    if(base < 2 || base > 16)
         return false;
-    const char *digits = "0123456789abcdef";
-    for(zu64 i = 0; i < size(); ++i){
-        bool yes = false;
-        for(zu8 j = 0; j < base; ++j){
-            if(tolower(operator[](i)) == digits[j])
-                yes = true;
-        }
-        if(!yes)
+
+    zu64 i = 0;
+    // Skip hexadecimal prefix
+    if(base == 16 && beginsWith("0x"))
+        i+=2;
+
+    for(; i < size(); ++i){
+        char ch = tolower(at(i));
+        if(i == 0 && ch == '-')
+            continue;
+        if((ch < '0' || ch > '9') && (ch < 'a' || ch > 'z'))
             return false;
     }
     return true;
@@ -142,15 +210,43 @@ int ZString::tint() const {
     return atoi(cc());
 }
 
-zu64 ZString::tozu64(zu8 base) const {
+zs64 ZString::toSint(zu8 base) const {
+    zu64 unum;
+    if(beginsWith("-")){
+        unum = ZString::substr(*this, 1).toUint();
+        if((zs64)unum < 0)
+            return ZS64_MIN;
+        return -(zs64)unum;
+    } else {
+        unum = toUint();
+        if((zs64)unum < 0)
+            return ZS64_MAX;
+        return (zs64)unum;
+    }
+}
+
+zu64 ZString::toUint(zu8 base) const {
     if(!isInteger(base))
-        return ZU64_MAX;
-    ZString tmp = reverse(*this);
+        return 0;
+    // Only supports up to hexadecimal
+    if(base < 2 || base > 16)
+        return false;
+
+    ZString tmp = *this;
+    // Skip hexadecimal prefix
+    if(base == 16 && tmp.beginsWith("0x"))
+        tmp.substr(2);
+    tmp.reverse();
     zu64 out = 0;
     for(zu64 i = 0; i < tmp.size(); ++i){
         char ch = tolower(tmp[i]);
-        char digit = (ch < 58 ? (ch - 48) : (ch - 97 + 10));
-        out += ((zu64)(digit) * (zu64)pow(base, i));
+        if((ch < '0' || ch > '9') && (ch < 'a' || ch > 'z'))
+            return 0;
+        char digit = (ch < 58 ? (ch - '0') : (ch - 'a' + 10));
+        zu64 add = ((zu64)(digit) * (zu64)pow(base, i));
+        if(out + add < out)
+            return ZU64_MAX;
+        out += add;
     }
     return out;
 }
@@ -195,24 +291,6 @@ float ZString::toFloat() const {
     if(neg)
         out = -out;
     return out;
-}
-
-ZString::ZString(double num, unsigned places) : ZString(){
-    std::stringstream stream;
-    stream << num;
-    if(places){
-        ArZ arr = ZString(stream.str()).split('.');
-        assign(arr[0] + '.' + arr[1].substr(0, places));
-    } else {
-        assign(stream.str());
-    }
-}
-
-ZString &ZString::assign(const ZString &other){
-    _resize(other.size());
-    if(other.size())
-        _alloc->rawcopy(other._data, _data, other.size());
-    return *this;
 }
 
 //
@@ -815,7 +893,7 @@ ArZ ZString::explodeList(unsigned nargs, ...) const {
 }
 #undef VAARGTYPE
 
-ZString ZString::compound(ArZ parts, ZString delim){
+ZString ZString::join(ArZ parts, ZString delim){
     ZString name;
     for(zu64 i = 0; i < parts.size(); ++i){
         name += parts[i];

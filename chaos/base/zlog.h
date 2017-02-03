@@ -109,7 +109,7 @@ public:
     static ZString genLogFileName(ZString prefix);
 
     static void init();
-    static void deInit();
+    static void deinit();
 
     //! Set the standard output format string for \a level.
     static inline void logLevelStdOut(zlog_level level, ZString fmt){ ZLogWorker::logLevelStdOut(level, fmt); }
@@ -123,6 +123,7 @@ private:
 
     static std::atomic<bool> _init;
     static ZLogWorker *worker;
+    static ZClock clock;
 
     LogJob *job;
     bool stdiolog;
