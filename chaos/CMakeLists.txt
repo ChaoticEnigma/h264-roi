@@ -50,9 +50,11 @@ SET(LibChaos_SOURCES
     data/zqueue.h
     data/zset.h
     data/zstack.h
+    data/ztable.h
+    data/ztable.cpp
 
-    file/database.h
-    #file/database.cpp
+    file/zdatabase.h
+    file/zdatabase.cpp
     file/yimagebackend.h
     file/zbitmap.h
     file/zfile.h
@@ -74,11 +76,11 @@ SET(LibChaos_SOURCES
     file/image/zwebp.h
 
     #lib/demangle.h
-    lib/fnv-5.0.3/fnv.h
-    lib/fnv-5.0.3/hash_64a.c
+    #lib/fnv-5.0.3/fnv.h
+    #lib/fnv-5.0.3/hash_64a.c
     #lib/nowide_standalone/src/iostream.cpp
     lib/sqlite3.h
-    #lib/sqlite3.c
+    lib/sqlite3.c
     lib/xxhash.c
 
     math/zexpression.h
@@ -130,6 +132,7 @@ SET(LibChaos_SOURCES
     thread/zmutex.cpp
     thread/zthread.h
     thread/zthread.cpp
+    thread/zworkqueue.h
 )
 
 SET(LibChaos_PNG_SOURCES
@@ -175,7 +178,7 @@ SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
 SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
 SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
 
-GatherSources(
+CollectSources(
     ${LibChaos_HEADERS}
     ${LibChaos_SOURCES}
     ${LibChaos_PNG_SOURCES}
@@ -199,7 +202,7 @@ SET(LibChaos_INCLUDE
     thread
 )
 
-GatherIncludes(${LibChaos_INCLUDE})
+CollectIncludes(${LibChaos_INCLUDE})
 
 # Include Directories
 INCLUDE_DIRECTORIES(
@@ -216,6 +219,9 @@ IF(LIBCHAOS_WITH_JPEG)
 ENDIF()
 IF(LIBCHAOS_WITH_WEBP)
     INCLUDE_DIRECTORIES(${LIBWEBP_INCLUDE})
+ENDIF()
+IF(LIBCHAOS_WITH_CRYPTO)
+    INCLUDE_DIRECTORIES(${LIBCRYPTO_INCLUDE})
 ENDIF()
 
 IF(IBERTY_DEMANGLE)
@@ -238,7 +244,9 @@ ENDIF()
 IF(LIBCHAOS_WITH_WEBP)
     TARGET_LINK_LIBRARIES(chaos ${LIBWEBP_LIB})
 ENDIF()
-
+IF(LIBCHAOS_WITH_CRYPTO)
+    TARGET_LINK_LIBRARIES(chaos ${LIBCRYPTO_LIB})
+ENDIF()
 
 IF(LIBCHAOS_PLATFORM_WINDOWS OR LIBCHAOS_PLATFORM_CYGWIN)
     IF(LIBCHAOS_COMPILER_MSVC)

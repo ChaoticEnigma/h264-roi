@@ -10,7 +10,9 @@
 
 namespace LibChaos {
 
-//! ZLock locks a mutex when constructed, and unlocks it when destroyed.
+/*! ZLock locks a mutex when constructed, and unlocks it when destroyed.
+ *  \ingroup Thread
+ */
 class ZLock {
 public:
     ZLock(ZMutex &mutex) : _mutex(&mutex){
@@ -31,6 +33,6 @@ private:
     ZMutex *_mutex;
 };
 
-}
+} // namespace LibChaos
 
 #endif // ZLOCK_H

@@ -67,7 +67,7 @@ void sortNumeric(ArP &list){
 }
 
 int main(int argc, char **argv){
-    ZLog::logLevelStdOut(ZLogSource::ALL, "%log%");
+    ZLog::logLevelStdOut(ZLog::INFO, "%log%");
 
     // /////////////////////////
 

@@ -106,7 +106,7 @@ ZString ZClock::clockStr(timespec cl){
     return ZString::ItoS((zu64)hrs, 10, 2) + ":" +
            ZString::ItoS((zu64)mins, 10, 2) + ":" +
            ZString::ItoS((zu64)secs, 10, 2) + ":" +
-            ZString::ItoS((zu64)msecs, 10, 3);
+           ZString::ItoS((zu64)msecs, 10, 3);
 }
 
 ZString ZClock::diffStr(timespec a, timespec b){

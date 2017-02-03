@@ -29,9 +29,9 @@ void error_signal(){
 }
 
 void error_trace(){
-    ArZ trace = ZError::getStackTrace();
+    ZArray<ZError::TraceFrame> trace = ZError::getStackTrace();
     for(zu64 i = 0; i < trace.size(); ++i){
-        LOG(trace[i]);
+        LOG(ZError::traceFrameStr(trace[i]));
     }
 }
 

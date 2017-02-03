@@ -14,7 +14,7 @@ void unPackDir(ZPath dir, ZPath dest);
 void mergePackDir(ZPath dir, ZPath dest);
 
 int main(int argc, char **argv){
-    ZLog::logLevelStdOut(ZLogSource::ALL, "%log%");
+    ZLog::logLevelStdOut(ZLog::INFO, "%log%");
     LOG("Image Library Manager");
 
     if(argc > 1){

@@ -11,7 +11,9 @@
 
 namespace LibChaos {
 
-//! JSON (JavaScript Object Notation) container, decoder and encoder.
+/*! JSON (JavaScript Object Notation) container, decoder and encoder.
+ *  \ingroup String
+ */
 class ZJSON {
 public:
     enum jsontype {

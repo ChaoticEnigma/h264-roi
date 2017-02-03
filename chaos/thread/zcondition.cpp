@@ -47,7 +47,7 @@ void ZCondition::waitOnce(){
 #endif
 }
 
-void ZCondition::waitLock(){
+void ZCondition::lock(){
 #ifdef ZMUTEX_WINTHREADS
     EnterCriticalSection(mutex);
 #else
@@ -63,7 +63,7 @@ void ZCondition::wait(){
 #endif
 }
 
-void ZCondition::waitUnlock(){
+void ZCondition::unlock(){
 #ifdef ZMUTEX_WINTHREADS
     LeaveCriticalSection(mutex);
 #else
@@ -74,25 +74,25 @@ void ZCondition::waitUnlock(){
 void ZCondition::signal(){
 #ifdef ZMUTEX_WINTHREADS
     // FIXME: Causes crash at end of program
-    EnterCriticalSection(mutex);
+//    EnterCriticalSection(mutex);
     WakeConditionVariable(cond);
-    LeaveCriticalSection(mutex);
+//    LeaveCriticalSection(mutex);
 #else
-    pthread_mutex_lock(&mutex);
+//    pthread_mutex_lock(&mutex);
     pthread_cond_signal(&cond);
-    pthread_mutex_unlock(&mutex);
+//    pthread_mutex_unlock(&mutex);
 #endif
 }
 
 void ZCondition::broadcast(){
 #ifdef ZMUTEX_WINTHREADS
-    EnterCriticalSection(mutex);
+//    EnterCriticalSection(mutex);
     WakeAllConditionVariable(cond);
-    LeaveCriticalSection(mutex);
+//    LeaveCriticalSection(mutex);
 #else
-    pthread_mutex_lock(&mutex);
+//    pthread_mutex_lock(&mutex);
     pthread_cond_broadcast(&cond);
-    pthread_mutex_unlock(&mutex);
+//    pthread_mutex_unlock(&mutex);
 #endif
 }
 

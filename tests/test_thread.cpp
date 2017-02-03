@@ -12,6 +12,8 @@
     #include <iostream>
 #endif
 
+#define RET_MAGIC 0x5a5a5a5a
+
 namespace LibChaosTest {
 
 void *thread_func(void * /*zarg*/){
@@ -22,17 +24,17 @@ void *thread_func(void * /*zarg*/){
     return NULL;
 }
 
-void *thread_func2(void *zarg){
-    ZThreadArg *arg = (ZThreadArg*)zarg;
+void *thread_func2(ZThread::ZThreadArg zarg){
+    void *arg = zarg.arg;
     LOG("running " << ZThread::thisTid());
-    LOG((const char *)arg->arg << ", " << arg->stop());
+    LOG((const char *)arg << ", " << zarg.stop());
     int i = 0;
-    while(!arg->stop()){
+    while(!zarg.stop()){
         LOG("loop" << ++i << " in " << ZThread::thisTid());
         ZThread::usleep(1000000);
     }
     LOG("broke loop " << ZThread::thisTid());
-    return NULL;
+    return (void *)RET_MAGIC;
 }
 
 void thread(){
@@ -48,14 +50,16 @@ void thread(){
     */
 
     ZString txt = "hello there from here";
-    ZThread thr2(thread_func2, txt.c());
+    ZThread thr2(thread_func2);
+    thr2.exec(txt.c());
     LOG("thread " << thr2.tid() << " created");
     ZThread::sleep(5);
     LOG("waited 5 " << ZThread::thisTid());
     thr2.stop();
     LOG("stopped " << thr2.tid());
-    thr2.join();
+    void *ret = thr2.join();
     LOG("joined " << thr2.tid());
+    TASSERT((zu64)ret == RET_MAGIC);
 }
 
 #if PLATFORM == WINDOWS

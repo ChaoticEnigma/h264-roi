@@ -36,7 +36,7 @@ typedef zu16 zport;
 
 class ZAddressData {
 protected:
-    ZAddressData(int fam, int typ, int pro, zport port);
+    ZAddressData(int fam, zport port);
     ZAddressData(const ZAddressData &other);
 
 protected:
@@ -72,8 +72,9 @@ protected:
     zport _port;
 };
 
-struct SockAddr;
-
+/*! Network address container.
+ *  \ingroup Network
+ */
 class ZAddress : private ZAddressData {
 public:
     enum address_family {
@@ -95,11 +96,9 @@ public:
     ZAddress(ZString str, zport port);
     ZAddress(int protocol, ZString str);
 
-    //ZAddress(zu8 a, zu8 b, zu8 c, zu8 d, zport port);
-    //ZAddress(zu32 add, zport port);
     ZAddress(zport port);
 
-    ZAddress(const sockaddr_storage *);
+    ZAddress(const sockaddr_storage *addr, socklen_t len);
     ZAddress(const sockaddr *sa);
 
     ~ZAddress();
@@ -145,13 +144,12 @@ public:
     //! Get string representation of address.
     ZString str() const;
 
-    static ZList<SockAddr> lookUp(ZAddress name);
-
     /*! Populate a sockaddr_storage struct with the necessary values from this ZAddress.
      *  \note \a ptr is zeroed before population.
      */
     bool populate(sockaddr_storage *ptr) const;
-    socklen_t getSockAddrLen() const;
+    //! Get the size of the sockaddr struct corresponding to this address.
+    socklen_t getSockLen() const;
 
     //! Get a string describing the address in the form [addr]:port,family,type,protocol.
     ZString debugStr() const {
@@ -160,18 +158,10 @@ public:
     }
 
 private:
-    void parseAny(ZString);
-    bool parseIP(int, ZString);
-
-    //static ZString strIP(int af, const void *ptr);
+    void _parseAny(ZString str);
+    bool _parseIP(int af, ZString str);
 };
 
-struct SockAddr {
-    ZAddress addr;
-    int type;
-    int proto;
-};
-
-}
+} // namespace LibChaos
 
 #endif // ZADDRESS_H

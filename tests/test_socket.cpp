@@ -66,11 +66,11 @@ void udp_server(){
     ZAddress bind(8998);
     DLOG(bind.debugStr());
     if(!sock.open()){
-        ELOG("Socket Open Fail " + sock.getError().what());
+        ELOG("Socket Open Fail");
         TASSERT(false);
     }
     if(!sock.bind(bind)){
-        ELOG("Socket Bind Fail " + sock.getError().what());
+        ELOG("Socket Bind Fail");
         TASSERT(false);
     }
 
@@ -126,7 +126,7 @@ void tcp_client(){
         ELOG("Socket Connect Fail");
         TASSERT(false);
     }
-    LOG("connected " << conn.other().str());
+    LOG("connected " << conn.peer().str());
 
     ZString str = "hi connection!";
     ZBinary snddata((const unsigned char *)str.cc(), str.size());
@@ -146,11 +146,7 @@ void tcp_server(){
     ZStreamSocket sock;
     ZAddress bind(8080);
     LOG(bind.debugStr());
-    if(!sock.open()){
-        ELOG("Socket Open Fail");
-        TASSERT(false);
-    }
-    if(!sock.listen()){
+    if(!sock.listen(bind)){
         ELOG("Socket Listen Fail");
         TASSERT(false);
     }
@@ -158,19 +154,18 @@ void tcp_server(){
     LOG("Listening...");
 
     while(run){
-        ZConnection client;
-        if(!sock.accept(client))
-            continue;
+        ZPointer<ZConnection> client;
+        sock.accept(client);
 
-        LOG("accept " << client.other().debugStr());
+        LOG("accept " << client->peer().debugStr());
 
         ZBinary data;
-        client.read(data);
+        client->read(data);
         LOG("read (" << data.size() << "): \"" << ZString(data.printable().asChar()) << "\"");
 
         ZString str = "hello back there!";
         ZBinary snddata((const unsigned char *)str.cc(), str.size());
-        client.write(snddata);
+        client->write(snddata);
         LOG("write (" << snddata.size() << "): \"" << ZString(snddata.printable().asChar()) << "\"");
     }
 }
@@ -491,12 +486,8 @@ void tcp_server_3(){
 //        return 3;
 //    }
 
-    ZSocket listensock(ZSocket::STREAM);
-    if(!listensock.open()){
-        ELOG("Open fail");
-        TASSERT(false);
-    }
-    if(!listensock.listen()){
+    ZStreamSocket listensock;
+    if(!listensock.listen(ZAddress(8080))){
         ELOG("Listen fail");
         TASSERT(false);
     }
@@ -537,7 +528,7 @@ void tcp_server_3(){
                         if (newfd > fdmax) {    // keep track of the max
                             fdmax = newfd;
                         }
-                        ZAddress addr(&remoteaddr);
+                        ZAddress addr(&remoteaddr, addrlen);
                         LOG("New connection " << addr.debugStr() << " on " << newfd);
                     }
 

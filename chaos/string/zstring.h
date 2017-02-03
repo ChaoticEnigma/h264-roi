@@ -12,7 +12,7 @@
 #include "zarray.h"
 #include "zlist.h"
 #include "zassoc.h"
-#include "zhash.h"
+//#include "zhash.h"
 
 // Needed for std::ostream overload
 #include <iosfwd>
@@ -30,6 +30,7 @@ typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
 /*! UTF-8 contiguous string container.
+ *  \ingroup String
  *  Parses UTF-8, UTF-16, or UTF-32 strings and encodes parsed code points in normalized UTF-8.
  *  Since unicode normalization can only be done on real unicode code points, invalid code unit sequences
  *  and code points will be discarded. Non-unicode bytes in input will also be discarded.
@@ -223,11 +224,11 @@ public:
     bool endsWith(ZString test) const;
 
     /*! Get location of of first occurrence of \a find in string after \a start.
-     *  \return Index of first character of \a find if found, else \ref none.
+     *  \return Index of first character of \a find if found, else \ref NONE.
      */
     zu64 findFirst(const ZString &find, zu64 start = 0) const;
     /*! Get location of of first occurrence of \a find in \a str after \a start.
-     *  \return Index of first character of \a find if found, else \ref none.
+     *  \return Index of first character of \a find if found, else \ref NONE.
      */
     static zu64 findFirst(const ZString &str, const ZString &find, zu64 start = 0);
 
@@ -357,7 +358,10 @@ public:
     ZString &fmtarg(ZString str);
     ZString &operator%(ZString str){ return fmtarg(str); }
 
+    static bool charIsNumeric(char ch);
     static bool charIsAlphabetic(char ch);
+    static bool charIsAlphanumeric(char ch);
+    static bool charIsHexadecimal(char ch);
 
     static bool alphaTest(ZString str1, ZString str2);
 
@@ -464,9 +468,6 @@ inline bool operator==(const ZString &lhs, const ZString &rhs){
 inline bool operator!=(const ZString &lhs, const ZString &rhs){
     return !operator==(lhs, rhs);
 }
-
-// ZString specialization ZHash
-ZHASH_USER_SPECIALIAZATION(ZString, (const ZString &str), (str.bytes(), str.size()), {})
 
 } // namespace LibChaos
 

@@ -21,7 +21,9 @@ namespace LibChaos {
 class ZPath;
 typedef ZArray<ZPath> ArP;
 
-//! Platform-aware path manipulation and storage.
+/*! Platform-aware path manipulation and storage.
+ *  \ingroup String
+ */
 class ZPath {
 public:
     ZPath();
@@ -114,22 +116,22 @@ private:
 //    doneHash();
 //})
 
-template <ZHashBase::hashMethod M> class ZHash<ZPath, M> : public ZHashMethod<M> {
-public:
-    ZHash(const ZPath &path) : ZHashMethod<M>(){
-        ZString str = path.str();
-        this->feedHash(str.bytes(), str.size());
-        this->doneHash();
-    }
-};
-template <> class ZHash<ZPath, ZHashBase::DEFAULT> : public ZHashMethod<ZHashBase::DEFAULT> {
-public:
-    ZHash(const ZPath &path) : ZHashMethod<ZHashBase::DEFAULT>(){
-       ZString str = path.str();
-       this->feedHash(str.bytes(), str.size());
-       this->doneHash();
-    }
-};
+//template <ZHashBase::hashMethod M> class ZHash<ZPath, M> : public ZHashMethod<M> {
+//public:
+//    ZHash(const ZPath &path) : ZHashMethod<M>(){
+//        ZString str = path.str();
+//        this->feedHash(str.bytes(), str.size());
+//        this->doneHash();
+//    }
+//};
+//template <> class ZHash<ZPath, ZHashBase::DEFAULT> : public ZHashMethod<ZHashBase::DEFAULT> {
+//public:
+//    ZHash(const ZPath &path) : ZHashMethod<ZHashBase::DEFAULT>(){
+//       ZString str = path.str();
+//       this->feedHash(str.bytes(), str.size());
+//       this->doneHash();
+//    }
+//};
 
 } // namespace LibChaos
 

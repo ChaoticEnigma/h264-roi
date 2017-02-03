@@ -10,8 +10,10 @@
 #include "zstring.h"
 #include "zbinary.h"
 #include "zlist.h"
+#include "zhash.h"
 
-#define ZUID_NIL LibChaos::ZUID(LibChaos::ZUID::NIL)
+#define ZUID_NIL LibChaos::ZUID()
+#define ZUID_SIZE 16
 
 namespace LibChaos {
 
@@ -19,33 +21,44 @@ namespace LibChaos {
 class ZUID {
 public:
     enum uuidtype {
-        //! Nil UUID (00000000-0000-0000-0000-000000000000).
-        NIL = 0,
-        //! Time-based Version 1 UUID.
-        TIME,
-        //! Randomly-generated Version 4 UUID.
-        RANDOM,
-        //! Error value.
-        UNKNOWN,
+        NIL         = 0,    //!< Nil UUID (00000000-0000-0000-0000-000000000000).
+        TIME        = 1,    //!< Date-time-MAC-based Version 1 UUID.
+        RANDOM      = 4,    //!< Random-based Version 4 UUID.
+        NAME_MD5    = 3,    //!< Name-MD5-based Version 3 UUID.
+        NAME_SHA    = 5,    //!< Name-SHA-based Version 5 UUID.
+        NAME = NAME_SHA,    //!< Same as NAME_SHA.
+        UNINIT,             //!< Uninitialized UUID. For internal use.
+        UNKNOWN,            //!< Error value.
     };
 
 public:
+    //! Default NIL UUID.
+    ZUID();
     //! Generate new UUID of \a type.
-    ZUID(uuidtype type = TIME);
+    ZUID(uuidtype type, ZUID namespce = ZUID(), ZString name = ZString());
     /*! Parse existing UUID string.
      *  String must contain 32 hexadecimal characters,
-     *  ignoring any number of '-' or ':' characters in string.
+     *  any number of ' ', '-' or ':' characters are ignored.
      */
     ZUID(ZString str);
 
+    //! Compare two ZUIDs, -1, 0 or 1.
+    int compare(const ZUID &uid);
+
     //! Compare UUIDs.
     bool operator==(const ZUID &uid);
+
+    //! Algebraic comparison for ZUID trees.
+    bool operator<(const ZUID &uid);
+
+    //! Read 16 bytes into this UUID.
+    ZUID &fromRaw(zbyte *bytes);
 
     //! Get the type of the UUID.
     uuidtype getType() const;
 
     //! Get hexadecimal UUID string.
-    ZString str(bool separate = true, ZString delim = "-") const;
+    ZString str(ZString delim = "-") const;
     //! Get binary container object.
     ZBinary bin() const;
     //! Get pointer to raw 16-octet UUID.
@@ -63,11 +76,17 @@ private:
     //! Check if MAC address is acceptable.
     static bool validMAC(const zoctet *addr);
 
+    static ZBinary nameHashData(ZUID namesp, ZString name);
+    void nameHashSet(ZBinary hash);
+
 private:
     //! UUID octets.
-    zoctet _id_octets[16];
+    zoctet _id_octets[ZUID_SIZE];
 };
 
-}
+// ZUID specialization ZHash
+ZHASH_USER_SPECIALIAZATION(ZUID, (const ZUID &uid), (uid.raw(), ZUID_SIZE), {})
+
+} // namespace LibChaos
 
 #endif // ZUID_H

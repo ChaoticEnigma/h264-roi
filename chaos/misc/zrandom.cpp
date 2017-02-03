@@ -17,7 +17,7 @@
     // OSX's /dev/random is equivalent to UNIX's /dev/urandom
     #define RAND_DEV "/dev/random"
 #else
-    // Use /dev/urandom for simplicity
+    // Use /dev/urandom for reliability
     #define RAND_DEV "/dev/urandom"
 #endif
 

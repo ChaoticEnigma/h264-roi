@@ -8,6 +8,7 @@
 
 #include "zarray.h"
 #include "zstring.h"
+#include "zerror.h"
 
 namespace LibChaos {
 
@@ -32,16 +33,16 @@ public:
     /*! Get exception stack trace (if supported).
      *  \note Not supported on Windows.
      */
-    inline const ArZ &trace() const { return _stacktrace; }
+    inline const ZArray<ZError::TraceFrame> &trace() const { return _stacktrace; }
     ZString traceStr() const;
 
     //! Log the stack trace with ZLog.
     void logStackTrace() const;
 
 private:
-    ZString _description;
     int _error;
-    ArZ _stacktrace;
+    ZString _description;
+    ZArray<ZError::TraceFrame>_stacktrace;
 };
 
 }

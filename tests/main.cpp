@@ -53,6 +53,7 @@ int main(int argc, char **argv){
             json_tests,
 
             hash_tests,
+            table_tests,
             graph_tests,
             misc_tests,
             number_tests,

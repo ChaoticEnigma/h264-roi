@@ -16,6 +16,9 @@
 
 namespace LibChaos {
 
+/*! Thread notification controller.
+ *  \ingroup Thread
+ */
 class ZCondition {
 public:
     ZCondition();
@@ -26,9 +29,9 @@ public:
 
     void waitOnce();
 
-    void waitLock();
+    void lock();
     void wait();
-    void waitUnlock();
+    void unlock();
 
     void signal();
 
@@ -60,6 +63,6 @@ private:
 #endif
 };
 
-}
+} // namespace LibChaos
 
 #endif // ZCONDITION_H

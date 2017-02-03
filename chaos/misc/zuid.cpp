@@ -47,109 +47,148 @@ ZMutex cachelock;
 //! Cached MAC address.
 ZBinary cachemac;
 
-/*! Generates an RFC 4122 compliant UUID of \a type.
- *  Default is time-based UUID (type 1).
- */
-ZUID::ZUID(uuidtype type){
-    if(type == NIL){
-        // Nil UUID
-        for(zu8 i = 0; i < 16; ++i){
-            _id_octets[i] = 0;
-        }
-
-    } else if(type == TIME){
-        // Version 1 UUID: Time-Clock-MAC
-        zuidlock.lock();
-
-        // Get the time
-        zu64 utctime = getTimestamp();
-        zu32 utchi = (utctime >> 32);
-        zu32 utclo = (utctime & 0xFFFFFFFF);
-
-        // Write time
-        _id_octets[0] = (zu8)((utclo >> 24) & 0xFF); // time_lo
-        _id_octets[1] = (zu8)((utclo >> 16) & 0xFF);
-        _id_octets[2] = (zu8)((utclo >> 8)  & 0xFF);
-        _id_octets[3] = (zu8) (utclo        & 0xFF);
-        _id_octets[4] = (zu8)((utchi >> 8)  & 0xFF); // time_med
-        _id_octets[5] = (zu8) (utchi        & 0xFF);
-        _id_octets[6] = (zu8)((utchi >> 24) & 0xFF); // time_hi
-        _id_octets[7] = (zu8)((utchi >> 16) & 0xFF);
-
-        // Write version
-        _id_octets[6] &= 0x0F; // 0b00001111 // Clear the 4 highest bits of the 7th byte
-        _id_octets[6] |= 0x10; // 0b00010000 // Insert UUID version 1
-
-        zu16 clock;
-        // Get MAC address, allow caching
-        ZBinary mac = getMACAddress(true);
-
-        // Check previous clock value.
-        if(prevclock == 0){
-            // Initialize clock with random value.
-            ZRandom randgen;
-            ZBinary randomdat = randgen.generate(2);
-            clock = (randomdat[0] << 8) | randomdat[1];
-        } else {
-            // Increment clock if time is time has gone backwards or mac has changed.
-            clock = prevclock;
-            if(prevtime >= utctime || prevmac != mac){
-                ++clock;
-            }
-        }
-
-        // Write clock
-        _id_octets[8] = (zu8)((clock >> 8)  & 0xFF);
-        _id_octets[9] = (zu8) (clock        & 0xFF);
-
-        // Write variant
-        _id_octets[8] &= 0x3F; // 0b00111111 // Clear the 2 highest bits of the 9th byte
-        _id_octets[8] |= 0x80; // 0b10000000 // Insert UUID variant "10x"
-
-        // Write MAC
-        mac.read(_id_octets + 10, 6);
-
-        // Save these values
-        prevtime = utctime;
-        prevclock = clock;
-        prevmac = mac;
-
-        zuidlock.unlock();
-
-    } else if(type == RANDOM){
-        // Randomly generated Version 4 UUID
-        ZRandom randgen;
-        ZBinary random = randgen.generate(16);
-        random.read(_id_octets, 16);
-
-        _id_octets[6] &= 0x0F; // 0b00001111 // Clear the 4 highest bits of the 7th byte
-        _id_octets[6] |= 0x40; // 0b01000000 // Insert UUID version 4
-
-        _id_octets[8] &= 0x3F; // 0b00111111 // Clear the 2 highest bits of the 9th byte
-        _id_octets[8] |= 0x80; // 0b10000000 // Insert UUID variant "10x"
-
-    } else {
-        ELOG("Invalid ZUID type");
+ZUID::ZUID(){
+    // Nil UUID
+    for(zu8 i = 0; i < ZUID_SIZE; ++i){
+        _id_octets[i] = 0;
     }
+}
+
+/*! Generates an RFC 4122 compliant UUID of \a type.
+ *  If type is not a supported type id, ZUID will be initialized to nil uuid.
+ */
+ZUID::ZUID(uuidtype type, ZUID namespce, ZString name){
+    switch(type){
+        case UNINIT:
+            // Uninitialized, for internal use.
+            return;
+
+        case TIME: {
+            // Version 1 UUID: Time-Clock-MAC
+            zuidlock.lock();
+
+            // Get the time
+            zu64 utctime = getTimestamp();
+            zu32 utchi = (utctime >> 32);
+            zu32 utclo = (utctime & 0xFFFFFFFF);
+
+            // Write time
+            _id_octets[0] = (zu8)((utclo >> 24) & 0xFF); // time_lo
+            _id_octets[1] = (zu8)((utclo >> 16) & 0xFF);
+            _id_octets[2] = (zu8)((utclo >> 8)  & 0xFF);
+            _id_octets[3] = (zu8) (utclo        & 0xFF);
+            _id_octets[4] = (zu8)((utchi >> 8)  & 0xFF); // time_med
+            _id_octets[5] = (zu8) (utchi        & 0xFF);
+            _id_octets[6] = (zu8)((utchi >> 24) & 0xFF); // time_hi
+            _id_octets[7] = (zu8)((utchi >> 16) & 0xFF);
+
+            zu16 clock;
+            // Get MAC address, allow caching
+            ZBinary mac = getMACAddress(true);
+
+            // Check previous clock value.
+            if(prevclock == 0){
+                // Initialize clock with random value.
+                ZRandom randgen;
+                ZBinary randomdat = randgen.generate(2);
+                clock = (randomdat[0] << 8) | randomdat[1];
+            } else {
+                // Increment clock if time is time has gone backwards or mac has changed.
+                clock = prevclock;
+                if(prevtime >= utctime || prevmac != mac){
+                    ++clock;
+                }
+            }
+
+            // Write clock
+            _id_octets[8] = (zu8)((clock >> 8)  & 0xFF);
+            _id_octets[9] = (zu8) (clock        & 0xFF);
+
+            // Write MAC
+            mac.read(_id_octets + 10, 6);
+
+            // Save these values
+            prevtime = utctime;
+            prevclock = clock;
+            prevmac = mac;
+
+            zuidlock.unlock();
+            break;
+        }
+
+        case RANDOM: {
+            // Version 4 UUID: Random
+            ZRandom randgen;
+            ZBinary random = randgen.generate(ZUID_SIZE);
+            random.read(_id_octets, ZUID_SIZE);
+            break;
+        }
+
+        case NAME_MD5: {
+            // Version 3 UUID: Namespace-Name-MD5
+            nameHashSet(ZHash<ZBinary, ZHashBase::MD5>(nameHashData(namespce, name)).hash());
+            break;
+        }
+
+        case NAME_SHA: {
+            // Version 5 UUID: Namespace-Name-SHA
+            nameHashSet(ZHash<ZBinary, ZHashBase::SHA1>(nameHashData(namespce, name)).hash());
+            break;
+        }
+
+        case NIL:
+        default:
+            // Nil UUID
+            for(zu8 i = 0; i < ZUID_SIZE; ++i){
+                _id_octets[i] = 0;
+            }
+            return;
+    }
+
+    // Write version
+    _id_octets[6] &= 0x0F;
+    _id_octets[6] |= ((int)type << 4);  // Insert UUID version
+
+    // Write variant
+    _id_octets[8] &= 0x3F;
+    _id_octets[8] |= 0x80;  // Insert UUID variant "10x"
 }
 
 ZUID::ZUID(ZString str){
+    str.replace(" ", "");
     str.replace("-", "");
     str.replace(":", "");
-    if(str.size() == 32 && str.isInteger(16)){
-        for(zu64 i = 0; i < 16; ++i)
+    if(str.size() == 32){
+        for(zu64 i = 0; i < 32; ++i){
+            if(!ZString::charIsHexadecimal(str[i])){
+                for(zu8 j = 0; j < ZUID_SIZE; ++j)
+                    _id_octets[j] = 0;
+                return;
+            }
+        }
+        for(zu64 i = 0; i < ZUID_SIZE; ++i)
             _id_octets[i] = (zu8)ZString::substr(str, i*2, 2).toUint(16);
     } else {
-        for(zu8 i = 0; i < 16; ++i)
+        for(zu8 i = 0; i < ZUID_SIZE; ++i)
             _id_octets[i] = 0;
     }
 }
 
+int ZUID::compare(const ZUID &uid){
+    return ::memcmp(_id_octets, uid._id_octets, ZUID_SIZE);
+}
+
 bool ZUID::operator==(const ZUID &uid){
-    for(zu8 i = 0; i < 16; ++i)
-        if(_id_octets[i] != uid._id_octets[i])
-            return false;
-    return true;
+    return compare(uid) == 0;
+}
+
+bool ZUID::operator<(const ZUID &uid){
+    return compare(uid) < 0;
+}
+
+ZUID &ZUID::fromRaw(zbyte *bytes){
+    ::memcpy(_id_octets, bytes, ZUID_SIZE);
+    return *this;
 }
 
 ZUID::uuidtype ZUID::getType() const {
@@ -157,18 +196,22 @@ ZUID::uuidtype ZUID::getType() const {
     switch(type){
         case 1:
             return TIME;
+        case 3:
+            return NAME_MD5;
         case 4:
             return RANDOM;
+        case 5:
+            return NAME_SHA;
         default:
             return UNKNOWN;
     }
 }
 
-ZString ZUID::str(bool separate, ZString delim) const {
+ZString ZUID::str(ZString delim) const {
     ZString uid;
-    for(zu8 i = 0; i < 16; ++i)
+    for(zu8 i = 0; i < ZUID_SIZE; ++i)
         uid += ZString::ItoS(_id_octets[i], 16, 2);
-    if(separate){
+    if(!delim.isEmpty()){
         uid.insert(8, delim);
         uid.insert(8 + 1 + 4, delim);
         uid.insert(8 + 1 + 4 + 1 + 4, delim);
@@ -178,7 +221,7 @@ ZString ZUID::str(bool separate, ZString delim) const {
 }
 
 ZBinary ZUID::bin() const {
-    return ZBinary(_id_octets, 16);
+    return ZBinary(_id_octets, ZUID_SIZE);
 }
 
 zu64 ZUID::getTimestamp(){
@@ -458,6 +501,40 @@ bool ZUID::validMAC(const zoctet *addr){
     // Locally administered address
     if(addr[0] & 0x02) return false;
     return true;
+}
+
+ZBinary ZUID::nameHashData(ZUID namesp, ZString name){
+    ZBinary ns = namesp.bin();
+    ZBinary data;
+    data.writebeu32(ns.readleu32());
+    data.writebeu16(ns.readleu16());
+    data.writebeu16(ns.readleu16());
+    data.write(ns.getSub(8, 8));
+    data.write(name.bytes(), name.size());
+    return data;
+}
+
+void ZUID::nameHashSet(ZBinary hash){
+    _id_octets[0] = hash[3];    // time-low
+    _id_octets[1] = hash[2];
+    _id_octets[2] = hash[1];
+    _id_octets[3] = hash[0];
+
+    _id_octets[4] = hash[5];    // time-mid
+    _id_octets[5] = hash[4];
+
+    _id_octets[6] = hash[7];    // time-high-and-version
+    _id_octets[7] = hash[6];
+
+    _id_octets[8]  = hash[8];
+    _id_octets[9]  = hash[9];
+
+    _id_octets[10] = hash[10];  // node
+    _id_octets[11] = hash[11];
+    _id_octets[12] = hash[12];
+    _id_octets[13] = hash[13];
+    _id_octets[14] = hash[14];
+    _id_octets[15] = hash[15];
 }
 
 }
