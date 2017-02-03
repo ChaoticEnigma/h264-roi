@@ -105,7 +105,7 @@ int mainwrap(int argc, char **argv){
             err = parcel.storeBool(uid, (value == "true" ? true : false));
 
         } else if(type == "uint"){
-            err = parcel.storeUint(uid, value.tozu64());
+            err = parcel.storeUint(uid, value.toUint());
 
         } else if(type == "int" ||
                   type == "sint"){
