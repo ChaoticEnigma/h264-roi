@@ -114,6 +114,8 @@ public:
      *  \return nullptr if no object owned.
      */
     T *get() const {
+        if(_data == nullptr)
+            return nullptr;
         return _data->ptr;
     }
     //! Shorthand for pointer to shared object.
