@@ -12,8 +12,9 @@
 #include "zposition.h"
 #include "zreader.h"
 #include "zwriter.h"
-#include "zerror.h"
-#include "zhash.h"
+#include "zstring.h"
+//#include "zerror.h"
+//#include "zhash.h"
 
 namespace LibChaos {
 
@@ -119,6 +120,7 @@ public:
 
     zu64 findFirst(const ZBinary &find) const;
 
+    ZBinary getSub(zu64 start) const { return getSub(start, size() - start); }
     ZBinary getSub(zu64 start, zu64 len) const;
 
     static ZBinary fromzu8(zu8 num);
@@ -141,8 +143,15 @@ public:
      */
     ZString strBytes(zu16 groupsize = 0, zu16 linesize = 0, bool upper = false) const;
 
-    ZString dumpBytes(zu16 groupsize = 4, zu16 linesize = 4, bool upper = false, zu64 offset = 0) const;
+    /*! Format bytes as hexdump.
+     *  \param groupsize The number of bytes between spaces.
+     *  \param linesize The number of groups on each line.
+     *  \param upper Uppercase hexadecimal.
+     *  \param offset Value to start offset at.
+     */
+    ZString dumpBytes(zu16 groupsize = 4, zu16 linesize = 4, zu64 offset = 0, bool upper = false) const;
 
+    //! Get single-character printable representation of a byte.
     static ZString displayByte(zbyte byte);
 
     const char *asChar() const {
@@ -172,9 +181,7 @@ public:
         return size() - tell();
     }
     zu64 read(zbyte *dest, zu64 length);
-    zu64 read(ZBinary &dest, zu64 length){
-        return read(dest.raw(), length);
-    }
+    zu64 read(ZBinary &dest, zu64 length);
 
     ZBinary readSub(zu64 length){
         ZBinary bin(length);
@@ -260,9 +267,6 @@ private:
     zu64 _realsize;
     zu64 _rwpos;
 };
-
-// ZBinary specialization ZHash
-ZHASH_USER_SPECIALIAZATION(ZBinary, (const ZBinary &bin), (bin.raw(), bin.size()), {})
 
 }
 

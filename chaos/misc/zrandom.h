@@ -24,6 +24,9 @@ public:
     zu64 genzu(zu64 min = 0, zu64 max = ZU64_MAX);
     ZBinary generate(zu64 size);
 
+    //! Generate boolean with probability.
+    bool chance(double probability);
+
 private:
 #if PLATFORM == WINDOWS
     void *_cryptprov;

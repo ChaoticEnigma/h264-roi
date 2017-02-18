@@ -7,6 +7,9 @@
 #define ZHASH
 
 #include "ztypes.h"
+#include "zbinary.h"
+#include "zstring.h"
+
 #include <type_traits>
 
 // Simple Hash initial base
@@ -24,14 +27,21 @@ namespace LibChaos {
 class ZHashBase {
 public:
     enum hashMethod {
-        simpleHash64,
-        xxHash64,
-        fnvHash64,
-        crc32,
-        defaultHash = fnvHash64,
+        SIMPLE64,   //!< Simple - fast, dumb, barely a hash function.
+        XXHASH64,   //!< xxHash - fast non-cryptographic hash.
+        FNV64,      //!< FNV Hash - simple non-cryptographic hash.
+        CRC32,      //!< CRC-32 - classic CRC.
+        MD5,        //!< MD5 - old cryptographic hash.
+        SHA1,       //!< SHA-1 - old cryptographic hash.
+        DEFAULT = FNV64,
     };
+
 public:
     virtual ~ZHashBase(){}
+
+protected:
+    virtual void feedHash(const zbyte *data, zu64 size) = 0;
+    virtual void finishHash(){}
 };
 
 //! 32-bit hash code base class.
@@ -57,21 +67,48 @@ public:
 
 public:
     ZHash64Base(zu64 hash) : _hash(hash){}
+
+public:
     virtual zu64 hash() const { return _hash; }
 
 public:
+    // Simple Hash
     static zu64 simpleHash64_hash(const zbyte *data, zu64 size, zu64 seed = ZHASH_SIMPLEHASH_INIT);
 
+    // FNV Hash
     static zu64 fnvHash64_hash(const zbyte *data, zu64 size, zu64 hval = ZHASH_FNV1A_64_INIT);
 
+    // xxHash
     static zu64 xxHash64_hash(const zbyte *data, zu64 size);
     static void *xxHash64_init();
     static void xxHash64_feed(void *state, const zbyte *data, zu64 size);
     static zu64 xxHash64_done(void *state);
 
 protected:
-    virtual void feedHash(const zbyte *data, zu64 size) = 0;
-    virtual void doneHash(){}
+    hashtype _hash;
+};
+
+class ZHashBigBase : public ZHashBase {
+public:
+    typedef ZBinary hashtype;
+public:
+    ZHashBigBase(ZBinary hash) : _hash(hash){}
+
+public:
+    virtual ZBinary hash() const { return _hash; }
+
+public:
+    // MD5
+    static ZBinary md5_hash(const zbyte *data, zu64 size);
+    static void *md5_init();
+    static void md5_feed(void *context, const zbyte *data, zu64 size);
+    static ZBinary md5_finish(void *context);
+
+    // SHA
+    static ZBinary sha1_hash(const zbyte *data, zu64 size);
+    static void *sha1_init();
+    static void sha1_feed(void *context, const zbyte *data, zu64 size);
+    static ZBinary sha1_finish(void *context);
 
 protected:
     hashtype _hash;
@@ -83,7 +120,7 @@ template <ZHashBase::hashMethod> class ZHashMethod;
 
 // CRC-32 (32-bit)
 //! Hash method provider for 32-bit CRC.
-template <> class ZHashMethod<ZHashBase::crc32> : public ZHash32Base {
+template <> class ZHashMethod<ZHashBase::CRC32> : public ZHash32Base {
 public:
     ZHashMethod() : ZHash32Base(ZHASH_CRC32_INIT){}
     ZHashMethod(const zbyte *data, zu64 size) : ZHash32Base(crcHash32_hash(data, size)){}
@@ -95,7 +132,7 @@ protected:
 
 // Simple Hash (64-bit)
 //! Hash method provider for 64-bit simple hash.
-template <> class ZHashMethod<ZHashBase::simpleHash64> : public ZHash64Base {
+template <> class ZHashMethod<ZHashBase::SIMPLE64> : public ZHash64Base {
 public:
     ZHashMethod() : ZHash64Base(ZHASH_SIMPLEHASH_INIT){}
     ZHashMethod(const zbyte *data, zu64 size) : ZHash64Base(simpleHash64_hash(data, size)){}
@@ -107,7 +144,7 @@ protected:
 
 // FNV-1a Hash (64-bit)
 //! Hash method provider for 64-bit FNV-1a hash.
-template <> class ZHashMethod<ZHashBase::fnvHash64> : public ZHash64Base {
+template <> class ZHashMethod<ZHashBase::FNV64> : public ZHash64Base {
 public:
     ZHashMethod() : ZHash64Base(ZHASH_FNV1A_64_INIT){}
     ZHashMethod(const zbyte *data, zu64 size) : ZHash64Base(fnvHash64_hash(data, size)){}
@@ -117,9 +154,9 @@ protected:
     }
 };
 
-// XXH64 (64-bit)
+// xxHash (64-bit)
 //! Hash method provider for 64-bit XXH64 hash.
-template <> class ZHashMethod<ZHashBase::xxHash64> : public ZHash64Base {
+template <> class ZHashMethod<ZHashBase::XXHASH64> : public ZHash64Base {
 public:
     ZHashMethod() : ZHash64Base(0), _state(xxHash64_init()){}
     ZHashMethod(const zbyte *data, zu64 size) : ZHash64Base(xxHash64_hash(data, size)), _state(nullptr){}
@@ -128,7 +165,7 @@ protected:
         if(_state != nullptr)
             xxHash64_feed(_state, data, size);
     }
-    void doneHash(){
+    void finishHash(){
         if(_state != nullptr)
             _hash = xxHash64_done(_state);
         _state = nullptr;
@@ -137,9 +174,53 @@ protected:
     void *_state;
 };
 
+#ifdef LIBCHAOS_HAS_CRYPTO
+
+// MD5 (128-bit)
+//! Hash method provider for 128-bit MD5 hash.
+template <> class ZHashMethod<ZHashBase::MD5> : public ZHashBigBase {
+public:
+    ZHashMethod() : ZHashBigBase(ZBinary()), _context(md5_init()){}
+    ZHashMethod(const zbyte *data, zu64 size) : ZHashBigBase(md5_hash(data, size)), _context(nullptr){}
+protected:
+    void feedHash(const zbyte *data, zu64 size){
+        if(_context != nullptr)
+            md5_feed(_context, data, size);
+    }
+    void finishHash(){
+        if(_context != nullptr)
+            _hash = md5_finish(_context);
+        _context = nullptr;
+    }
+protected:
+    void *_context;
+};
+
+// SHA-1 (160-bit)
+//! Hash method provider for 160-bit SHA-1 hash.
+template <> class ZHashMethod<ZHashBase::SHA1> : public ZHashBigBase {
+public:
+    ZHashMethod() : ZHashBigBase(ZBinary()), _context(sha1_init()){}
+    ZHashMethod(const zbyte *data, zu64 size) : ZHashBigBase(sha1_hash(data, size)), _context(nullptr){}
+protected:
+    void feedHash(const zbyte *data, zu64 size){
+        if(_context != nullptr)
+            sha1_feed(_context, data, size);
+    }
+    void finishHash(){
+        if(_context != nullptr)
+            _hash = sha1_finish(_context);
+        _context = nullptr;
+    }
+protected:
+    void *_context;
+};
+
+#endif
+
 // Base ZHash template <data type T, hash method M, SFINAE placeholder>
 //! Hash code generator template.
-template <typename T, ZHashBase::hashMethod M = ZHashBase::defaultHash, typename = void> class ZHash;
+template <typename T, ZHashBase::hashMethod M = ZHashBase::DEFAULT, typename = void> class ZHash;
 
 // zu64 specialization
 //! Hash code template specialization for zu64.
@@ -151,7 +232,7 @@ protected:
 };
 
 // enum specialization
-template <typename T> class ZHash<T, ZHashBase::defaultHash, typename std::enable_if<std::is_enum<T>::value>::type> : public ZHash<zu64> {
+template <typename T> class ZHash<T, ZHashBase::DEFAULT, typename std::enable_if<std::is_enum<T>::value>::type> : public ZHash<zu64> {
 public:
     ZHash(T data) : ZHash<zu64>((zu64)data){}
 };
@@ -186,10 +267,16 @@ template <ZHashBase::hashMethod M> class ZHash<TYPE, M> : public ZHashMethod<M> 
 public: \
     ZHash ARGS : ZHashMethod<M> CONSTRUCT IMPLEMENTATION \
 }; \
-template <> class ZHash<TYPE, ZHashBase::defaultHash> : public ZHashMethod<ZHashBase::defaultHash> { \
+template <> class ZHash<TYPE, ZHashBase::DEFAULT> : public ZHashMethod<ZHashBase::DEFAULT> { \
 public: \
-    ZHash ARGS : ZHashMethod<ZHashBase::defaultHash> CONSTRUCT IMPLEMENTATION \
+    ZHash ARGS : ZHashMethod<ZHashBase::DEFAULT> CONSTRUCT IMPLEMENTATION \
 };
+
+// ZBinary specialization ZHash
+ZHASH_USER_SPECIALIAZATION(ZBinary, (const ZBinary &bin), (bin.raw(), bin.size()), {})
+
+// ZString specialization ZHash
+ZHASH_USER_SPECIALIAZATION(ZString, (const ZString &str), (str.bytes(), str.size()), {})
 
 }
 

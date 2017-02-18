@@ -1,5 +1,4 @@
-# configure_build.cmake
-# Configure Build Options
+## Configure Build Options
 
 SET(COMPILER_GCC        0x11)
 SET(COMPILER_MINGW      0x12)
@@ -160,7 +159,7 @@ IF(LIBCHAOS_COMPILER_GCC OR LIBCHAOS_COMPILER_MINGW OR LIBCHAOS_COMPILER_CLANG)
     ENDIF()
 
     # Forced errors
-    SET(CXXGNU "${CXXGNU} -Werror=return-type") # Should be errors
+    SET(CXXGNU "${CXXGNU} -Werror=return-type -Werror=delete-incomplete") # Should be errors
 
     # Compiler-specific
     IF(LIBCHAOS_COMPILER_CLANG)

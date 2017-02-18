@@ -61,3 +61,16 @@ LibChaos is a general-purpose C++ utilities library.
 Z-prefixed classes are classes that should be used in user code.
 Y-prefixed classes enforce interfaces on inheriting classes.
 Other classes from LibChaos are not intended to be used outside the library code.
+
+## Exception Policy
+Yes, LibChaos makes _some_ use of exceptions. However, exceptions are only generated
+on misuse of LibChaos classes and methods, e.g. calling a method on an object in an
+invalid state, which should have been tested before the call. LibChaos makes heavy use of
+value-return methods (return type is the value the method was called for). This pattern
+requires, on error, either a way to leave the method without returing (exception or assert),
+or each returned type to be able to indicate invalid state. Simple value types (strings, arrays, etc)
+shouldn't need to carry this information. Exceptions are favored over asserts for this purpose,
+since they allow the user to capture and get information about the error, e.g. a stack trace.
+
+Methods that can legitimately fail when used correctly (files, networking, etc) will generally
+return status codes, and set values through references or pointers (as appropriate).

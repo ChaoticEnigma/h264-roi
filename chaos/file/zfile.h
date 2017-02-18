@@ -8,6 +8,7 @@
 
 #include "zstring.h"
 #include "zpath.h"
+#include "zpointer.h"
 #include "zbinary.h"
 #include "zposition.h"
 #include "zreader.h"
@@ -21,39 +22,31 @@
     #include <fstream>
 #endif
 
-#define ZFILE_READ  ZFile::moderead
-#define ZFILE_WRITE ZFile::modewrite
-
 namespace LibChaos {
 
+/*! Reference counted cross-platform file handle abstraction.
+ *  Intentionally does not support an append mode.
+ */
 class ZFile : public ZPosition, public ZReader, public ZWriter {
 public:
-    enum zfile_mode {
-        READ        = 0x01,    //!< Set to allow reading
-        WRITE       = 0x02,    //!< Set to allow writing (implies create)
-        READWRITE   = 0x03,
-        CREATE      = 0x04,
-        NOCREATE    = 0x08,    //!< Takes priority if create and nocreate set
-        APPEND      = 0x16,    //!< Takes priority if append and truncate set
-        TRUNCATE    = 0x32,
+    enum zfile_special {
+        REGULAR,
+        STDIN,
+        STDOUT,
+        STDERR,
     };
 
-private:
-    typedef void *HANDLE;
-
-    enum zfile_bits {
-        readbit         = 0x001,    // Reading allowed
-        writebit        = 0x002,    // Writing allowed
-        readwritebits   = 0x003,
-
-        createbit       = 0x004,    // Create allowed
-        apptruncbit     = 0x008,    // Not set for append, set for truncate
+    enum zfile_mode {
+        READ        = 0x01,     //!< Set to allow reading.
+        WRITE       = 0x02,     //!< Set to allow writing (implies create)
+        READWRITE   = 0x03,     //!< Rand and write.
+        NOCREATE    = 0x08,     //!< Overrides default behavior to create files.
+        TRUNCATE    = 0x10,     //!< Truncate file if it exists.
     };
 
 public:
-    ZFile();
+    ZFile(zfile_special type = REGULAR);
     ZFile(ZPath path, zu16 mode = READ);
-    ZFile(const ZFile &);
     ~ZFile();
 
     bool open(ZPath path);
@@ -87,23 +80,26 @@ public:
     static zu64 fileSize(ZPath path);
 
 #ifdef ZFILE_WINAPI
-    bool isOpen() const { return (_handle != NULL); }
+    bool isOpen() const { return (_data->handle != NULL); }
 #else
-    bool isOpen() const { return (_file != NULL); }
+    bool isOpen() const { return (_data->file != NULL); }
 #endif
-    zu16 &bits(){ return _options; }
-    ZPath path() const { return _path; }
+    zu16 &bits(){ return _data->options; }
+    ZPath path() const { return _data->path; }
 
 #ifdef ZFILE_WINAPI
-    HANDLE handle(){ return _handle; }
+    HANDLE handle(){ return _data->handle; }
 #else
-    FILE *fp(){ return _file; }
+    FILE *fp(){ return _data->file; }
 #endif
 
-    // Non-object
-    static zu64 readBinary(ZPath name, ZBinary &out);
-    static zu64 writeBinary(ZPath name, const ZBinary &data);
+public:
+    //! Read contents of file at \a path into \a out.
+    static zu64 readBinary(ZPath path, ZBinary &out);
+    //! Write contents of \a data to file at \a path.
+    static zu64 writeBinary(ZPath path, const ZBinary &data);
 
+    //! Read contents of file at \a path as string.
     static ZString readString(ZPath path);
 
     static zu64 copy(ZPath src, ZPath dest);
@@ -132,14 +128,35 @@ public:
 
     static zu64 fileHash(ZPath path);
 
+    //! Get system error code.
+    static int getError();
+    //! Get system error string.
+    static ZString getErrorString();
+
 private:
-    zu16 _options;
-    ZPath _path;
+    typedef void *HANDLE;
+
+    enum zfile_bits {
+        readbit         = 0x001,
+        writebit        = 0x002,
+        readwritebits   = 0x003,
+        createbit       = 0x004,
+        truncbit        = 0x008,
+    };
+
+    struct ZFileData {
+        zfile_special type;
+        zu16 options;
+        ZPath path;
 #ifdef ZFILE_WINAPI
-    HANDLE _handle;
+        HANDLE handle;
 #else
-    FILE *_file;
+        FILE *file;
 #endif
+    };
+
+private:
+    ZPointer<ZFileData> _data;
 };
 
 } // namespace LibChaos

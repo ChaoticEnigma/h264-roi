@@ -52,32 +52,26 @@ ZClock::ZClock(){
     start();
 }
 
+ZClock::ZClock(const ZClock &other) : run(other.run),
+    clock_a(other.clock_a),
+    clock_b(other.clock_b){
+
+}
+
 void ZClock::start(){
     run = true;
-#if PLATFORM == MACOSX
-    clock_a = orwl_gettime();
-#else
-    clock_gettime(CLOCK_MONOTONIC, &clock_a);
-#endif
+    clock_a = _getTime();
 }
 
 void ZClock::stop(){
     run = false;
-#if PLATFORM == MACOSX
-    clock_b = orwl_gettime();
-#else
-    clock_gettime(CLOCK_MONOTONIC, &clock_b);
-#endif
+    clock_b = _getTime();
 }
 
 timespec ZClock::diff() const {
     timespec c = clock_b;
     if(run){
-#if PLATFORM == MACOSX
-        c = orwl_gettime();
-#else
-        clock_gettime(CLOCK_MONOTONIC, &c);
-#endif
+        c = _getTime();
     }
     return ts_diff(clock_a, c);
 }
@@ -91,6 +85,16 @@ ZString ZClock::str() const {
     return clockStr(diff());
 }
 
+timespec ZClock::_getTime() const {
+#if PLATFORM == MACOSX
+    return orwl_gettime();
+#else
+    timespec clock_n;
+    clock_gettime(CLOCK_MONOTONIC, &clock_n);
+    return clock_n;
+#endif
+}
+
 ZString ZClock::clockStr(timespec cl){
     double rawsecs = (double)cl.tv_sec + ((double)cl.tv_nsec / 1000000000);
     int secs = rawsecs;
@@ -99,7 +103,14 @@ ZString ZClock::clockStr(timespec cl){
     secs = secs - (mins * 60);
     int hrs = mins / 60;
     mins = mins - (hrs * 60);
-    return ZString::ItoS((zu64)hrs, 10, 2) + ":" + ZString::ItoS((zu64)mins, 10, 2) + ":" + ZString::ItoS((zu64)secs, 10, 2) + ":" + ZString::ItoS((zu64)msecs, 10, 3);
+    return ZString::ItoS((zu64)hrs, 10, 2) + ":" +
+           ZString::ItoS((zu64)mins, 10, 2) + ":" +
+           ZString::ItoS((zu64)secs, 10, 2) + ":" +
+           ZString::ItoS((zu64)msecs, 10, 3);
+}
+
+ZString ZClock::diffStr(timespec a, timespec b){
+    return clockStr(ts_diff(a, b));
 }
 
 }

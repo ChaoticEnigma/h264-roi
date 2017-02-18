@@ -67,7 +67,7 @@ void sortNumeric(ArP &list){
 }
 
 int main(int argc, char **argv){
-    ZLog::logLevelStdOut(ZLogSource::ALL, "%log%");
+    ZLog::logLevelStdOut(ZLog::INFO, "%log%");
 
     // /////////////////////////
 
@@ -81,7 +81,7 @@ int main(int argc, char **argv){
             ArZ fl = tmp.explode('=');
             ZString flg = fl[0];
             fl.popFront();
-            ZString str = ZString::compound(fl, ZString());
+            ZString str = ZString::join(fl, ZString());
             param_flags[flg] = str;
         } else {
             param_args.push(argv[i]);

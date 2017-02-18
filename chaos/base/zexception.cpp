@@ -10,7 +10,7 @@
 namespace LibChaos {
 
 // Constructor should not be able to throw an exception
-ZException::ZException(ZString desc, int code, bool trace) : _description(desc), _error(code){
+ZException::ZException(ZString desc, int code, bool trace) : _error(code), _description(desc){
     if(trace)
         _stacktrace = ZError::getStackTrace(2);
 }
@@ -18,14 +18,14 @@ ZException::ZException(ZString desc, int code, bool trace) : _description(desc),
 ZString ZException::traceStr() const {
     ZString str = "**************************************\n";
     for(zu64 i = 0; i < _stacktrace.size(); ++i){
-        str += _stacktrace[i] + "\n";
+        str += ZError::traceFrameStr(_stacktrace[i]) + "\n";
     }
     str += "**************************************";
     return str;
 }
 
 void ZException::logStackTrace() const {
-    ELOG(ZLog::RAW << trace() << ZLog::NEWLN);
+    ELOG(ZLog::RAW << traceStr() << ZLog::NEWLN);
 }
 
 }

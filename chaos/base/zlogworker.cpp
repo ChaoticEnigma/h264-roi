@@ -45,7 +45,7 @@ bool ZLogWorker::lastcomp;
 bool enablestdout = true;
 bool enablestderr = true;
 
-ZLogWorker::ZLogWorker(){
+ZLogWorker::ZLogWorker() : worker(zlogWorker){
 //    work = work(zlogWorker);
 
     // Output buffering can be default, since it is flushed each line anyway
@@ -56,20 +56,20 @@ ZLogWorker::ZLogWorker(){
 }
 
 ZLogWorker::~ZLogWorker(){
-    if(work.tid()){
+    if(worker.tid()){
         stop();
     }
 }
 
 void ZLogWorker::run(){
-    work.run(zlogWorker);
+    worker.exec();
 }
 
 void ZLogWorker::stop(){ // Must NEVER be called by log worker thread
     // BUG: Sometimes hangs?
-    work.stop();
+    worker.stop();
     jobcondition.signal(); // Wake up thread
-    work.join();
+    worker.join();
 }
 
 void ZLogWorker::queue(LogJob *job){
@@ -79,25 +79,24 @@ void ZLogWorker::queue(LogJob *job){
     jobcondition.signal();
 }
 
-void *ZLogWorker::zlogWorker(void *arg){
-    ZThreadArg *zarg = (ZThreadArg*)arg;
+void *ZLogWorker::zlogWorker(ZThread::ZThreadArg zarg){
     ZQueue<LogJob*> tmp;
     while(true){
         jobmutex.lock(); // Lock mutex
         if(jobs.isEmpty()){ // If no jobs, wait for jobs
-            if(zarg->stop()){ // If stopped, just break
+            if(zarg.stop()){ // If stopped, just break
                 jobmutex.unlock();
                 break;
             }
 
             // Wait to be woken up with work to do
-            jobcondition.waitLock();
+            jobcondition.lock();
             while(jobs.isEmpty()){
                 jobmutex.unlock(); // Unlock while waiting so work can be queued
                 jobcondition.wait();
                 jobmutex.lock(); // Lock again before jobs.empty() check
             }
-            jobcondition.waitUnlock();
+            jobcondition.unlock();
         }
         jobs.swap(tmp); // Swap queues
         jobmutex.unlock(); // Done with jobs
@@ -130,7 +129,7 @@ ZString ZLogWorker::makeLog(const LogJob *job, ZString fmt){
     if(!job->raw){
         fmt.replace("%log%", job->log);
 
-        fmt.replace("%clock%", ZClock::clockStr(job->clock.getClockStart()));
+        fmt.replace("%clock%", job->clock.str());
         fmt.replace("%date%", job->time.dateStr());
         fmt.replace("%time%", job->time.timeStr());
         fmt.replace("%datetime%", job->time.dateStr() + " " + job->time.timeStr());

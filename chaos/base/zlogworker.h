@@ -62,14 +62,15 @@ public:
 
     static void setStdOutEnable(bool set);
     static void setStdErrEnable(bool set);
+
 private:
-    static void *zlogWorker(void *);
-    static void sigHandle(int);
+    static void *zlogWorker(ZThread::ZThreadArg zarg);
+    static void sigHandle(int sig);
 
     static ZString getThread(ztid thread);
     static ZString makeLog(const LogJob *job, ZString fmt);
 
-    ZThread work;
+    ZThread worker;
 };
 
 } // namespace LibChaos

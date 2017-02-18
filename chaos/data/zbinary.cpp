@@ -1,4 +1,5 @@
 #include "zbinary.h"
+#include "zerror.h"
 
 namespace LibChaos {
 
@@ -144,7 +145,7 @@ ZString ZBinary::strBytes(zu16 groupsize, zu16 linesize, bool upper) const {
     return str;
 }
 
-ZString ZBinary::dumpBytes(zu16 groupsize, zu16 linesize, bool upper, zu64 offset) const{
+ZString ZBinary::dumpBytes(zu16 groupsize, zu16 linesize, zu64 offset, bool upper) const{
     const zu64 linelen = (zu64)groupsize * linesize;
     ZString str;
     str += ZString::ItoS(offset, 16, 4) + "  ";
@@ -165,7 +166,8 @@ ZString ZBinary::dumpBytes(zu16 groupsize, zu16 linesize, bool upper, zu64 offse
         ZString asc;
         for(zu64 j = i - (i % linelen); j < i; ++j)
             asc += displayByte(_data[j]);
-        str += ZString(' ', linelen * 2 + linesize - (i % linelen) * 2 - (i % linelen) / groupsize) + ZString("| ") + asc + "\n";
+        str += ZString(' ', (linelen - (i % linelen)) * 2 + linesize - (i % linelen) / groupsize);
+        str += ZString("| ") + asc + ZString(' ', linelen - (i % linelen)) + "\n";
     }
     if(linesize == 0 || size() == 0)
         str += "\n";
@@ -185,6 +187,14 @@ zu64 ZBinary::read(zbyte *dest, zu64 length){
         memcpy(dest, _data + _rwpos, length);
     _rwpos += length;
     return length;
+}
+
+zu64 ZBinary::read(ZBinary &dest, zu64 length){
+    if(dest.size() < length)
+        dest.resize(length);
+    zu64 len = read(dest.raw(), length);
+    dest.resize(len);
+    return len;
 }
 
 zu64 ZBinary::write(const zbyte *data, zu64 size){

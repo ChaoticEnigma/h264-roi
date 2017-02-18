@@ -9,8 +9,8 @@
 #include "ztypes.h"
 #include "zstring.h"
 #include "zbinary.h"
-#include "zexception.h"
 #include "zaddress.h"
+#include "zexception.h"
 
 #define ZSOCKET_UDP_BUFFER  1024 * 64
 #define ZSOCKET_UDP_MAX     1024 * 64 - 9
@@ -23,6 +23,9 @@ namespace LibChaos {
     typedef int zsocktype;
 #endif
 
+/*! Network socket abstraction.
+ *  \ingroup Network
+ */
 class ZSocket {
 public:
     enum socket_type {
@@ -33,78 +36,130 @@ public:
 
     struct SocketOptions {
         enum socketoption {
-            OPT_REUSEADDR   = 1,
-            OPT_RECVTIMEOUT = 2,
+            OPT_REUSEADDR = 1,
+            OPT_RECVTIMEOUT,
         };
     };
 
+    enum socketerror {
+        OK = 0,         //!< No error.
+        DONE,           //!< Nothing to read/write.
+        AGAIN,          //!< Socket operation would block.
+        ERR_NOTOPEN,    //!< Socket is not open.
+        ERR_READ,       //!< Read error.
+        ERR_WRITE,      //!< Write error.
+        ERR_ACCEPT,     //!< Accept error.
+        ERR_BUFFER,     //!< No buffer.
+        ERR_MAX,
+    };
+
+    struct SockAddr {
+        ZAddress addr;
+        int type;
+        int proto;
+    };
+
 public:
+    //! Construct new socket with type.
     ZSocket(socket_type type);
-    ~ZSocket();
+    // No copy constructor
     ZSocket(const ZSocket &socket) = delete;
+    //! Destructor will not close the socket.
+    ~ZSocket();
 
     //! Open the socket.
-    bool open();
-    //! Bind the socket to an address.
-    bool bind(ZAddress port);
+    bool open(int family, int type, int proto);
     //! Close the socket.
     void close();
-    //! Get if socket is open.
+    //! Check if socket is open.
     bool isOpen() const;
 
-    // UDP
-    /*! Send a datagram to \a destination with \a data.
-     * \return True on success.
-     */
-    bool send(ZAddress destination, const ZBinary &data);
-    /*! Receive a datagram, put the source address in \a sender, and datagram's data in \a data.
-     * \return Size of \a data.
-     */
-    zu64 receive(ZAddress &sender, ZBinary &data);
+    //! Open and bind the socket to an address.
+    bool bind(ZAddress port);
 
-    // TCP
+    //! \name TCP-Specific Members
+    //! \{
+
     /*! Establish a stream connection with \a addr.
-     * \param[in]  addr     Remote address.
-     * \param[out] connfd   Connection socket.
-     * \param[out] connaddr Connection address.
+     *  \param[in]  addr     Remote address.
+     *  \param[out] connfd   Connection socket.
+     *  \param[out] connaddr Connection address.
      */
     bool connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr);
-    bool listen();
-    bool accept(zsocktype &connfd, ZAddress &connaddr);
-    zu64 read(ZBinary &data);
-    bool write(const ZBinary &data);
 
+    //! Start listening on the socket.
+    bool listen();
+
+    //! Accept a TCP connection on the socket.
+    socketerror accept(zsocktype &connfd, ZAddress &connaddr);
+
+    /*! Read from the socket into \p data.
+     *  Will read up to the size of \p data, so \p data must be resized first.
+     *  \p data will be resized to the size actually read.
+     *  \return \ref OK on success.
+     *  \return \ref DONE when no data read.
+     *  \return \ref AGAIN when read would block.
+     *  \return \ref ERR_READ on read failure.
+     *  \return \ref ERR_BUFFER when \p data is empty.
+     */
+    socketerror read(ZBinary &data);
+
+    /*! Write the contents of \p data to the socket.
+     *  \return \ref OK on success.
+     *  \return \ref DONE when no data written.
+     *  \return \ref AGAIN when write would block.
+     *  \return \ref ERR_WRITE on write failure.
+     *  \return \ref ERR_BUFFER when \p data is empty.
+     */
+    socketerror write(const ZBinary &data);
+
+    //! \}
+
+    //! \name UDP-Specific Members
+    //! \{
+
+    /*! Send a datagram to \a destination with \a data.
+     *  \return True on success.
+     */
+    socketerror send(ZAddress destination, const ZBinary &data);
+
+    /*! Receive a datagram, put the source address in \a sender, and datagram's data in \a data.
+     *  \return Size of \a data.
+     */
+    socketerror receive(ZAddress &sender, ZBinary &data);
+
+    //! \}
+
+    //! Set a socket option.
     bool setSocketOption(SocketOptions::socketoption option, int value);
 
-    // Default is blocking
+    /*! Set whether socket should allow rebinding.
+     *  This option can only take effect before binding.
+     *  Default is no-rebind.
+     */
+    void setAllowRebind(bool rebind = false);
+
+    /*! Set whether socket should be blocking or non-blocking.
+     *  Default is blocking.
+     */
     bool setBlocking(bool block = true);
-    // Default is non-rebind
-    void allowRebind(bool rebind = false);
 
-    void setBufferSize(zu32 size);
+    //! Look up an address for a list of candidate socket addresses.
+    static ZList<SockAddr> lookupAddr(ZAddress addr, int type);
 
-    zsocktype getSocket() const {
-        return _socket;
-    }
+    //! Get underlying socket handle.
+    inline zsocktype getSocket() const { return _socket; }
+    //! Get the bound address.
+    inline ZAddress getBoundAddress() const { return _bound; }
 
-    ZAddress getBoundAddress() const {
-        return _bound;
-    }
-
-    ZException getError() const {
-        return error;
-    }
+    static ZString errorStr(socketerror err);
 
 protected:
+    //! Construct ZSocket from already opened socket.
     ZSocket(socket_type type, zsocktype fd);
 
 private:
-    static bool InitializeSockets();
-    static void ShutdownSockets();
-    bool getSocket(zsocktype &fd, int type, int proto);
-    static socklen_t getSockAddrLen(int family);
-
-private:
+    //! Total socket count.
     static zu32 socket_count;
 
     //! Socket file descriptor.
@@ -113,16 +168,12 @@ private:
     socket_type _type;
     //! Socket address family.
     ZAddress::address_family _family;
-    //! Socket data buffer.
-    unsigned char *buffer;
-    //! Socket buffer size.
-    zu32 buffersize;
-
-    bool reuseaddr;
+    //! Whether reused address options should be set.
+    bool _reuseaddr;
+    //! Socket bound address.
     ZAddress _bound;
-    ZException error;
 };
 
-}
+} // namespace LibChaos
 
 #endif // ZSOCKET_H

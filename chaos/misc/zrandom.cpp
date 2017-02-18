@@ -17,7 +17,7 @@
     // OSX's /dev/random is equivalent to UNIX's /dev/urandom
     #define RAND_DEV "/dev/random"
 #else
-    // Use /dev/urandom for simplicity
+    // Use /dev/urandom for reliability
     #define RAND_DEV "/dev/urandom"
 #endif
 
@@ -78,6 +78,15 @@ ZBinary ZRandom::generate(zu64 size){
         fread(buffer.raw(), 1, size, _devrandom);
 #endif
     return buffer;
+}
+
+bool ZRandom::chance(double probability){
+    probability = MAX(probability, 0.0f);
+    probability = MIN(probability, 1.0f);
+    if(probability == 0.0f)
+        return false;
+    zu64 rand = genzu();
+    return ((double)rand / (double)ZU64_MAX) <= probability;
 }
 
 }

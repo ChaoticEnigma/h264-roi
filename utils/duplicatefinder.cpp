@@ -2,12 +2,13 @@
 #include "zfile.h"
 #include "zassoc.h"
 #include "zbinary.h"
+#include "zhash.h"
 using namespace LibChaos;
 
 // Find duplicate files
 
 int main(int argc, char **argv){
-    ZLog::logLevelStdOut(ZLogSource::ALL, "%log%");
+    ZLog::logLevelStdOut(ZLog::INFO, "%log%");
 
     ArZ param_args;
     for(int i = 0; i < argc; ++i){
@@ -31,7 +32,7 @@ int main(int argc, char **argv){
         ZBinary bin;
         ZFile::readBinary(path, bin);
         //ZFile(path).read(bin);
-        zu64 hash = ZBinary::hash(ZBinary::hashType1, bin);
+        zu64 hash = ZHash<ZBinary>(bin).hash();
         //LOG(hash << " - " << bin.size() << " - " << path);
         hashtable[hash].push(path);
         if(i % 100 == 0){

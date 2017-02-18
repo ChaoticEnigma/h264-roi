@@ -12,7 +12,7 @@
 #include "zarray.h"
 #include "zlist.h"
 #include "zassoc.h"
-#include "zhash.h"
+//#include "zhash.h"
 
 // Needed for std::ostream overload
 #include <iosfwd>
@@ -30,6 +30,7 @@ typedef ZArray<ZString> ArZ;
 typedef ZAssoc<ZString, ZString> AsArZ;
 
 /*! UTF-8 contiguous string container.
+ *  \ingroup String
  *  Parses UTF-8, UTF-16, or UTF-32 strings and encodes parsed code points in normalized UTF-8.
  *  Since unicode normalization can only be done on real unicode code points, invalid code unit sequences
  *  and code points will be discarded. Non-unicode bytes in input will also be discarded.
@@ -56,36 +57,23 @@ public:
     //! Destructor.
     ~ZString();
 
+    // Specialized Constructors
+
+    //! Construct string filled with \a ch to length \a len.
+    ZString(char ch, zu64 len = 1);
+
     //! Construct from UTF-8 null-terminated C-string.
     ZString(const char *str, zu64 max = ZU64_MAX);
     //! Construct from UTF-8 character array.
     ZString(const ZArray<char> &array);
-
-    //! Get pointer to data as C-string.
-    inline char *c() const { return reinterpret_cast<char*>(_data); }
-    //! Get constant pointer to data as C-string.
-    inline const char *cc() const { return reinterpret_cast<const char*>(_data); }
 
     //! Construct from UTF-8 zero-terminated bytes.
     ZString(const zbyte *str, zu64 max = ZU64_MAX);
     //! Construct from UTF-8 byte array.
     ZString(const ZArray<zbyte> &array);
 
-    //! Get pointer to raw bytes.
-    inline zbyte *bytes(){ return reinterpret_cast<zbyte*>(_data); }
-    //! Get constant pointer to raw bytes.
-    inline const zbyte *bytes() const { return reinterpret_cast<const zbyte*>(_data); }
-
-    //! Get reference to byte \a i.
-    inline zbyte &byte(zu64 i){ return bytes()[i]; }
-    //! Get constant reference to byte \a i.
-    inline const zbyte &byte(zu64 i) const { return bytes()[i]; }
-
     //! Construct from UTF-8 STL string.
     ZString(std::string str);
-
-    //! Get UTF-8 STL string.
-    std::string str() const;
 
     //! Construct from UTF-16 null-terminated wide C-string.
     ZString(const wchar_t *wstr, zu64 max = ZU64_MAX);
@@ -94,17 +82,6 @@ public:
 
     //! Construct from UTF-16 STL wide string.
     ZString(std::wstring wstr);
-
-    //! Get UTF-16 STL wide string.
-    std::wstring wstr() const;
-
-    //! Construct string filled with \a ch to length \a len.
-    ZString(char ch, zu64 len = 1);
-
-    //! Get string representation of unsigned integer \a num with \a base, padded to \a pad characters, using uppercase letters if \a upper.
-    static ZString ItoS(zu64 num, zu8 base = 10, zu64 pad = 0, bool upper = false);
-    //! Get string representation of signed integer \a num with \a base.
-    static ZString ItoS(zs64 num, zu8 base = 10);
 
     ZString(zuc num) : ZString((zull)num){}
     ZString(zsc num) : ZString((zsll)num){}
@@ -118,17 +95,10 @@ public:
     ZString(zull num) : ZString(ItoS((zu64)num, 10)){}
     ZString(zsll num) : ZString(ItoS((zs64)num, 10)){}
 
-    // To integer
-    bool isInteger(zu8 base = 10) const;
-    int tint() const;
-    zu64 tozu64(zu8 fromBase = 10) const;
-
-    // To floating point
-    bool isFloat() const;
-    float toFloat() const;
-
     // Construct from double with <places> decimal points, 0 means all
     ZString(double flt, unsigned places = 0);
+
+    // Operators
 
     // Assignment
     ZString &assign(const ZString &other);
@@ -137,6 +107,63 @@ public:
     // Comparison
     friend bool operator==(const ZString &lhs, const ZString &rhs);
     friend bool operator!=(const ZString &lhs, const ZString &rhs);
+
+    // String Conversions
+
+    //! Get pointer to data as C-string.
+    inline char *c() const { return reinterpret_cast<char*>(_data); }
+    //! Get constant pointer to data as C-string.
+    inline const char *cc() const { return reinterpret_cast<const char*>(_data); }
+
+    //! Get pointer to raw bytes.
+    inline zbyte *bytes(){ return reinterpret_cast<zbyte*>(_data); }
+    //! Get constant pointer to raw bytes.
+    inline const zbyte *bytes() const { return reinterpret_cast<const zbyte*>(_data); }
+
+    //! Get reference to byte \a i.
+    inline zbyte &byte(zu64 i){ return bytes()[i]; }
+    //! Get constant reference to byte \a i.
+    inline const zbyte &byte(zu64 i) const { return bytes()[i]; }
+
+    //! Get UTF-8 STL string.
+    std::string str() const;
+
+    //! Get UTF-16 STL wide string.
+    std::wstring wstr() const;
+
+    zu64 readUTF16(codeunit16 *dest, zu64 maxsize) const;
+    zu64 readUTF32(codeunit32 *dest, zu64 maxsize) const;
+
+    // Numerical Conversions
+
+    //! Get string representation of unsigned integer \a num with \a base, padded to \a pad characters, using uppercase letters if \a upper.
+    static ZString ItoS(zu64 num, zu8 base = 10, zu64 pad = 0, bool upper = false);
+    //! Get string representation of signed integer \a num with \a base.
+    static ZString ItoS(zs64 num, zu8 base = 10);
+
+    /*! Determine if string is an integer.
+     */
+    bool isInteger(zu8 base = 10) const;
+
+    int tint() const;
+
+    /*! Parse string as a signed integer.
+     *  Supports up to base 16.
+     *  Returns 0 on failure.
+     *  Returns ZS64_MAX on overflow.
+     */
+    zs64 toSint(zu8 base = 10) const;
+
+    /*! Parse string as an unsigned integer.
+     *  Supports up to base 16.
+     *  Returns 0 on failure.
+     *  Returns ZU64_MAX on overflow.
+     */
+    zu64 toUint(zu8 base = 10) const;
+
+    // To floating point
+    bool isFloat() const;
+    float toFloat() const;
 
     // Clear
     inline void clear(){ _resize(0); }
@@ -197,11 +224,11 @@ public:
     bool endsWith(ZString test) const;
 
     /*! Get location of of first occurrence of \a find in string after \a start.
-     *  \return Index of first character of \a find if found, else \ref none.
+     *  \return Index of first character of \a find if found, else \ref NONE.
      */
     zu64 findFirst(const ZString &find, zu64 start = 0) const;
     /*! Get location of of first occurrence of \a find in \a str after \a start.
-     *  \return Index of first character of \a find if found, else \ref none.
+     *  \return Index of first character of \a find if found, else \ref NONE.
      */
     static zu64 findFirst(const ZString &str, const ZString &find, zu64 start = 0);
 
@@ -309,9 +336,10 @@ public:
 
     ArZ split(ZString delim) const;
 
-    // Explode a string into any array of substrings
-    // All explode functions will treat consecutive delimiters as one delimitier
-    // Delimiters at the beginning or end of a string are discarded
+    /*! Explode a string into an array of substrings.
+     *  All explode functions will treat consecutive delimiters as one delimitier.
+     *  Delimiters at the beginning or end of a string are discarded.
+     */
     ArZ explode(char delim) const;
     ArZ strExplode(const ZString &delim) const;
     ArZ quotedExplode(char delim) const;
@@ -319,7 +347,8 @@ public:
     ArZ explodeList(unsigned nargs, ...) const;
     //ArZ explode();
 
-    static ZString compound(ArZ parts, ZString delim);
+    //! Join an array of strings into one string a delimiter.
+    static ZString join(ArZ parts, ZString delim);
 
     //! Format string with a variable number arguments in \a args.
     ZString &format(ZList<ZString> args);
@@ -329,7 +358,10 @@ public:
     ZString &fmtarg(ZString str);
     ZString &operator%(ZString str){ return fmtarg(str); }
 
+    static bool charIsNumeric(char ch);
     static bool charIsAlphabetic(char ch);
+    static bool charIsAlphanumeric(char ch);
+    static bool charIsHexadecimal(char ch);
 
     static bool alphaTest(ZString str1, ZString str2);
 
@@ -344,7 +376,7 @@ public:
     static void debugUTF8(const codeunit *bytes);
 
     //! Get a unicode character reference string from a code point.
-    static ZString codePointStr(zu64 cp);
+    static ZString codePointStr(codepoint cp);
 
     //! Allow ZString to be used with std streams.
     friend std::ostream &operator<<(std::ostream &lhs, ZString rhs);
@@ -398,6 +430,8 @@ private:
     void _appendCodePoint(codepoint cp);
     static void _appendUTF16(std::wstring &str, codepoint cp);
 
+    static zu8 _encodeUTF16(codeunit16 *units, codepoint cp);
+
     //! Decode the next UTF-8 code point.
     static codepoint _nextUTF8(const codeunit8 **units, zu64 *maxunits);
     //! Decode the next UTF-16 code point.
@@ -434,9 +468,6 @@ inline bool operator==(const ZString &lhs, const ZString &rhs){
 inline bool operator!=(const ZString &lhs, const ZString &rhs){
     return !operator==(lhs, rhs);
 }
-
-// ZString specialization ZHash
-ZHASH_USER_SPECIALIAZATION(ZString, (const ZString &str), (str.bytes(), str.size()), {})
 
 } // namespace LibChaos
 

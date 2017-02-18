@@ -7,8 +7,12 @@
 #include "zexception.h"
 #include <functional>
 #include "xxhash.h"
-
 //#include "fnv.h"
+
+#ifdef LIBCHAOS_HAS_CRYPTO
+    #include <openssl/md5.h>
+    #include <openssl/sha.h>
+#endif
 
 typedef LibChaos::zu32 crc;
 
@@ -24,6 +28,10 @@ typedef LibChaos::zu32 crc;
 #define REFLECT_REMAINDER(X)    ((crc)reflect(X, WIDTH))
 
 namespace LibChaos {
+
+// //////////////////////////////////////////////////////////
+// CRC-32
+// //////////////////////////////////////////////////////////
 
 static zu32 reflect(zu32 data, zu8 bits){
     zu32 reflection = 0x00000000;
@@ -63,6 +71,10 @@ zu32 ZHash32Base::crcHash32_hash(const zbyte *data, zu64 size, zu32 remainder){
     return (REFLECT_REMAINDER(remainder) ^ FINAL_XOR_VALUE);
 }
 
+// //////////////////////////////////////////////////////////
+// Simple Hash
+// //////////////////////////////////////////////////////////
+
 zu64 ZHash64Base::simpleHash64_hash(const zbyte *data, zu64 size, zu64 seed){
     zu64 hash = seed;
     for(zu64 i = 0; i < size; ++i){
@@ -70,6 +82,10 @@ zu64 ZHash64Base::simpleHash64_hash(const zbyte *data, zu64 size, zu64 seed){
     }
     return hash;
 }
+
+// //////////////////////////////////////////////////////////
+// FNV Hash
+// //////////////////////////////////////////////////////////
 
 zu64 ZHash64Base::fnvHash64_hash(const zbyte *data, zu64 size, zu64 hval){
     // FNV (Fowler/Noll/Vo) hash algorithm
@@ -96,6 +112,10 @@ zu64 ZHash64Base::fnvHash64_hash(const zbyte *data, zu64 size, zu64 hval){
     //return fnv_64a_buf(data, size, hval);
 }
 
+// //////////////////////////////////////////////////////////
+// xxHash
+// //////////////////////////////////////////////////////////
+
 zu64 ZHash64Base::xxHash64_hash(const zbyte *data, zu64 size){
     return XXH64(data, size, 0);
 }
@@ -110,5 +130,65 @@ zu64 ZHash64Base::xxHash64_done(void *state){
     XXH64_freeState((XXH64_state_t*)state);
     return hash;
 }
+
+#ifdef LIBCHAOS_HAS_CRYPTO
+
+// //////////////////////////////////////////////////////////
+// MD5
+// //////////////////////////////////////////////////////////
+
+ZBinary ZHashBigBase::md5_hash(const zbyte *data, zu64 size){
+    ZBinary hash(MD5_DIGEST_LENGTH);
+    ::MD5(data, size, hash.raw());
+    return hash;
+}
+
+void *ZHashBigBase::md5_init(){
+    MD5_CTX *context = new MD5_CTX;
+    MD5_Init(context);
+    return context;
+}
+
+void ZHashBigBase::md5_feed(void *context, const zbyte *data, zu64 size){
+    MD5_Update((MD5_CTX *)context, data, size);
+}
+
+ZBinary ZHashBigBase::md5_finish(void *ctx){
+    MD5_CTX *context = (MD5_CTX *)ctx;
+    ZBinary hash(MD5_DIGEST_LENGTH);
+    MD5_Final(hash.raw(), context);
+    delete context;
+    return hash;
+}
+
+// //////////////////////////////////////////////////////////
+// SHA-1
+// //////////////////////////////////////////////////////////
+
+ZBinary ZHashBigBase::sha1_hash(const zbyte *data, zu64 size){
+    ZBinary hash(SHA_DIGEST_LENGTH);
+    ::SHA1(data, size, hash.raw());
+    return hash;
+}
+
+void *ZHashBigBase::sha1_init(){
+    SHA_CTX *context = new SHA_CTX;
+    SHA1_Init(context);
+    return context;
+}
+
+void ZHashBigBase::sha1_feed(void *context, const zbyte *data, zu64 size){
+    SHA1_Update((SHA_CTX *)context, data, size);
+}
+
+ZBinary ZHashBigBase::sha1_finish(void *ctx){
+    SHA_CTX *context = (SHA_CTX *)ctx;
+    ZBinary hash(SHA_DIGEST_LENGTH);
+    SHA1_Final(hash.raw(), context);
+    delete context;
+    return hash;
+}
+
+#endif
 
 }

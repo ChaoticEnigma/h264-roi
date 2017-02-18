@@ -45,38 +45,23 @@ INCLUDE_DIRECTORIES(
 ### =================== BUILD =================== ###
 
 # Extension Fixer
-IF(NOT LIBCHAOS_UTIL_EXTENSION_FIXER)
-    SET(LIBCHAOS_UTIL_EXTENSION_FIXER_ALL EXCLUDE_FROM_ALL)
-ENDIF()
-ADD_EXECUTABLE(extensionfixer ${LIBCHAOS_UTIL_EXTENSION_FIXER_ALL} ${LibChaosUtils_ExtensionFixer_SOURCES})
+ADD_EXECUTABLE(extensionfixer EXCLUDE_FROM_ALL ${LibChaosUtils_ExtensionFixer_SOURCES})
 LibChaos_Configure_Target(extensionfixer)
 
 # Audiobook Sorter
-IF(NOT LIBCHAOS_UTIL_AUDIOBOOK_SORTER)
-    SET(LIBCHAOS_UTIL_AUDIOBOOK_SORTER_ALL EXCLUDE_FROM_ALL)
-ENDIF()
-ADD_EXECUTABLE(audiobooksorter ${LIBCHAOS_UTIL_AUDIOBOOK_SORTER_ALL} ${LibChaosUtils_AudiobookSorter_SOURCES})
+ADD_EXECUTABLE(audiobooksorter EXCLUDE_FROM_ALL ${LibChaosUtils_AudiobookSorter_SOURCES})
 LibChaos_Configure_Target(audiobooksorter)
 
 # Duplicate Finder
-IF(NOT LIBCHAOS_UTIL_DUPLICATE_FINDER)
-    SET(LIBCHAOS_UTIL_DUPLICATE_FINDER_ALL EXCLUDE_FROM_ALL)
-ENDIF()
-ADD_EXECUTABLE(duplicatefinder ${LIBCHAOS_UTIL_DUPLICATE_FINDER_ALL} ${LibChaosUtils_DuplicateFinder_SOURCES})
+ADD_EXECUTABLE(duplicatefinder EXCLUDE_FROM_ALL ${LibChaosUtils_DuplicateFinder_SOURCES})
 LibChaos_Configure_Target(duplicatefinder)
 
 # Image Library Manager
-IF(NOT LIBCHAOS_UTIL_IMAGE_LIBRARY_MANAGER)
-    SET(LIBCHAOS_UTIL_IMAGE_LIBRARY_MANAGER_ALL EXCLUDE_FROM_ALL)
-ENDIF()
-ADD_EXECUTABLE(imagelibrarymanager ${LIBCHAOS_UTIL_IMAGE_LIBRARY_MANAGER_ALL} ${LibChaosUtils_ImageLibraryManager_SOURCES})
+ADD_EXECUTABLE(imagelibrarymanager EXCLUDE_FROM_ALL ${LibChaosUtils_ImageLibraryManager_SOURCES})
 LibChaos_Configure_Target(imagelibrarymanager)
 
 # Image Reverse Search
-IF(NOT LIBCHAOS_UTIL_IMAGE_REVERSE_SEARCH)
-    SET(LIBCHAOS_UTIL_IMAGE_REVERSE_SEARCH_ALL EXCLUDE_FROM_ALL)
-ENDIF()
 ADD_DEFINITIONS(-DCURL_STATICLIB)
-ADD_EXECUTABLE(imagereversesearch ${LIBCHAOS_UTIL_IMAGE_REVERSE_SEARCH_ALL} ${LibChaosUtils_ImageReverseSearch_SOURCES})
+ADD_EXECUTABLE(imagereversesearch EXCLUDE_FROM_ALL ${LibChaosUtils_ImageReverseSearch_SOURCES})
 LibChaos_Configure_Target(imagereversesearch)
 TARGET_LINK_LIBRARIES(imagereversesearch crypto ssl z curl)

@@ -10,7 +10,9 @@
 
 namespace LibChaos {
 
-// For UDP sockets
+/*! UDP interface for ZSocket.
+ *  \ingroup Network
+ */
 class ZDatagramSocket : private ZSocket {
 public:
     typedef void (*receiveCallback)(ZSocket *_socket, const ZAddress &sender, const ZBinary &data);
@@ -19,27 +21,24 @@ public:
     ZDatagramSocket();
 
     bool open();
-    void close();
-    bool isOpen() const;
 
-    bool bind(ZAddress port);
+    // Functions imported from ZSocket
+    using ZSocket::close;
+    using ZSocket::isOpen;
+
+    using ZSocket::bind;
+    using ZSocket::send;
+    using ZSocket::receive;
+
+    using ZSocket::setBlocking;
+    using ZSocket::getBoundAddress;
+    using ZSocket::getSocket;
 
     void setReadBuffer(zu64 size);
 
-    bool send(ZAddress destination, const ZBinary &data);
-    zu32 receive(ZAddress &sender, ZBinary &str);
     void receiveFunc(receiveCallback receivedFunc);
-
-    ZAddress getBoundAddress() const {
-        return ZSocket::getBoundAddress();
-    }
-
-    ZException getError() const {
-        return ZSocket::getError();
-    }
-
 };
 
-}
+} // namespace LibChaos
 
 #endif // ZDATAGRAMSOCKET_H

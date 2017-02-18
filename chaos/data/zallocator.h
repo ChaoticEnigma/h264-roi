@@ -46,7 +46,7 @@ public:
      *  Does not directly allocate memory, but constructors may.
      *  \p ptr must point to memory large enough to hold \p count T's.
      */
-    virtual T *construct(T *ptr, T obj = T(), zu64 count = 1){
+    virtual T *construct(T *ptr, const T &obj = T(), zu64 count = 1){
         T *tmp = ptr;
         for(zu64 i = 0; i < count; ++i){
 //            new (tmp++) T(obj);
@@ -68,16 +68,17 @@ public:
     }
 
     virtual void rawcopy(const T *src, T *dest, zu64 count = 1){
-        memcpy((void *)dest, (const void *)src, sizeof(T) * count);
+        ::memcpy((void *)dest, (const void *)src, sizeof(T) * count);
     }
     virtual void rawmove(const T *src, T *dest, zu64 count = 1){
-        memmove((void *)dest, (const void *)src, sizeof(T) * count);
+        ::memmove((void *)dest, (const void *)src, sizeof(T) * count);
     }
 
     /*! Expects \p src originally returned by alloc() and construct()ed.
      *  Calls object copy constructor.
      *  \param src must point to at least \p count T's.
      *  \param dest must point to memory large enough to hold at least \p count T's.
+     *  \param count is the number of T's to copy, default 1.
      */
     virtual void copy(const T *src, T *dest, zu64 count = 1){
         for(zu64 i = 0; i < count; ++i){
@@ -95,6 +96,11 @@ public:
             new (dest + i) T(src[i]);
             destroy(src);
         }
+    }
+
+    //! Zero the bytes of \p dest.
+    static void zero(T *dest, zu64 count = 1){
+        ::memset(dest, 0, count * sizeof(T));
     }
 
 public:

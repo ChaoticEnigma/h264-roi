@@ -35,6 +35,7 @@ public:
             _data = new PointerData;
             _data->ptr = ptr;
             _data->count = 0;
+            _data->div = false;
             _increment();
         }
     }
@@ -58,6 +59,14 @@ public:
         release();
     }
 
+    /*! Get a pointer to this pointer, and increment the reference count,
+     *  so the object is not destroyed until this pointer is release()d.
+     */
+    ZPointer<T> *touch(){
+        _increment();
+        return this;
+    }
+
     /*! Release the shared pointer.
      *  If this is the only object with shared ownership of the pointer,
      *  delete it, otherwise decrement the reference count.
@@ -66,14 +75,22 @@ public:
         if(_data != nullptr){
             if(unique()){
                 // Delete the object
-                delete _data->ptr;
+                if(!_data->div)
+                    delete _data->ptr;
                 delete _data;
             } else {
                 // Decrement reference count
                 _decrement();
             }
+            _data = nullptr;
         }
-        _data = nullptr;
+    }
+
+    /*! Divorce the contained pointer from the container, so the pointer
+     *  will not be destroyed when all the containers release it.
+     */
+    void divorce(){
+        _data->div = true;
     }
 
     //! Swap contained pointer with another shared pointer object.
@@ -96,13 +113,20 @@ public:
     /*! Get pointer to shared object.
      *  \return nullptr if no object owned.
      */
-    T *ptr() const {
+    T *get() const {
         if(_data == nullptr)
             return nullptr;
         return _data->ptr;
     }
     //! Shorthand for pointer to shared object.
-    inline T *operator->(){ return ptr(); }
+    inline T *operator->() const {
+        T *ptr = get();
+        if(ptr == nullptr){
+            // Burn it down
+            throw zexception("ZPointer: can't access null pointer");
+        }
+        return ptr;
+    }
 
 private:
     void _increment(){
@@ -120,6 +144,8 @@ private:
         T *ptr;
         // Reference count
         zu64 count;
+        // Divorced
+        bool div;
     };
 
     PointerData *_data;

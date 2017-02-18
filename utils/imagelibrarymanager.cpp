@@ -14,7 +14,7 @@ void unPackDir(ZPath dir, ZPath dest);
 void mergePackDir(ZPath dir, ZPath dest);
 
 int main(int argc, char **argv){
-    ZLog::logLevelStdOut(ZLogSource::ALL, "%log%");
+    ZLog::logLevelStdOut(ZLog::INFO, "%log%");
     LOG("Image Library Manager");
 
     if(argc > 1){
@@ -214,7 +214,7 @@ void mergePackDir(ZPath srcdir, ZPath outdir){
     if(tmpfiles.isEmpty()){
         seq = 10001;
     } else {
-        seq = tmpfiles.back().last().findFirstBetween("(", ")").tozu64() + 1;
+        seq = tmpfiles.back().last().findFirstBetween("(", ")").toUint() + 1;
     }
 
     packDir(srcdir, seq);

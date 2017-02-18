@@ -8,41 +8,41 @@
 
 #include "zsocket.h"
 #include "zconnection.h"
+#include "zpointer.h"
 
 namespace LibChaos {
 
-// For TCP sockets
-// Paired with ZConnection
+/*! TCP interface for ZSocket.
+ *  \ingroup Network
+ */
 class ZStreamSocket : private ZSocket {
 public:
     ZStreamSocket();
 
-    bool open();
-    void close();
-    bool isOpen() const;
+    // Functions imported from ZSocket
+    using ZSocket::close;
+    using ZSocket::isOpen;
 
-    bool bind(ZAddress port);
+    using ZSocket::read;
+    using ZSocket::write;
+
+    using ZSocket::setAllowRebind;
+    using ZSocket::setBlocking;
+    using ZSocket::getBoundAddress;
+    using ZSocket::getSocket;
+
+    //! Open a stream connection.
+    bool connect(ZAddress addr, ZConnection &conn);
+
+    //! Open, bind and listen on a stream socket.
+    bool listen(ZAddress bindaddr);
+
+    //! Accept a new connection on the socket.
+    socketerror accept(ZPointer<ZConnection> &conn);
 
     void setReadBuffer(zu64 size);
-
-    bool connect(ZAddress addr, ZConnection &conn);
-    bool listen();
-    bool accept(ZConnection &conn);
-
-    zsocktype getSocket() const {
-        return ZSocket::getSocket();
-    }
-
-    ZAddress getBoundAddress() const {
-        return ZSocket::getBoundAddress();
-    }
-
-    ZException getError() const {
-        return ZSocket::getError();
-    }
-
 };
 
-}
+} // namespace LibChaos
 
 #endif // ZSTREAMSOCKET_H
