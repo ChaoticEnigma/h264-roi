@@ -75,12 +75,7 @@ SET(LibChaos_SOURCES
     file/image/zppm.cpp
     file/image/zwebp.h
 
-    #lib/demangle.h
-    #lib/fnv-5.0.3/fnv.h
-    #lib/fnv-5.0.3/hash_64a.c
-    #lib/nowide_standalone/src/iostream.cpp
-    lib/sqlite3.h
-    lib/sqlite3.c
+    lib/xxhash.h
     lib/xxhash.c
 
     math/zexpression.h
