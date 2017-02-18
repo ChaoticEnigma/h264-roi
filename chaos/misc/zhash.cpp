@@ -12,8 +12,6 @@
 #ifdef LIBCHAOS_HAS_CRYPTO
     #include <openssl/md5.h>
     #include <openssl/sha.h>
-
-#include <boost/asio/detail/call_stack.hpp>
 #endif
 
 typedef LibChaos::zu32 crc;
