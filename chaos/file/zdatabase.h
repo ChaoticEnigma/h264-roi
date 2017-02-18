@@ -11,8 +11,8 @@
 #include "ztable.h"
 #include "zassoc.h"
 
-#define SQLITE_CUSTOM
-#include "lib/sqlite3.h"
+//#define SQLITE_CUSTOM
+#include <sqlite3.h>
 
 namespace LibChaos {
 

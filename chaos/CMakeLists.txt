@@ -67,13 +67,8 @@ SET(LibChaos_SOURCES
     file/zpdf.cpp
     file/image/zbmp.h
     file/image/zbmp.cpp
-    file/image/zjpeg.h
-    #file/image/zjpeg.cpp
-    file/image/zpng.h
-    #file/image/zpng.cpp
     file/image/zppm.h
     file/image/zppm.cpp
-    file/image/zwebp.h
 
     lib/xxhash.h
     lib/xxhash.c
@@ -131,16 +126,20 @@ SET(LibChaos_SOURCES
 )
 
 SET(LibChaos_PNG_SOURCES
+    file/image/zpng.h
     file/image/zpng.cpp
 )
 SET(LibChaos_JPEG_SOURCES
+    file/image/zjpeg.h
     file/image/zjpeg.cpp
 )
 SET(LibChaos_WEBP_SOURCES
+    file/image/zwebp.h
     file/image/zwebp.cpp
 )
 
 SET(LibChaos_WIN32_SOURCES
+    lib/StackWalker.h
     lib/StackWalker.cpp
 )
 
@@ -218,6 +217,9 @@ ENDIF()
 IF(LIBCHAOS_WITH_CRYPTO)
     INCLUDE_DIRECTORIES(${LIBCRYPTO_INCLUDE})
 ENDIF()
+IF(LIBCHAOS_WITH_SQLITE3)
+    INCLUDE_DIRECTORIES(${LIBSQLITE3_INCLUDE})
+ENDIF()
 
 IF(IBERTY_DEMANGLE)
     ADD_DEFINITIONS(-DIBERTY_DEMANGLE)
@@ -241,6 +243,9 @@ IF(LIBCHAOS_WITH_WEBP)
 ENDIF()
 IF(LIBCHAOS_WITH_CRYPTO)
     TARGET_LINK_LIBRARIES(chaos ${LIBCRYPTO_LIB})
+ENDIF()
+IF(LIBCHAOS_WITH_SQLITE3)
+    TARGET_LINK_LIBRARIES(chaos ${LIBSQLITE3_LIB})
 ENDIF()
 
 IF(LIBCHAOS_PLATFORM_WINDOWS OR LIBCHAOS_PLATFORM_CYGWIN)
