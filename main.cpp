@@ -37,7 +37,7 @@ void freeQuantOffsets(void *ptr){
 //void decoderCallback(AVFrame *frame, AVPacket *pkt, const H264_Decoder *decode, void *user){
 void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder *decode, void *user){
 
-    if(!setup && (decode->context->pix_fmt != PIX_FMT_YUV420P || frame->format != PIX_FMT_YUV420P)){
+    if(!setup && (decode->context->pix_fmt != AV_PIX_FMT_YUV420P || frame->format != AV_PIX_FMT_YUV420P)){
         LOG("Incorrect decode pixel format " << decode->context->pix_fmt << " " << frame->format);
     }
 
@@ -73,7 +73,7 @@ void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder
             }
 
             if(!encoder->open(userdata->output)){
-                throw ZError("Failed to open encoder");
+                throw ZException("Failed to open encoder");
             }
             LOG("Encoder Opened: " << userdata->output);
             setup = true;
@@ -96,8 +96,8 @@ void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder
 }
 
 int main(int argc, char **argv){
-    ZLog::formatStdout(ZLogSource::normal, "%time% %thread% - %log%");
-    ZLog::formatStderr(ZLogSource::error, "%time% %thread% %function% (%file%:%line%) - %log%");
+    ZLog::logLevelStdOut(ZLog::INFO, "%time% %thread% - %log%");
+    ZLog::logLevelStdErr(ZLog::ERRORS, "%time% %thread% %function% (%file%:%line%) - %log%");
     //ZLog::init();
     LOG("Starting H264-ROI");
 
@@ -124,7 +124,11 @@ int main(int argc, char **argv){
         ArZ coords = tokens[0].explode(',');
         if(coords.size() != 4)
             return 3;
-        regions.push({ (zu32)coords[0].tozu64() / 16, (zu32)coords[1].tozu64() / 16, (zu32)coords[2].tozu64() / 16, (zu32)coords[3].tozu64() / 16, stof(tokens[1].str()) });
+        regions.push({ (zu32)coords[0].toUint() / 16,
+                       (zu32)coords[1].toUint() / 16,
+                       (zu32)coords[2].toUint() / 16,
+                       (zu32)coords[3].toUint() / 16,
+                       stof(tokens[1].str()) });
     }
 
     UserData userdata;
@@ -148,13 +152,13 @@ int main(int argc, char **argv){
     while(cont){
         try {
         decoder.readFrame();
-        } catch(ZError e){
+        } catch(ZException e){
             if(e.code() != 5)
                 ELOG("Exception caught!");
             break;
         }
     }
-    RLOG(ZLog::newln);
+    RLOG(ZLog::NEWLN);
 
     encoder.close();
 

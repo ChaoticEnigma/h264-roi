@@ -25,7 +25,7 @@ public:
     bool open(ZPath path, decoderCallback framecallback, void *userptr);
     bool isOk() const { return ok; }
 
-    double getFPS();
+    double getFPS() const;
 
     bool readFrame();
 

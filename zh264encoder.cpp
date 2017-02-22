@@ -8,7 +8,7 @@ extern "C" {
 namespace LibChaos {
 
 ZH264Encoder::ZH264Encoder() : encoder(NULL), param(nullptr), sws(NULL), encoder_ready(false), nals(NULL), nalcount(0),
-    inwidth(0), inheight(0), infps(0), infmt(PIX_FMT_YUV420P),
+    inwidth(0), inheight(0), infps(0), infmt(AV_PIX_FMT_YUV420P),
     outwidth(0), outheight(0), outfps(0){
 
 }
@@ -87,7 +87,7 @@ bool ZH264Encoder::open(ZPath path){
     }
 
     // get the scaling context
-    sws = sws_getContext(inwidth, inheight, infmt, outwidth, outheight, PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+    sws = sws_getContext(inwidth, inheight, infmt, outwidth, outheight, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
     //sws = sws_getContext(inwidth, inheight, AV_PIX_FMT_YUV420P, outwidth, outheight, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
     if(!sws){
         ELOG("Cannot create SWS context");

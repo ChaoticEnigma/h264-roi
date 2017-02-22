@@ -15,12 +15,6 @@ SET(H264_ROI_SOURCES
     zh264decoder.cpp
     zh264encoder.h
     zh264encoder.cpp
-
-#    roxlu/H264_Decoder.cpp
-#    roxlu/Utils.cpp
-#    roxlu/X264Encoder.cpp
-#    roxlu/X264EncoderThreaded.cpp
-#    roxlu/YUV420P.cpp
 )
 
 ### =================== CONFIG =================== ###
@@ -40,11 +34,13 @@ ADD_DEFINITIONS(-DBUILDING)
 
 # H264-ROI
 ADD_EXECUTABLE(h264_roi ${H264_ROI_SOURCES})
-TARGET_LINK_LIBRARIES(h264_roi chaos)
-IF(PLATFORM_WINDOWS)
+LibChaos_Configure_Target(h264_roi)
+
+IF(LibChaos_PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(h264_roi avformat avcodec avdevice avutil swscale swresample fdk-aac x264)
     #TARGET_LINK_LIBRARIES(h264_roi C:/bin/TDMGCC/MinGW64/lib/libfdk-aac.a)
     #TARGET_LINK_LIBRARIES(h264_roi C:/bin/TDMGCC/MinGW64/lib/libx264.a)
 ELSE()
-    TARGET_LINK_LIBRARIES(h264_roi avformat avcodec avdevice avutil swscale swresample x264 z mp3lame)
+    TARGET_LINK_LIBRARIES(h264_roi avformat avcodec avdevice avutil swscale swresample x264 z)
+    #TARGET_LINK_LIBRARIES(h264_roi avformat avcodec avdevice avutil swscale swresample x264 z mp3lame)
 ENDIF()

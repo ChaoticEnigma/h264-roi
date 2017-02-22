@@ -15,15 +15,16 @@ args[1]="\"$in.roi.h264\""
 
 echo
 echo "### Extract Video ##############################################################"
-echo ffmpeg -i "$in" -codec:v libx264 -pix_fmt yuv420p -preset slow -qp 10 -an "$in.h264"
+#echo ffmpeg -i "$in" -codec:v libx264 -pix_fmt yuv420p -preset slow -qp 10 -an "$in.h264"
 echo
 ffmpeg -i "$in" -codec:v libx264 -pix_fmt yuv420p -preset slow -qp 10 -an "$in.h264"
 
 echo
 echo "### Extract Audio ##############################################################"
-echo ffmpeg -i "$in" -codec:a libmp3lame -qscale:a 3 -vn "$in.mp3"
+#echo ffmpeg -i "$in" -codec:a libmp3lame -qscale:a 3 -vn "$in.mp3"
 echo
-ffmpeg -i "$in" -codec:a libmp3lame -qscale:a 3 -vn "$in.mp3"
+#ffmpeg -i "$in" -codec:a libmp3lame -qscale:a 3 -vn "$in.mp3"
+ffmpeg -i "$in" -c:a copy -vn "$in.audio"
 
 echo
 echo "### ROI Video ##################################################################"
@@ -33,6 +34,7 @@ echo
 
 echo
 echo "## Mux Audio/Video ############################################################"
-echo ffmpeg -i "$in.roi.h264" -i "$in.mp3" -c:v copy -c:a copy "$out"
+#echo ffmpeg -i "$in.roi.h264" -i "$in.mp3" -c:v copy -c:a copy "$out"
 echo
-ffmpeg -i "$in.roi.h264" -i "$in.mp3" -c:v copy -c:a copy "$out"
+#ffmpeg -i "$in.roi.h264" -i "$in.mp3" -c:v copy -c:a copy "$out"
+ffmpeg -i "$in.roi.h264" -i "$in" -c:v copy -c:a copy "$out"

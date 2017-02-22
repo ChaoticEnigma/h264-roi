@@ -69,13 +69,13 @@ bool ZH264Decoder::open(ZPath path, decoderCallback framecallback, void *userptr
     }
 
     // Init parser
-    frame = av_frame_alloc();
-    parser = av_parser_init(CODEC_ID_H264);
+    parser = av_parser_init(AV_CODEC_ID_H264);
     if(!parser) {
         ELOG("Erorr: cannot create H264 parser");
         return false;
     }
 
+    frame = av_frame_alloc();
     framecount = 0;
 
     callback = framecallback;
@@ -84,7 +84,7 @@ bool ZH264Decoder::open(ZPath path, decoderCallback framecallback, void *userptr
     return true;
 }
 
-double ZH264Decoder::getFPS(){
+double ZH264Decoder::getFPS() const{
     if(!ok)
         return 0;
 
@@ -136,20 +136,24 @@ void ZH264Decoder::decodeFrame(zbyte *data, zu64 size){
     packet.data = data;
     packet.size = size;
 
-    int got_picture = 0;
-    int len = avcodec_decode_video2(context, frame, &got_picture, &packet);
-    if(len < 0){
-        ELOG("Error while decoding a frame.\n");
-    }
-
-    if(got_picture == 0) {
+    int ret = avcodec_send_packet(context, &packet);
+    if(ret < 0){
+        ELOG("send packet error");
         return;
     }
 
-    ++framecount;
+    ret = avcodec_receive_frame(context, frame);
+    if(ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF){
+        ELOG("receive frame error");
+        return;
+    }
 
-    if(callback) {
-        callback(framecount, frame, &packet, this, user);
+    if(ret >= 0){
+        ++framecount;
+        // Process frame
+        if(callback) {
+            callback(framecount, frame, &packet, this, user);
+        }
     }
 }
 
