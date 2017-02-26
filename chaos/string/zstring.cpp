@@ -433,26 +433,17 @@ zu64 ZString::count(ZString test) const {
 }
 
 bool ZString::beginsWith(const ZString &test, bool ignorews) const {
-    bool started;
-    if(ignorews)
-        started = false;
-    else
-        started = true;
-    unsigned j = 0;
-    for(zu64 i = 0; i < size(); ++i){
-        if(_data[i] == test[j]){
-            if(j == test.size()-1)
-                return true;
-            started = true;
-            ++j;
-        } else if(_charIsWhitespace(at(i))){
-            if(started)
+    zu64 f = findFirst(test, 0);
+    if(f == 0)
+        return true;
+    if(ignorews){
+        for(zu64 i = 0; i < f-1; ++i){
+            if(!_charIsWhitespace(at(i)))
                 return false;
-        } else {
-            return false;
         }
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool ZString::beginsWith(const ZString &str, const ZString &test, bool ignorews){
