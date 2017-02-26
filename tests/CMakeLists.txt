@@ -69,9 +69,15 @@ IF(LIBCHAOS_TEST AND LIBCHAOS_WITH_WEBP)
     DownloadFile("https://www.gstatic.com/webp/gallery3/3_webp_ll.webp" dice.webp)
 ENDIF()
 
+IF(LIBCHAOS_BUILD_DEBUG)
+    SET(TEST_ALL)
+ELSE()
+    SET(TEST_ALL EXCLUDE_FROM_ALL)
+ENDIF()
+
 ### =================== BUILD =================== ###
 
-ADD_EXECUTABLE(testchaos ${LibChaos_Test_HEADERS} ${LibChaos_Test_SOURCES})
+ADD_EXECUTABLE(testchaos ${TEST_ALL} ${LibChaos_Test_HEADERS} ${LibChaos_Test_SOURCES})
 LibChaos_Configure_Target(testchaos)
 
 ### =================== TESTS =================== ###
