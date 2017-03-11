@@ -20,6 +20,9 @@ ffmpeg
 libx264
 libmp3lame
 
+Ubuntu Packages:
+$ sudo apt-get install libssl-dev libsqlite3-dev libavcodec-dev libswscale-dev libavformat-dev libavdevice-dev ffmpeg libx264-dev libmp3lame-dev
+
 Specifically, ffmpeg must be built with support for libx264 and libmp3lame. This goes something like:
 $ git clone git://source.ffmpeg.org/ffmpeg.git ffmpeg
 $ cd ffmpeg

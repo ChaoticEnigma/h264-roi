@@ -44,3 +44,5 @@ ELSE()
     TARGET_LINK_LIBRARIES(h264_roi avformat avcodec avdevice avutil swscale swresample x264 z)
     #TARGET_LINK_LIBRARIES(h264_roi avformat avcodec avdevice avutil swscale swresample x264 z mp3lame)
 ENDIF()
+
+ADD_CUSTOM_TARGET(h264-dummy SOURCES README)
