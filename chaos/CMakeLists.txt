@@ -53,8 +53,6 @@ SET(LibChaos_SOURCES
     data/ztable.h
     data/ztable.cpp
 
-    file/zdatabase.h
-    file/zdatabase.cpp
     file/yimagebackend.h
     file/zbitmap.h
     file/zfile.h
@@ -138,6 +136,11 @@ SET(LibChaos_WEBP_SOURCES
     file/image/zwebp.cpp
 )
 
+SET(LibChaos_DATABASE_SOURCES
+    file/zdatabase.h
+    file/zdatabase.cpp
+)
+
 SET(LibChaos_WIN32_SOURCES
     lib/StackWalker.h
     lib/StackWalker.cpp
@@ -151,6 +154,10 @@ IF(LIBCHAOS_WITH_JPEG)
 ENDIF()
 IF(LIBCHAOS_WITH_WEBP)
     SET(LibChaos_SOURCES ${LibChaos_SOURCES} ${LibChaos_WEBP_SOURCES})
+ENDIF()
+
+IF(LIBCHAOS_WITH_SQLITE3)
+    SET(LibChaos_SOURCES ${LibChaos_SOURCES} ${LibChaos_DATABASE_SOURCES})
 ENDIF()
 
 IF(LIBCHAOS_PLATFORM_WINDOWS)
@@ -178,6 +185,7 @@ CollectSources(
     ${LibChaos_PNG_SOURCES}
     ${LibChaos_JPEG_SOURCES}
     ${LibChaos_WEBP_SOURCES}
+    ${LibChaos_DATABASE_SOURCES}
     ${LibChaos_WIN32_SOURCES}
 )
 
