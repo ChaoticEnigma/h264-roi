@@ -17,10 +17,12 @@ OPTION(LIBCHAOS_TEST                        "Build and Run LibChaos Test suite" 
 OPTION(DISABLE_ZPNG                         "Disable PNG support"                       OFF )
 OPTION(DISABLE_ZJPEG                        "Disable JPEG support"                      OFF )
 OPTION(DISABLE_ZWEBP                        "Disable WebP support"                      OFF )
+OPTION(DISABLE_ZDATABASE                    "Disable SQLite3 support"                   OFF )
 
 OPTION(REQUIRE_ZJPEG                        "Require JPEG support"                      OFF )
 OPTION(REQUIRE_ZPNG                         "Require PNG support"                       OFF )
 OPTION(REQUIRE_ZWEBP                        "Require WebP support"                      OFF )
+OPTION(REQUIRE_ZDATABASE                    "Require SQLite3 support"                   OFF )
 
 # ZParcel Tool
 OPTION(LIBCHAOS_ZPARCEL                     "Build ZParcel tool"                        OFF )
