@@ -33,6 +33,10 @@ public:
         _data.popBack();
     }
 
+    zu64 size() const {
+        return _data.size();
+    }
+
 private:
     ZArray<T> _data;
 };
