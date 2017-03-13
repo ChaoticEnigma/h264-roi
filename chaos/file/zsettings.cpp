@@ -1,76 +1,76 @@
-#include "zoptions.h"
+#include "zsettings.h"
 
 namespace LibChaos {
 
-ZOptions::ZOptions(ZUID name_space) : _namespace(name_space){
+ZSettings::ZSettings(ZUID name_space) : _namespace(name_space){
 
 }
 
-ZOptions::ZOptions(ZPath file){
+ZSettings::ZSettings(ZPath file){
     // TODO
 }
 
-ZOptions::~ZOptions(){
+ZSettings::~ZSettings(){
 
 }
 
-bool ZOptions::hasOption(ZUID uid) const{
+bool ZSettings::hasOption(ZUID uid) const{
     return (_options.contains(uid) && _options[uid].set);
 }
 
-bool ZOptions::hasOption(ZString name) const {
+bool ZSettings::hasOption(ZString name) const {
     return (_names.contains(name) && hasOption(_names[name]));
 }
 
-bool ZOptions::hasOption(int key) const{
+bool ZSettings::hasOption(int key) const{
     return (_keys.contains(key) && hasOption(_keys[key]));
 }
 
-ZString ZOptions::getOption(ZUID uid, ZString fallback) const {
+ZString ZSettings::getOption(ZUID uid, ZString fallback) const {
     if(hasOption(uid))
         return _options[uid].value;
     return fallback;
 }
 
-ZString ZOptions::getOption(ZString name, ZString fallback) const {
+ZString ZSettings::getOption(ZString name, ZString fallback) const {
     if(_names.contains(name))
         return getOption(_names[name], fallback);
     return fallback;
 }
 
-ZString ZOptions::getOption(int key, ZString fallback) const {
+ZString ZSettings::getOption(int key, ZString fallback) const {
     if(_keys.contains(key))
         return getOption(_keys[key], fallback);
     return fallback;
 }
 
-void ZOptions::setOption(ZUID uid, ZString value){
+void ZSettings::setOption(ZUID uid, ZString value){
     Option &opt = _getOption(uid);
     opt.value = value;
     opt.set = true;
 }
 
-void ZOptions::setOption(ZString name, ZString value){
+void ZSettings::setOption(ZString name, ZString value){
     setOption(_getUID(name), value);
 }
 
-void ZOptions::setOption(int key, ZString value){
+void ZSettings::setOption(int key, ZString value){
     setOption(_getUID(key), value);
 }
 
-void ZOptions::unsetOption(ZUID uid){
+void ZSettings::unsetOption(ZUID uid){
     _getOption(uid).set = false;
 }
 
-void ZOptions::unsetOption(ZString name){
+void ZSettings::unsetOption(ZString name){
     unsetOption(_getUID(name));
 }
 
-void ZOptions::unsetOption(int key){
+void ZSettings::unsetOption(int key){
     unsetOption(_getUID(key));
 }
 
-ZUID ZOptions::registerOption(ZString name, int key, bool persist){
+ZUID ZSettings::registerOption(ZString name, int key, bool persist){
     ZUID uid = _makeUID(name);
     _names[name] = uid;
     _keys[key] = uid;
@@ -78,7 +78,7 @@ ZUID ZOptions::registerOption(ZString name, int key, bool persist){
     return uid;
 }
 
-ZOptions::Option &ZOptions::_getOption(ZUID uid){
+ZSettings::Option &ZSettings::_getOption(ZUID uid){
     if(!_options.contains(uid)){
         _options[uid].set = false;
         _options[uid].persist = false;
@@ -86,21 +86,21 @@ ZOptions::Option &ZOptions::_getOption(ZUID uid){
     return _options[uid];
 }
 
-ZUID ZOptions::_getUID(ZString name){
+ZUID ZSettings::_getUID(ZString name){
     if(!_names.contains(name)){
         _names[name] = _makeUID(name);
     }
     return _names[name];
 }
 
-ZUID ZOptions::_getUID(int key){
+ZUID ZSettings::_getUID(int key){
     if(!_keys.contains(key)){
         _keys[key] = _makeUID(ZString::ItoS((zs64)key));
     }
     return _keys[key];
 }
 
-ZUID ZOptions::_makeUID(ZString name) const{
+ZUID ZSettings::_makeUID(ZString name) const{
     return ZUID(ZUID::NAME, _namespace, name);
 }
 

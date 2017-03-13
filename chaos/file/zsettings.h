@@ -1,5 +1,5 @@
-#ifndef ZOPTIONS_H
-#define ZOPTIONS_H
+#ifndef ZSETTINGS_H
+#define ZSETTINGS_H
 
 #include "ztypes.h"
 #include "zstring.h"
@@ -9,18 +9,18 @@
 
 namespace LibChaos {
 
-static const char *ZOPTIONS_DEFAULT_NAMESPACE = "2c5e1b32-a1fd-11e6-a9b7-f832e4a20a6d";
+static const char *ZSETTINGS_DEFAULT_NAMESPACE = "2c5e1b32-a1fd-11e6-a9b7-f832e4a20a6d";
 
-class ZOptions {
+class ZSettings {
 private:
     struct Option;
 public:
     //! Construct empty options, with optional non-default namespace UUID.
-    ZOptions(ZUID name_space = ZUID(ZOPTIONS_DEFAULT_NAMESPACE));
+    ZSettings(ZUID name_space = ZUID(ZSETTINGS_DEFAULT_NAMESPACE));
     //! Load options from file.
-    ZOptions(ZPath file);
+    ZSettings(ZPath file);
 
-    ~ZOptions();
+    ~ZSettings();
 
     //! Check if option is set.
     bool hasOption(ZUID uid) const;
@@ -69,4 +69,4 @@ private:
 
 }
 
-#endif // ZOPTIONS_H
+#endif // ZSETTINGS_H

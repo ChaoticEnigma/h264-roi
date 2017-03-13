@@ -59,10 +59,11 @@ SET(LibChaos_SOURCES
     file/zfile.cpp
     file/zimage.h
     file/zimage.cpp
-    file/zoptions.h
-    file/zoptions.cpp
     file/zpdf.h
     file/zpdf.cpp
+    file/zsettings.h
+    file/zsettings.cpp
+
     file/image/zbmp.h
     file/image/zbmp.cpp
     file/image/zppm.h
@@ -85,6 +86,8 @@ SET(LibChaos_SOURCES
     misc/zencrypt.cpp
     misc/zhash.h
     misc/zhash.cpp
+    misc/zoptions.h
+    misc/zoptions.cpp
     misc/zrandom.h
     misc/zrandom.cpp
     misc/zret.h
