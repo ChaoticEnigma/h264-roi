@@ -3,6 +3,7 @@
 #include "zppm.h"
 #include "zfile.h"
 #include "zlist.h"
+#include "zoptions.h"
 
 #include <string>
 
@@ -95,29 +96,49 @@ void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder
     }
 }
 
+#define OPT_QP  "quanta"
+#define OPT_FPS "fps"
+const ZArray<ZOptions::OptDef> optdef = {
+    { OPT_QP,   'q',    ZOptions::STRING },
+    { OPT_FPS,  'F',    ZOptions::STRING },
+};
+
 int main(int argc, char **argv){
-    ZLog::logLevelStdOut(ZLog::INFO, "%time% %thread% - %log%");
-    ZLog::logLevelStdErr(ZLog::ERRORS, "%time% %thread% %function% (%file%:%line%) - %log%");
+    ZLog::logLevelStdOut(ZLog::INFO,           "[%time%] %thread% N %log%");
+    ZLog::logLevelStdOut(ZLog::DEBUG,          "[%time%] %thread% D [%function%|%file%:%line%] %log%");
+    ZLog::logLevelStdErr(ZLog::ERRORS, "\x1b[31m[%time%] %thread% E [%function%|%file%:%line%] %log%\x1b[m");
     //ZLog::init();
     LOG("Starting H264-ROI");
 
-    ArZ args;
-    for(int i = 1; i < argc; ++i){
-        ZString arg = argv[i];
-        arg.strip('"');
-        args.push(arg);
-    }
+    try {
 
-    if(args.size() < 3){
-        LOG("Usage: <input> <output> <qp_factor> [regions]...");
+    ZOptions options(optdef);
+    if(!options.parse(argc, argv)){
+        return 1;
+    }
+    auto args = options.getArgs();
+    for(zu64 i = 0; i < args.size(); ++i)
+        LOG(args[i]);
+
+    if(args.size() < 2){
+        LOG("Usage: h264_roi [-q qp_factor] input.h264 output.h264 [regions]...");
+        LOG("Regions: <first_corner_x>,<first_corner_y>,<second_corner_x>,<second_corner_y>:<quantizer_value>");
         return 1;
     }
 
     ZPath input = args[0];
     ZPath output = args[1];
-    float baseqp = stof(args[2].str());
+
+    float baseqp = 0;
+    if(options.getOpts().contains(OPT_QP))
+        baseqp = stof(options.getOpts()[OPT_QP].str());
+
+    float ffps = 0;
+    if(options.getOpts().contains(OPT_FPS))
+        ffps = stof(options.getOpts()[OPT_FPS].str());
+
     ZList<Region> regions;
-    for(zu64 i = 3; i < args.size(); ++i){
+    for(zu64 i = 2; i < args.size(); ++i){
         ArZ tokens = args[i].split(':');
         if(tokens.size() != 2)
             return 2;
@@ -133,6 +154,7 @@ int main(int argc, char **argv){
 
     UserData userdata;
     ZH264Decoder decoder;
+    decoder.forceFPS(ffps);
     if(!decoder.open(input, decoderCallback, &userdata)){
         ELOG("Failed to open decoder");
         return 4;
@@ -154,7 +176,7 @@ int main(int argc, char **argv){
         decoder.readFrame();
         } catch(ZException e){
             if(e.code() != 5)
-                ELOG("Exception caught!");
+                ELOG("Exception caught: " << e.what());
             break;
         }
     }
@@ -163,5 +185,10 @@ int main(int argc, char **argv){
     encoder.close();
 
     LOG("Finished H264-ROI");
+
+    } catch(zexception e){
+        LOG("Fatal exception: " << e.what);
+    }
+
     return 0;
 }

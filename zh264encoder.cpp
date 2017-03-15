@@ -58,7 +58,7 @@ bool ZH264Encoder::open(ZPath path){
         return false;
     }
 
-    if(!file.open(path, ZFile::WRITE)){
+    if(!file.open(path, ZFile::WRITE | ZFile::TRUNCATE)){
         ELOG("Cannot open output file");
         return false;
     }

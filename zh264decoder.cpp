@@ -3,7 +3,9 @@
 
 namespace LibChaos {
 
-ZH264Decoder::ZH264Decoder() : codec(NULL), context(NULL), parser(NULL), frame(NULL), ok(false), callback(nullptr){
+ZH264Decoder::ZH264Decoder() :
+    codec(NULL), context(NULL), parser(NULL), frame(NULL),
+    ok(false), callback(nullptr), user(nullptr), forcefps(0){
     avcodec_register_all();
 }
 
@@ -62,7 +64,7 @@ bool ZH264Decoder::open(ZPath path, decoderCallback framecallback, void *userptr
     }
 
     // Open file
-    file.open(path);
+    file.open(path, ZFile::READ);
     if(!file.isOpen()){
         ELOG("Error: could not open file");
         return false;
@@ -84,9 +86,16 @@ bool ZH264Decoder::open(ZPath path, decoderCallback framecallback, void *userptr
     return true;
 }
 
+void ZH264Decoder::forceFPS(float fps){
+    forcefps = fps;
+}
+
 double ZH264Decoder::getFPS() const {
     if(!ok)
         return 0;
+
+    if(forcefps)
+        return forcefps;
 
     AVRational rational = context->time_base;
     return av_q2d(rational);

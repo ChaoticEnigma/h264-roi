@@ -25,6 +25,7 @@ public:
     bool open(ZPath path, decoderCallback framecallback, void *userptr);
     bool isOk() const { return ok; }
 
+    void forceFPS(float fps);
     double getFPS() const;
 
     bool readFrame();
@@ -41,13 +42,12 @@ public:
     zu32 framecount;
 
     ZFile file;                     // File with h264 data
-
-    bool ok;
-
     ZArray<zbyte> buffer;           // Buffered file data
 
+    bool ok;
     decoderCallback callback;
     void *user;
+    float forcefps;
 };
 
 }
