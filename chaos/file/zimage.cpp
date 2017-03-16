@@ -32,7 +32,7 @@ const ZMap<ZImage::pixelformat, ZImage::ImageType> ZImage::types = {
     { ZImage::GA32,     { 2, 16, 1 } },
 };
 
-ZImage::ZImage() : _width(0), _height(0), _channels(0), _depth(0), _type(UNKNOWN), _buffer(nullptr), _format(NONE), _backend(nullptr){
+ZImage::ZImage(ZAllocator<zbyte> *alloc) : _alloc(alloc), _width(0), _height(0), _channels(0), _depth(0), _type(UNKNOWN), _buffer(nullptr), _format(NONE), _backend(nullptr){
 
 }
 
@@ -48,7 +48,7 @@ ZImage::ZImage(zu64 width, zu64 height, zu8 channels, zu8 depth) : ZImage(){
     setDimensions(width, height, channels, depth);
 }
 
-ZImage::ZImage(const ZImage::byte *data, zu64 width, zu64 height, zu8 channels, zu8 depth) : ZImage(){
+ZImage::ZImage(const zbyte *data, zu64 width, zu64 height, zu8 channels, zu8 depth) : ZImage(){
     setDimensions(width, height, channels, depth);
     copyData(data);
 }
@@ -58,8 +58,10 @@ ZImage::ZImage(const ZImage &other) : ZImage(other._buffer, other._width, other.
 }
 
 ZImage::~ZImage(){
-    delete[] _buffer;
+    _alloc->dealloc(_buffer);
     _buffer = nullptr;
+
+    delete _alloc;
 }
 
 void ZImage::destroy(){
@@ -101,24 +103,24 @@ void ZImage::setDimensions(zu64 width, zu64 height, zu8 channels, zu8 depth){
 void ZImage::newData(){
     if(validDimensions()){
         if(!_buffer)
-            _buffer = new byte[size()];
+            _buffer = _alloc->alloc(size());
     }
 }
 void ZImage::zeroData(){
     if(validDimensions()){
         if(!_buffer)
-            _buffer = new byte[size()];
+            _buffer = _alloc->alloc(size());
         memset(_buffer, 0, size());
     }
 }
-void ZImage::copyData(const byte *data){
+void ZImage::copyData(const zbyte *data){
     if(validDimensions()){
         if(!_buffer)
-            _buffer = new byte[size()];
+            _buffer = _alloc->alloc(size());
         memcpy(_buffer, data, size());
     }
 }
-void ZImage::takeData(byte *data){
+void ZImage::takeData(zbyte *data){
     if(validDimensions()){
         if(_buffer)
             delete[] _buffer;
@@ -127,7 +129,12 @@ void ZImage::takeData(byte *data){
     }
 }
 
-void ZImage::convertYUV420toRGB24(zu64 width, zu64 height, const byte *ydata, const byte *udata, const byte *vdata){
+#define VR_COEFF    1.370705f
+#define VG_COEFF    0.698001f
+#define UG_COEFF    0.337633f
+#define UB_COEFF    1.732446f
+
+void ZImage::convertYUV420toRGB24(zu64 width, zu64 height, const zbyte *ydata, const zbyte *udata, const zbyte *vdata){
     setDimensions(width, height, 3, 8);
     zeroData();
 
@@ -137,9 +144,9 @@ void ZImage::convertYUV420toRGB24(zu64 width, zu64 height, const byte *ydata, co
 
     for(zu64 i = 0; i < pixels(); ++i){
         zu64 uvpos = (i / width / 2) * (width / 2) + (i % width / 2);
-        pixelAt(i)[0] = clamp((float)ydata[i] + (1.370705f * ((float)vdata[uvpos] - 128.0f)));
-        pixelAt(i)[1] = clamp((float)ydata[i] - (0.698001f * ((float)vdata[uvpos] - 128.0f)) - (0.337633f * ((float)udata[uvpos] - 128.0f)));
-        pixelAt(i)[2] = clamp((float)ydata[i] + (1.732446f * ((float)udata[uvpos] - 128.0f)));
+        pixelAt(i)[0] = clamp((float)ydata[i] + (VR_COEFF * ((float)vdata[uvpos] - 128.0f)));
+        pixelAt(i)[1] = clamp((float)ydata[i] - (VG_COEFF * ((float)vdata[uvpos] - 128.0f)) - (UG_COEFF * ((float)udata[uvpos] - 128.0f)));
+        pixelAt(i)[2] = clamp((float)ydata[i] + (UB_COEFF * ((float)udata[uvpos] - 128.0f)));
     }
 }
 
@@ -156,7 +163,7 @@ void ZImage::reformat(ZArray<char> before, ZArray<char> after){
     }
 }
 
-void ZImage::setChannels(zu8 channels, const unsigned char *expandmask){
+void ZImage::setChannels(zu8 channels, const zu8 *expandmask){
     if(channels != _channels){
         if(isLoaded()){
             ZImage temp(_width, _height, channels, _depth);

@@ -7,6 +7,7 @@
 #define ZIMAGE_H
 
 #include "ztypes.h"
+#include "zallocator.h"
 #include "zarray.h"
 #include "zbinary.h"
 #include "zmap.h"
@@ -23,40 +24,25 @@ namespace LibChaos {
  */
 class ZImage {
 public:
-    typedef unsigned char byte;
-
     enum pixelformat {
         UNKNOWN = 0,
-        //! Red, Green, Blue (3 channels, 8 bits each).
-        RGB24,
-        //! Red, Green, Blue (3 channels, 16 bits each).
-        RGB48,
-        //! Red, Green, Blue, Alpha (4 channels, 8 bits each).
-        RGBA32,
-        //! Red, Green, Blue, Alpha (4 channels, 16 bits each).
-        RGBA64,
-        //! Greyscale (1 channel, 8 bits each).
-        G8,
-        //! Greyscale (1 channel, 16 bits each).
-        G16,
-        //! Greyscale with Alpha (2 channels, 8 bits each).
-        GA16,
-        //! Greyscale with Alpha (2 channels, 16 bits each).
-        GA32,
+        RGB24,          //!< Red, Green, Blue (3 channels, 8 bits each).
+        RGB48,          //!< Red, Green, Blue (3 channels, 16 bits each).
+        RGBA32,         //!< Red, Green, Blue, Alpha (4 channels, 8 bits each).
+        RGBA64,         //!< Red, Green, Blue, Alpha (4 channels, 16 bits each).
+        G8,             //!< Greyscale (1 channel, 8 bits each).
+        G16,            //!< Greyscale (1 channel, 16 bits each).
+        GA16,           //!< Greyscale with Alpha (2 channels, 8 bits each).
+        GA32,           //!< Greyscale with Alpha (2 channels, 16 bits each).
     };
 
     enum fileformat {
         NONE = 0,
-        //! BMP (uncompressed).
-        BMP,
-        //! PPM (uncompressed).
-        PPM,
-        //! PNG (lossless compression).
-        PNG,
-        //! JPEG (lossy compression).
-        JPEG,
-        //! WEBP (lossy & lossless compression).
-        WEBP,
+        BMP,            //!< BMP (uncompressed).
+        PPM,            //!< PPM (uncompressed).
+        PNG,            //!< PNG (lossless compression).
+        JPEG,           //!< JPEG (lossy compression).
+        WEBP,           //!< WEBP (lossy & lossless compression).
     };
 
     struct ImageType {
@@ -64,11 +50,10 @@ public:
         zu8 depth;
         zu8 planes;
     };
-    static const ZMap<pixelformat, ImageType> types;
 
 public:
-    //! Default constructor.
-    ZImage();
+    //! Default constructor, optional user allocator.
+    ZImage(ZAllocator<zbyte> *alloc = new ZAllocator<zbyte>);
 
     //! Load a formatted image.
     ZImage(const ZBinary &image);
@@ -81,7 +66,7 @@ public:
     /*! Create and load an imnage from \a data with \a width, \a height, \a channels and \a depth.
      *  The expected size of the image at \a data is \a width * \a height * (\a channels * \a depth) bytes.
      */
-    ZImage(const byte *data, zu64 width, zu64 height, zu8 channels = 3, zu8 depth = 8);
+    ZImage(const zbyte *data, zu64 width, zu64 height, zu8 channels = 3, zu8 depth = 8);
 
     //! Copy constructor.
     ZImage(const ZImage &other);
@@ -96,20 +81,20 @@ public:
     bool operator==(const ZImage &other) const;
 
     //! Get byte in buffer.
-    inline byte &operator[](zu64 i){
+    inline zbyte &operator[](zu64 i){
         return _buffer[i];
     }
     //! Get byte in buffer. (const overload)
-    inline const byte &operator[](zu64 i) const {
+    inline const zbyte &operator[](zu64 i) const {
         return _buffer[i];
     }
 
     //! Get pixel in image.
-    inline byte *pixelAt(zu64 i) const {
+    inline zbyte *pixelAt(zu64 i) const {
         return &_buffer[i * pixelSize()];
     }
     //! Get pixel in image. (const overload)
-    inline byte *pixelAt(zu64 x, zu64 y) const {
+    inline zbyte *pixelAt(zu64 x, zu64 y) const {
         return &_buffer[(y * _width + x) * pixelSize()];
     }
 
@@ -138,16 +123,16 @@ public:
     //! Zeroes the buffer, buffer is allocated in necessary.
     void zeroData();
     //! Copies raw data of size() into buffer, buffer is allocated if necessary.
-    void copyData(const byte *data);
+    void copyData(const zbyte *data);
     /*! Takes ownership of raw data.
      *  \warning Do not free memory passed to takeData().
      */
-    void takeData(byte *data);
+    void takeData(zbyte *data);
 
     /*! Takes Y, U, and V planes separately.
      *  Planes are expected unpadded and packed width * height or width * height / 4.
      */
-    void convertYUV420toRGB24(zu64 width, zu64 height, const byte *ydata, const byte *udata, const byte *vdata);
+    void convertYUV420toRGB24(zu64 width, zu64 height, const zbyte *ydata, const zbyte *udata, const zbyte *vdata);
 
     void transferImage(ZImage &other);
 
@@ -173,7 +158,7 @@ public:
      *  If channels is increased, expandmask will be copied to each pixel before original channels are copied.
      *  Expandmask must be at least the new pixel size.
      */
-    void setChannels(zu8 channels, const unsigned char *expandmask = nullptr);
+    void setChannels(zu8 channels, const zu8 *expandmask = nullptr);
 
     /*! Set the depth of the channels in the image. Resizes buffer.
      *  For now, can only deal with depths aligned to bytes (multiples of 8).
@@ -281,11 +266,14 @@ public:
     }
 
     //! Get pointer to buffer.
-    inline byte *buffer() const {
+    inline zbyte *buffer() const {
         return _buffer;
     }
 
 private:
+    //! Memory allocator.
+    ZAllocator<zbyte> *_alloc;
+
     //! Image width / height in pixels.
     zu64 _width, _height;
     //! Number of planes.
@@ -297,12 +285,14 @@ private:
     //! Image type.
     pixelformat _type;
     //! Image data.
-    unsigned char *_buffer;
+    zbyte *_buffer;
 
     //! Image file format.
     fileformat _format;
     //! Image format backend.
     YImageBackend *_backend;
+
+    static const ZMap<pixelformat, ImageType> types;
 };
 
 }
