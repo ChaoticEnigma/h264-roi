@@ -24,14 +24,14 @@ Ubuntu Packages:
 $ sudo apt-get install libssl-dev libsqlite3-dev libavcodec-dev libswscale-dev libavformat-dev libavdevice-dev ffmpeg libx264-dev libmp3lame-dev
 
 Specifically, ffmpeg must be built with support for libx264 and libmp3lame. This goes something like:
-$ git clone --recursive git://source.ffmpeg.org/ffmpeg.git ffmpeg
+$ git clone git://source.ffmpeg.org/ffmpeg.git ffmpeg
 $ cd ffmpeg
 $ ./configure --enable-gpl --enable-libx264 --enable-libmp3lame
 $ make
 # make install
 
 h264-roi Building:
-$ git clone <h264-roi git url> h264-roi
+$ git clone --recursive <h264-roi git url> h264-roi
 $ mkdir h264-roi-build
 $ cd h264-roi-build
 $ cmake ../h264-roi
