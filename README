@@ -38,7 +38,7 @@ $ cmake ../h264-roi
 $ make
 
 h264-roi Usage:
-$ h264_roi <input_file> <output_file> <base_qp> [region] [...]
+$ h264_roi <input_file> <output_file> -q <base_qp> [region] [...]
 Where:
 input_file = A planar (YUV) H264 video file (NO OTHER CHANNELS, THIS IS WHAT roi.sh IS FOR)
 output_file = Where to write a planar (YUV420P) H264 video file
@@ -51,7 +51,7 @@ First specify two corners of a rectangle, then the desired quantization factor o
 Example: Leave the pixels in the rectangle with opposite corners (100,100) and (500,400) uncompressed: 100,100,500,400:0
 
 roi.sh Usage:
-$ sh roi.sh <input_file> <output_file> <base_qp> [region] [...]
+$ sh roi.sh <input_file> <output_file> -q <base_qp> [region] [...]
 Where:
 input_file = A video file with audio
 output_file = Where to write an MP4 file with H264 video and MP3 audio
@@ -62,7 +62,7 @@ Exmaples:
 (in build directory)
 
 Re-Encode lol.avi (1920x1080) as lol.control.5.mp4 with base qp of 5, no regions of interest:
-$ bash roi.sh "lol.avi" "lol.control.5.mp4" 5
+$ bash roi.sh "lol.avi" "lol.control.5.mp4" -q 5
 
 Re-Encode lol.avi (1920x1080) as lol.roi.mp4 with base qp of 20 and qp of 5 in specified regions of interest:
-$ bash roi.sh "lol.avi" "lol.roi.mp4" 20 0,125,102,681:5 0,828,324,1080:5 1810,118,1920,689:5 1608,766,1920,1080:5 572,839,1352,1080:5
+$ bash roi.sh "lol.avi" "lol.roi.mp4" -q 20 0,125,102,681:5 0,828,324,1080:5 1810,118,1920,689:5 1608,766,1920,1080:5 572,839,1352,1080:5
