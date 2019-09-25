@@ -62,7 +62,7 @@ Exmaples:
 (in build directory)
 
 Re-Encode lol.avi (1920x1080) as lol.control.5.mp4 with base qp of 5, no regions of interest:
-$ sh roi.sh "lol.avi" "lol.control.5.mp4" 5
+$ bash roi.sh "lol.avi" "lol.control.5.mp4" 5
 
 Re-Encode lol.avi (1920x1080) as lol.roi.mp4 with base qp of 20 and qp of 5 in specified regions of interest:
-$ sh roi.sh "lol.avi" "lol.roi.mp4" 20 0,125,102,681:5 0,828,324,1080:5 1810,118,1920,689:5 1608,766,1920,1080:5 572,839,1352,1080:5
+$ bash roi.sh "lol.avi" "lol.roi.mp4" 20 0,125,102,681:5 0,828,324,1080:5 1810,118,1920,689:5 1608,766,1920,1080:5 572,839,1352,1080:5
