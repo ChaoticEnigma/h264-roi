@@ -51,8 +51,8 @@ bool ZH264Decoder::open(ZPath path, decoderCallback framecallback, void *userptr
 
     // Alloc context
     context = avcodec_alloc_context3(codec);
-    if(codec->capabilities & CODEC_CAP_TRUNCATED){
-        context->flags |= CODEC_FLAG_TRUNCATED;
+    if(codec->capabilities & AV_CODEC_CAP_TRUNCATED){
+        context->flags |= AV_CODEC_FLAG_TRUNCATED;
     }
 
     //context->get_format = pickDecodeFormat;
