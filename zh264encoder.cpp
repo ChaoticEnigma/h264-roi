@@ -41,10 +41,10 @@ bool ZH264Encoder::outputSetup(zu64 width, zu64 height, zu32 fps){
 }
 
 bool ZH264Encoder::validSettings(){
-    if(inwidth > 0 && inheight > 0 &&
-       outwidth > 0 && outheight > 0 && outfps > 0)
-        return true;
-    return false;
+    if(inwidth < 0 || inheight < 0 ||
+       outwidth < 0 || outheight < 0 || outfps < 0)
+        return false;
+    return true;
 }
 
 bool ZH264Encoder::open(ZPath path){

@@ -6,6 +6,7 @@
 #include "zoptions.h"
 
 #include <string>
+#include <iostream>
 
 #include <libavcodec/avcodec.h>
 #include <libavutil/avutil.h>
@@ -21,9 +22,9 @@ struct Region {
 struct UserData {
     ZH264Encoder *encoder;
     ZPath output;
+    int framecount;
     float baseqp;
     ZList<Region> regions;
-    zu64 framecount;
 };
 
 bool brear = false;
@@ -53,7 +54,7 @@ void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder
             LOG("Output Setup: " << encoder->outputSetup(frame->width, frame->height, decode->getFPS()));
             encoder->infmt = decode->context->pix_fmt;
 
-            userdata->framecount = 0;
+            //userdata->framecount = 120;
 
             // Set up regions in macroblocks
             zu32 xblocks = frame->width / 16 + (frame->width % 16 ? 1 : 0);
@@ -82,9 +83,9 @@ void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder
 
         encoder->encode(frame->data, frame->linesize);
 
-        //userdata->framecount = decode->getFrameCount();
+        //userdata->framecount = 120;
 
-        if(num % 10 == 0){
+        if(num % 1 == 0){
             RLOG("\r" << "Update: " << num << "/" << userdata->framecount);
         }
         if(num == userdata->framecount){
@@ -96,9 +97,11 @@ void decoderCallback(zu32 num, AVFrame *frame, AVPacket *pkt, const ZH264Decoder
     }
 }
 
+#define OPT_FC  "framecount"
 #define OPT_QP  "quanta"
 #define OPT_FPS "fps"
 const ZArray<ZOptions::OptDef> optdef = {
+    { OPT_FC,   'c',    ZOptions::INTEGER },
     { OPT_QP,   'q',    ZOptions::STRING },
     { OPT_FPS,  'F',    ZOptions::STRING },
 };
@@ -128,6 +131,10 @@ int main(int argc, char **argv){
 
     ZPath input = args[0];
     ZPath output = args[1];
+
+    int framecount = 0;
+    if(options.getOpts().contains(OPT_FC))
+        framecount = stoi(options.getOpts()[OPT_FC].str());
 
     float baseqp = 0;
     if(options.getOpts().contains(OPT_QP))
@@ -164,6 +171,7 @@ int main(int argc, char **argv){
     ZH264Encoder encoder;
     userdata.output = output;
     userdata.encoder = &encoder;
+    userdata.framecount = framecount;
     userdata.baseqp = baseqp;
     userdata.regions = regions;
 
